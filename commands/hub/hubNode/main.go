@@ -1,3 +1,3 @@
-package hubNode
+package main
 
 func main() {}

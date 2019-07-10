@@ -1,3 +1,3 @@
-package zoneNode
+package main
 
 func main() {}

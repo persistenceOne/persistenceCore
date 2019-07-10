@@ -1,3 +1,3 @@
-package hubClient
+package main
 
 func main() {}

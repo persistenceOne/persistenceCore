@@ -1,3 +1,3 @@
-package zoneClient
+package main
 
 func main() {}
