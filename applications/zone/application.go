@@ -158,25 +158,49 @@ func NewCommitHubApplicaiton(logger log.Logger, db dbm.DB, traceStore io.Writer,
 		genutil.ModuleName,
 	)
 
-	application.moduleManager.SetOrderBeginBlockers(mint.ModuleName, distribution.ModuleName, slashing.ModuleName)
+	application.moduleManager.SetOrderBeginBlockers(
+		mint.ModuleName,
+		distribution.ModuleName,
+		slashing.ModuleName,
+	)
 
-	application.moduleManager.SetOrderEndBlockers(gov.ModuleName, staking.ModuleName)
+	application.moduleManager.SetOrderEndBlockers(
+		gov.ModuleName,
+		staking.ModuleName,
+	)
 
-	// genutils must occur after staking so that pools are properly
-	// initialized with tokens from genesis accounts.
-	application.moduleManager.SetOrderInitGenesis(genaccounts.ModuleName, supply.ModuleName, distribution.ModuleName,
-		staking.ModuleName, auth.ModuleName, bank.ModuleName, slashing.ModuleName,
-		gov.ModuleName, mint.ModuleName, crisis.ModuleName, genutil.ModuleName)
+	application.moduleManager.SetOrderInitGenesis(
+		genaccounts.ModuleName,
+		supply.ModuleName,
+		distribution.ModuleName,
+		staking.ModuleName,
+		auth.ModuleName,
+		bank.ModuleName,
+		slashing.ModuleName,
+		gov.ModuleName,
+		mint.ModuleName,
+		crisis.ModuleName,
+		genutil.ModuleName,
+	)
 
 	application.moduleManager.RegisterInvariants(&application.crisisKeeper)
 	application.moduleManager.RegisterRoutes(application.Router(), application.QueryRouter())
 
-	// initialize stores
-	application.MountStores(application.keyMain, application.keyAccount, application.keySupply, application.keyStaking,
-		application.keyMint, application.keyDistribution, application.keySlashing, application.keyGovernment, application.keyParameter,
-		application.tkeyParameter, application.tkeyStaking, application.keyDistribution)
+	application.MountStores(
+		application.keyMain,
+		application.keyAccount,
+		application.keySupply,
+		application.keyStaking,
+		application.keyMint,
+		application.keyDistribution,
+		application.keySlashing,
+		application.keyGovernment,
+		application.keyParameter,
+		application.tkeyParameter,
+		application.tkeyStaking,
+		application.keyDistribution,
+	)
 
-	// initialize BaseApp
 	application.SetInitChainer(application.InitChainer)
 	application.SetBeginBlocker(application.BeginBlocker)
 	application.SetAnteHandler(auth.NewAnteHandler(application.accountKeeper, application.supplyKeeper, auth.DefaultSigVerificationGasConsumer))
