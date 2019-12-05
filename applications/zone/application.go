@@ -24,8 +24,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/supply"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/common"
-	dbm "github.com/tendermint/tendermint/libs/db"
 	"github.com/tendermint/tendermint/libs/log"
+	tendermintDB "github.com/tendermint/tm-db"
 )
 
 const applicationName = "commitHub"
@@ -73,7 +73,7 @@ type CommitHubApplication struct {
 	moduleManager *module.Manager
 }
 
-func NewCommitHubApplicaiton(logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
+func NewCommitHubApplicaiton(logger log.Logger, db tendermintDB.DB, traceStore io.Writer, loadLatest bool,
 	invCheckPeriod uint, baseAppOptions ...func(*baseapp.BaseApp)) *CommitHubApplication {
 	cdc := MakeCodec()
 	baseApp := baseapp.NewBaseApp(applicationName, logger, db, auth.DefaultTxDecoder(cdc), baseAppOptions...)

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/cosmos/cosmos-sdk/cmd/gaia/app"
+	"github.com/commitHub/commitBlockchain/applications/hub"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/spf13/cobra"
@@ -34,12 +34,12 @@ func ValidateGenesisCommand(ctx *server.Context, cdc *codec.Codec) *cobra.Comman
 				return fmt.Errorf("Error loading genesis doc from %s: %s", genesis, err.Error())
 			}
 
-			var genstate app.GenesisState
+			var genstate hub.application.GenesisState
 			if err = cdc.UnmarshalJSON(genDoc.AppState, &genstate); err != nil {
 				return fmt.Errorf("Error unmarshaling genesis doc %s: %s", genesis, err.Error())
 			}
 
-			if err = app.GaiaValidateGenesisState(genstate); err != nil {
+			if err = hub.application.GaiaValidateGenesisState(genstate); err != nil {
 				return fmt.Errorf("Error validating genesis file %s: %s", genesis, err.Error())
 			}
 

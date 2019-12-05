@@ -10,12 +10,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/keys"
 
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/cmd/gaia/app"
+	"github.com/commitHub/commitBlockchain/applications/hub"
 	"github.com/cosmos/cosmos-sdk/codec"
 	srvconfig "github.com/cosmos/cosmos-sdk/server/config"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	authtx "github.com/cosmos/cosmos-sdk/x/auth/client/txbuilder"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 
 	"github.com/spf13/cobra"
@@ -100,7 +99,7 @@ func initializeTestnet(config *tmconfig.Config, cdc *codec.Codec) error {
 	chainConfig.MinGasPrices = viper.GetString(server.FlagMinGasPrices)
 
 	var (
-		genesisAccounts []app.GenesisAccount
+		genesisAccounts []hub.application.GenesisAccount
 		genesisFiles    []string
 	)
 
@@ -146,7 +145,7 @@ func initializeTestnet(config *tmconfig.Config, cdc *codec.Codec) error {
 
 		buf := client.BufferStdin()
 		prompt := fmt.Sprintf(
-			"Password for account '%s' (default %s):", nodeDirName, app.DefaultKeyPass,
+			"Password for account '%s' (default %s):", nodeDirName, hub.application.DefaultKeyPass,
 		)
 
 		keyPass, err := client.GetPassword(prompt, buf)
@@ -155,7 +154,7 @@ func initializeTestnet(config *tmconfig.Config, cdc *codec.Codec) error {
 		}
 
 		if keyPass == "" {
-			keyPass = app.DefaultKeyPass
+			keyPass = hub.application.DefaultKeyPass
 		}
 
 		addr, secret, err := server.GenerateSaveCoinKey(clientDir, nodeDirName, keyPass, true)
@@ -178,7 +177,7 @@ func initializeTestnet(config *tmconfig.Config, cdc *codec.Codec) error {
 
 		accTokens := sdk.TokensFromTendermintPower(1000)
 		accStakingTokens := sdk.TokensFromTendermintPower(500)
-		genesisAccounts = append(genesisAccounts, app.GenesisAccount{
+		genesisAccounts = append(genesisAccounts, hub.application.GenesisAccount{
 			Address: addr,
 			Coins: sdk.Coins{
 				sdk.NewCoin(fmt.Sprintf("%stoken", nodeDirName), accTokens),
@@ -200,9 +199,9 @@ func initializeTestnet(config *tmconfig.Config, cdc *codec.Codec) error {
 			return err
 		}
 		tx := auth.NewStdTx([]sdk.Msg{msg}, auth.StdFee{}, []auth.StdSignature{}, memo)
-		txBldr := authtx.NewTxBuilderFromCLI().WithChainID(chainID).WithMemo(memo).WithKeybase(kb)
+		txBldr := auth.NewTxBuilderFromCLI().WithChainID(chainID).WithMemo(memo).WithKeybase(kb)
 
-		signedTx, err := txBldr.SignStdTx(nodeDirName, app.DefaultKeyPass, tx, false)
+		signedTx, err := txBldr.SignStdTx(nodeDirName, hub.application.DefaultKeyPass, tx, false)
 		if err != nil {
 			_ = os.RemoveAll(outDir)
 			return err
@@ -241,11 +240,11 @@ func initializeTestnet(config *tmconfig.Config, cdc *codec.Codec) error {
 }
 
 func initGenFiles(
-	cdc *codec.Codec, chainID string, accs []app.GenesisAccount,
+	cdc *codec.Codec, chainID string, accs []hub.application.GenesisAccount,
 	genFiles []string, numValidators int,
 ) error {
 
-	appGenState := app.NewDefaultGenesisState()
+	appGenState := hub.application.NewDefaultGenesisState()
 	appGenState.Accounts = accs
 
 	appGenStateJSON, err := codec.MarshalJSONIndent(cdc, appGenState)

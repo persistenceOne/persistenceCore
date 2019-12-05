@@ -12,7 +12,7 @@ import (
 	"github.com/tendermint/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/cmd/gaia/app"
+	"github.com/commitHub/commitBlockchain/applications/hub"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -67,7 +67,7 @@ func CollectGenesisTransactionsCommand(ctx *server.Context, cdc *codec.Codec) *c
 		},
 	}
 
-	cmd.Flags().String(cli.HomeFlag, app.DefaultNodeHome, "node's home directory")
+	cmd.Flags().String(cli.HomeFlag, hub.application.DefaultNodeHome, "node's home directory")
 	cmd.Flags().String(flagGenesisTransactionDirectory, "",
 		"override default \"gentx\" directory from which collect and execute "+
 			"genesis transactions; default [--home]/config/gentx/")
@@ -84,7 +84,7 @@ func generateApplicationStateFromInitialConfiguration(cdc *codec.Codec, config *
 		jsonRawTx       json.RawMessage
 	)
 
-	appGenTxs, persistentPeers, err = app.CollectStdTxs(
+	appGenTxs, persistentPeers, err = hub.application.CollectStdTxs(
 		cdc, config.Moniker, initConfiguration.GenTxsDir, genDoc,
 	)
 	if err != nil {
@@ -104,7 +104,7 @@ func generateApplicationStateFromInitialConfiguration(cdc *codec.Codec, config *
 
 	cfg.WriteConfigFile(filepath.Join(config.RootDir, "config", "config.toml"), config)
 
-	appState, err = app.GaiaAppGenStateJSON(cdc, genDoc, genTxs)
+	appState, err = hub.application.GaiaAppGenStateJSON(cdc, genDoc, genTxs)
 	if err != nil {
 		return
 	}

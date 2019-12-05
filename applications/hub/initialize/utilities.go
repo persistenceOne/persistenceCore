@@ -15,7 +15,7 @@ import (
 	"github.com/tendermint/tendermint/privval"
 	"github.com/tendermint/tendermint/types"
 
-	"github.com/cosmos/cosmos-sdk/cmd/gaia/app"
+	"github.com/commitHub/commitBlockchain/applications/hub"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server"
 )
@@ -142,5 +142,5 @@ func initializeEmptyGenesis(cdc *codec.Codec, genesisFile string, overwrite bool
 		return nil, fmt.Errorf("genesis.json file already exists: %v", genesisFile)
 	}
 
-	return codec.MarshalJSONIndent(cdc, app.NewDefaultGenesisState())
+	return codec.MarshalJSONIndent(cdc, hub.application.NewDefaultGenesisState())
 }

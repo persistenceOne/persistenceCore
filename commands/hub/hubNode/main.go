@@ -4,17 +4,16 @@ import (
 	"encoding/json"
 	"io"
 
-	"github.com/cosmos/cosmos-sdk/cmd/gaia/app"
+	"github.com/commitHub/commitBlockchain/applications/hub"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	tendermintABSITypes "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/cli"
-	dbm "github.com/tendermint/tendermint/libs/db"
 	"github.com/tendermint/tendermint/libs/log"
 	tendermintTypes "github.com/tendermint/tendermint/types"
+	tendermintDB "github.com/tendermint/tm-db"
 
-	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/store"
@@ -55,7 +54,7 @@ func main() {
 
 	server.AddCommands(context, codec, rootCommand, newApplication, exportApplicationStateAndValidators)
 
-	executor := cli.PrepareBaseCmd(rootCommand, "CA", app.DefaultNodeHome)
+	executor := cli.PrepareBaseCmd(rootCommand, "CA", hub.application.DefaultNodeHome)
 	rootCommand.PersistentFlags().UintVar(
 		&invalidCheckPeriod,
 		flagInvalidCheckPeriod,
@@ -68,11 +67,11 @@ func main() {
 	}
 }
 
-func newApplication(logger log.Logger, db dbm.DB, traceStore io.Writer) tendermintABSITypes.Application {
-	return hub.NewCommitHubApplication(logger, db, traceStore, true, invalidCheckPeriod, baseapp.SetPruning(store.NewPruningOptionsFromString(viper.GetString("pruning"))), baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)))
+func newApplication(logger log.Logger, db tendermintDB.DB, traceStore io.Writer) tendermintABSITypes.Application {
+	return hub.NewCommitHubApplication(logger, db, traceStore, true, invalidCheckPeriod, basehub.application.SetPruning(store.NewPruningOptionsFromString(viper.GetString("pruning"))), basehub.application.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)))
 }
 
-func exportApplicationStateAndValidators(logger log.Logger, db dbm.DB, traceStore io.Writer, height int64, forZeroHeight bool, jailWhiteList []string) (json.RawMessage, []tendermintTypes.GenesisValidator, error) {
+func exportApplicationStateAndValidators(logger log.Logger, db tendermintDB.DB, traceStore io.Writer, height int64, forZeroHeight bool, jailWhiteList []string) (json.RawMessage, []tendermintTypes.GenesisValidator, error) {
 
 	if height != -1 {
 		genesisApplication := hub.NewCommitHubApplication(logger, db, traceStore, false, uint(1))

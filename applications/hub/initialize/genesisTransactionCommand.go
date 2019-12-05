@@ -19,14 +19,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/client/keys"
-	"github.com/cosmos/cosmos-sdk/client/utils"
-	"github.com/cosmos/cosmos-sdk/cmd/gaia/app"
+	"github.com/commitHub/commitBlockchain/applications/hub"
 	"github.com/cosmos/cosmos-sdk/codec"
 	kbkeys "github.com/cosmos/cosmos-sdk/crypto/keys"
 	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	authtxb "github.com/cosmos/cosmos-sdk/x/auth/client/txbuilder"
+	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
+	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/staking/client/cli"
 )
 
@@ -77,12 +77,12 @@ following delegation and commission default parameters:
 				return err
 			}
 
-			genesisState := app.GenesisState{}
+			genesisState := hub.application.GenesisState{}
 			if err = cdc.UnmarshalJSON(genDoc.AppState, &genesisState); err != nil {
 				return err
 			}
 
-			if err = app.GaiaValidateGenesisState(genesisState); err != nil {
+			if err = hub.application.GaiaValidateGenesisState(genesisState); err != nil {
 				return err
 			}
 
@@ -121,7 +121,7 @@ following delegation and commission default parameters:
 				return err
 			}
 
-			txBldr := authtxb.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
 			viper.Set(client.FlagGenerateOnly, true)
@@ -178,8 +178,8 @@ following delegation and commission default parameters:
 
 	ip, _ := server.ExternalIP()
 
-	cmd.Flags().String(tmcli.HomeFlag, app.DefaultNodeHome, "node's home directory")
-	cmd.Flags().String(flagClientHome, app.DefaultCLIHome, "client's home directory")
+	cmd.Flags().String(tmcli.HomeFlag, hub.application.DefaultNodeHome, "node's home directory")
+	cmd.Flags().String(flagClientHome, hub.application.DefaultCLIHome, "client's home directory")
 	cmd.Flags().String(client.FlagName, "", "name of private key with which to sign the gentx")
 	cmd.Flags().String(client.FlagOutputDocument, "", "write the genesis transaction JSON document to the given file instead of the default location")
 	cmd.Flags().String(cli.FlagIP, ip, "The node's public IP")
@@ -195,7 +195,7 @@ following delegation and commission default parameters:
 	return cmd
 }
 
-func accountInGenesis(genesisState app.GenesisState, key sdk.AccAddress, coins sdk.Coins) error {
+func accountInGenesis(genesisState hub.application.GenesisState, key sdk.AccAddress, coins sdk.Coins) error {
 	accountIsInGenesis := false
 	bondDenom := genesisState.StakingData.Params.BondDenom
 

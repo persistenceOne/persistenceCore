@@ -8,8 +8,9 @@ import (
 	"github.com/tendermint/tendermint/libs/cli"
 	"github.com/tendermint/tendermint/libs/common"
 
+	"github.com/commitHub/commitBlockchain/applications/hub"
+
 	"github.com/cosmos/cosmos-sdk/client/keys"
-	"github.com/cosmos/cosmos-sdk/cmd/gaia/app"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -62,7 +63,7 @@ func AddGenesisAccountCommand(ctx *server.Context, cdc *codec.Codec) *cobra.Comm
 				return err
 			}
 
-			var appState app.GenesisState
+			var appState hub.application.GenesisState
 			if err = cdc.UnmarshalJSON(genDoc.AppState, &appState); err != nil {
 				return err
 			}
@@ -81,8 +82,8 @@ func AddGenesisAccountCommand(ctx *server.Context, cdc *codec.Codec) *cobra.Comm
 		},
 	}
 
-	cmd.Flags().String(cli.HomeFlag, app.DefaultNodeHome, "node's home directory")
-	cmd.Flags().String(flagClientHome, app.DefaultCLIHome, "client's home directory")
+	cmd.Flags().String(cli.HomeFlag, hub.application.DefaultNodeHome, "node's home directory")
+	cmd.Flags().String(flagClientHome, hub.application.DefaultCLIHome, "client's home directory")
 	cmd.Flags().String(flagVestingAmt, "", "amount of coins for vesting accounts")
 	cmd.Flags().Uint64(flagVestingStart, 0, "schedule start time (unix epoch) for vesting accounts")
 	cmd.Flags().Uint64(flagVestingEnd, 0, "schedule end time (unix epoch) for vesting accounts")
@@ -91,9 +92,9 @@ func AddGenesisAccountCommand(ctx *server.Context, cdc *codec.Codec) *cobra.Comm
 }
 
 func addGenesisAccount(
-	cdc *codec.Codec, appState app.GenesisState, addr sdk.AccAddress,
+	cdc *codec.Codec, appState hub.application.GenesisState, addr sdk.AccAddress,
 	coins, vestingAmt sdk.Coins, vestingStart, vestingEnd int64,
-) (app.GenesisState, error) {
+) (hub.application.GenesisState, error) {
 
 	for _, stateAcc := range appState.Accounts {
 		if stateAcc.Address.Equals(addr) {
@@ -131,9 +132,9 @@ func addGenesisAccount(
 			}
 		}
 
-		appState.Accounts = append(appState.Accounts, app.NewGenesisAccountI(vacc))
+		appState.Accounts = append(appState.Accounts, hub.application.NewGenesisAccountI(vacc))
 	} else {
-		appState.Accounts = append(appState.Accounts, app.NewGenesisAccount(&acc))
+		appState.Accounts = append(appState.Accounts, hub.application.NewGenesisAccount(&acc))
 	}
 
 	return appState, nil
