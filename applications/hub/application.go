@@ -23,6 +23,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	"github.com/cosmos/cosmos-sdk/x/mint"
 	"github.com/cosmos/cosmos-sdk/x/params"
+	paramsClient "github.com/cosmos/cosmos-sdk/x/params/client"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
@@ -40,6 +41,20 @@ var moduleAccountPermissions = map[string][]string{
 	staking.NotBondedPoolName: {supply.Burner, supply.Staking},
 	gov.ModuleName:            {supply.Burner},
 }
+var ModuleBasics = module.NewBasicManager(
+	genaccounts.AppModuleBasic{},
+	genutil.AppModuleBasic{},
+	auth.AppModuleBasic{},
+	bank.AppModuleBasic{},
+	staking.AppModuleBasic{},
+	mint.AppModuleBasic{},
+	distribution.AppModuleBasic{},
+	gov.NewAppModuleBasic(paramsClient.ProposalHandler, distribution.ProposalHandler),
+	params.AppModuleBasic{},
+	crisis.AppModuleBasic{},
+	slashing.AppModuleBasic{},
+	supply.AppModuleBasic{},
+)
 
 func MakeCodec() *codec.Codec {
 	var cdc = codec.New()
@@ -147,7 +162,7 @@ func NewCommitHubApplication(
 
 	application.bankKeeper = bank.NewBaseKeeper(
 		application.accountKeeper,
-		application.parameterKeeper.Subspace(bank.DefaultParamspace),
+		bankSubspace,
 		bank.DefaultCodespace,
 		application.ModuleAccountAddress(),
 	)
@@ -165,13 +180,13 @@ func NewCommitHubApplication(
 		keys[staking.StoreKey],
 		transientKeys[staking.TStoreKey],
 		application.supplyKeeper,
-		application.parameterKeeper.Subspace(staking.DefaultParamspace),
+		stakingSubspace,
 		staking.DefaultCodespace,
 	)
 	application.mintKeeper = mint.NewKeeper(
 		application.cdc,
 		keys[mint.StoreKey],
-		application.parameterKeeper.Subspace(mint.DefaultParamspace),
+		mintSubspace,
 		&stakingKeeper,
 		application.supplyKeeper,
 		auth.FeeCollectorName,
@@ -179,7 +194,7 @@ func NewCommitHubApplication(
 	application.distributionKeeper = distribution.NewKeeper(
 		application.cdc,
 		keys[distribution.StoreKey],
-		application.parameterKeeper.Subspace(distribution.DefaultParamspace),
+		distributionSubspace,
 		&stakingKeeper,
 		application.supplyKeeper,
 		distribution.DefaultCodespace,
@@ -190,11 +205,11 @@ func NewCommitHubApplication(
 		application.cdc,
 		keys[slashing.StoreKey],
 		&stakingKeeper,
-		application.parameterKeeper.Subspace(slashing.DefaultParamspace),
+		slashingSubspace,
 		slashing.DefaultCodespace,
 	)
 	application.crisisKeeper = crisis.NewKeeper(
-		application.parameterKeeper.Subspace(crisis.DefaultParamspace),
+		crisisSubspace,
 		invCheckPeriod,
 		application.supplyKeeper,
 		auth.FeeCollectorName,
@@ -214,7 +229,7 @@ func NewCommitHubApplication(
 		application.cdc,
 		keys[gov.StoreKey],
 		application.parameterKeeper,
-		application.parameterKeeper.Subspace(gov.DefaultParamspace),
+		govSubspace,
 		application.supplyKeeper,
 		&stakingKeeper,
 		gov.DefaultCodespace,

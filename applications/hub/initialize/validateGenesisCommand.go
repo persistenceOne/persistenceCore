@@ -34,12 +34,12 @@ func ValidateGenesisCommand(ctx *server.Context, cdc *codec.Codec) *cobra.Comman
 				return fmt.Errorf("Error loading genesis doc from %s: %s", genesis, err.Error())
 			}
 
-			var genstate hub.application.GenesisState
+			var genstate hub.GenesisState
 			if err = cdc.UnmarshalJSON(genDoc.AppState, &genstate); err != nil {
 				return fmt.Errorf("Error unmarshaling genesis doc %s: %s", genesis, err.Error())
 			}
 
-			if err = hub.application.GaiaValidateGenesisState(genstate); err != nil {
+			if err = hub.GaiaValidateGenesisState(genstate); err != nil {
 				return fmt.Errorf("Error validating genesis file %s: %s", genesis, err.Error())
 			}
 
