@@ -4,20 +4,15 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
-	"github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/spf13/cobra"
 )
 
-func CollectGenesisTransactionsCommand(
+func MigrateGenesisCommand(
 	serverContext *server.Context,
 	cdc *codec.Codec,
-	genesisAccountsIterator types.GenesisAccountsIterator,
-	defaultNodeHome string,
 ) *cobra.Command {
-	return cli.CollectGenTxsCmd(
+	return cli.MigrateGenesisCmd(
 		serverContext,
 		cdc,
-		genesisAccountsIterator,
-		defaultNodeHome,
 	)
 }

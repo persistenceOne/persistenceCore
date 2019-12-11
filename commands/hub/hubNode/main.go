@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"io"
 
+	"github.com/cosmos/cosmos-sdk/x/genaccounts"
+
 	"github.com/commitHub/commitBlockchain/applications/hub"
+	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -18,8 +21,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/store"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/staking"
 
-	"github.com/commitHub/commitBlockchain/applications/hub"
 	"github.com/commitHub/commitBlockchain/applications/hub/initialize"
 )
 
@@ -28,7 +31,7 @@ const flagInvalidCheckPeriod = "invalid-check-period"
 var invalidCheckPeriod uint
 
 func main() {
-	codec := hub.MakeCodec()
+	cdc := hub.MakeCodec()
 
 	configuration := sdkTypes.GetConfig()
 	configuration.SetBech32PrefixForAccount(sdkTypes.Bech32PrefixAccAddr, sdkTypes.Bech32PrefixAccPub)
@@ -36,25 +39,28 @@ func main() {
 	configuration.SetBech32PrefixForConsensusNode(sdkTypes.Bech32PrefixConsAddr, sdkTypes.Bech32PrefixConsPub)
 	configuration.Seal()
 
-	context := server.NewDefaultContext()
+	serverContext := server.NewDefaultContext()
 	cobra.EnableCommandSorting = false
 	rootCommand := &cobra.Command{
 		Use:               "hubNode",
 		Short:             "Commit Hub Node Daemon (server)",
-		PersistentPreRunE: server.PersistentPreRunEFn(context),
+		PersistentPreRunE: server.PersistentPreRunEFn(serverContext),
 	}
 
-	rootCommand.AddCommand(initialize.InitializeCommand(context, codec))
-	rootCommand.AddCommand(initialize.CollectGenesisTransactionsCommand(context, codec))
-	rootCommand.AddCommand(initialize.TestnetCommand(context, codec))
-	rootCommand.AddCommand(initialize.GenesisTransactionCommand(context, codec))
-	rootCommand.AddCommand(initialize.AddGenesisAccountCommand(context, codec))
-	rootCommand.AddCommand(initialize.ValidateGenesisCommand(context, codec))
+	rootCommand.AddCommand(initialize.InitializeCommand(serverContext, cdc, hub.ModuleBasics, hub.DefaultNodeHome))
+	rootCommand.AddCommand(initialize.CollectGenesisTransactionsCommand(serverContext, cdc, genaccounts.AppModuleBasic{}, hub.DefaultNodeHome))
+	rootCommand.AddCommand(initialize.MigrateGenesisCommand(serverContext, cdc))
+	rootCommand.AddCommand(initialize.GenesisTransactionCommand(serverContext, cdc, hub.ModuleBasics, staking.AppModuleBasic{}, genaccounts.AppModuleBasic{}, hub.DefaultNodeHome, hub.DefaultClientHome))
+	rootCommand.AddCommand(initialize.ValidateGenesisCommand(serverContext, cdc, hub.ModuleBasics))
+	rootCommand.AddCommand(initialize.AddGenesisAccountCommand(serverContext, cdc, hub.DefaultNodeHome, hub.DefaultClientHome))
 	rootCommand.AddCommand(client.NewCompletionCmd(rootCommand, true))
+	rootCommand.AddCommand(initialize.TestnetCommand(serverContext, cdc, hub.ModuleBasics, genaccounts.AppModuleBasic{}))
 
-	server.AddCommands(context, codec, rootCommand, newApplication, exportApplicationStateAndValidators)
+	rootCommand.AddCommand(initialize.ReplayCmd())
 
-	executor := cli.PrepareBaseCmd(rootCommand, "CA", hub.application.DefaultNodeHome)
+	server.AddCommands(serverContext, cdc, rootCommand, newApplication, exportApplicationStateAndValidators)
+
+	executor := cli.PrepareBaseCmd(rootCommand, "CA", hub.DefaultNodeHome)
 	rootCommand.PersistentFlags().UintVar(
 		&invalidCheckPeriod,
 		flagInvalidCheckPeriod,
@@ -68,10 +74,26 @@ func main() {
 }
 
 func newApplication(logger log.Logger, db tendermintDB.DB, traceStore io.Writer) tendermintABSITypes.Application {
-	return hub.NewCommitHubApplication(logger, db, traceStore, true, invalidCheckPeriod, basehub.application.SetPruning(store.NewPruningOptionsFromString(viper.GetString("pruning"))), basehub.application.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)))
+	return hub.NewCommitHubApplication(
+		logger,
+		db,
+		traceStore,
+		true,
+		invalidCheckPeriod,
+		baseapp.SetPruning(store.NewPruningOptionsFromString(viper.GetString("pruning"))),
+		baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)),
+		baseapp.SetHaltHeight(uint64(viper.GetInt(server.FlagHaltHeight))),
+	)
 }
 
-func exportApplicationStateAndValidators(logger log.Logger, db tendermintDB.DB, traceStore io.Writer, height int64, forZeroHeight bool, jailWhiteList []string) (json.RawMessage, []tendermintTypes.GenesisValidator, error) {
+func exportApplicationStateAndValidators(
+	logger log.Logger,
+	db tendermintDB.DB,
+	traceStore io.Writer,
+	height int64,
+	forZeroHeight bool,
+	jailWhiteList []string,
+) (json.RawMessage, []tendermintTypes.GenesisValidator, error) {
 
 	if height != -1 {
 		genesisApplication := hub.NewCommitHubApplication(logger, db, traceStore, false, uint(1))

@@ -20,7 +20,7 @@ func GenesisTransactionCommand(
 	defaultNodeHome string,
 	defaultClientHome string,
 ) *cobra.Command {
-	cli.GenTxCmd(
+	return cli.GenTxCmd(
 		serverContext,
 		cdc,
 		moduleBasicManager,

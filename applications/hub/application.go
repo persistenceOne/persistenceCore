@@ -1,12 +1,14 @@
 package hub
 
 import (
+	"encoding/json"
 	"io"
 	"os"
 
 	abciTypes "github.com/tendermint/tendermint/abci/types"
 	tendermintCommon "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
+	tendermintTypes "github.com/tendermint/tendermint/types"
 	tendermintDB "github.com/tendermint/tm-db"
 	"honnef.co/go/tools/version"
 
@@ -308,4 +310,147 @@ func (application *CommitHubApplication) ModuleAccountAddress() map[string]bool 
 	}
 
 	return modAccAddrs
+}
+func (application *CommitHubApplication) ExportApplicationStateAndValidators(forZeroHeight bool, jailWhiteList []string,
+) (applicationState json.RawMessage, validators []tendermintTypes.GenesisValidator, err error) {
+	ctx := application.NewContext(true, abciTypes.Header{Height: application.LastBlockHeight()})
+
+	if forZeroHeight {
+		application.prepareForZeroHeightGenesis(ctx, jailWhiteList)
+	}
+
+	genState := application.moduleManager.ExportGenesis(ctx)
+	applicationState, err = codec.MarshalJSONIndent(application.cdc, genState)
+	if err != nil {
+		return nil, nil, err
+	}
+	validators = staking.WriteValidators(ctx, application.stakingKeeper)
+	return applicationState, validators, nil
+}
+func (application *CommitHubApplication) prepareForZeroHeightGenesis(ctx sdkTypes.Context, jailWhiteList []string) {
+	applyWhiteList := false
+
+	//Check if there is a whitelist
+	if len(jailWhiteList) > 0 {
+		applyWhiteList = true
+	}
+
+	whiteListMap := make(map[string]bool)
+
+	for _, addr := range jailWhiteList {
+		_, err := sdkTypes.ValAddressFromBech32(addr)
+		if err != nil {
+			//log.Fatal(err)
+		}
+		whiteListMap[addr] = true
+	}
+
+	/* Just to be safe, assert the invariants on current state. */
+	application.crisisKeeper.AssertInvariants(ctx)
+
+	/* Handle fee distribution state. */
+
+	// withdraw all validator commission
+	application.stakingKeeper.IterateValidators(ctx, func(_ int64, val staking.ValidatorI) (stop bool) {
+		_, _ = application.distributionKeeper.WithdrawValidatorCommission(ctx, val.GetOperator())
+		return false
+	})
+
+	// withdraw all delegator rewards
+	dels := application.stakingKeeper.GetAllDelegations(ctx)
+	for _, delegation := range dels {
+		_, _ = application.distributionKeeper.WithdrawDelegationRewards(ctx, delegation.DelegatorAddress, delegation.ValidatorAddress)
+	}
+
+	// clear validator slash events
+	application.distributionKeeper.DeleteAllValidatorSlashEvents(ctx)
+
+	// clear validator historical rewards
+	application.distributionKeeper.DeleteAllValidatorHistoricalRewards(ctx)
+
+	// set context height to zero
+	height := ctx.BlockHeight()
+	ctx = ctx.WithBlockHeight(0)
+
+	// reinitialize all validators
+	application.stakingKeeper.IterateValidators(ctx, func(_ int64, val staking.ValidatorI) (stop bool) {
+
+		// donate any unwithdrawn outstanding reward fraction tokens to the community pool
+		scraps := application.distributionKeeper.GetValidatorOutstandingRewards(ctx, val.GetOperator())
+		feePool := application.distributionKeeper.GetFeePool(ctx)
+		feePool.CommunityPool = feePool.CommunityPool.Add(scraps)
+		application.distributionKeeper.SetFeePool(ctx, feePool)
+
+		application.distributionKeeper.Hooks().AfterValidatorCreated(ctx, val.GetOperator())
+		return false
+	})
+
+	// reinitialize all delegations
+	for _, del := range dels {
+		application.distributionKeeper.Hooks().BeforeDelegationCreated(ctx, del.DelegatorAddress, del.ValidatorAddress)
+		application.distributionKeeper.Hooks().AfterDelegationModified(ctx, del.DelegatorAddress, del.ValidatorAddress)
+	}
+
+	// reset context height
+	ctx = ctx.WithBlockHeight(height)
+
+	/* Handle staking state. */
+
+	// iterate through redelegations, reset creation height
+	application.stakingKeeper.IterateRedelegations(ctx, func(_ int64, red staking.Redelegation) (stop bool) {
+		for i := range red.Entries {
+			red.Entries[i].CreationHeight = 0
+		}
+		application.stakingKeeper.SetRedelegation(ctx, red)
+		return false
+	})
+
+	// iterate through unbonding delegations, reset creation height
+	application.stakingKeeper.IterateUnbondingDelegations(ctx, func(_ int64, ubd staking.UnbondingDelegation) (stop bool) {
+		for i := range ubd.Entries {
+			ubd.Entries[i].CreationHeight = 0
+		}
+		application.stakingKeeper.SetUnbondingDelegation(ctx, ubd)
+		return false
+	})
+
+	// Iterate through validators by power descending, reset bond heights, and
+	// update bond intra-tx counters.
+	store := ctx.KVStore(application.keys[staking.StoreKey])
+	iter := sdkTypes.KVStoreReversePrefixIterator(store, staking.ValidatorsKey)
+	counter := int16(0)
+
+	var valConsAddrs []sdkTypes.ConsAddress
+	for ; iter.Valid(); iter.Next() {
+		addr := sdkTypes.ValAddress(iter.Key()[1:])
+		validator, found := application.stakingKeeper.GetValidator(ctx, addr)
+		if !found {
+			panic("expected validator, not found")
+		}
+
+		validator.UnbondingHeight = 0
+		valConsAddrs = append(valConsAddrs, validator.ConsAddress())
+		if applyWhiteList && !whiteListMap[addr.String()] {
+			validator.Jailed = true
+		}
+
+		application.stakingKeeper.SetValidator(ctx, validator)
+		counter++
+	}
+
+	iter.Close()
+
+	_ = application.stakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx)
+
+	/* Handle slashing state. */
+
+	// reset start height on signing infos
+	application.slashingKeeper.IterateValidatorSigningInfos(
+		ctx,
+		func(addr sdkTypes.ConsAddress, info slashing.ValidatorSigningInfo) (stop bool) {
+			info.StartHeight = 0
+			application.slashingKeeper.SetValidatorSigningInfo(ctx, addr, info)
+			return false
+		},
+	)
 }

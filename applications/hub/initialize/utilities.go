@@ -142,5 +142,5 @@ func initializeEmptyGenesis(cdc *codec.Codec, genesisFile string, overwrite bool
 		return nil, fmt.Errorf("genesis.json file already exists: %v", genesisFile)
 	}
 
-	return codec.MarshalJSONIndent(cdc, hub.application.NewDefaultGenesisState())
+	return codec.MarshalJSONIndent(cdc, hub.NewDefaultGenesisState())
 }
