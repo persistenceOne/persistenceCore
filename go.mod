@@ -1,8 +1,10 @@
 module github.com/commitHub/commitBlockchain
 
 require (
+	github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
 	github.com/cosmos/cosmos-sdk v0.37.4
 	github.com/cosmos/gaia v1.0.0
+	github.com/gorilla/mux v1.7.3
 	github.com/otiai10/copy v1.0.2
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.4.0

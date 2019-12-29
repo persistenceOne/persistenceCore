@@ -5,6 +5,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/commitHub/commitBlockchain/modules/hub/asset"
+
 	abciTypes "github.com/tendermint/tendermint/abci/types"
 	tendermintCommon "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
@@ -56,7 +58,14 @@ var ModuleBasics = module.NewBasicManager(
 	crisis.AppModuleBasic{},
 	slashing.AppModuleBasic{},
 	supply.AppModuleBasic{},
+	asset.AppModuleBasic{},
 )
+
+type GenesisState map[string]json.RawMessage
+
+func NewDefaultGenesisState() GenesisState {
+	return ModuleBasics.DefaultGenesis()
+}
 
 func MakeCodec() *codec.Codec {
 	var cdc = codec.New()
@@ -68,6 +77,8 @@ func MakeCodec() *codec.Codec {
 	auth.RegisterCodec(cdc)
 	crisis.RegisterCodec(cdc)
 	sdkTypes.RegisterCodec(cdc)
+	asset.RegisterCodec(cdc)
+
 	codec.RegisterCrypto(cdc)
 	return cdc
 }
@@ -91,6 +102,7 @@ type CommitHubApplication struct {
 	govKeeper          gov.Keeper
 	crisisKeeper       crisis.Keeper
 	parameterKeeper    params.Keeper
+	assetKeeper        asset.Keeper
 
 	moduleManager *module.Manager
 }
@@ -126,6 +138,7 @@ func NewCommitHubApplication(
 		slashing.StoreKey,
 		gov.StoreKey,
 		params.StoreKey,
+		asset.StoreKey,
 	)
 	transientKeys := sdkTypes.NewTransientStoreKeys(
 		staking.TStoreKey,
@@ -154,6 +167,7 @@ func NewCommitHubApplication(
 	slashingSubspace := application.parameterKeeper.Subspace(slashing.DefaultParamspace)
 	govSubspace := application.parameterKeeper.Subspace(gov.DefaultParamspace)
 	crisisSubspace := application.parameterKeeper.Subspace(crisis.DefaultParamspace)
+	assetSubspace := application.parameterKeeper.Subspace(asset.DefaultParamspace)
 
 	application.accountKeeper = auth.NewAccountKeeper(
 		application.cdc,
@@ -245,6 +259,8 @@ func NewCommitHubApplication(
 		),
 	)
 
+	application.assetKeeper = asset.NewKeeper(assetSubspace)
+
 	application.moduleManager = module.NewManager(
 		genaccounts.NewAppModule(application.accountKeeper),
 		genutil.NewAppModule(application.accountKeeper, application.stakingKeeper, application.BaseApp.DeliverTx),
@@ -257,6 +273,7 @@ func NewCommitHubApplication(
 		mint.NewAppModule(application.mintKeeper),
 		slashing.NewAppModule(application.slashingKeeper, application.stakingKeeper),
 		staking.NewAppModule(application.stakingKeeper, application.distributionKeeper, application.accountKeeper, application.supplyKeeper),
+		asset.NewAppModule(),
 	)
 
 	application.moduleManager.SetOrderBeginBlockers(mint.ModuleName, distribution.ModuleName, slashing.ModuleName)
@@ -319,63 +336,53 @@ func (application *CommitHubApplication) ExportApplicationStateAndValidators(for
 		application.prepareForZeroHeightGenesis(ctx, jailWhiteList)
 	}
 
-	genState := application.moduleManager.ExportGenesis(ctx)
-	applicationState, err = codec.MarshalJSONIndent(application.cdc, genState)
+	genesisState := application.moduleManager.ExportGenesis(ctx)
+	applicationState, err = codec.MarshalJSONIndent(application.cdc, genesisState)
 	if err != nil {
 		return nil, nil, err
 	}
 	validators = staking.WriteValidators(ctx, application.stakingKeeper)
 	return applicationState, validators, nil
 }
+
 func (application *CommitHubApplication) prepareForZeroHeightGenesis(ctx sdkTypes.Context, jailWhiteList []string) {
 	applyWhiteList := false
 
-	//Check if there is a whitelist
 	if len(jailWhiteList) > 0 {
 		applyWhiteList = true
 	}
 
 	whiteListMap := make(map[string]bool)
 
-	for _, addr := range jailWhiteList {
-		_, err := sdkTypes.ValAddressFromBech32(addr)
+	for _, address := range jailWhiteList {
+		_, err := sdkTypes.ValAddressFromBech32(address)
 		if err != nil {
-			//log.Fatal(err)
+			//log.Fatal(err) //todo
 		}
-		whiteListMap[addr] = true
+		whiteListMap[address] = true
 	}
 
-	/* Just to be safe, assert the invariants on current state. */
 	application.crisisKeeper.AssertInvariants(ctx)
 
-	/* Handle fee distribution state. */
-
-	// withdraw all validator commission
 	application.stakingKeeper.IterateValidators(ctx, func(_ int64, val staking.ValidatorI) (stop bool) {
 		_, _ = application.distributionKeeper.WithdrawValidatorCommission(ctx, val.GetOperator())
 		return false
 	})
 
-	// withdraw all delegator rewards
-	dels := application.stakingKeeper.GetAllDelegations(ctx)
-	for _, delegation := range dels {
+	delegations := application.stakingKeeper.GetAllDelegations(ctx)
+	for _, delegation := range delegations {
 		_, _ = application.distributionKeeper.WithdrawDelegationRewards(ctx, delegation.DelegatorAddress, delegation.ValidatorAddress)
 	}
 
-	// clear validator slash events
 	application.distributionKeeper.DeleteAllValidatorSlashEvents(ctx)
 
-	// clear validator historical rewards
 	application.distributionKeeper.DeleteAllValidatorHistoricalRewards(ctx)
 
-	// set context height to zero
 	height := ctx.BlockHeight()
 	ctx = ctx.WithBlockHeight(0)
 
-	// reinitialize all validators
 	application.stakingKeeper.IterateValidators(ctx, func(_ int64, val staking.ValidatorI) (stop bool) {
 
-		// donate any unwithdrawn outstanding reward fraction tokens to the community pool
 		scraps := application.distributionKeeper.GetValidatorOutstandingRewards(ctx, val.GetOperator())
 		feePool := application.distributionKeeper.GetFeePool(ctx)
 		feePool.CommunityPool = feePool.CommunityPool.Add(scraps)
@@ -385,51 +392,43 @@ func (application *CommitHubApplication) prepareForZeroHeightGenesis(ctx sdkType
 		return false
 	})
 
-	// reinitialize all delegations
-	for _, del := range dels {
-		application.distributionKeeper.Hooks().BeforeDelegationCreated(ctx, del.DelegatorAddress, del.ValidatorAddress)
-		application.distributionKeeper.Hooks().AfterDelegationModified(ctx, del.DelegatorAddress, del.ValidatorAddress)
+	for _, delegation := range delegations {
+		application.distributionKeeper.Hooks().BeforeDelegationCreated(ctx, delegation.DelegatorAddress, delegation.ValidatorAddress)
+		application.distributionKeeper.Hooks().AfterDelegationModified(ctx, delegation.DelegatorAddress, delegation.ValidatorAddress)
 	}
 
-	// reset context height
 	ctx = ctx.WithBlockHeight(height)
 
-	/* Handle staking state. */
-
-	// iterate through redelegations, reset creation height
-	application.stakingKeeper.IterateRedelegations(ctx, func(_ int64, red staking.Redelegation) (stop bool) {
-		for i := range red.Entries {
-			red.Entries[i].CreationHeight = 0
+	application.stakingKeeper.IterateRedelegations(ctx, func(_ int64, redelegation staking.Redelegation) (stop bool) {
+		for i := range redelegation.Entries {
+			redelegation.Entries[i].CreationHeight = 0
 		}
-		application.stakingKeeper.SetRedelegation(ctx, red)
+		application.stakingKeeper.SetRedelegation(ctx, redelegation)
 		return false
 	})
 
-	// iterate through unbonding delegations, reset creation height
-	application.stakingKeeper.IterateUnbondingDelegations(ctx, func(_ int64, ubd staking.UnbondingDelegation) (stop bool) {
-		for i := range ubd.Entries {
-			ubd.Entries[i].CreationHeight = 0
+	application.stakingKeeper.IterateUnbondingDelegations(ctx, func(_ int64, unbondingDelegation staking.UnbondingDelegation) (stop bool) {
+		for i := range unbondingDelegation.Entries {
+			unbondingDelegation.Entries[i].CreationHeight = 0
 		}
-		application.stakingKeeper.SetUnbondingDelegation(ctx, ubd)
+		application.stakingKeeper.SetUnbondingDelegation(ctx, unbondingDelegation)
 		return false
 	})
 
-	// Iterate through validators by power descending, reset bond heights, and
-	// update bond intra-tx counters.
 	store := ctx.KVStore(application.keys[staking.StoreKey])
-	iter := sdkTypes.KVStoreReversePrefixIterator(store, staking.ValidatorsKey)
+	kvStoreReversePrefixIterator := sdkTypes.KVStoreReversePrefixIterator(store, staking.ValidatorsKey)
 	counter := int16(0)
 
-	var valConsAddrs []sdkTypes.ConsAddress
-	for ; iter.Valid(); iter.Next() {
-		addr := sdkTypes.ValAddress(iter.Key()[1:])
+	var validatorConsAddress []sdkTypes.ConsAddress
+	for ; kvStoreReversePrefixIterator.Valid(); kvStoreReversePrefixIterator.Next() {
+		addr := sdkTypes.ValAddress(kvStoreReversePrefixIterator.Key()[1:])
 		validator, found := application.stakingKeeper.GetValidator(ctx, addr)
 		if !found {
-			panic("expected validator, not found")
+			panic("Validator not found!")
 		}
 
 		validator.UnbondingHeight = 0
-		valConsAddrs = append(valConsAddrs, validator.ConsAddress())
+		validatorConsAddress = append(validatorConsAddress, validator.ConsAddress())
 		if applyWhiteList && !whiteListMap[addr.String()] {
 			validator.Jailed = true
 		}
@@ -438,18 +437,15 @@ func (application *CommitHubApplication) prepareForZeroHeightGenesis(ctx sdkType
 		counter++
 	}
 
-	iter.Close()
+	kvStoreReversePrefixIterator.Close()
 
 	_ = application.stakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx)
 
-	/* Handle slashing state. */
-
-	// reset start height on signing infos
 	application.slashingKeeper.IterateValidatorSigningInfos(
 		ctx,
-		func(addr sdkTypes.ConsAddress, info slashing.ValidatorSigningInfo) (stop bool) {
-			info.StartHeight = 0
-			application.slashingKeeper.SetValidatorSigningInfo(ctx, addr, info)
+		func(validatorConsAddress sdkTypes.ConsAddress, validatorSigningInfo slashing.ValidatorSigningInfo) (stop bool) {
+			validatorSigningInfo.StartHeight = 0
+			application.slashingKeeper.SetValidatorSigningInfo(ctx, validatorConsAddress, validatorSigningInfo)
 			return false
 		},
 	)

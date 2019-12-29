@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/commitHub/commitBlockchain/applications/hub"
+
 	cpm "github.com/otiai10/copy"
 	"github.com/spf13/cobra"
 
@@ -17,26 +19,24 @@ import (
 	tmstore "github.com/tendermint/tendermint/store"
 	tm "github.com/tendermint/tendermint/types"
 
-	"github.com/cosmos/gaia/app"
-
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/store"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func ReplayCmd() *cobra.Command {
+func ReplayTransactionsCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "replay <root-dir>",
-		Short: "Replay gaia transactions",
+		Short: "Replay hub transactions",
 		RunE: func(_ *cobra.Command, args []string) error {
-			return replayTxs(args[0])
+			return replayTransactions(args[0])
 		},
 		Args: cobra.ExactArgs(1),
 	}
 }
 
-func replayTxs(rootDir string) error {
+func replayTransactions(rootDir string) error {
 
 	if false {
 		// Copy the rootDir to a new directory, to preserve the old one.
@@ -92,7 +92,7 @@ func replayTxs(rootDir string) error {
 
 	// Application
 	fmt.Fprintln(os.Stderr, "Creating application")
-	myapp := app.NewGaiaApp(
+	myapp := hub.NewCommitHubApplication(
 		ctx.Logger, appDB, traceStoreWriter, true, uint(1),
 		baseapp.SetPruning(store.PruneEverything), // nothing
 	)

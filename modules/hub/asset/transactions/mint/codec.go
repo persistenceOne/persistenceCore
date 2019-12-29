@@ -1,12 +1,11 @@
-package asset
+package mint
 
 import (
-	"github.com/commitHub/commitBlockchain/modules/hub/asset/transactions/mint"
 	"github.com/cosmos/cosmos-sdk/codec"
 )
 
 func RegisterCodec(cdc *codec.Codec) {
-	mint.RegisterCodec(cdc)
+	cdc.RegisterConcrete(Message{}, "asset/mint", nil)
 }
 
 var cdc = codec.New()
