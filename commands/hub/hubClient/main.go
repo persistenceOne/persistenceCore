@@ -45,8 +45,8 @@ func main() {
 	// with the cdc
 
 	rootCmd := &cobra.Command{
-		Use:   "gaiacli",
-		Short: "Command line interface for interacting with gaiad",
+		Use:   "hubClient",
+		Short: "Command line interface for interacting with hubNode",
 	}
 
 	// Add --chain-id to persistent flags and mark it required
