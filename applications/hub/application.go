@@ -69,17 +69,10 @@ func NewDefaultGenesisState() GenesisState {
 
 func MakeCodec() *codec.Codec {
 	var cdc = codec.New()
-	bank.RegisterCodec(cdc)
-	staking.RegisterCodec(cdc)
-	distribution.RegisterCodec(cdc)
-	slashing.RegisterCodec(cdc)
-	gov.RegisterCodec(cdc)
-	auth.RegisterCodec(cdc)
-	crisis.RegisterCodec(cdc)
+	ModuleBasics.RegisterCodec(cdc)
 	sdkTypes.RegisterCodec(cdc)
-	asset.RegisterCodec(cdc)
-
 	codec.RegisterCrypto(cdc)
+	codec.RegisterEvidences(cdc)
 	return cdc
 }
 
@@ -283,7 +276,7 @@ func NewCommitHubApplication(
 	application.moduleManager.SetOrderInitGenesis(
 		genaccounts.ModuleName, distribution.ModuleName, staking.ModuleName,
 		auth.ModuleName, bank.ModuleName, slashing.ModuleName, gov.ModuleName,
-		mint.ModuleName, supply.ModuleName, crisis.ModuleName, genutil.ModuleName,
+		mint.ModuleName, supply.ModuleName, crisis.ModuleName, genutil.ModuleName, asset.ModuleName,
 	)
 
 	application.moduleManager.RegisterInvariants(&application.crisisKeeper)
