@@ -10,7 +10,7 @@ import (
 )
 
 type Request struct {
-	BaseReq rest.BaseReq `json:"baseRequest" yaml:"baseRequest"`
+	BaseReq rest.BaseReq `json:"base_req" yaml:"base_req"`
 	Asset   string       `json:"asset" yaml:"asset"`
 }
 
@@ -36,5 +36,14 @@ func RestRequestHandler(cliContext context.CLIContext) http.HandlerFunc {
 			From: from,
 		}
 		utils.WriteGenerateStdTxResponse(responseWriter, cliContext, request.BaseReq, []sdkTypes.Msg{message})
+	}
+}
+
+func QueryRequestHandler(cliContext context.CLIContext) http.HandlerFunc {
+	return func(responseWriter http.ResponseWriter, httpRequest *http.Request) {
+		responseWriter.Header().Set("Content-Type", "application/json")
+
+		rest.PostProcessResponse(responseWriter, cliContext, "dfsdfsdfsdfs")
+
 	}
 }
