@@ -1,6 +1,7 @@
 package asset
 
 import (
+	"github.com/commitHub/commitBlockchain/modules/hub/asset/transactions/mint"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -15,7 +16,7 @@ func GetCLIRootTransactionCommand(cdc *codec.Codec) *cobra.Command {
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
-	rootTransactionCommand.AddCommand()
+	rootTransactionCommand.AddCommand(mint.TransactionCommand(cdc))
 	return rootTransactionCommand
 }
 

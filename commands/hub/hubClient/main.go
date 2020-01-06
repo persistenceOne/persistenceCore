@@ -1,4 +1,4 @@
-package hubClient
+package main
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/lcd"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
@@ -27,40 +27,30 @@ import (
 )
 
 func main() {
-	// Configure cobra to sort commands
 	cobra.EnableCommandSorting = false
-
-	// Instantiate the codec for the command line application
 	cdc := hub.MakeCodec()
 
-	// Read in the configuration file for the sdk
-	config := sdk.GetConfig()
-	config.SetBech32PrefixForAccount(sdk.Bech32PrefixAccAddr, sdk.Bech32PrefixAccPub)
-	config.SetBech32PrefixForValidator(sdk.Bech32PrefixValAddr, sdk.Bech32PrefixValPub)
-	config.SetBech32PrefixForConsensusNode(sdk.Bech32PrefixConsAddr, sdk.Bech32PrefixConsPub)
+	config := sdkTypes.GetConfig()
+	config.SetBech32PrefixForAccount(sdkTypes.Bech32PrefixAccAddr, sdkTypes.Bech32PrefixAccPub)
+	config.SetBech32PrefixForValidator(sdkTypes.Bech32PrefixValAddr, sdkTypes.Bech32PrefixValPub)
+	config.SetBech32PrefixForConsensusNode(sdkTypes.Bech32PrefixConsAddr, sdkTypes.Bech32PrefixConsPub)
 	config.Seal()
 
-	// TODO: setup keybase, viper object, etc. to be passed into
-	// the below functions and eliminate global vars, like we do
-	// with the cdc
-
 	rootCmd := &cobra.Command{
-		Use:   "gaiacli",
-		Short: "Command line interface for interacting with gaiad",
+		Use:   "hubClient",
+		Short: "Command line interface for interacting with hubNode",
 	}
 
-	// Add --chain-id to persistent flags and mark it required
 	rootCmd.PersistentFlags().String(client.FlagChainID, "", "Chain ID of tendermint node")
 	rootCmd.PersistentPreRunE = func(_ *cobra.Command, _ []string) error {
-		return initConfig(rootCmd)
+		return initalizeConfiguration(rootCmd)
 	}
 
-	// Construct Root Command
 	rootCmd.AddCommand(
 		rpc.StatusCommand(),
 		client.ConfigCmd(hub.DefaultClientHome),
-		queryCmd(cdc),
-		txCmd(cdc),
+		queryCommand(cdc),
+		transactionCommand(cdc),
 		client.LineBreak,
 		lcd.ServeCommand(cdc, registerRoutes),
 		client.LineBreak,
@@ -70,8 +60,7 @@ func main() {
 		client.NewCompletionCmd(rootCmd, true),
 	)
 
-	// Add flags and prefix all env exposed with GA
-	executor := cli.PrepareMainCmd(rootCmd, "GA", hub.DefaultClientHome)
+	executor := cli.PrepareMainCmd(rootCmd, "HC", hub.DefaultClientHome)
 
 	err := executor.Execute()
 	if err != nil {
@@ -80,14 +69,14 @@ func main() {
 	}
 }
 
-func queryCmd(cdc *amino.Codec) *cobra.Command {
-	queryCmd := &cobra.Command{
+func queryCommand(cdc *amino.Codec) *cobra.Command {
+	queryCommand := &cobra.Command{
 		Use:     "query",
 		Aliases: []string{"q"},
-		Short:   "Querying subcommands",
+		Short:   "Root command for querying.",
 	}
 
-	queryCmd.AddCommand(
+	queryCommand.AddCommand(
 		authcmd.GetAccountCmd(cdc),
 		client.LineBreak,
 		rpc.ValidatorCommand(cdc),
@@ -97,19 +86,18 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 		client.LineBreak,
 	)
 
-	// add modules' query commands
-	hub.ModuleBasics.AddQueryCommands(queryCmd, cdc)
+	hub.ModuleBasics.AddQueryCommands(queryCommand, cdc)
 
-	return queryCmd
+	return queryCommand
 }
 
-func txCmd(cdc *amino.Codec) *cobra.Command {
-	txCmd := &cobra.Command{
+func transactionCommand(cdc *amino.Codec) *cobra.Command {
+	transactionCommand := &cobra.Command{
 		Use:   "tx",
 		Short: "Transactions subcommands",
 	}
 
-	txCmd.AddCommand(
+	transactionCommand.AddCommand(
 		bankcmd.SendTxCmd(cdc),
 		client.LineBreak,
 		authcmd.GetSignCommand(cdc),
@@ -120,41 +108,36 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 		client.LineBreak,
 	)
 
-	// add modules' tx commands
-	hub.ModuleBasics.AddTxCommands(txCmd, cdc)
+	hub.ModuleBasics.AddTxCommands(transactionCommand, cdc)
 
-	// remove auth and bank commands as they're mounted under the root tx command
 	var cmdsToRemove []*cobra.Command
 
-	for _, cmd := range txCmd.Commands() {
+	for _, cmd := range transactionCommand.Commands() {
 		if cmd.Use == auth.ModuleName || cmd.Use == bank.ModuleName {
 			cmdsToRemove = append(cmdsToRemove, cmd)
 		}
 	}
 
-	txCmd.RemoveCommand(cmdsToRemove...)
+	transactionCommand.RemoveCommand(cmdsToRemove...)
 
-	return txCmd
+	return transactionCommand
 }
 
-// registerRoutes registers the routes from the different modules for the LCD.
-// NOTE: details on the routes added for each module are in the module documentation
-// NOTE: If making updates here you also need to update the test helper in client/lcd/test_helper.go
 func registerRoutes(rs *lcd.RestServer) {
 	client.RegisterRoutes(rs.CliCtx, rs.Mux)
 	authrest.RegisterTxRoutes(rs.CliCtx, rs.Mux)
 	hub.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
 }
 
-func initConfig(cmd *cobra.Command) error {
+func initalizeConfiguration(cmd *cobra.Command) error {
 	home, err := cmd.PersistentFlags().GetString(cli.HomeFlag)
 	if err != nil {
 		return err
 	}
 
-	cfgFile := path.Join(home, "config", "config.toml")
-	if _, err := os.Stat(cfgFile); err == nil {
-		viper.SetConfigFile(cfgFile)
+	configurationFile := path.Join(home, "configuration", "configuration.toml")
+	if _, err := os.Stat(configurationFile); err == nil {
+		viper.SetConfigFile(configurationFile)
 
 		if err := viper.ReadInConfig(); err != nil {
 			return err

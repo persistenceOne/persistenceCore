@@ -11,7 +11,7 @@
             "mode": "auto",
             "program": "${workspaceFolder}/commands/hub/hubNode",
             "env": {},
-            "args": ["init", "hub-chain","--overwrite=1" ,"--chain-id=hub-node"]
+            "args": ["init", "test","--overwrite=1" ,"--chain-id=test"]
         }
         ,{
             "name": "start hubNode",
@@ -21,6 +21,15 @@
             "program": "${workspaceFolder}/commands/hub/hubNode",
             "env": {},
             "args": ["start"]
+        }
+        ,{
+            "name": "start rest hubClient",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/commands/hub/hubClient",
+            "env": {},
+            "args": ["rest-server","--chain-id=test"]
         }
     ]
 }
