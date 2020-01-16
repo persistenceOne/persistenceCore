@@ -28,7 +28,7 @@ import (
 	tendermintDB "github.com/tendermint/tm-db"
 )
 
-const applicationName = "commitHub"
+const applicationName = "persistenceOne"
 
 var DefaultClientHome = os.ExpandEnv("$HOME/.hubClient")
 
@@ -41,7 +41,7 @@ func MakeCodec() *codec.Codec {
 	return cdc
 }
 
-type CommitHubApplication struct {
+type PersistenceOneApplication struct {
 	*baseapp.BaseApp
 	cdc *codec.Codec
 
@@ -73,14 +73,14 @@ type CommitHubApplication struct {
 	moduleManager *module.Manager
 }
 
-func NewCommitHubApplicaiton(logger log.Logger, db tendermintDB.DB, traceStore io.Writer, loadLatest bool,
-	invCheckPeriod uint, baseAppOptions ...func(*baseapp.BaseApp)) *CommitHubApplication {
+func NewPersistenceOneApplicaiton(logger log.Logger, db tendermintDB.DB, traceStore io.Writer, loadLatest bool,
+	invCheckPeriod uint, baseAppOptions ...func(*baseapp.BaseApp)) *PersistenceOneApplication {
 	cdc := MakeCodec()
 	baseApp := baseapp.NewBaseApp(applicationName, logger, db, auth.DefaultTxDecoder(cdc), baseAppOptions...)
 	baseApp.SetCommitMultiStoreTracer(traceStore)
 	baseApp.SetAppVersion(version.Version)
 
-	application := &CommitHubApplication{
+	application := &PersistenceOneApplication{
 		BaseApp:          baseApp,
 		cdc:              cdc,
 		invCheckPeriod:   invCheckPeriod,
@@ -217,20 +217,20 @@ func NewCommitHubApplicaiton(logger log.Logger, db tendermintDB.DB, traceStore i
 
 type GenesisState map[string]json.RawMessage
 
-func (app *CommitHubApplication) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
+func (app *PersistenceOneApplication) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	return app.moduleManager.BeginBlock(ctx, req)
 }
 
-func (app *CommitHubApplication) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
+func (app *PersistenceOneApplication) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
 	return app.moduleManager.EndBlock(ctx, req)
 }
 
-func (app *CommitHubApplication) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+func (app *PersistenceOneApplication) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	var genesisState GenesisState
 	app.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 	return app.moduleManager.InitGenesis(ctx, genesisState)
 }
 
-func (app *CommitHubApplication) LoadHeight(height int64) error {
+func (app *PersistenceOneApplication) LoadHeight(height int64) error {
 	return app.LoadVersion(height, app.keyMain)
 }

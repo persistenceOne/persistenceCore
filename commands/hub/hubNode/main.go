@@ -6,8 +6,8 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/x/genaccounts"
 
-	"github.com/persistenceOne/persistenceSDK/applications/hub"
 	"github.com/cosmos/cosmos-sdk/baseapp"
+	"github.com/persistenceOne/persistenceSDK/applications/hub"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -46,7 +46,7 @@ func main() {
 
 	rootCommand := &cobra.Command{
 		Use:               "hubNode",
-		Short:             "Commit Hub Node Daemon (server)",
+		Short:             "Persistence Hub Node Daemon (server)",
 		PersistentPreRunE: server.PersistentPreRunEFn(serverContext),
 	}
 
@@ -106,7 +106,7 @@ func main() {
 		db tendermintDB.DB,
 		traceStore io.Writer,
 	) tendermintABSITypes.Application {
-		return hub.NewCommitHubApplication(
+		return hub.NewPersistenceOneApplication(
 			logger,
 			db,
 			traceStore,
@@ -128,7 +128,7 @@ func main() {
 	) (json.RawMessage, []tendermintTypes.GenesisValidator, error) {
 
 		if height != -1 {
-			genesisApplication := hub.NewCommitHubApplication(
+			genesisApplication := hub.NewPersistenceOneApplication(
 				logger,
 				db,
 				traceStore,
@@ -142,7 +142,7 @@ func main() {
 			return genesisApplication.ExportApplicationStateAndValidators(forZeroHeight, jailWhiteList)
 		}
 		//else
-		genesisApplication := hub.NewCommitHubApplication(
+		genesisApplication := hub.NewPersistenceOneApplication(
 			logger,
 			db,
 			traceStore,
