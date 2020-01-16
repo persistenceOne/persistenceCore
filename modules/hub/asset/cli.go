@@ -1,7 +1,7 @@
 package asset
 
 import (
-	"github.com/commitHub/commitBlockchain/modules/hub/asset/transactions/mint"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/mint"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"

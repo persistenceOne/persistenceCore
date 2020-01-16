@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/commitHub/commitBlockchain/modules/hub/asset"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/asset"
 
 	abciTypes "github.com/tendermint/tendermint/abci/types"
 	tendermintCommon "github.com/tendermint/tendermint/libs/common"
@@ -33,7 +33,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/supply"
 )
 
-const applicationName = "CommitHubApplication"
+const applicationName = "PersistenceOneApplication"
 
 var DefaultClientHome = os.ExpandEnv("$HOME/.hubClient")
 var DefaultNodeHome = os.ExpandEnv("$HOME/.hubNode")
@@ -76,7 +76,7 @@ func MakeCodec() *codec.Codec {
 	return cdc
 }
 
-type CommitHubApplication struct {
+type PersistenceOneApplication struct {
 	*baseapp.BaseApp
 	cdc *codec.Codec
 
@@ -100,14 +100,14 @@ type CommitHubApplication struct {
 	moduleManager *module.Manager
 }
 
-func NewCommitHubApplication(
+func NewPersistenceOneApplication(
 	logger log.Logger,
 	db tendermintDB.DB,
 	traceStore io.Writer,
 	loadLatest bool,
 	invCheckPeriod uint,
 	baseAppOptions ...func(*baseapp.BaseApp),
-) *CommitHubApplication {
+) *PersistenceOneApplication {
 
 	cdc := MakeCodec()
 
@@ -138,7 +138,7 @@ func NewCommitHubApplication(
 		params.TStoreKey,
 	)
 
-	var application = &CommitHubApplication{
+	var application = &PersistenceOneApplication{
 		BaseApp:        baseApp,
 		cdc:            cdc,
 		invCheckPeriod: invCheckPeriod,
@@ -299,21 +299,21 @@ func NewCommitHubApplication(
 
 	return application
 }
-func (application *CommitHubApplication) BeginBlocker(ctx sdkTypes.Context, req abciTypes.RequestBeginBlock) abciTypes.ResponseBeginBlock {
+func (application *PersistenceOneApplication) BeginBlocker(ctx sdkTypes.Context, req abciTypes.RequestBeginBlock) abciTypes.ResponseBeginBlock {
 	return application.moduleManager.BeginBlock(ctx, req)
 }
-func (application *CommitHubApplication) EndBlocker(ctx sdkTypes.Context, req abciTypes.RequestEndBlock) abciTypes.ResponseEndBlock {
+func (application *PersistenceOneApplication) EndBlocker(ctx sdkTypes.Context, req abciTypes.RequestEndBlock) abciTypes.ResponseEndBlock {
 	return application.moduleManager.EndBlock(ctx, req)
 }
-func (application *CommitHubApplication) InitChainer(ctx sdkTypes.Context, req abciTypes.RequestInitChain) abciTypes.ResponseInitChain {
+func (application *PersistenceOneApplication) InitChainer(ctx sdkTypes.Context, req abciTypes.RequestInitChain) abciTypes.ResponseInitChain {
 	var genesisState GenesisState
 	application.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 	return application.moduleManager.InitGenesis(ctx, genesisState)
 }
-func (application *CommitHubApplication) LoadHeight(height int64) error {
+func (application *PersistenceOneApplication) LoadHeight(height int64) error {
 	return application.LoadVersion(height, application.keys[baseapp.MainStoreKey])
 }
-func (application *CommitHubApplication) ModuleAccountAddress() map[string]bool {
+func (application *PersistenceOneApplication) ModuleAccountAddress() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range moduleAccountPermissions {
 		modAccAddrs[supply.NewModuleAddress(acc).String()] = true
@@ -321,7 +321,7 @@ func (application *CommitHubApplication) ModuleAccountAddress() map[string]bool 
 
 	return modAccAddrs
 }
-func (application *CommitHubApplication) ExportApplicationStateAndValidators(forZeroHeight bool, jailWhiteList []string,
+func (application *PersistenceOneApplication) ExportApplicationStateAndValidators(forZeroHeight bool, jailWhiteList []string,
 ) (applicationState json.RawMessage, validators []tendermintTypes.GenesisValidator, err error) {
 	ctx := application.NewContext(true, abciTypes.Header{Height: application.LastBlockHeight()})
 
@@ -338,7 +338,7 @@ func (application *CommitHubApplication) ExportApplicationStateAndValidators(for
 	return applicationState, validators, nil
 }
 
-func (application *CommitHubApplication) prepareForZeroHeightGenesis(ctx sdkTypes.Context, jailWhiteList []string) {
+func (application *PersistenceOneApplication) prepareForZeroHeightGenesis(ctx sdkTypes.Context, jailWhiteList []string) {
 	applyWhiteList := false
 
 	if len(jailWhiteList) > 0 {

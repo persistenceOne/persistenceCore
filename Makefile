@@ -7,12 +7,12 @@ export GO111MODULE=on
 
 
 BUILD_TAGS := -s  -w \
-	-X github.com/commitHub/commitBlockchain/version.Version=${VERSION} \
-	-X github.com/commitHub/commitBlockchain/version.Commit=${COMMIT}
+	-X github.com/persistenceOne/persistenceSDK/version.Version=${VERSION} \
+	-X github.com/persistenceOne/persistenceSDK/version.Commit=${COMMIT}
 
 ifneq (${GOSUM},)
 	ifneq (${wildcard go.sum},)
-		BUILD_TAGS += -X github.com/commitHub/commitBlockchain/version.VendorHash=$(shell ${GOSUM} go.sum)
+		BUILD_TAGS += -X github.com/persistenceOne/persistenceSDK/version.VendorHash=$(shell ${GOSUM} go.sum)
 	endif
 endif
 

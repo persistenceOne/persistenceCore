@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/commitHub/commitBlockchain/applications/hub"
+	"github.com/persistenceOne/persistenceSDK/applications/hub"
 
 	cpm "github.com/otiai10/copy"
 	"github.com/spf13/cobra"
@@ -92,7 +92,7 @@ func replayTransactions(rootDir string) error {
 
 	// Application
 	fmt.Fprintln(os.Stderr, "Creating application")
-	myapp := hub.NewCommitHubApplication(
+	myapp := hub.NewPersistenceOneApplication(
 		ctx.Logger, appDB, traceStoreWriter, true, uint(1),
 		baseapp.SetPruning(store.PruneEverything), // nothing
 	)

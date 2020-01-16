@@ -3,8 +3,8 @@ package asset
 import (
 	"strings"
 
-	"github.com/commitHub/commitBlockchain/modules/hub/asset/constants"
-	"github.com/commitHub/commitBlockchain/modules/hub/asset/transactions/mint"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/constants"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/mint"
 	"github.com/gorilla/mux"
 
 	"github.com/cosmos/cosmos-sdk/client/context"

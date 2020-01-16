@@ -1,8 +1,8 @@
 package mint
 
 import (
-	"github.com/commitHub/commitBlockchain/modules/hub/asset/constants"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/constants"
 )
 
 const (
