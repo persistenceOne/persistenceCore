@@ -6,7 +6,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/x/genaccounts"
 
-	"github.com/commitHub/commitBlockchain/applications/hub"
+	"github.com/persistenceOne/persistenceSDK/applications/hub"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -23,7 +23,7 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 
-	"github.com/commitHub/commitBlockchain/applications/hub/initialize"
+	"github.com/persistenceOne/persistenceSDK/applications/hub/initialize"
 )
 
 const flagInvalidCheckPeriod = "invalid-check-period"

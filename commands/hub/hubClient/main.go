@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/commitHub/commitBlockchain/applications/hub"
+	"github.com/persistenceOne/persistenceSDK/applications/hub"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/keys"

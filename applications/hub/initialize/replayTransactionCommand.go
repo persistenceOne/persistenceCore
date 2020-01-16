@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/commitHub/commitBlockchain/applications/hub"
+	"github.com/persistenceOne/persistenceSDK/applications/hub"
 
 	cpm "github.com/otiai10/copy"
 	"github.com/spf13/cobra"

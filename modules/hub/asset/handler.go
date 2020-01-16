@@ -3,7 +3,7 @@ package asset
 import (
 	"fmt"
 
-	"github.com/commitHub/commitBlockchain/modules/hub/asset/transactions/mint"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/mint"
 
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 )

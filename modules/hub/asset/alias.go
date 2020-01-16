@@ -1,7 +1,7 @@
 package asset
 
 import (
-	"github.com/commitHub/commitBlockchain/modules/hub/asset/constants"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/constants"
 )
 
 const DefaultParamspace = constants.ModuleName

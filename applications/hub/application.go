@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/commitHub/commitBlockchain/modules/hub/asset"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/asset"
 
 	abciTypes "github.com/tendermint/tendermint/abci/types"
 	tendermintCommon "github.com/tendermint/tendermint/libs/common"
