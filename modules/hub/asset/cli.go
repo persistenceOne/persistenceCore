@@ -16,7 +16,9 @@ func GetCLIRootTransactionCommand(cdc *codec.Codec) *cobra.Command {
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
-	rootTransactionCommand.AddCommand(mint.TransactionCommand(cdc))
+	rootTransactionCommand.AddCommand(client.PostCommands(
+		mint.TransactionCommand(cdc),
+	)...)
 	return rootTransactionCommand
 }
 

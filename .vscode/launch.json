@@ -31,5 +31,14 @@
             "env": {},
             "args": ["rest-server","--chain-id=test"]
         }
+        ,{
+            "name": "mint asset hubClient",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/commands/hub/hubClient",
+            "env": {},
+            "args": ["tx","asset","mint","--from=test","--chain-id=test"]
+        }
     ]
 }
