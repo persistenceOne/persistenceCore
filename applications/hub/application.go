@@ -266,7 +266,7 @@ func NewPersistenceOneApplication(
 		mint.NewAppModule(application.mintKeeper),
 		slashing.NewAppModule(application.slashingKeeper, application.stakingKeeper),
 		staking.NewAppModule(application.stakingKeeper, application.distributionKeeper, application.accountKeeper, application.supplyKeeper),
-		asset.NewAppModule(),
+		asset.NewAppModule(application.assetKeeper),
 	)
 
 	application.moduleManager.SetOrderBeginBlockers(mint.ModuleName, distribution.ModuleName, slashing.ModuleName)
