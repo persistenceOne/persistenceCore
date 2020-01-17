@@ -57,8 +57,8 @@ type AppModule struct {
 	keeper Keeper
 }
 
-func NewAppModule() AppModule {
-	return AppModule{}
+func NewAppModule(keeper Keeper) AppModule {
+	return AppModule{keeper: keeper}
 }
 func (AppModule) Name() string {
 	return ModuleName

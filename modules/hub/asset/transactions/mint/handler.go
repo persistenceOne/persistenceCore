@@ -7,7 +7,7 @@ import (
 
 func HandleMessage(ctx sdkTypes.Context, keeper Keeper, message Message) sdkTypes.Result {
 
-	if error := keeper.Mint(); error != nil {
+	if error := keeper.transact(message); error != nil {
 		return error.Result()
 	}
 
