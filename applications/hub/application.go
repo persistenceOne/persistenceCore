@@ -5,6 +5,11 @@ import (
 	"io"
 	"os"
 
+	"github.com/persistenceOne/persistenceSDK/modules/hub/contract"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/escrow"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/reputation"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/share"
+
 	"github.com/persistenceOne/persistenceSDK/modules/hub/asset"
 
 	abciTypes "github.com/tendermint/tendermint/abci/types"
@@ -59,6 +64,10 @@ var ModuleBasics = module.NewBasicManager(
 	slashing.AppModuleBasic{},
 	supply.AppModuleBasic{},
 	asset.AppModuleBasic{},
+	reputation.AppModuleBasic{},
+	contract.AppModuleBasic{},
+	escrow.AppModuleBasic{},
+	share.AppModuleBasic{},
 )
 
 type GenesisState map[string]json.RawMessage
@@ -96,6 +105,10 @@ type PersistenceOneApplication struct {
 	crisisKeeper       crisis.Keeper
 	parameterKeeper    params.Keeper
 	assetKeeper        asset.Keeper
+	reputationKeeper   reputation.Keeper
+	contractKeeper     contract.Keeper
+	escrowKeeper       escrow.Keeper
+	shareKeeper        share.Keeper
 
 	moduleManager *module.Manager
 }
@@ -132,6 +145,10 @@ func NewPersistenceOneApplication(
 		gov.StoreKey,
 		params.StoreKey,
 		asset.StoreKey,
+		reputation.StoreKey,
+		contract.StoreKey,
+		escrow.StoreKey,
+		share.StoreKey,
 	)
 	transientKeys := sdkTypes.NewTransientStoreKeys(
 		staking.TStoreKey,
@@ -161,6 +178,10 @@ func NewPersistenceOneApplication(
 	govSubspace := application.parameterKeeper.Subspace(gov.DefaultParamspace)
 	crisisSubspace := application.parameterKeeper.Subspace(crisis.DefaultParamspace)
 	assetSubspace := application.parameterKeeper.Subspace(asset.DefaultParamspace)
+	reputationSubspace := application.parameterKeeper.Subspace(reputation.DefaultParamspace)
+	contractSubspace := application.parameterKeeper.Subspace(contract.DefaultParamspace)
+	escrowSubspace := application.parameterKeeper.Subspace(escrow.DefaultParamspace)
+	shareSubspace := application.parameterKeeper.Subspace(share.DefaultParamspace)
 
 	application.accountKeeper = auth.NewAccountKeeper(
 		application.cdc,
@@ -253,6 +274,10 @@ func NewPersistenceOneApplication(
 	)
 
 	application.assetKeeper = asset.NewKeeper(assetSubspace)
+	application.reputationKeeper = reputation.NewKeeper(reputationSubspace)
+	application.contractKeeper = contract.NewKeeper(contractSubspace)
+	application.escrowKeeper = escrow.NewKeeper(escrowSubspace)
+	application.shareKeeper = share.NewKeeper(shareSubspace)
 
 	application.moduleManager = module.NewManager(
 		genaccounts.NewAppModule(application.accountKeeper),
@@ -267,6 +292,10 @@ func NewPersistenceOneApplication(
 		slashing.NewAppModule(application.slashingKeeper, application.stakingKeeper),
 		staking.NewAppModule(application.stakingKeeper, application.distributionKeeper, application.accountKeeper, application.supplyKeeper),
 		asset.NewAppModule(application.assetKeeper),
+		reputation.NewAppModule(application.reputationKeeper),
+		contract.NewAppModule(application.contractKeeper),
+		escrow.NewAppModule(application.escrowKeeper),
+		share.NewAppModule(application.shareKeeper),
 	)
 
 	application.moduleManager.SetOrderBeginBlockers(mint.ModuleName, distribution.ModuleName, slashing.ModuleName)
@@ -274,9 +303,21 @@ func NewPersistenceOneApplication(
 	application.moduleManager.SetOrderEndBlockers(crisis.ModuleName, gov.ModuleName, staking.ModuleName)
 
 	application.moduleManager.SetOrderInitGenesis(
-		genaccounts.ModuleName, distribution.ModuleName, staking.ModuleName,
-		auth.ModuleName, bank.ModuleName, slashing.ModuleName, gov.ModuleName,
-		mint.ModuleName, supply.ModuleName, crisis.ModuleName, genutil.ModuleName, asset.ModuleName,
+		genaccounts.ModuleName,
+		distribution.ModuleName,
+		staking.ModuleName,
+		auth.ModuleName,
+		bank.ModuleName, slashing.ModuleName,
+		gov.ModuleName,
+		mint.ModuleName,
+		supply.ModuleName,
+		crisis.ModuleName,
+		genutil.ModuleName,
+		asset.ModuleName,
+		reputation.ModuleName,
+		contract.ModuleName,
+		escrow.ModuleName,
+		share.ModuleName,
 	)
 
 	application.moduleManager.RegisterInvariants(&application.crisisKeeper)

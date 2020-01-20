@@ -3,7 +3,7 @@ package contract
 import (
 	"encoding/json"
 
-	abciTypes "github.com/tendersign/tendersign/abci/types"
+	abciTypes "github.com/tendermint/tendermint/abci/types"
 
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 
