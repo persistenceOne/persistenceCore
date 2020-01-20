@@ -1,6 +1,6 @@
 package constants
 
-const ModuleName = "asset"
+const ModuleName = "share"
 
 const AttributeValueCategory = ModuleName
 

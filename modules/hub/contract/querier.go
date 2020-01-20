@@ -1,8 +1,8 @@
-package asset
+package contract
 
 import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
-	abciTypes "github.com/tendermint/tendermint/abci/types"
+	abciTypes "github.com/tendersign/tendersign/abci/types"
 )
 
 func NewQuerier(keeper Keeper) sdkTypes.Querier {

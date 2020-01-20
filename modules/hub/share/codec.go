@@ -1,7 +1,7 @@
-package asset
+package share
 
 import (
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/mint"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/share/transactions/mint"
 	"github.com/cosmos/cosmos-sdk/codec"
 )
 

@@ -1,7 +1,7 @@
-package asset
+package escrow
 
 import (
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/mint"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/escrow/transactions/execute"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -11,13 +11,13 @@ import (
 func GetCLIRootTransactionCommand(cdc *codec.Codec) *cobra.Command {
 	rootTransactionCommand := &cobra.Command{
 		Use:                        TransactionRoute,
-		Short:                      "Asset root transaction command.",
+		Short:                      "Escrow root transaction command.",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
 	rootTransactionCommand.AddCommand(client.PostCommands(
-		mint.TransactionCommand(cdc),
+		execute.TransactionCommand(cdc),
 	)...)
 	return rootTransactionCommand
 }
@@ -25,7 +25,7 @@ func GetCLIRootTransactionCommand(cdc *codec.Codec) *cobra.Command {
 func GetCLIRootQueryCommand(cdc *codec.Codec) *cobra.Command {
 	rootQueryCommand := &cobra.Command{
 		Use:                        QuerierRoute,
-		Short:                      "Asset root query command.",
+		Short:                      "Escrow root query command.",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,

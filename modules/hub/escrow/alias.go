@@ -1,7 +1,7 @@
-package asset
+package escrow
 
 import (
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/constants"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/escrow/constants"
 )
 
 const DefaultParamspace = constants.ModuleName

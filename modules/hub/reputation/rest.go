@@ -1,18 +1,20 @@
-package asset
+package reputation
 
 import (
+	"net/http"
 	"strings"
 
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/constants"
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/mint"
 	"github.com/gorilla/mux"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/reputation/constants"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/reputation/transactions/feedback"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/types/rest"
 )
 
 func RegisterRESTRoutes(cliContext context.CLIContext, router *mux.Router) {
-	router.HandleFunc(strings.Join([]string{"", constants.ModuleName, constants.MintTransaction}, "/"), mint.RestRequestHandler(cliContext)).Methods("POST")
-	router.HandleFunc(strings.Join([]string{"", constants.ModuleName, constants.MintTransaction}, "/"), QueryRequestHandler(cliContext)).Methods("GET")
+	router.HandleFunc(strings.Join([]string{"", constants.ModuleName, constants.FeedbackTransaction}, "/"), feedback.RestRequestHandler(cliContext)).Methods("POST")
+	router.HandleFunc(strings.Join([]string{"", constants.ModuleName, constants.FeedbackTransaction}, "/"), QueryRequestHandler(cliContext)).Methods("GET")
 }
 
 func QueryRequestHandler(cliContext context.CLIContext) http.HandlerFunc {

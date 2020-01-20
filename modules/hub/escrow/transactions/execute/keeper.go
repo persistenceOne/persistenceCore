@@ -1,4 +1,4 @@
-package mint
+package execute
 
 import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"

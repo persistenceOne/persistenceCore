@@ -1,4 +1,4 @@
-package mint
+package sign
 
 import (
 	"net/http"
@@ -10,8 +10,8 @@ import (
 )
 
 type Request struct {
-	BaseReq rest.BaseReq `json:"base_req" yaml:"base_req"`
-	Asset   string       `json:"asset" yaml:"asset"`
+	BaseReq  rest.BaseReq `json:"base_req" yaml:"base_req"`
+	Contract string       `json:"contract" yaml:"contract"`
 }
 
 func RestRequestHandler(cliContext context.CLIContext) http.HandlerFunc {

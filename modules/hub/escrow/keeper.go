@@ -1,16 +1,16 @@
-package asset
+package escrow
 
 import (
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/mint"
 	"github.com/cosmos/cosmos-sdk/x/params"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/escrow/transactions/execute"
 )
 
 type Keeper interface {
-	mint.Keeper
+	execute.Keeper
 }
 
 type BaseKeeper struct {
-	mint.BaseKeeper
+	execute.BaseKeeper
 }
 
 func NewKeeper(paramSpace params.Subspace) Keeper {

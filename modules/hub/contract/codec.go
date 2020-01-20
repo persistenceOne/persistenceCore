@@ -1,12 +1,12 @@
-package asset
+package contract
 
 import (
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/mint"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/contract/transactions/sign"
 	"github.com/cosmos/cosmos-sdk/codec"
 )
 
 func RegisterCodec(cdc *codec.Codec) {
-	mint.RegisterCodec(cdc)
+	sign.RegisterCodec(cdc)
 }
 
 var cdc = codec.New()

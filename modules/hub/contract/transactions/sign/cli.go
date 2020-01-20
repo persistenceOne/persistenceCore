@@ -1,4 +1,4 @@
-package mint
+package sign
 
 import (
 	"github.com/spf13/cobra"
@@ -12,11 +12,11 @@ import (
 
 func TransactionCommand(cdc *codec.Codec) *cobra.Command {
 	const (
-		AssetFlag = "asset"
+		ContractFlag = "contract"
 	)
 	command := &cobra.Command{
-		Use:   "mint",
-		Short: "Create and sign transaction to mint at asset",
+		Use:   "sign",
+		Short: "Create and sign transaction to sign at contract",
 		Long:  "",
 		RunE: func(command *cobra.Command, args []string) error {
 			transactionBuilder := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
@@ -34,6 +34,6 @@ func TransactionCommand(cdc *codec.Codec) *cobra.Command {
 		},
 	}
 
-	command.Flags().String(AssetFlag, "", "Asset")
+	command.Flags().String(ContractFlag, "", "Contract")
 	return command
 }

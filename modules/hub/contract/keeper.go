@@ -1,16 +1,16 @@
-package asset
+package contract
 
 import (
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/mint"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/contract/transactions/sign"
 	"github.com/cosmos/cosmos-sdk/x/params"
 )
 
 type Keeper interface {
-	mint.Keeper
+	sign.Keeper
 }
 
 type BaseKeeper struct {
-	mint.BaseKeeper
+	sign.BaseKeeper
 }
 
 func NewKeeper(paramSpace params.Subspace) Keeper {

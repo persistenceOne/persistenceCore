@@ -1,4 +1,4 @@
-package mint
+package feedback
 
 import (
 	"net/http"
@@ -11,7 +11,7 @@ import (
 
 type Request struct {
 	BaseReq rest.BaseReq `json:"base_req" yaml:"base_req"`
-	Asset   string       `json:"asset" yaml:"asset"`
+	Reputation   string       `json:"reputation" yaml:"reputation"`
 }
 
 func RestRequestHandler(cliContext context.CLIContext) http.HandlerFunc {

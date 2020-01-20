@@ -5,7 +5,7 @@ import (
 )
 
 func RegisterCodec(cdc *codec.Codec) {
-	cdc.RegisterConcrete(Message{}, "asset/mint", nil)
+	cdc.RegisterConcrete(Message{}, "share/mint", nil)
 }
 
 var cdc = codec.New()

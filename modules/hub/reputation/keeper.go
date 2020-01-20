@@ -1,16 +1,16 @@
-package asset
+package reputation
 
 import (
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/mint"
 	"github.com/cosmos/cosmos-sdk/x/params"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/reputation/transactions/feedback"
 )
 
 type Keeper interface {
-	mint.Keeper
+	feedback.Keeper
 }
 
 type BaseKeeper struct {
-	mint.BaseKeeper
+	feedback.BaseKeeper
 }
 
 func NewKeeper(paramSpace params.Subspace) Keeper {

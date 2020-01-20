@@ -1,4 +1,4 @@
-package mint
+package feedback
 
 import (
 	"github.com/spf13/cobra"
@@ -12,11 +12,11 @@ import (
 
 func TransactionCommand(cdc *codec.Codec) *cobra.Command {
 	const (
-		AssetFlag = "asset"
+		ReputationFlag = "reputation"
 	)
 	command := &cobra.Command{
-		Use:   "mint",
-		Short: "Create and sign transaction to mint at asset",
+		Use:   "feedback",
+		Short: "Create and sign transaction to feedback at reputation",
 		Long:  "",
 		RunE: func(command *cobra.Command, args []string) error {
 			transactionBuilder := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
@@ -34,6 +34,6 @@ func TransactionCommand(cdc *codec.Codec) *cobra.Command {
 		},
 	}
 
-	command.Flags().String(AssetFlag, "", "Asset")
+	command.Flags().String(ReputationFlag, "", "Reputation")
 	return command
 }

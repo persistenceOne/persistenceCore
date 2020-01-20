@@ -1,7 +1,7 @@
-package asset
+package share
 
 import (
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/mint"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/share/transactions/mint"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -11,7 +11,7 @@ import (
 func GetCLIRootTransactionCommand(cdc *codec.Codec) *cobra.Command {
 	rootTransactionCommand := &cobra.Command{
 		Use:                        TransactionRoute,
-		Short:                      "Asset root transaction command.",
+		Short:                      "Share root transaction command.",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
@@ -25,7 +25,7 @@ func GetCLIRootTransactionCommand(cdc *codec.Codec) *cobra.Command {
 func GetCLIRootQueryCommand(cdc *codec.Codec) *cobra.Command {
 	rootQueryCommand := &cobra.Command{
 		Use:                        QuerierRoute,
-		Short:                      "Asset root query command.",
+		Short:                      "Share root query command.",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,

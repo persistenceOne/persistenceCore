@@ -1,8 +1,8 @@
-package mint
+package execute
 
 import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/constants"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/escrow/constants"
 )
 
 func HandleMessage(ctx sdkTypes.Context, keeper Keeper, message Message) sdkTypes.Result {

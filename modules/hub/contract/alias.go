@@ -1,7 +1,7 @@
-package asset
+package contract
 
 import (
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/constants"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/contract/constants"
 )
 
 const DefaultParamspace = constants.ModuleName

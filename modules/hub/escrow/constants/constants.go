@@ -1,9 +1,9 @@
 package constants
 
-const ModuleName = "asset"
+const ModuleName = "escrow"
 
 const AttributeValueCategory = ModuleName
 
 //Transactions
 
-const MintTransaction = "mint"
+const ExecuteTransaction = "execute"

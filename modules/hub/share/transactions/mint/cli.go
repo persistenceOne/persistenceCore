@@ -12,11 +12,11 @@ import (
 
 func TransactionCommand(cdc *codec.Codec) *cobra.Command {
 	const (
-		AssetFlag = "asset"
+		ShareFlag = "share"
 	)
 	command := &cobra.Command{
 		Use:   "mint",
-		Short: "Create and sign transaction to mint at asset",
+		Short: "Create and sign transaction to mint at share",
 		Long:  "",
 		RunE: func(command *cobra.Command, args []string) error {
 			transactionBuilder := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
@@ -34,6 +34,6 @@ func TransactionCommand(cdc *codec.Codec) *cobra.Command {
 		},
 	}
 
-	command.Flags().String(AssetFlag, "", "Asset")
+	command.Flags().String(ShareFlag, "", "Share")
 	return command
 }

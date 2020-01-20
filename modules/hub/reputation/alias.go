@@ -1,7 +1,7 @@
-package asset
+package reputation
 
 import (
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/constants"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/reputation/constants"
 )
 
 const DefaultParamspace = constants.ModuleName

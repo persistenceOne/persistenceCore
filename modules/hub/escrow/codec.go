@@ -1,12 +1,12 @@
-package asset
+package escrow
 
 import (
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/mint"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/escrow/transactions/execute"
 	"github.com/cosmos/cosmos-sdk/codec"
 )
 
 func RegisterCodec(cdc *codec.Codec) {
-	mint.RegisterCodec(cdc)
+	execute.RegisterCodec(cdc)
 }
 
 var cdc = codec.New()

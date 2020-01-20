@@ -3,7 +3,7 @@ package mint
 import (
 	"github.com/asaskevich/govalidator"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/constants"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/share/constants"
 )
 
 type Message struct {

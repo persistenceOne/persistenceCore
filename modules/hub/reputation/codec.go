@@ -1,12 +1,12 @@
-package asset
+package reputation
 
 import (
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/mint"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/reputation/transactions/feedback"
 	"github.com/cosmos/cosmos-sdk/codec"
 )
 
 func RegisterCodec(cdc *codec.Codec) {
-	mint.RegisterCodec(cdc)
+	feedback.RegisterCodec(cdc)
 }
 
 var cdc = codec.New()

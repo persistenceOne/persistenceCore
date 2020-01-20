@@ -1,9 +1,9 @@
-package asset
+package reputation
 
 import (
 	"fmt"
 
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/mint"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/reputation/transactions/feedback"
 
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 )
@@ -13,11 +13,11 @@ func NewHandler(keeper Keeper) sdkTypes.Handler {
 		context = context.WithEventManager(sdkTypes.NewEventManager())
 
 		switch message := msg.(type) {
-		case mint.Message:
-			return mint.HandleMessage(context, keeper, message)
+		case feedback.Message:
+			return feedback.HandleMessage(context, keeper, message)
 
 		default:
-			return sdkTypes.ErrUnknownRequest(fmt.Sprintf("Unknown asset message type: %T", msg)).Result()
+			return sdkTypes.ErrUnknownRequest(fmt.Sprintf("Unknown reputation message type: %T", msg)).Result()
 		}
 	}
 }

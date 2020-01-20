@@ -1,4 +1,4 @@
-package asset
+package share
 
 import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"

@@ -1,4 +1,4 @@
-package asset
+package contract
 
 import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"

@@ -1,13 +1,13 @@
-package asset
+package reputation
 
 import (
 	"encoding/json"
 
-	abciTypes "github.com/tendermint/tendermint/abci/types"
+	abciTypes "github.com/tenderfeedback/tenderfeedback/abci/types"
 
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/constants"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/reputation/constants"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"

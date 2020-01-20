@@ -1,9 +1,9 @@
 package constants
 
-const ModuleName = "asset"
+const ModuleName = "reputation"
 
 const AttributeValueCategory = ModuleName
 
 //Transactions
 
-const MintTransaction = "mint"
+const FeedbackTransaction = "feedback"

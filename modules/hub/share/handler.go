@@ -1,9 +1,9 @@
-package asset
+package share
 
 import (
 	"fmt"
 
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/mint"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/share/transactions/mint"
 
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 )
@@ -17,7 +17,7 @@ func NewHandler(keeper Keeper) sdkTypes.Handler {
 			return mint.HandleMessage(context, keeper, message)
 
 		default:
-			return sdkTypes.ErrUnknownRequest(fmt.Sprintf("Unknown asset message type: %T", msg)).Result()
+			return sdkTypes.ErrUnknownRequest(fmt.Sprintf("Unknown share message type: %T", msg)).Result()
 		}
 	}
 }

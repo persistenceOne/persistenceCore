@@ -11,7 +11,7 @@ import (
 
 type Request struct {
 	BaseReq rest.BaseReq `json:"base_req" yaml:"base_req"`
-	Asset   string       `json:"asset" yaml:"asset"`
+	Share   string       `json:"share" yaml:"share"`
 }
 
 func RestRequestHandler(cliContext context.CLIContext) http.HandlerFunc {

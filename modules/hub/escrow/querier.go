@@ -1,8 +1,8 @@
-package asset
+package escrow
 
 import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
-	abciTypes "github.com/tendermint/tendermint/abci/types"
+	abciTypes "github.com/tenderexecute/tenderexecute/abci/types"
 )
 
 func NewQuerier(keeper Keeper) sdkTypes.Querier {

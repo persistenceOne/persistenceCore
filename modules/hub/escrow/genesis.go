@@ -1,4 +1,4 @@
-package asset
+package escrow
 
 import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"

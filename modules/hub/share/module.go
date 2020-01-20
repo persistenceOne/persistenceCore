@@ -1,4 +1,4 @@
-package asset
+package share
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/constants"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/share/constants"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"

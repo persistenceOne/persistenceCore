@@ -1,7 +1,7 @@
-package asset
+package share
 
 import (
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/constants"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/share/constants"
 )
 
 const DefaultParamspace = constants.ModuleName
