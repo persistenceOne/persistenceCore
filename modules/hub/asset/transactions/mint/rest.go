@@ -38,12 +38,3 @@ func RestRequestHandler(cliContext context.CLIContext) http.HandlerFunc {
 		utils.WriteGenerateStdTxResponse(responseWriter, cliContext, request.BaseReq, []sdkTypes.Msg{message})
 	}
 }
-
-func QueryRequestHandler(cliContext context.CLIContext) http.HandlerFunc {
-	return func(responseWriter http.ResponseWriter, httpRequest *http.Request) {
-		responseWriter.Header().Set("Content-Type", "application/json")
-
-		rest.PostProcessResponse(responseWriter, cliContext, "dfsdfsdfsdfs")
-
-	}
-}
