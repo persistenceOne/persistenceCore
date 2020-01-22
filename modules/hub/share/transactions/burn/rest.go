@@ -1,4 +1,4 @@
-package mint
+package burn
 
 import (
 	"net/http"

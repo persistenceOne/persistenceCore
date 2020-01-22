@@ -1,4 +1,4 @@
-package mint
+package burn
 
 import (
 	"github.com/asaskevich/govalidator"
@@ -14,7 +14,7 @@ var _ sdkTypes.Msg = Message{}
 
 func (message Message) Route() string { return constants.ModuleName }
 
-func (message Message) Type() string { return constants.MintTransaction }
+func (message Message) Type() string { return constants.BurnTransaction }
 
 func (message Message) ValidateBasic() sdkTypes.Error {
 	var _, error = govalidator.ValidateStruct(message)

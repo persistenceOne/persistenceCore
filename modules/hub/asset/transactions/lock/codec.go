@@ -1,11 +1,11 @@
-package mint
+package lock
 
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 )
 
 func RegisterCodec(cdc *codec.Codec) {
-	cdc.RegisterConcrete(Message{}, "asset/mint", nil)
+	cdc.RegisterConcrete(Message{}, "asset/lock", nil)
 }
 
 var cdc = codec.New()

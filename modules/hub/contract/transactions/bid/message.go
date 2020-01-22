@@ -1,9 +1,9 @@
-package mint
+package bid
 
 import (
 	"github.com/asaskevich/govalidator"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/constants"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/contract/constants"
 )
 
 type Message struct {
@@ -14,7 +14,7 @@ var _ sdkTypes.Msg = Message{}
 
 func (message Message) Route() string { return constants.ModuleName }
 
-func (message Message) Type() string { return constants.MintTransaction }
+func (message Message) Type() string { return constants.BidTransaction }
 
 func (message Message) ValidateBasic() sdkTypes.Error {
 	var _, error = govalidator.ValidateStruct(message)

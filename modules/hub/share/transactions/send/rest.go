@@ -1,4 +1,4 @@
-package mint
+package send
 
 import (
 	"net/http"

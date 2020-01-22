@@ -1,4 +1,4 @@
-package mint
+package lock
 
 import (
 	"github.com/spf13/cobra"
@@ -15,8 +15,8 @@ func TransactionCommand(cdc *codec.Codec) *cobra.Command {
 		ShareFlag = "share"
 	)
 	command := &cobra.Command{
-		Use:   "mint",
-		Short: "Create and sign transaction to mint at share",
+		Use:   "lock",
+		Short: "Create and sign transaction to lock a share",
 		Long:  "",
 		RunE: func(command *cobra.Command, args []string) error {
 			transactionBuilder := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))

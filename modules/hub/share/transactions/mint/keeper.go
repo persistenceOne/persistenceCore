@@ -9,9 +9,10 @@ type Keeper interface {
 }
 
 type BaseKeeper struct {
+	codespace sdkTypes.CodespaceType
 }
 
-func NewKeeper() Keeper {
+func NewBaseKeeper() BaseKeeper {
 	return BaseKeeper{}
 }
 
