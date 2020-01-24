@@ -6,15 +6,19 @@ import (
 )
 
 type Keeper interface {
-	execute.Keeper
+	getExecuteKeeper() execute.Keeper
 }
 
-type BaseKeeper struct {
-	execute.BaseKeeper
+type baseKeeper struct {
+	executeKeeper execute.Keeper
 }
 
 func NewKeeper(paramSpace params.Subspace) Keeper {
-	return BaseKeeper{}
+	return baseKeeper{
+		executeKeeper: execute.NewKeeper(),
+	}
 }
 
-var _ Keeper = (*BaseKeeper)(nil)
+var _ Keeper = (*baseKeeper)(nil)
+
+func (baseKeeper baseKeeper) getExecuteKeeper() execute.Keeper { return baseKeeper.executeKeeper }

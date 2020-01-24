@@ -14,7 +14,7 @@ func NewHandler(keeper Keeper) sdkTypes.Handler {
 
 		switch message := msg.(type) {
 		case execute.Message:
-			return execute.HandleMessage(context, keeper, message)
+			return execute.HandleMessage(context, keeper.getExecuteKeeper(), message)
 
 		default:
 			return sdkTypes.ErrUnknownRequest(fmt.Sprintf("Unknown escrow message type: %T", msg)).Result()

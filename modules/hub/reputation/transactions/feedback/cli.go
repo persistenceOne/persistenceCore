@@ -16,7 +16,7 @@ func TransactionCommand(cdc *codec.Codec) *cobra.Command {
 	)
 	command := &cobra.Command{
 		Use:   "feedback",
-		Short: "Create and sign transaction to feedback at reputation",
+		Short: "Create and sign transaction to set feedback from an account's reputation.",
 		Long:  "",
 		RunE: func(command *cobra.Command, args []string) error {
 			transactionBuilder := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))

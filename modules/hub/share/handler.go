@@ -14,7 +14,7 @@ func NewHandler(keeper Keeper) sdkTypes.Handler {
 
 		switch message := msg.(type) {
 		case mint.Message:
-			return mint.HandleMessage(context, keeper, message)
+			return mint.HandleMessage(context, keeper.getMintKeeper(), message)
 
 		default:
 			return sdkTypes.ErrUnknownRequest(fmt.Sprintf("Unknown share message type: %T", msg)).Result()

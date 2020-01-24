@@ -8,15 +8,15 @@ type Keeper interface {
 	transact(Message) sdkTypes.Error
 }
 
-type BaseKeeper struct {
+type baseKeeper struct {
 }
 
 func NewKeeper() Keeper {
-	return BaseKeeper{}
+	return baseKeeper{}
 }
 
-var _ Keeper = (*BaseKeeper)(nil)
+var _ Keeper = (*baseKeeper)(nil)
 
-func (baseKeeper BaseKeeper) transact(message Message) sdkTypes.Error {
+func (baseKeeper baseKeeper) transact(message Message) sdkTypes.Error {
 	return nil
 }

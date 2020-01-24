@@ -14,7 +14,7 @@ func NewHandler(keeper Keeper) sdkTypes.Handler {
 
 		switch message := msg.(type) {
 		case feedback.Message:
-			return feedback.HandleMessage(context, keeper, message)
+			return feedback.HandleMessage(context, keeper.getFeedbackKeeper(), message)
 
 		default:
 			return sdkTypes.ErrUnknownRequest(fmt.Sprintf("Unknown reputation message type: %T", msg)).Result()

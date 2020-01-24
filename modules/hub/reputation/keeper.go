@@ -6,15 +6,19 @@ import (
 )
 
 type Keeper interface {
-	feedback.Keeper
+	getFeedbackKeeper() feedback.Keeper
 }
 
-type BaseKeeper struct {
-	feedback.BaseKeeper
+type baseKeeper struct {
+	feedbackKeeper feedback.Keeper
 }
 
 func NewKeeper(paramSpace params.Subspace) Keeper {
-	return BaseKeeper{}
+	return baseKeeper{
+		feedbackKeeper: feedback.NewKeeper(),
+	}
 }
 
-var _ Keeper = (*BaseKeeper)(nil)
+var _ Keeper = (*baseKeeper)(nil)
+
+func (baseKeeper baseKeeper) getFeedbackKeeper() feedback.Keeper { return baseKeeper.feedbackKeeper }

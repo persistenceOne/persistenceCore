@@ -14,7 +14,7 @@ func NewHandler(keeper Keeper) sdkTypes.Handler {
 
 		switch message := msg.(type) {
 		case sign.Message:
-			return sign.HandleMessage(context, keeper, message)
+			return sign.HandleMessage(context, keeper.getSignKeeper(), message)
 
 		default:
 			return sdkTypes.ErrUnknownRequest(fmt.Sprintf("Unknown contract message type: %T", msg)).Result()
