@@ -106,7 +106,7 @@ func main() {
 		db tendermintDB.DB,
 		traceStore io.Writer,
 	) tendermintABSITypes.Application {
-		return hub.NewPersistenceOneApplication(
+		return hub.NewPersistenceHubApplication(
 			logger,
 			db,
 			traceStore,
@@ -128,7 +128,7 @@ func main() {
 	) (json.RawMessage, []tendermintTypes.GenesisValidator, error) {
 
 		if height != -1 {
-			genesisApplication := hub.NewPersistenceOneApplication(
+			genesisApplication := hub.NewPersistenceHubApplication(
 				logger,
 				db,
 				traceStore,
@@ -142,7 +142,7 @@ func main() {
 			return genesisApplication.ExportApplicationStateAndValidators(forZeroHeight, jailWhiteList)
 		}
 		//else
-		genesisApplication := hub.NewPersistenceOneApplication(
+		genesisApplication := hub.NewPersistenceHubApplication(
 			logger,
 			db,
 			traceStore,

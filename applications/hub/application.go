@@ -38,7 +38,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/supply"
 )
 
-const applicationName = "PersistenceOneApplication"
+const applicationName = "PersistenceHubApplication"
 
 var DefaultClientHome = os.ExpandEnv("$HOME/.hubClient")
 var DefaultNodeHome = os.ExpandEnv("$HOME/.hubNode")
@@ -85,7 +85,7 @@ func MakeCodec() *codec.Codec {
 	return cdc
 }
 
-type PersistenceOneApplication struct {
+type PersistenceHubApplication struct {
 	*baseapp.BaseApp
 	cdc *codec.Codec
 
@@ -113,14 +113,14 @@ type PersistenceOneApplication struct {
 	moduleManager *module.Manager
 }
 
-func NewPersistenceOneApplication(
+func NewPersistenceHubApplication(
 	logger log.Logger,
 	db tendermintDB.DB,
 	traceStore io.Writer,
 	loadLatest bool,
 	invCheckPeriod uint,
 	baseAppOptions ...func(*baseapp.BaseApp),
-) *PersistenceOneApplication {
+) *PersistenceHubApplication {
 
 	cdc := MakeCodec()
 
@@ -155,7 +155,7 @@ func NewPersistenceOneApplication(
 		params.TStoreKey,
 	)
 
-	var application = &PersistenceOneApplication{
+	var application = &PersistenceHubApplication{
 		BaseApp:        baseApp,
 		cdc:            cdc,
 		invCheckPeriod: invCheckPeriod,
@@ -340,21 +340,21 @@ func NewPersistenceOneApplication(
 
 	return application
 }
-func (application *PersistenceOneApplication) BeginBlocker(ctx sdkTypes.Context, req abciTypes.RequestBeginBlock) abciTypes.ResponseBeginBlock {
+func (application *PersistenceHubApplication) BeginBlocker(ctx sdkTypes.Context, req abciTypes.RequestBeginBlock) abciTypes.ResponseBeginBlock {
 	return application.moduleManager.BeginBlock(ctx, req)
 }
-func (application *PersistenceOneApplication) EndBlocker(ctx sdkTypes.Context, req abciTypes.RequestEndBlock) abciTypes.ResponseEndBlock {
+func (application *PersistenceHubApplication) EndBlocker(ctx sdkTypes.Context, req abciTypes.RequestEndBlock) abciTypes.ResponseEndBlock {
 	return application.moduleManager.EndBlock(ctx, req)
 }
-func (application *PersistenceOneApplication) InitChainer(ctx sdkTypes.Context, req abciTypes.RequestInitChain) abciTypes.ResponseInitChain {
+func (application *PersistenceHubApplication) InitChainer(ctx sdkTypes.Context, req abciTypes.RequestInitChain) abciTypes.ResponseInitChain {
 	var genesisState GenesisState
 	application.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 	return application.moduleManager.InitGenesis(ctx, genesisState)
 }
-func (application *PersistenceOneApplication) LoadHeight(height int64) error {
+func (application *PersistenceHubApplication) LoadHeight(height int64) error {
 	return application.LoadVersion(height, application.keys[baseapp.MainStoreKey])
 }
-func (application *PersistenceOneApplication) ModuleAccountAddress() map[string]bool {
+func (application *PersistenceHubApplication) ModuleAccountAddress() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range moduleAccountPermissions {
 		modAccAddrs[supply.NewModuleAddress(acc).String()] = true
@@ -362,7 +362,7 @@ func (application *PersistenceOneApplication) ModuleAccountAddress() map[string]
 
 	return modAccAddrs
 }
-func (application *PersistenceOneApplication) ExportApplicationStateAndValidators(forZeroHeight bool, jailWhiteList []string,
+func (application *PersistenceHubApplication) ExportApplicationStateAndValidators(forZeroHeight bool, jailWhiteList []string,
 ) (applicationState json.RawMessage, validators []tendermintTypes.GenesisValidator, err error) {
 	ctx := application.NewContext(true, abciTypes.Header{Height: application.LastBlockHeight()})
 
@@ -379,7 +379,7 @@ func (application *PersistenceOneApplication) ExportApplicationStateAndValidator
 	return applicationState, validators, nil
 }
 
-func (application *PersistenceOneApplication) prepareForZeroHeightGenesis(ctx sdkTypes.Context, jailWhiteList []string) {
+func (application *PersistenceHubApplication) prepareForZeroHeightGenesis(ctx sdkTypes.Context, jailWhiteList []string) {
 	applyWhiteList := false
 
 	if len(jailWhiteList) > 0 {
