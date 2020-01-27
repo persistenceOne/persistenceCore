@@ -3,7 +3,7 @@ package escrow
 import (
 	"encoding/json"
 
-	abciTypes "github.com/tenderexecute/tenderexecute/abci/types"
+	abciTypes "github.com/tendermint/tendermint/abci/types"
 
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 

@@ -3,7 +3,7 @@ package reputation
 import (
 	"encoding/json"
 
-	abciTypes "github.com/tenderfeedback/tenderfeedback/abci/types"
+	abciTypes "github.com/tendermint/tendermint/abci/types"
 
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 

@@ -10,7 +10,7 @@ func NewQuerier(keeper Keeper) sdkTypes.Querier {
 		switch path[0] {
 
 		default:
-			return nil, sdkTypes.ErrUnknownRequest("unknown bank query endpoint")
+			return nil, sdkTypes.ErrUnknownRequest("Unknown share query endpoint.")
 		}
 	}
 }

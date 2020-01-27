@@ -16,7 +16,7 @@ func TransactionCommand(cdc *codec.Codec) *cobra.Command {
 	)
 	command := &cobra.Command{
 		Use:   "mint",
-		Short: "Create and sign transaction to mint at share",
+		Short: "Create and sign transaction to mint a share.",
 		Long:  "",
 		RunE: func(command *cobra.Command, args []string) error {
 			transactionBuilder := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))

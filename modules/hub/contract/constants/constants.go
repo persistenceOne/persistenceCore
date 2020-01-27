@@ -6,4 +6,5 @@ const AttributeValueCategory = ModuleName
 
 //Transactions
 
+const BidTransaction = "bid"
 const SignTransaction = "sign"

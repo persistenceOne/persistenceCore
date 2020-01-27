@@ -6,4 +6,7 @@ const AttributeValueCategory = ModuleName
 
 //Transactions
 
+const BurnTransaction = "burn"
+const LockTransaction = "lock"
 const MintTransaction = "mint"
+const SendTransaction = "send"
