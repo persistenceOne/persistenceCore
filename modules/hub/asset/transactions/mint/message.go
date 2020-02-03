@@ -4,10 +4,13 @@ import (
 	"github.com/asaskevich/govalidator"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/constants"
+	"github.com/persistenceOne/persistenceSDK/types"
 )
 
 type Message struct {
-	From sdkTypes.AccAddress `json:"from" yaml:"from" valid:"required~From"`
+	From  sdkTypes.AccAddress `json:"from" yaml:"from" valid:"required~from"`
+	To    sdkTypes.AccAddress `json:"to" yaml:"to" valid:"required~to"`
+	Asset types.Asset         `json:"asset" yaml:"asset" valid:"required~asset"`
 }
 
 var _ sdkTypes.Msg = Message{}
