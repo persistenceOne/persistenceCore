@@ -2,10 +2,10 @@ package share
 
 import (
 	"github.com/cosmos/cosmos-sdk/x/params"
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/burn"
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/send"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/share/transactions/burn"
 	"github.com/persistenceOne/persistenceSDK/modules/hub/share/transactions/lock"
 	"github.com/persistenceOne/persistenceSDK/modules/hub/share/transactions/mint"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/share/transactions/send"
 )
 
 type Keeper interface {
