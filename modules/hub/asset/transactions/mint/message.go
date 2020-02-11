@@ -9,7 +9,6 @@ import (
 
 type Message struct {
 	From  sdkTypes.AccAddress `json:"from" yaml:"from" valid:"required~from"`
-	To    sdkTypes.AccAddress `json:"to" yaml:"to" valid:"required~to"`
 	Asset types.Asset         `json:"asset" yaml:"asset" valid:"required~asset"`
 }
 
@@ -28,7 +27,7 @@ func (message Message) ValidateBasic() sdkTypes.Error {
 }
 
 func (message Message) GetSignBytes() []byte {
-	return sdkTypes.MustSortJSON(cdc.MustMarshalJSON(message))
+	return sdkTypes.MustSortJSON(packageCodec.MustMarshalJSON(message))
 }
 
 func (message Message) GetSigners() []sdkTypes.AccAddress {

@@ -2,11 +2,11 @@ package send
 
 import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
-	mapper "github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/mapper"
 )
 
 type Keeper interface {
-	transact(Message) sdkTypes.Error
+	transact(sdkTypes.Context, Message) sdkTypes.Error
 }
 
 type baseKeeper struct {
@@ -19,8 +19,11 @@ func NewKeeper(mapper mapper.Mapper) Keeper {
 
 var _ Keeper = (*baseKeeper)(nil)
 
-func (baseKeeper baseKeeper) transact(message Message) sdkTypes.Error {
-	asset := baseKeeper.mapper.GetAsset(message.From)
-	baseKeeper.mapper.SetAsset(asset)
+func (baseKeeper baseKeeper) transact(context sdkTypes.Context, message Message) sdkTypes.Error {
+	asset, err := baseKeeper.mapper.GetAsset(context, message.From)
+	if err != nil {
+		return err
+	}
+	baseKeeper.mapper.SetAsset(context, asset)
 	return nil
 }

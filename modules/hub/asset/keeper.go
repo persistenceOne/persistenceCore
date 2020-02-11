@@ -4,7 +4,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
-	mapper "github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/mapper"
 	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/burn"
 	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/lock"
 	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/mint"
