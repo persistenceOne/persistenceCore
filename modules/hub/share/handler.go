@@ -3,7 +3,7 @@ package share
 import (
 	"fmt"
 
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/burn"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/share/transactions/burn"
 	"github.com/persistenceOne/persistenceSDK/modules/hub/share/transactions/lock"
 	"github.com/persistenceOne/persistenceSDK/modules/hub/share/transactions/mint"
 	"github.com/persistenceOne/persistenceSDK/modules/hub/share/transactions/send"

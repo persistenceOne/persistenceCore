@@ -1,7 +1,10 @@
 package asset
 
 import (
+	"github.com/cosmos/cosmos-sdk/codec"
+	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/mapper"
 	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/burn"
 	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/lock"
 	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/transactions/mint"
@@ -22,12 +25,13 @@ type baseKeeper struct {
 	sendKeeper send.Keeper
 }
 
-func NewKeeper(paramSpace params.Subspace) Keeper {
+func NewKeeper(codec *codec.Codec, storeKey sdkTypes.StoreKey, paramSpace params.Subspace) Keeper {
+	mapper := mapper.NewMapper(codec, storeKey)
 	return baseKeeper{
-		burnKeeper: burn.NewKeeper(),
-		lockKeeper: lock.NewKeeper(),
-		mintKeeper: mint.NewKeeper(),
-		sendKeeper: send.NewKeeper(),
+		burnKeeper: burn.NewKeeper(mapper),
+		lockKeeper: lock.NewKeeper(mapper),
+		mintKeeper: mint.NewKeeper(mapper),
+		sendKeeper: send.NewKeeper(mapper),
 	}
 }
 

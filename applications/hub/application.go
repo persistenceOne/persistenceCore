@@ -273,7 +273,7 @@ func NewPersistenceHubApplication(
 		),
 	)
 
-	application.assetKeeper = asset.NewKeeper(assetSubspace)
+	application.assetKeeper = asset.NewKeeper(application.cdc, keys[asset.StoreKey], assetSubspace)
 	application.reputationKeeper = reputation.NewKeeper(reputationSubspace)
 	application.contractKeeper = contract.NewKeeper(contractSubspace)
 	application.escrowKeeper = escrow.NewKeeper(escrowSubspace)

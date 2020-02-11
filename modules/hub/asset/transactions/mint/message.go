@@ -4,10 +4,12 @@ import (
 	"github.com/asaskevich/govalidator"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/constants"
+	"github.com/persistenceOne/persistenceSDK/types"
 )
 
 type Message struct {
-	From sdkTypes.AccAddress `json:"from" yaml:"from" valid:"required~From"`
+	From  sdkTypes.AccAddress `json:"from" yaml:"from" valid:"required~from"`
+	Asset types.Asset         `json:"asset" yaml:"asset" valid:"required~asset"`
 }
 
 var _ sdkTypes.Msg = Message{}
@@ -25,7 +27,7 @@ func (message Message) ValidateBasic() sdkTypes.Error {
 }
 
 func (message Message) GetSignBytes() []byte {
-	return sdkTypes.MustSortJSON(cdc.MustMarshalJSON(message))
+	return sdkTypes.MustSortJSON(packageCodec.MustMarshalJSON(message))
 }
 
 func (message Message) GetSigners() []sdkTypes.AccAddress {

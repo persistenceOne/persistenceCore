@@ -12,6 +12,6 @@ func ValidateGenesis(genesisState GenesisState) error { return nil }
 
 func InitializeGenesisState(context sdkTypes.Context, keeper Keeper, genesisState GenesisState) {
 }
-func ExportGenesis(ctx sdkTypes.Context, keeper Keeper) GenesisState {
+func ExportGenesis(context sdkTypes.Context, keeper Keeper) GenesisState {
 	return GenesisState{}
 }

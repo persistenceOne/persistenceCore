@@ -38,7 +38,7 @@
             "mode": "auto",
             "program": "${workspaceFolder}/commands/hub/hubClient",
             "env": {},
-            "args": ["tx","asset","mint","--from=test","--chain-id=test"]
+            "args": ["tx","asset","mint","--from=test","--to=cosmos1yqm9s8lnv7wnzmd7c3cu7q25ugts4h8nj9lzyh","--asset=asset","--chain-id=test"]
         }
     ]
 }
