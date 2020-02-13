@@ -5,6 +5,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/persistenceOne/persistenceSDK/types"
+
 	"github.com/persistenceOne/persistenceSDK/modules/hub/contract"
 	"github.com/persistenceOne/persistenceSDK/modules/hub/escrow"
 	"github.com/persistenceOne/persistenceSDK/modules/hub/reputation"
@@ -77,17 +79,18 @@ func NewDefaultGenesisState() GenesisState {
 }
 
 func MakeCodec() *codec.Codec {
-	var cdc = codec.New()
-	ModuleBasics.RegisterCodec(cdc)
-	sdkTypes.RegisterCodec(cdc)
-	codec.RegisterCrypto(cdc)
-	codec.RegisterEvidences(cdc)
-	return cdc
+	var Codec = codec.New()
+	ModuleBasics.RegisterCodec(Codec)
+	sdkTypes.RegisterCodec(Codec)
+	types.RegisterCodec(Codec)
+	codec.RegisterCrypto(Codec)
+	codec.RegisterEvidences(Codec)
+	return Codec
 }
 
 type PersistenceHubApplication struct {
 	*baseapp.BaseApp
-	cdc *codec.Codec
+	codec *codec.Codec
 
 	invCheckPeriod uint
 
@@ -122,13 +125,13 @@ func NewPersistenceHubApplication(
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *PersistenceHubApplication {
 
-	cdc := MakeCodec()
+	codec := MakeCodec()
 
 	baseApp := baseapp.NewBaseApp(
 		applicationName,
 		logger,
 		db,
-		auth.DefaultTxDecoder(cdc),
+		auth.DefaultTxDecoder(codec),
 		baseAppOptions...,
 	)
 	baseApp.SetCommitMultiStoreTracer(traceStore)
@@ -157,14 +160,14 @@ func NewPersistenceHubApplication(
 
 	var application = &PersistenceHubApplication{
 		BaseApp:        baseApp,
-		cdc:            cdc,
+		codec:          codec,
 		invCheckPeriod: invCheckPeriod,
 		keys:           keys,
 		transientKeys:  transientKeys,
 	}
 
 	application.parameterKeeper = params.NewKeeper(
-		application.cdc,
+		application.codec,
 		keys[params.StoreKey],
 		transientKeys[params.TStoreKey],
 		params.DefaultCodespace,
@@ -184,7 +187,7 @@ func NewPersistenceHubApplication(
 	shareSubspace := application.parameterKeeper.Subspace(share.DefaultParamspace)
 
 	application.accountKeeper = auth.NewAccountKeeper(
-		application.cdc,
+		application.codec,
 		keys[auth.StoreKey],
 		authSubspace,
 		auth.ProtoBaseAccount,
@@ -198,7 +201,7 @@ func NewPersistenceHubApplication(
 	)
 
 	application.supplyKeeper = supply.NewKeeper(
-		application.cdc,
+		application.codec,
 		keys[supply.StoreKey],
 		application.accountKeeper,
 		application.bankKeeper,
@@ -206,7 +209,7 @@ func NewPersistenceHubApplication(
 	)
 
 	stakingKeeper := staking.NewKeeper(
-		application.cdc,
+		application.codec,
 		keys[staking.StoreKey],
 		transientKeys[staking.TStoreKey],
 		application.supplyKeeper,
@@ -214,7 +217,7 @@ func NewPersistenceHubApplication(
 		staking.DefaultCodespace,
 	)
 	application.mintKeeper = mint.NewKeeper(
-		application.cdc,
+		application.codec,
 		keys[mint.StoreKey],
 		mintSubspace,
 		&stakingKeeper,
@@ -222,7 +225,7 @@ func NewPersistenceHubApplication(
 		auth.FeeCollectorName,
 	)
 	application.distributionKeeper = distribution.NewKeeper(
-		application.cdc,
+		application.codec,
 		keys[distribution.StoreKey],
 		distributionSubspace,
 		&stakingKeeper,
@@ -232,7 +235,7 @@ func NewPersistenceHubApplication(
 		application.ModuleAccountAddress(),
 	)
 	application.slashingKeeper = slashing.NewKeeper(
-		application.cdc,
+		application.codec,
 		keys[slashing.StoreKey],
 		&stakingKeeper,
 		slashingSubspace,
@@ -256,7 +259,7 @@ func NewPersistenceHubApplication(
 		distribution.NewCommunityPoolSpendProposalHandler(application.distributionKeeper),
 	)
 	application.govKeeper = gov.NewKeeper(
-		application.cdc,
+		application.codec,
 		keys[gov.StoreKey],
 		application.parameterKeeper,
 		govSubspace,
@@ -273,7 +276,7 @@ func NewPersistenceHubApplication(
 		),
 	)
 
-	application.assetKeeper = asset.NewKeeper(application.cdc, keys[asset.StoreKey], assetSubspace)
+	application.assetKeeper = asset.NewKeeper(application.codec, keys[asset.StoreKey], assetSubspace)
 	application.reputationKeeper = reputation.NewKeeper(reputationSubspace)
 	application.contractKeeper = contract.NewKeeper(contractSubspace)
 	application.escrowKeeper = escrow.NewKeeper(escrowSubspace)
@@ -348,7 +351,7 @@ func (application *PersistenceHubApplication) EndBlocker(ctx sdkTypes.Context, r
 }
 func (application *PersistenceHubApplication) InitChainer(ctx sdkTypes.Context, req abciTypes.RequestInitChain) abciTypes.ResponseInitChain {
 	var genesisState GenesisState
-	application.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
+	application.codec.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 	return application.moduleManager.InitGenesis(ctx, genesisState)
 }
 func (application *PersistenceHubApplication) LoadHeight(height int64) error {
@@ -371,7 +374,7 @@ func (application *PersistenceHubApplication) ExportApplicationStateAndValidator
 	}
 
 	genesisState := application.moduleManager.ExportGenesis(ctx)
-	applicationState, err = codec.MarshalJSONIndent(application.cdc, genesisState)
+	applicationState, err = codec.MarshalJSONIndent(application.codec, genesisState)
 	if err != nil {
 		return nil, nil, err
 	}
