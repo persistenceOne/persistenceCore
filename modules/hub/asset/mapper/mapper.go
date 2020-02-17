@@ -45,10 +45,6 @@ func (baseMapper baseMapper) GetAsset(context sdkTypes.Context, assetAddress typ
 }
 func (baseMapper baseMapper) SetAsset(context sdkTypes.Context, asset types.Asset) sdkTypes.Error {
 	bytes, err := baseMapper.codec.MarshalBinaryBare(asset)
-	a := baseMapper.decodeAccount(bytes)
-	if a == nil {
-		return nil
-	}
 	if err != nil {
 		panic(err)
 	}
@@ -56,12 +52,4 @@ func (baseMapper baseMapper) SetAsset(context sdkTypes.Context, asset types.Asse
 	kvStore := context.KVStore(baseMapper.storeKey)
 	kvStore.Set(storeKey(address), bytes)
 	return nil
-}
-
-func (ak baseMapper) decodeAccount(bz []byte) (acc types.Asset) {
-	err := ak.codec.UnmarshalBinaryBare(bz, &acc)
-	if err != nil {
-		panic(err)
-	}
-	return
 }

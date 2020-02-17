@@ -1,6 +1,8 @@
 package mapper
 
-import "github.com/cosmos/cosmos-sdk/codec"
+import (
+	"github.com/cosmos/cosmos-sdk/codec"
+)
 
 func RegisterCodec(codec *codec.Codec) {
 	codec.RegisterConcrete(&baseAsset{}, "asset/baseAsset", nil)

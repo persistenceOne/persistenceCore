@@ -6,18 +6,18 @@ import (
 )
 
 type baseAsset struct {
-	assetAddress types.AssetAddress
-	owner        sdkTypes.AccAddress
+	AssetAddress types.AssetAddress
+	Owner        sdkTypes.AccAddress
 }
 
 func NewAsset(address string, owner sdkTypes.AccAddress) types.Asset {
 	return baseAsset{
-		assetAddress: NewAssetAddress(address),
-		owner:        owner,
+		AssetAddress: NewAssetAddress(address),
+		Owner:        owner,
 	}
 }
 
 var _ types.Asset = (*baseAsset)(nil)
 
-func (baseAsset baseAsset) GetAddress() types.AssetAddress { return baseAsset.assetAddress }
-func (baseAsset baseAsset) GetOwner() sdkTypes.AccAddress  { return baseAsset.owner }
+func (baseAsset baseAsset) GetAddress() types.AssetAddress { return baseAsset.AssetAddress }
+func (baseAsset baseAsset) GetOwner() sdkTypes.AccAddress  { return baseAsset.Owner }
