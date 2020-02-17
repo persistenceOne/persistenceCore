@@ -4,12 +4,12 @@ import (
 	"github.com/asaskevich/govalidator"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/constants"
-	"github.com/persistenceOne/persistenceSDK/types"
 )
 
 type Message struct {
-	From  sdkTypes.AccAddress `json:"from" yaml:"from" valid:"required~from"`
-	Asset types.Asset         `json:"asset" yaml:"asset" valid:"required~asset"`
+	From    sdkTypes.AccAddress `json:"from" yaml:"from" valid:"required~from"`
+	To      sdkTypes.AccAddress `json:"to" yaml:"to" valid:"required~to"`
+	Address string              `json:"address" yaml:"address" valid:"required~address"`
 }
 
 var _ sdkTypes.Msg = Message{}
@@ -21,7 +21,7 @@ func (message Message) Type() string { return constants.MintTransaction }
 func (message Message) ValidateBasic() sdkTypes.Error {
 	var _, error = govalidator.ValidateStruct(message)
 	if error != nil {
-		IncorrectMessageError(error.Error())
+		return IncorrectMessageError(error.Error())
 	}
 	return nil
 }

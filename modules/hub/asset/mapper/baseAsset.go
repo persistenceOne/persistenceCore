@@ -12,7 +12,7 @@ type baseAsset struct {
 
 func NewAsset(address string, owner sdkTypes.AccAddress) types.Asset {
 	return baseAsset{
-		assetAddress: newAssetAddress(address),
+		assetAddress: NewAssetAddress(address),
 		owner:        owner,
 	}
 }

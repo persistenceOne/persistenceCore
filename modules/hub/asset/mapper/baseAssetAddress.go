@@ -8,7 +8,7 @@ type baseAssetAddress struct {
 	address string
 }
 
-func newAssetAddress(address string) types.AssetAddress {
+func NewAssetAddress(address string) types.AssetAddress {
 	return baseAssetAddress{
 		address: address,
 	}

@@ -1,7 +1,6 @@
 package mint
 
 import (
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/mapper"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -14,8 +13,8 @@ import (
 
 func TransactionCommand(codec *codec.Codec) *cobra.Command {
 	const (
-		assetFlag = "asset"
-		toFlag    = "to"
+		addressFlag = "address"
+		toFlag      = "to"
 	)
 	command := &cobra.Command{
 		Use:   "mint",
@@ -29,8 +28,9 @@ func TransactionCommand(codec *codec.Codec) *cobra.Command {
 				return err
 			}
 			message := Message{
-				From:  cliContext.GetFromAddress(),
-				Asset: mapper.NewAsset(viper.GetString(assetFlag), to),
+				From:    cliContext.GetFromAddress(),
+				To:      to,
+				Address: viper.GetString(addressFlag),
 			}
 
 			if err := message.ValidateBasic(); err != nil {
@@ -41,7 +41,7 @@ func TransactionCommand(codec *codec.Codec) *cobra.Command {
 		},
 	}
 
-	command.Flags().String(assetFlag, "", "asset")
+	command.Flags().String(addressFlag, "", "address")
 	command.Flags().String(toFlag, "", "to")
 	return command
 }
