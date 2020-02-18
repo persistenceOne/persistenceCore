@@ -1,6 +1,7 @@
 package contract
 
 import (
+	"github.com/persistenceOne/persistenceSDK/modules/hub/contract/transactions/bid"
 	"github.com/persistenceOne/persistenceSDK/modules/hub/contract/transactions/sign"
 	"github.com/spf13/cobra"
 
@@ -8,7 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 )
 
-func GetCLIRootTransactionCommand(cdc *codec.Codec) *cobra.Command {
+func GetCLIRootTransactionCommand(codec *codec.Codec) *cobra.Command {
 	rootTransactionCommand := &cobra.Command{
 		Use:                        TransactionRoute,
 		Short:                      "Contract root transaction command.",
@@ -17,12 +18,13 @@ func GetCLIRootTransactionCommand(cdc *codec.Codec) *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 	rootTransactionCommand.AddCommand(client.PostCommands(
-		sign.TransactionCommand(cdc),
+		sign.TransactionCommand(codec),
+		bid.TransactionCommand(codec),
 	)...)
 	return rootTransactionCommand
 }
 
-func GetCLIRootQueryCommand(cdc *codec.Codec) *cobra.Command {
+func GetCLIRootQueryCommand(codec *codec.Codec) *cobra.Command {
 	rootQueryCommand := &cobra.Command{
 		Use:                        QuerierRoute,
 		Short:                      "Contract root query command.",

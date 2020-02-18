@@ -8,7 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 )
 
-func GetCLIRootTransactionCommand(cdc *codec.Codec) *cobra.Command {
+func GetCLIRootTransactionCommand(codec *codec.Codec) *cobra.Command {
 	rootTransactionCommand := &cobra.Command{
 		Use:                        TransactionRoute,
 		Short:                      "Escrow root transaction command.",
@@ -17,12 +17,12 @@ func GetCLIRootTransactionCommand(cdc *codec.Codec) *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 	rootTransactionCommand.AddCommand(client.PostCommands(
-		execute.TransactionCommand(cdc),
+		execute.TransactionCommand(codec),
 	)...)
 	return rootTransactionCommand
 }
 
-func GetCLIRootQueryCommand(cdc *codec.Codec) *cobra.Command {
+func GetCLIRootQueryCommand(codec *codec.Codec) *cobra.Command {
 	rootQueryCommand := &cobra.Command{
 		Use:                        QuerierRoute,
 		Short:                      "Escrow root query command.",

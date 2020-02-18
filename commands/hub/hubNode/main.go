@@ -34,7 +34,7 @@ func main() {
 
 	serverContext := server.NewDefaultContext()
 
-	cdc := hub.MakeCodec()
+	codec := hub.MakeCodec()
 
 	configuration := sdkTypes.GetConfig()
 	configuration.SetBech32PrefixForAccount(sdkTypes.Bech32PrefixAccAddr, sdkTypes.Bech32PrefixAccPub)
@@ -52,23 +52,23 @@ func main() {
 
 	rootCommand.AddCommand(initialize.InitializeCommand(
 		serverContext,
-		cdc,
+		codec,
 		hub.ModuleBasics,
 		hub.DefaultNodeHome,
 	))
 	rootCommand.AddCommand(initialize.CollectGenesisTransactionsCommand(
 		serverContext,
-		cdc,
+		codec,
 		genaccounts.AppModuleBasic{},
 		hub.DefaultNodeHome,
 	))
 	rootCommand.AddCommand(initialize.MigrateGenesisCommand(
 		serverContext,
-		cdc,
+		codec,
 	))
 	rootCommand.AddCommand(initialize.GenesisTransactionCommand(
 		serverContext,
-		cdc,
+		codec,
 		hub.ModuleBasics,
 		staking.AppModuleBasic{},
 		genaccounts.AppModuleBasic{},
@@ -77,18 +77,18 @@ func main() {
 	))
 	rootCommand.AddCommand(initialize.ValidateGenesisCommand(
 		serverContext,
-		cdc,
+		codec,
 		hub.ModuleBasics,
 	))
 	rootCommand.AddCommand(initialize.AddGenesisAccountCommand(
 		serverContext,
-		cdc,
+		codec,
 		hub.DefaultNodeHome,
 		hub.DefaultClientHome,
 	))
 	rootCommand.AddCommand(initialize.TestnetCommand(
 		serverContext,
-		cdc,
+		codec,
 		hub.ModuleBasics,
 		genaccounts.AppModuleBasic{},
 	))
@@ -154,7 +154,7 @@ func main() {
 
 	server.AddCommands(
 		serverContext,
-		cdc,
+		codec,
 		rootCommand,
 		appCreator,
 		appExporter,

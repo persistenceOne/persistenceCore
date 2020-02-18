@@ -28,7 +28,7 @@ import (
 
 func main() {
 	cobra.EnableCommandSorting = false
-	cdc := hub.MakeCodec()
+	codec := hub.MakeCodec()
 
 	config := sdkTypes.GetConfig()
 	config.SetBech32PrefixForAccount(sdkTypes.Bech32PrefixAccAddr, sdkTypes.Bech32PrefixAccPub)
@@ -36,31 +36,31 @@ func main() {
 	config.SetBech32PrefixForConsensusNode(sdkTypes.Bech32PrefixConsAddr, sdkTypes.Bech32PrefixConsPub)
 	config.Seal()
 
-	rootCmd := &cobra.Command{
+	rootCommand := &cobra.Command{
 		Use:   "hubClient",
 		Short: "Command line interface for interacting with hubNode",
 	}
 
-	rootCmd.PersistentFlags().String(client.FlagChainID, "", "Chain ID of tendermint node")
-	rootCmd.PersistentPreRunE = func(_ *cobra.Command, _ []string) error {
-		return initalizeConfiguration(rootCmd)
+	rootCommand.PersistentFlags().String(client.FlagChainID, "", "Chain ID of tendermint node")
+	rootCommand.PersistentPreRunE = func(_ *cobra.Command, _ []string) error {
+		return initalizeConfiguration(rootCommand)
 	}
 
-	rootCmd.AddCommand(
+	rootCommand.AddCommand(
 		rpc.StatusCommand(),
 		client.ConfigCmd(hub.DefaultClientHome),
-		queryCommand(cdc),
-		transactionCommand(cdc),
+		queryCommand(codec),
+		transactionCommand(codec),
 		client.LineBreak,
-		lcd.ServeCommand(cdc, registerRoutes),
+		lcd.ServeCommand(codec, registerRoutes),
 		client.LineBreak,
 		keys.Commands(),
 		client.LineBreak,
 		version.Cmd,
-		client.NewCompletionCmd(rootCmd, true),
+		client.NewCompletionCmd(rootCommand, true),
 	)
 
-	executor := cli.PrepareMainCmd(rootCmd, "HC", hub.DefaultClientHome)
+	executor := cli.PrepareMainCmd(rootCommand, "HC", hub.DefaultClientHome)
 
 	err := executor.Execute()
 	if err != nil {
@@ -69,7 +69,7 @@ func main() {
 	}
 }
 
-func queryCommand(cdc *amino.Codec) *cobra.Command {
+func queryCommand(codec *amino.Codec) *cobra.Command {
 	queryCommand := &cobra.Command{
 		Use:     "query",
 		Aliases: []string{"q"},
@@ -77,38 +77,38 @@ func queryCommand(cdc *amino.Codec) *cobra.Command {
 	}
 
 	queryCommand.AddCommand(
-		authcmd.GetAccountCmd(cdc),
+		authcmd.GetAccountCmd(codec),
 		client.LineBreak,
-		rpc.ValidatorCommand(cdc),
+		rpc.ValidatorCommand(codec),
 		rpc.BlockCommand(),
-		authcmd.QueryTxsByEventsCmd(cdc),
-		authcmd.QueryTxCmd(cdc),
+		authcmd.QueryTxsByEventsCmd(codec),
+		authcmd.QueryTxCmd(codec),
 		client.LineBreak,
 	)
 
-	hub.ModuleBasics.AddQueryCommands(queryCommand, cdc)
+	hub.ModuleBasics.AddQueryCommands(queryCommand, codec)
 
 	return queryCommand
 }
 
-func transactionCommand(cdc *amino.Codec) *cobra.Command {
+func transactionCommand(codec *amino.Codec) *cobra.Command {
 	transactionCommand := &cobra.Command{
 		Use:   "tx",
 		Short: "Transactions subcommands",
 	}
 
 	transactionCommand.AddCommand(
-		bankcmd.SendTxCmd(cdc),
+		bankcmd.SendTxCmd(codec),
 		client.LineBreak,
-		authcmd.GetSignCommand(cdc),
-		authcmd.GetMultiSignCommand(cdc),
+		authcmd.GetSignCommand(codec),
+		authcmd.GetMultiSignCommand(codec),
 		client.LineBreak,
-		authcmd.GetBroadcastCommand(cdc),
-		authcmd.GetEncodeCommand(cdc),
+		authcmd.GetBroadcastCommand(codec),
+		authcmd.GetEncodeCommand(codec),
 		client.LineBreak,
 	)
 
-	hub.ModuleBasics.AddTxCommands(transactionCommand, cdc)
+	hub.ModuleBasics.AddTxCommands(transactionCommand, codec)
 
 	var cmdsToRemove []*cobra.Command
 
@@ -129,8 +129,8 @@ func registerRoutes(rs *lcd.RestServer) {
 	hub.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
 }
 
-func initalizeConfiguration(cmd *cobra.Command) error {
-	home, err := cmd.PersistentFlags().GetString(cli.HomeFlag)
+func initalizeConfiguration(command *cobra.Command) error {
+	home, err := command.PersistentFlags().GetString(cli.HomeFlag)
 	if err != nil {
 		return err
 	}
@@ -143,11 +143,11 @@ func initalizeConfiguration(cmd *cobra.Command) error {
 			return err
 		}
 	}
-	if err := viper.BindPFlag(client.FlagChainID, cmd.PersistentFlags().Lookup(client.FlagChainID)); err != nil {
+	if err := viper.BindPFlag(client.FlagChainID, command.PersistentFlags().Lookup(client.FlagChainID)); err != nil {
 		return err
 	}
-	if err := viper.BindPFlag(cli.EncodingFlag, cmd.PersistentFlags().Lookup(cli.EncodingFlag)); err != nil {
+	if err := viper.BindPFlag(cli.EncodingFlag, command.PersistentFlags().Lookup(cli.EncodingFlag)); err != nil {
 		return err
 	}
-	return viper.BindPFlag(cli.OutputFlag, cmd.PersistentFlags().Lookup(cli.OutputFlag))
+	return viper.BindPFlag(cli.OutputFlag, command.PersistentFlags().Lookup(cli.OutputFlag))
 }

@@ -32,11 +32,11 @@ func (AppModuleBasic) RegisterCodec(codec *codec.Codec) {
 	RegisterCodec(codec)
 }
 func (AppModuleBasic) DefaultGenesis() json.RawMessage {
-	return moduleCodec.MustMarshalJSON(DefaultGenesisState())
+	return packageCodec.MustMarshalJSON(DefaultGenesisState())
 }
 func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 	var genesisState GenesisState
-	error := moduleCodec.UnmarshalJSON(bz, &genesisState)
+	error := packageCodec.UnmarshalJSON(bz, &genesisState)
 	if error != nil {
 		return error
 	}
@@ -78,13 +78,13 @@ func (appModule AppModule) NewQuerierHandler() sdkTypes.Querier {
 }
 func (appModule AppModule) InitGenesis(context sdkTypes.Context, data json.RawMessage) []abciTypes.ValidatorUpdate {
 	var genesisState GenesisState
-	moduleCodec.MustUnmarshalJSON(data, &genesisState)
+	packageCodec.MustUnmarshalJSON(data, &genesisState)
 	InitializeGenesisState(context, appModule.keeper, genesisState)
 	return []abciTypes.ValidatorUpdate{}
 }
 func (appModule AppModule) ExportGenesis(context sdkTypes.Context) json.RawMessage {
 	gs := ExportGenesis(context, appModule.keeper)
-	return moduleCodec.MustMarshalJSON(gs)
+	return packageCodec.MustMarshalJSON(gs)
 }
 func (AppModule) BeginBlock(_ sdkTypes.Context, _ abciTypes.RequestBeginBlock) {}
 

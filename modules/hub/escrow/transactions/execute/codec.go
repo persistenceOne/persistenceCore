@@ -4,13 +4,13 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 )
 
-func RegisterCodec(cdc *codec.Codec) {
-	cdc.RegisterConcrete(Message{}, "escrow/execute", nil)
+func RegisterCodec(codec *codec.Codec) {
+	codec.RegisterConcrete(Message{}, "escrow/execute", nil)
 }
 
-var cdc = codec.New()
+var packageCodec = codec.New()
 
 func init() {
-	RegisterCodec(cdc)
-	cdc.Seal()
+	RegisterCodec(packageCodec)
+	packageCodec.Seal()
 }

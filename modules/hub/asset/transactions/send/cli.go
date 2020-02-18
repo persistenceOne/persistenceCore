@@ -1,6 +1,7 @@
 package send
 
 import (
+	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/constants"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -10,17 +11,15 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 )
 
-func TransactionCommand(cdc *codec.Codec) *cobra.Command {
-	const (
-		AssetFlag = "asset"
-	)
+func TransactionCommand(codec *codec.Codec) *cobra.Command {
+
 	command := &cobra.Command{
 		Use:   "send",
 		Short: "Create and sign transaction to send at asset",
 		Long:  "",
 		RunE: func(command *cobra.Command, args []string) error {
-			transactionBuilder := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliContext := context.NewCLIContext().WithCodec(cdc)
+			transactionBuilder := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(codec))
+			cliContext := context.NewCLIContext().WithCodec(codec)
 
 			message := Message{
 				From: cliContext.GetFromAddress(),
@@ -34,6 +33,6 @@ func TransactionCommand(cdc *codec.Codec) *cobra.Command {
 		},
 	}
 
-	command.Flags().String(AssetFlag, "", "Asset")
+	command.Flags().String(constants.AssetFlag, "", "Asset")
 	return command
 }

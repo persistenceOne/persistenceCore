@@ -8,3 +8,5 @@ const AttributeValueCategory = ModuleName
 
 const BidTransaction = "bid"
 const SignTransaction = "sign"
+
+const ContractFlag = "contract"

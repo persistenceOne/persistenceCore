@@ -1,7 +1,7 @@
 package mint
 
 import (
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/mapper"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/constants"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -13,10 +13,7 @@ import (
 )
 
 func TransactionCommand(codec *codec.Codec) *cobra.Command {
-	const (
-		assetFlag = "asset"
-		toFlag    = "to"
-	)
+
 	command := &cobra.Command{
 		Use:   "mint",
 		Short: "Create and sign transaction to mint at asset",
@@ -24,13 +21,14 @@ func TransactionCommand(codec *codec.Codec) *cobra.Command {
 		RunE: func(command *cobra.Command, args []string) error {
 			transactionBuilder := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(codec))
 			cliContext := context.NewCLIContext().WithCodec(codec)
-			to, err := sdkTypes.AccAddressFromBech32(viper.GetString(toFlag))
+			to, err := sdkTypes.AccAddressFromBech32(viper.GetString(constants.ToFlag))
 			if err != nil {
 				return err
 			}
 			message := Message{
-				From:  cliContext.GetFromAddress(),
-				Asset: mapper.NewAsset(viper.GetString(assetFlag), to),
+				From:    cliContext.GetFromAddress(),
+				To:      to,
+				Address: viper.GetString(constants.AddressFlag),
 			}
 
 			if err := message.ValidateBasic(); err != nil {
@@ -41,7 +39,7 @@ func TransactionCommand(codec *codec.Codec) *cobra.Command {
 		},
 	}
 
-	command.Flags().String(assetFlag, "", "asset")
-	command.Flags().String(toFlag, "", "to")
+	command.Flags().String(constants.AddressFlag, "", "address")
+	command.Flags().String(constants.ToFlag, "", "to")
 	return command
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 )
 
-func TransactionCommand(cdc *codec.Codec) *cobra.Command {
+func TransactionCommand(codec *codec.Codec) *cobra.Command {
 	const (
 		ReputationFlag = "reputation"
 	)
@@ -19,8 +19,8 @@ func TransactionCommand(cdc *codec.Codec) *cobra.Command {
 		Short: "Create and sign transaction to set feedback from an account's reputation.",
 		Long:  "",
 		RunE: func(command *cobra.Command, args []string) error {
-			transactionBuilder := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliContext := context.NewCLIContext().WithCodec(cdc)
+			transactionBuilder := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(codec))
+			cliContext := context.NewCLIContext().WithCodec(codec)
 
 			message := Message{
 				From: cliContext.GetFromAddress(),

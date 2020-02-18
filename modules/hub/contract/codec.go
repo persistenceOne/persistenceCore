@@ -1,17 +1,17 @@
 package contract
 
 import (
-	"github.com/persistenceOne/persistenceSDK/modules/hub/contract/transactions/sign"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/contract/transactions/sign"
 )
 
-func RegisterCodec(cdc *codec.Codec) {
-	sign.RegisterCodec(cdc)
+func RegisterCodec(codec *codec.Codec) {
+	sign.RegisterCodec(codec)
 }
 
-var cdc = codec.New()
+var packageCodec = codec.New()
 
 func init() {
-	RegisterCodec(cdc)
-	cdc.Seal()
+	RegisterCodec(packageCodec)
+	packageCodec.Seal()
 }

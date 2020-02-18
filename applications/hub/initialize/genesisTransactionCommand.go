@@ -13,7 +13,7 @@ import (
 
 func GenesisTransactionCommand(
 	serverContext *server.Context,
-	cdc *codec.Codec,
+	codec *codec.Codec,
 	moduleBasicManager module.BasicManager,
 	stakingMessageBuildingHelpers cli.StakingMsgBuildingHelpers,
 	genesisAccountsIterator types.GenesisAccountsIterator,
@@ -22,7 +22,7 @@ func GenesisTransactionCommand(
 ) *cobra.Command {
 	return cli.GenTxCmd(
 		serverContext,
-		cdc,
+		codec,
 		moduleBasicManager,
 		stakingMessageBuildingHelpers,
 		genesisAccountsIterator,

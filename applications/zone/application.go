@@ -35,15 +35,15 @@ var DefaultClientHome = os.ExpandEnv("$HOME/.hubClient")
 var DefaultNodeHome = os.ExpandEnv("$HOME/.hubNode")
 
 func MakeCodec() *codec.Codec {
-	var cdc = codec.New()
-	sdk.RegisterCodec(cdc)
-	codec.RegisterCrypto(cdc)
-	return cdc
+	var Codec = codec.New()
+	sdk.RegisterCodec(Codec)
+	codec.RegisterCrypto(Codec)
+	return Codec
 }
 
 type PersistenceHubApplication struct {
 	*baseapp.BaseApp
-	cdc *codec.Codec
+	codec *codec.Codec
 
 	invCheckPeriod uint
 
@@ -75,14 +75,14 @@ type PersistenceHubApplication struct {
 
 func NewPersistenceHubApplicaiton(logger log.Logger, db tendermintDB.DB, traceStore io.Writer, loadLatest bool,
 	invCheckPeriod uint, baseAppOptions ...func(*baseapp.BaseApp)) *PersistenceHubApplication {
-	cdc := MakeCodec()
-	baseApp := baseapp.NewBaseApp(applicationName, logger, db, auth.DefaultTxDecoder(cdc), baseAppOptions...)
+	codec := MakeCodec()
+	baseApp := baseapp.NewBaseApp(applicationName, logger, db, auth.DefaultTxDecoder(codec), baseAppOptions...)
 	baseApp.SetCommitMultiStoreTracer(traceStore)
 	baseApp.SetAppVersion(version.Version)
 
 	application := &PersistenceHubApplication{
 		BaseApp:          baseApp,
-		cdc:              cdc,
+		codec:            codec,
 		invCheckPeriod:   invCheckPeriod,
 		keyMain:          sdk.NewKVStoreKey(baseapp.MainStoreKey),
 		keyAccount:       sdk.NewKVStoreKey(auth.StoreKey),
@@ -95,7 +95,7 @@ func NewPersistenceHubApplicaiton(logger log.Logger, db tendermintDB.DB, traceSt
 		keySlashing:      sdk.NewKVStoreKey(slashing.StoreKey),
 	}
 
-	application.paramsKeeper = params.NewKeeper(application.cdc, application.keyParameter, application.tkeyParameter, params.DefaultCodespace)
+	application.paramsKeeper = params.NewKeeper(application.codec, application.keyParameter, application.tkeyParameter, params.DefaultCodespace)
 
 	authSubspace := application.paramsKeeper.Subspace(auth.DefaultParamspace)
 	bankSubspace := application.paramsKeeper.Subspace(bank.DefaultParamspace)
@@ -104,7 +104,7 @@ func NewPersistenceHubApplicaiton(logger log.Logger, db tendermintDB.DB, traceSt
 	slashingSubspace := application.paramsKeeper.Subspace(slashing.DefaultParamspace)
 
 	application.accountKeeper = auth.NewAccountKeeper(
-		application.cdc,
+		application.codec,
 		application.keyAccount,
 		authSubspace,
 		auth.ProtoBaseAccount,
@@ -117,7 +117,7 @@ func NewPersistenceHubApplicaiton(logger log.Logger, db tendermintDB.DB, traceSt
 	)
 
 	stakingKeeper := staking.NewKeeper(
-		application.cdc,
+		application.codec,
 		application.keyStaking,
 		application.tkeyStaking,
 		application.supplyKeeper,
@@ -126,7 +126,7 @@ func NewPersistenceHubApplicaiton(logger log.Logger, db tendermintDB.DB, traceSt
 	)
 
 	application.distributionKeeper = distribution.NewKeeper(
-		application.cdc,
+		application.codec,
 		application.keyDistribution,
 		distributionSubspace,
 		application.stakingKeeper,
@@ -136,7 +136,7 @@ func NewPersistenceHubApplicaiton(logger log.Logger, db tendermintDB.DB, traceSt
 	)
 
 	application.slashingKeeper = slashing.NewKeeper(
-		application.cdc,
+		application.codec,
 		application.keySlashing,
 		&stakingKeeper,
 		slashingSubspace,
@@ -227,7 +227,7 @@ func (app *PersistenceHubApplication) EndBlocker(ctx sdk.Context, req abci.Reque
 
 func (app *PersistenceHubApplication) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	var genesisState GenesisState
-	app.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
+	app.codec.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 	return app.moduleManager.InitGenesis(ctx, genesisState)
 }
 
