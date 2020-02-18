@@ -5,12 +5,6 @@ import (
 	"github.com/persistenceOne/persistenceSDK/modules/hub/asset/constants"
 )
 
-const (
-	DefaultCodespace sdkTypes.CodespaceType = constants.ModuleName
-
-	AssetNotFound sdkTypes.CodeType = 201
-)
-
-func AssetNotFoundError(errorMessage string) sdkTypes.Error {
-	return sdkTypes.NewError(DefaultCodespace, AssetNotFound, errorMessage)
+func assetNotFoundError(errorMessage string) sdkTypes.Error {
+	return sdkTypes.NewError(constants.DefaultCodespace, constants.AssetNotFoundCode, errorMessage)
 }

@@ -1,6 +1,7 @@
 package send
 
 import (
+	"github.com/asaskevich/govalidator"
 	"net/http"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -10,8 +11,9 @@ import (
 )
 
 type Request struct {
-	BaseReq rest.BaseReq `json:"base_req" yaml:"base_req"`
-	Asset   string       `json:"asset" yaml:"asset"`
+	BaseReq rest.BaseReq `json:"base_req" yaml:"base_req" valid:"required~base_req"`
+	To      string       `json:"to" yaml:"to" valid:"required~to"`
+	Address string       `json:"address" yaml:"address" valid:"required~address"`
 }
 
 func RestRequestHandler(cliContext context.CLIContext) http.HandlerFunc {
@@ -23,6 +25,13 @@ func RestRequestHandler(cliContext context.CLIContext) http.HandlerFunc {
 
 		request.BaseReq = request.BaseReq.Sanitize()
 		if !request.BaseReq.ValidateBasic(responseWriter) {
+			rest.WriteErrorResponse(responseWriter, http.StatusBadRequest, "")
+			return
+		}
+
+		_, error := govalidator.ValidateStruct(request)
+		if error != nil {
+			rest.WriteErrorResponse(responseWriter, http.StatusBadRequest, error.Error())
 			return
 		}
 
@@ -32,8 +41,16 @@ func RestRequestHandler(cliContext context.CLIContext) http.HandlerFunc {
 			return
 		}
 
+		to, error := sdkTypes.AccAddressFromBech32(request.To)
+		if error != nil {
+			rest.WriteErrorResponse(responseWriter, http.StatusBadRequest, error.Error())
+			return
+		}
+
 		message := Message{
-			From: from,
+			From:    from,
+			To:      to,
+			Address: request.Address,
 		}
 		utils.WriteGenerateStdTxResponse(responseWriter, cliContext, request.BaseReq, []sdkTypes.Msg{message})
 	}

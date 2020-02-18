@@ -35,7 +35,7 @@ func (baseMapper baseMapper) GetAsset(context sdkTypes.Context, assetAddress typ
 	kvStore := context.KVStore(baseMapper.storeKey)
 	bytes := kvStore.Get(storeKey(assetAddress))
 	if bytes == nil {
-		return nil, AssetNotFoundError(assetAddress.String())
+		return nil, assetNotFoundError(assetAddress.String())
 	}
 	err := baseMapper.codec.UnmarshalBinaryBare(bytes, &asset)
 	if err != nil {

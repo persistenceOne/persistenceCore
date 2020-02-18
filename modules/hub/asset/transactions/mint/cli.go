@@ -15,7 +15,7 @@ import (
 func TransactionCommand(codec *codec.Codec) *cobra.Command {
 
 	command := &cobra.Command{
-		Use:   "mint",
+		Use:   constants.MintTransaction,
 		Short: "Create and sign transaction to mint at asset",
 		Long:  "",
 		RunE: func(command *cobra.Command, args []string) error {
