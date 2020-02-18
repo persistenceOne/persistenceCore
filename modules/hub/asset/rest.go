@@ -12,6 +12,6 @@ import (
 )
 
 func RegisterRESTRoutes(cliContext context.CLIContext, router *mux.Router) {
-	router.HandleFunc(strings.Join([]string{"", constants.ModuleName, constants.MintTransaction}, "/"), mint.RestRequestHandler(cliContext)).Methods("POST")
-	router.HandleFunc(strings.Join([]string{"", constants.ModuleName, constants.AssetQuery, "{address}"}, "/"), asset.RestQueryHandler(cliContext)).Methods("GET")
+	router.HandleFunc(strings.Join([]string{"", constants.TransactionRoute, constants.MintTransaction}, "/"), mint.RestRequestHandler(cliContext)).Methods("POST")
+	router.HandleFunc(strings.Join([]string{"", constants.QuerierRoute, constants.AssetQuery, "{address}"}, "/"), asset.RestQueryHandler(cliContext)).Methods("GET")
 }

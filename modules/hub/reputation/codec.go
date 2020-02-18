@@ -1,17 +1,17 @@
 package reputation
 
 import (
-	"github.com/persistenceOne/persistenceSDK/modules/hub/reputation/transactions/feedback"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/reputation/transactions/feedback"
 )
 
-func RegisterCodec(cdc *codec.Codec) {
-	feedback.RegisterCodec(cdc)
+func RegisterCodec(codec *codec.Codec) {
+	feedback.RegisterCodec(codec)
 }
 
-var cdc = codec.New()
+var packageCodec = codec.New()
 
 func init() {
-	RegisterCodec(cdc)
-	cdc.Seal()
+	RegisterCodec(packageCodec)
+	packageCodec.Seal()
 }

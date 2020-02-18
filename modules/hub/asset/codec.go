@@ -11,9 +11,9 @@ func RegisterCodec(codec *codec.Codec) {
 	mapper.RegisterCodec(codec)
 }
 
-var moduleCodec = codec.New()
+var packageCodec = codec.New()
 
 func init() {
-	RegisterCodec(moduleCodec)
-	moduleCodec.Seal()
+	RegisterCodec(packageCodec)
+	packageCodec.Seal()
 }

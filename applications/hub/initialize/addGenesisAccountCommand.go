@@ -11,13 +11,13 @@ import (
 
 func AddGenesisAccountCommand(
 	serverContext *server.Context,
-	cdc *codec.Codec,
+	codec *codec.Codec,
 	defaultNodeHome string,
 	defaultClientHome string,
 ) *cobra.Command {
 	return cli.AddGenesisAccountCmd(
 		serverContext,
-		cdc,
+		codec,
 		defaultNodeHome,
 		defaultClientHome,
 	)

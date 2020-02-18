@@ -21,10 +21,6 @@ func NewQuerier(mapper mapper.Mapper) Querier {
 
 var _ Querier = (*baseQuerier)(nil)
 
-type query struct {
-	Address string
-}
-
 func (baseQuerier baseQuerier) Query(context sdkTypes.Context, requestQuery abciTypes.RequestQuery) ([]byte, sdkTypes.Error) {
 	var query query
 	if error := packageCodec.UnmarshalJSON(requestQuery.Data, &query); error != nil {

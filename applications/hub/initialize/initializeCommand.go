@@ -11,13 +11,13 @@ import (
 
 func InitializeCommand(
 	serverContext *server.Context,
-	cdc *codec.Codec,
+	codec *codec.Codec,
 	moduleBasicManager module.BasicManager,
 	defaultNodeHome string,
 ) *cobra.Command {
 	return cli.InitCmd(
 		serverContext,
-		cdc,
+		codec,
 		moduleBasicManager,
 		defaultNodeHome,
 	)

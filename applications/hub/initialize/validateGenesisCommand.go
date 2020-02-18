@@ -12,12 +12,12 @@ import (
 
 func ValidateGenesisCommand(
 	serverContext *server.Context,
-	cdc *codec.Codec,
+	codec *codec.Codec,
 	moduleBasicManager module.BasicManager,
 ) *cobra.Command {
 	return cli.ValidateGenesisCmd(
 		serverContext,
-		cdc,
+		codec,
 		moduleBasicManager,
 	)
 }

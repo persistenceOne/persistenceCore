@@ -12,3 +12,5 @@ const MintTransaction = "mint"
 const SendTransaction = "send"
 
 const ShareQuery = "share"
+
+const ShareFlag = "share"

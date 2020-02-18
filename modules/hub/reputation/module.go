@@ -28,15 +28,15 @@ type AppModuleBasic struct {
 func (AppModuleBasic) Name() string {
 	return constants.ModuleName
 }
-func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
-	RegisterCodec(cdc)
+func (AppModuleBasic) RegisterCodec(codec *codec.Codec) {
+	RegisterCodec(codec)
 }
 func (AppModuleBasic) DefaultGenesis() json.RawMessage {
-	return cdc.MustMarshalJSON(DefaultGenesisState())
+	return packageCodec.MustMarshalJSON(DefaultGenesisState())
 }
 func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 	var genesisState GenesisState
-	error := cdc.UnmarshalJSON(bz, &genesisState)
+	error := packageCodec.UnmarshalJSON(bz, &genesisState)
 	if error != nil {
 		return error
 	}
@@ -45,11 +45,11 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 func (AppModuleBasic) RegisterRESTRoutes(cliContext context.CLIContext, router *mux.Router) {
 	RegisterRESTRoutes(cliContext, router)
 }
-func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
-	return GetCLIRootTransactionCommand(cdc)
+func (AppModuleBasic) GetTxCmd(codec *codec.Codec) *cobra.Command {
+	return GetCLIRootTransactionCommand(codec)
 }
-func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
-	return GetCLIRootQueryCommand(cdc)
+func (AppModuleBasic) GetQueryCmd(codec *codec.Codec) *cobra.Command {
+	return GetCLIRootQueryCommand(codec)
 }
 
 type AppModule struct {
@@ -78,13 +78,13 @@ func (appModule AppModule) NewQuerierHandler() sdkTypes.Querier {
 }
 func (appModule AppModule) InitGenesis(context sdkTypes.Context, data json.RawMessage) []abciTypes.ValidatorUpdate {
 	var genesisState GenesisState
-	cdc.MustUnmarshalJSON(data, &genesisState)
+	packageCodec.MustUnmarshalJSON(data, &genesisState)
 	InitializeGenesisState(context, appModule.keeper, genesisState)
 	return []abciTypes.ValidatorUpdate{}
 }
 func (appModule AppModule) ExportGenesis(context sdkTypes.Context) json.RawMessage {
 	gs := ExportGenesis(context, appModule.keeper)
-	return cdc.MustMarshalJSON(gs)
+	return packageCodec.MustMarshalJSON(gs)
 }
 func (AppModule) BeginBlock(_ sdkTypes.Context, _ abciTypes.RequestBeginBlock) {}
 

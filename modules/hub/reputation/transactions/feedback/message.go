@@ -25,7 +25,7 @@ func (message Message) ValidateBasic() sdkTypes.Error {
 }
 
 func (message Message) GetSignBytes() []byte {
-	return sdkTypes.MustSortJSON(cdc.MustMarshalJSON(message))
+	return sdkTypes.MustSortJSON(packageCodec.MustMarshalJSON(message))
 }
 
 func (message Message) GetSigners() []sdkTypes.AccAddress {

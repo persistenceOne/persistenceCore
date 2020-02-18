@@ -7,3 +7,5 @@ const AttributeValueCategory = ModuleName
 //Transactions
 
 const ExecuteTransaction = "execute"
+
+const EscrowFlag = "escrow"

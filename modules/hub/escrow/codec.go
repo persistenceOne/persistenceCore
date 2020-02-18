@@ -1,17 +1,17 @@
 package escrow
 
 import (
-	"github.com/persistenceOne/persistenceSDK/modules/hub/escrow/transactions/execute"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/escrow/transactions/execute"
 )
 
-func RegisterCodec(cdc *codec.Codec) {
-	execute.RegisterCodec(cdc)
+func RegisterCodec(codec *codec.Codec) {
+	execute.RegisterCodec(codec)
 }
 
-var cdc = codec.New()
+var packageCodec = codec.New()
 
 func init() {
-	RegisterCodec(cdc)
-	cdc.Seal()
+	RegisterCodec(packageCodec)
+	packageCodec.Seal()
 }

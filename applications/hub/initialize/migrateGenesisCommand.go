@@ -9,10 +9,10 @@ import (
 
 func MigrateGenesisCommand(
 	serverContext *server.Context,
-	cdc *codec.Codec,
+	codec *codec.Codec,
 ) *cobra.Command {
 	return cli.MigrateGenesisCmd(
 		serverContext,
-		cdc,
+		codec,
 	)
 }

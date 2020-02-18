@@ -7,4 +7,5 @@ import (
 type Asset interface {
 	GetAddress() AssetAddress
 	GetOwner() sdkTypes.AccAddress
+	String() string
 }

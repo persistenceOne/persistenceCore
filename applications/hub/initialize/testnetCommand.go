@@ -39,12 +39,12 @@ var (
 	flagStartingIPAddress = "starting-ip-address"
 )
 
-// get cmd to initialize all files for tendermint testnet and application
-func TestnetCommand(ctx *server.Context, cdc *codec.Codec,
+// get command to initialize all files for tendermint testnet and application
+func TestnetCommand(ctx *server.Context, codec *codec.Codec,
 	mbm module.BasicManager, genAccIterator genutiltypes.GenesisAccountsIterator,
 ) *cobra.Command {
 
-	cmd := &cobra.Command{
+	command := &cobra.Command{
 		Use:   "testnet",
 		Short: "Initialize files for a Hub Node testnet",
 		Long: `testnet will create "v" number of directories and populate each with
@@ -55,7 +55,7 @@ Note, strict routability for addresses is turned off in the config file.
 Example:
 	hubNode testnet --v 4 --output-dir ./output --starting-ip-address 192.168.10.2
 	`,
-		RunE: func(cmd *cobra.Command, _ []string) error {
+		RunE: func(command *cobra.Command, _ []string) error {
 			config := ctx.Config
 
 			outputDir := viper.GetString(flagOutputDir)
@@ -67,35 +67,35 @@ Example:
 			startingIPAddress := viper.GetString(flagStartingIPAddress)
 			numValidators := viper.GetInt(flagNumValidators)
 
-			return InitTestnet(cmd, config, cdc, mbm, genAccIterator, outputDir, chainID,
+			return InitTestnet(command, config, codec, mbm, genAccIterator, outputDir, chainID,
 				minGasPrices, nodeDirPrefix, nodeDaemonHome, nodeCLIHome, startingIPAddress, numValidators)
 		},
 	}
 
-	cmd.Flags().Int(flagNumValidators, 4,
+	command.Flags().Int(flagNumValidators, 4,
 		"Number of validators to initialize the testnet with")
-	cmd.Flags().StringP(flagOutputDir, "o", "./mytestnet",
+	command.Flags().StringP(flagOutputDir, "o", "./mytestnet",
 		"Directory to store initialization data for the testnet")
-	cmd.Flags().String(flagNodeDirPrefix, "node",
+	command.Flags().String(flagNodeDirPrefix, "node",
 		"Prefix the directory name for each node with (node results in node0, node1, ...)")
-	cmd.Flags().String(flagNodeDaemonHome, "hubNode",
+	command.Flags().String(flagNodeDaemonHome, "hubNode",
 		"Home directory of the node's daemon configuration")
-	cmd.Flags().String(flagNodeCLIHome, "hubClient",
+	command.Flags().String(flagNodeCLIHome, "hubClient",
 		"Home directory of the node's cli configuration")
-	cmd.Flags().String(flagStartingIPAddress, "192.168.0.1",
+	command.Flags().String(flagStartingIPAddress, "192.168.0.1",
 		"Starting IP address (192.168.0.1 results in persistent peers list ID0@192.168.0.1:46656, ID1@192.168.0.2:46656, ...)")
-	cmd.Flags().String(
+	command.Flags().String(
 		client.FlagChainID, "", "genesis file chain-id, if left blank will be randomly created")
-	cmd.Flags().String(
+	command.Flags().String(
 		server.FlagMinGasPrices, fmt.Sprintf("0.000006%s", sdk.DefaultBondDenom),
 		"Minimum gas prices to accept for transactions; All fees in a tx must meet this minimum (e.g. 0.01photino,0.001stake)")
-	return cmd
+	return command
 }
 
 const nodeDirPerm = 0755
 
 // Initialize the testnet
-func InitTestnet(cmd *cobra.Command, config *tmconfig.Config, cdc *codec.Codec,
+func InitTestnet(command *cobra.Command, config *tmconfig.Config, codec *codec.Codec,
 	mbm module.BasicManager, genAccIterator genutiltypes.GenesisAccountsIterator,
 	outputDir, chainID, minGasPrices, nodeDirPrefix, nodeDaemonHome,
 	nodeCLIHome, startingIPAddress string, numValidators int) error {
@@ -154,7 +154,7 @@ func InitTestnet(cmd *cobra.Command, config *tmconfig.Config, cdc *codec.Codec,
 		memo := fmt.Sprintf("%s@%s:26656", nodeIDs[i], ip)
 		genFiles = append(genFiles, config.GenesisFile())
 
-		buf := bufio.NewReader(cmd.InOrStdin())
+		buf := bufio.NewReader(command.InOrStdin())
 		prompt := fmt.Sprintf(
 			"Password for account '%s' (default %s):", nodeDirName, client.DefaultKeyPass,
 		)
@@ -221,7 +221,7 @@ func InitTestnet(cmd *cobra.Command, config *tmconfig.Config, cdc *codec.Codec,
 			return err
 		}
 
-		txBytes, err := cdc.MarshalJSON(signedTx)
+		txBytes, err := codec.MarshalJSON(signedTx)
 		if err != nil {
 			_ = os.RemoveAll(outputDir)
 			return err
@@ -237,31 +237,31 @@ func InitTestnet(cmd *cobra.Command, config *tmconfig.Config, cdc *codec.Codec,
 		srvconfig.WriteConfigFile(hubConfigFilePath, hubConfig)
 	}
 
-	if err := initGenFiles(cdc, mbm, chainID, accs, genFiles, numValidators); err != nil {
+	if err := initGenFiles(codec, mbm, chainID, accs, genFiles, numValidators); err != nil {
 		return err
 	}
 
 	err := collectGenFiles(
-		cdc, config, chainID, monikers, nodeIDs, valPubKeys, numValidators,
+		codec, config, chainID, monikers, nodeIDs, valPubKeys, numValidators,
 		outputDir, nodeDirPrefix, nodeDaemonHome, genAccIterator,
 	)
 	if err != nil {
 		return err
 	}
 
-	cmd.PrintErrf("Successfully initialized %d node directories\n", numValidators)
+	command.PrintErrf("Successfully initialized %d node directories\n", numValidators)
 	return nil
 }
 
-func initGenFiles(cdc *codec.Codec, mbm module.BasicManager, chainID string,
+func initGenFiles(Codec *codec.Codec, mbm module.BasicManager, chainID string,
 	accs []genaccounts.GenesisAccount, genFiles []string, numValidators int) error {
 
 	appGenState := mbm.DefaultGenesis()
 
 	// set the accounts in the genesis state
-	appGenState = genaccounts.SetGenesisStateInAppState(cdc, appGenState, accs)
+	appGenState = genaccounts.SetGenesisStateInAppState(Codec, appGenState, accs)
 
-	appGenStateJSON, err := codec.MarshalJSONIndent(cdc, appGenState)
+	appGenStateJSON, err := codec.MarshalJSONIndent(Codec, appGenState)
 	if err != nil {
 		return err
 	}
@@ -282,7 +282,7 @@ func initGenFiles(cdc *codec.Codec, mbm module.BasicManager, chainID string,
 }
 
 func collectGenFiles(
-	cdc *codec.Codec, config *tmconfig.Config, chainID string,
+	codec *codec.Codec, config *tmconfig.Config, chainID string,
 	monikers, nodeIDs []string, valPubKeys []crypto.PubKey,
 	numValidators int, outputDir, nodeDirPrefix, nodeDaemonHome string,
 	genAccIterator genutiltypes.GenesisAccountsIterator) error {
@@ -307,7 +307,7 @@ func collectGenFiles(
 			return err
 		}
 
-		nodeAppState, err := genutil.GenAppStateFromConfig(cdc, config, initCfg, *genDoc, genAccIterator)
+		nodeAppState, err := genutil.GenAppStateFromConfig(codec, config, initCfg, *genDoc, genAccIterator)
 		if err != nil {
 			return err
 		}

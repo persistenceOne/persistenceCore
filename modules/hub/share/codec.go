@@ -1,17 +1,17 @@
 package share
 
 import (
-	"github.com/persistenceOne/persistenceSDK/modules/hub/share/transactions/mint"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/share/transactions/mint"
 )
 
-func RegisterCodec(cdc *codec.Codec) {
-	mint.RegisterCodec(cdc)
+func RegisterCodec(codec *codec.Codec) {
+	mint.RegisterCodec(codec)
 }
 
-var cdc = codec.New()
+var packageCodec = codec.New()
 
 func init() {
-	RegisterCodec(cdc)
-	cdc.Seal()
+	RegisterCodec(packageCodec)
+	packageCodec.Seal()
 }

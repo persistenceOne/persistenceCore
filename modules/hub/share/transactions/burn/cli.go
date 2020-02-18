@@ -1,6 +1,7 @@
 package burn
 
 import (
+	"github.com/persistenceOne/persistenceSDK/modules/hub/share/constants"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -10,17 +11,15 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 )
 
-func TransactionCommand(cdc *codec.Codec) *cobra.Command {
-	const (
-		ShareFlag = "share"
-	)
+func TransactionCommand(codec *codec.Codec) *cobra.Command {
+
 	command := &cobra.Command{
 		Use:   "burn",
 		Short: "Create and sign transaction to burn a share.",
 		Long:  "",
 		RunE: func(command *cobra.Command, args []string) error {
-			transactionBuilder := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliContext := context.NewCLIContext().WithCodec(cdc)
+			transactionBuilder := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(codec))
+			cliContext := context.NewCLIContext().WithCodec(codec)
 
 			message := Message{
 				From: cliContext.GetFromAddress(),
@@ -34,6 +33,6 @@ func TransactionCommand(cdc *codec.Codec) *cobra.Command {
 		},
 	}
 
-	command.Flags().String(ShareFlag, "", "Share")
+	command.Flags().String(constants.ShareFlag, "", "Share")
 	return command
 }
