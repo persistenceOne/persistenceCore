@@ -29,6 +29,7 @@ func TransactionCommand(codec *codec.Codec) *cobra.Command {
 				From:    cliContext.GetFromAddress(),
 				To:      to,
 				Address: viper.GetString(constants.AddressFlag),
+				Lock:    viper.GetBool(constants.LockFlag),
 			}
 
 			if err := message.ValidateBasic(); err != nil {
@@ -41,5 +42,6 @@ func TransactionCommand(codec *codec.Codec) *cobra.Command {
 
 	command.Flags().String(constants.AddressFlag, "", "address")
 	command.Flags().String(constants.ToFlag, "", "to")
+	command.Flags().Bool(constants.LockFlag, false, "lock")
 	return command
 }
