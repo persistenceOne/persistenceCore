@@ -13,8 +13,9 @@ func storeKey(assetAddress types.AssetAddress) []byte {
 }
 
 type Mapper interface {
-	Get(sdkTypes.Context, types.AssetAddress) (types.Asset, sdkTypes.Error)
-	Set(sdkTypes.Context, types.Asset) sdkTypes.Error
+	Create(sdkTypes.Context, types.AssetAddress, sdkTypes.AccAddress, bool) sdkTypes.Error
+	Read(sdkTypes.Context, types.AssetAddress) (types.Asset, sdkTypes.Error)
+	Update(sdkTypes.Context, types.Asset) sdkTypes.Error
 	Delete(sdkTypes.Context, types.AssetAddress)
 }
 
@@ -32,19 +33,8 @@ func NewMapper(codec *codec.Codec, storeKey sdkTypes.StoreKey) Mapper {
 
 var _ Mapper = (*baseMapper)(nil)
 
-func (baseMapper baseMapper) Get(context sdkTypes.Context, assetAddress types.AssetAddress) (asset types.Asset, error sdkTypes.Error) {
-	kvStore := context.KVStore(baseMapper.storeKey)
-	bytes := kvStore.Get(storeKey(assetAddress))
-	if bytes == nil {
-		return nil, assetNotFoundError(assetAddress.String())
-	}
-	err := baseMapper.codec.UnmarshalBinaryBare(bytes, &asset)
-	if err != nil {
-		panic(err)
-	}
-	return asset, nil
-}
-func (baseMapper baseMapper) Set(context sdkTypes.Context, asset types.Asset) sdkTypes.Error {
+func (baseMapper baseMapper) Create(context sdkTypes.Context, address types.AssetAddress, owner sdkTypes.AccAddress, lock bool) sdkTypes.Error {
+	asset := newAsset(address, owner, lock)
 	bytes, err := baseMapper.codec.MarshalBinaryBare(asset)
 	if err != nil {
 		panic(err)
@@ -54,11 +44,33 @@ func (baseMapper baseMapper) Set(context sdkTypes.Context, asset types.Asset) sd
 	kvStore.Set(storeKey(assetAddress), bytes)
 	return nil
 }
-func (baseMapper baseMapper) Delete(context sdkTypes.Context, assetAddress types.AssetAddress) {
+func (baseMapper baseMapper) Read(context sdkTypes.Context, address types.AssetAddress) (asset types.Asset, error sdkTypes.Error) {
+	kvStore := context.KVStore(baseMapper.storeKey)
+	bytes := kvStore.Get(storeKey(address))
+	if bytes == nil {
+		return nil, assetNotFoundError(address.String())
+	}
+	err := baseMapper.codec.UnmarshalBinaryBare(bytes, &asset)
+	if err != nil {
+		panic(err)
+	}
+	return asset, nil
+}
+func (baseMapper baseMapper) Update(context sdkTypes.Context, asset types.Asset) sdkTypes.Error {
+	bytes, err := baseMapper.codec.MarshalBinaryBare(asset)
+	if err != nil {
+		panic(err)
+	}
+	assetAddress := asset.GetAddress()
+	kvStore := context.KVStore(baseMapper.storeKey)
+	kvStore.Set(storeKey(assetAddress), bytes)
+	return nil
+}
+func (baseMapper baseMapper) Delete(context sdkTypes.Context, address types.AssetAddress) {
 	bytes, err := baseMapper.codec.MarshalBinaryBare(&baseAsset{})
 	if err != nil {
 		panic(err)
 	}
 	kvStore := context.KVStore(baseMapper.storeKey)
-	kvStore.Set(storeKey(assetAddress), bytes)
+	kvStore.Set(storeKey(address), bytes)
 }

@@ -26,7 +26,7 @@ func (baseQuerier baseQuerier) Query(context sdkTypes.Context, requestQuery abci
 	if error := packageCodec.UnmarshalJSON(requestQuery.Data, &query); error != nil {
 		return nil, incorrectQueryError(error.Error())
 	}
-	asset, getAssetError := baseQuerier.mapper.Get(context, mapper.NewAssetAddress(query.Address))
+	asset, getAssetError := baseQuerier.mapper.Read(context, mapper.NewAssetAddress(query.Address))
 	if getAssetError != nil {
 		return nil, getAssetError
 	}

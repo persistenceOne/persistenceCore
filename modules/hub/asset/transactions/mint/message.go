@@ -10,6 +10,7 @@ type Message struct {
 	From    sdkTypes.AccAddress `json:"from" yaml:"from" valid:"required~from"`
 	To      sdkTypes.AccAddress `json:"to" yaml:"to" valid:"required~to"`
 	Address string              `json:"address" yaml:"address" valid:"required~address"`
+	Lock    bool                `json:"lock" yaml:"lock"`
 }
 
 var _ sdkTypes.Msg = Message{}

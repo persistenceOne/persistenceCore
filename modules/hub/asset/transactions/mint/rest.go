@@ -14,6 +14,7 @@ type Request struct {
 	BaseReq rest.BaseReq `json:"base_req" yaml:"base_req" valid:"required~base_req"`
 	To      string       `json:"to" yaml:"to" valid:"required~to"`
 	Address string       `json:"address" yaml:"address" valid:"required~address"`
+	Lock    bool         `json:"lock" yaml:"lock"`
 }
 
 func RestRequestHandler(cliContext context.CLIContext) http.HandlerFunc {
@@ -51,6 +52,7 @@ func RestRequestHandler(cliContext context.CLIContext) http.HandlerFunc {
 			From:    from,
 			To:      to,
 			Address: request.Address,
+			Lock:    request.Lock,
 		}
 		utils.WriteGenerateStdTxResponse(responseWriter, cliContext, request.BaseReq, []sdkTypes.Msg{message})
 	}
