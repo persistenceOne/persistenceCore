@@ -24,9 +24,9 @@ var _ Querier = (*baseQuerier)(nil)
 func (baseQuerier baseQuerier) Query(context sdkTypes.Context, requestQuery abciTypes.RequestQuery) ([]byte, sdkTypes.Error) {
 	var query query
 	if error := packageCodec.UnmarshalJSON(requestQuery.Data, &query); error != nil {
-		return nil, IncorrectQueryError(error.Error())
+		return nil, incorrectQueryError(error.Error())
 	}
-	asset, getAssetError := baseQuerier.mapper.GetAsset(context, mapper.NewAssetAddress(query.Address))
+	asset, getAssetError := baseQuerier.mapper.Get(context, mapper.NewAssetAddress(query.Address))
 	if getAssetError != nil {
 		return nil, getAssetError
 	}

@@ -11,9 +11,9 @@ type baseAsset struct {
 	Owner        sdkTypes.AccAddress `json:"owner" yaml:"owner" valid:"required~owner"`
 }
 
-func NewAsset(address string, owner sdkTypes.AccAddress) types.Asset {
+func NewAsset(assetAddress types.AssetAddress, owner sdkTypes.AccAddress) types.Asset {
 	return baseAsset{
-		AssetAddress: NewAssetAddress(address),
+		AssetAddress: assetAddress,
 		Owner:        owner,
 	}
 }

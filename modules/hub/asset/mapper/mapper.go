@@ -13,8 +13,9 @@ func storeKey(assetAddress types.AssetAddress) []byte {
 }
 
 type Mapper interface {
-	GetAsset(sdkTypes.Context, types.AssetAddress) (types.Asset, sdkTypes.Error)
-	SetAsset(sdkTypes.Context, types.Asset) sdkTypes.Error
+	Get(sdkTypes.Context, types.AssetAddress) (types.Asset, sdkTypes.Error)
+	Set(sdkTypes.Context, types.Asset) sdkTypes.Error
+	Delete(sdkTypes.Context, types.AssetAddress)
 }
 
 type baseMapper struct {
@@ -31,11 +32,11 @@ func NewMapper(codec *codec.Codec, storeKey sdkTypes.StoreKey) Mapper {
 
 var _ Mapper = (*baseMapper)(nil)
 
-func (baseMapper baseMapper) GetAsset(context sdkTypes.Context, assetAddress types.AssetAddress) (asset types.Asset, error sdkTypes.Error) {
+func (baseMapper baseMapper) Get(context sdkTypes.Context, assetAddress types.AssetAddress) (asset types.Asset, error sdkTypes.Error) {
 	kvStore := context.KVStore(baseMapper.storeKey)
 	bytes := kvStore.Get(storeKey(assetAddress))
 	if bytes == nil {
-		return nil, AssetNotFoundError(assetAddress.String())
+		return nil, assetNotFoundError(assetAddress.String())
 	}
 	err := baseMapper.codec.UnmarshalBinaryBare(bytes, &asset)
 	if err != nil {
@@ -43,13 +44,21 @@ func (baseMapper baseMapper) GetAsset(context sdkTypes.Context, assetAddress typ
 	}
 	return asset, nil
 }
-func (baseMapper baseMapper) SetAsset(context sdkTypes.Context, asset types.Asset) sdkTypes.Error {
+func (baseMapper baseMapper) Set(context sdkTypes.Context, asset types.Asset) sdkTypes.Error {
 	bytes, err := baseMapper.codec.MarshalBinaryBare(asset)
 	if err != nil {
 		panic(err)
 	}
-	address := asset.GetAddress()
+	assetAddress := asset.GetAddress()
 	kvStore := context.KVStore(baseMapper.storeKey)
-	kvStore.Set(storeKey(address), bytes)
+	kvStore.Set(storeKey(assetAddress), bytes)
 	return nil
+}
+func (baseMapper baseMapper) Delete(context sdkTypes.Context, assetAddress types.AssetAddress) {
+	bytes, err := baseMapper.codec.MarshalBinaryBare(&baseAsset{})
+	if err != nil {
+		panic(err)
+	}
+	kvStore := context.KVStore(baseMapper.storeKey)
+	kvStore.Set(storeKey(assetAddress), bytes)
 }

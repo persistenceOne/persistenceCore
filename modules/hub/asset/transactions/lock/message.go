@@ -19,7 +19,7 @@ func (message Message) Type() string { return constants.LockTransaction }
 func (message Message) ValidateBasic() sdkTypes.Error {
 	var _, error = govalidator.ValidateStruct(message)
 	if error != nil {
-		IncorrectMessageError(error.Error())
+		incorrectMessageError(error.Error())
 	}
 	return nil
 }
