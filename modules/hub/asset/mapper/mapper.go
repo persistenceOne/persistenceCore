@@ -49,12 +49,16 @@ func (baseMapper baseMapper) Set(context sdkTypes.Context, asset types.Asset) sd
 	if err != nil {
 		panic(err)
 	}
-	address := asset.GetAddress()
+	assetAddress := asset.GetAddress()
 	kvStore := context.KVStore(baseMapper.storeKey)
-	kvStore.Set(storeKey(address), bytes)
+	kvStore.Set(storeKey(assetAddress), bytes)
 	return nil
 }
 func (baseMapper baseMapper) Delete(context sdkTypes.Context, assetAddress types.AssetAddress) {
+	bytes, err := baseMapper.codec.MarshalBinaryBare(&baseAsset{})
+	if err != nil {
+		panic(err)
+	}
 	kvStore := context.KVStore(baseMapper.storeKey)
-	kvStore.Set(storeKey(assetAddress), nil)
+	kvStore.Set(storeKey(assetAddress), bytes)
 }
