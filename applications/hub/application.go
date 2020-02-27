@@ -7,12 +7,12 @@ import (
 
 	"github.com/persistenceOne/persistenceSDK/types"
 
-	"github.com/persistenceOne/persistenceSDK/modules/hub/contract"
-	"github.com/persistenceOne/persistenceSDK/modules/hub/escrow"
-	"github.com/persistenceOne/persistenceSDK/modules/hub/reputation"
-	"github.com/persistenceOne/persistenceSDK/modules/hub/share"
+	"github.com/persistenceOne/persistenceSDK/modules/contract"
+	"github.com/persistenceOne/persistenceSDK/modules/escrow"
+	"github.com/persistenceOne/persistenceSDK/modules/reputation"
+	"github.com/persistenceOne/persistenceSDK/modules/share"
 
-	"github.com/persistenceOne/persistenceSDK/modules/hub/asset"
+	"github.com/persistenceOne/persistenceSDK/modules/asset"
 
 	abciTypes "github.com/tendermint/tendermint/abci/types"
 	tendermintCommon "github.com/tendermint/tendermint/libs/common"
