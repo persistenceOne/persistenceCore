@@ -1,6 +1,7 @@
 package share
 
 import (
+	"github.com/persistenceOne/persistenceSDK/modules/hub/share/queries/share"
 	"github.com/persistenceOne/persistenceSDK/modules/hub/share/transactions/burn"
 	"github.com/persistenceOne/persistenceSDK/modules/hub/share/transactions/lock"
 	"github.com/persistenceOne/persistenceSDK/modules/hub/share/transactions/mint"
@@ -36,6 +37,8 @@ func GetCLIRootQueryCommand(codec *codec.Codec) *cobra.Command {
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
-	rootQueryCommand.AddCommand()
+	rootQueryCommand.AddCommand(client.GetCommands(
+		share.QueryCommand(codec),
+	)...)
 	return rootQueryCommand
 }

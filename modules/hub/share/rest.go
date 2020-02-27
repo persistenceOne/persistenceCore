@@ -1,7 +1,7 @@
 package share
 
 import (
-	"net/http"
+	"github.com/persistenceOne/persistenceSDK/modules/hub/share/queries/share"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -12,21 +12,13 @@ import (
 	"github.com/persistenceOne/persistenceSDK/modules/hub/share/transactions/send"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/types/rest"
 )
 
 func RegisterRESTRoutes(cliContext context.CLIContext, router *mux.Router) {
-	router.HandleFunc(strings.Join([]string{"", constants.ModuleName, constants.BurnTransaction}, "/"), burn.RestRequestHandler(cliContext)).Methods("POST")
-	router.HandleFunc(strings.Join([]string{"", constants.ModuleName, constants.LockTransaction}, "/"), lock.RestRequestHandler(cliContext)).Methods("POST")
-	router.HandleFunc(strings.Join([]string{"", constants.ModuleName, constants.MintTransaction}, "/"), mint.RestRequestHandler(cliContext)).Methods("POST")
-	router.HandleFunc(strings.Join([]string{"", constants.ModuleName, constants.SendTransaction}, "/"), send.RestRequestHandler(cliContext)).Methods("POST")
-	router.HandleFunc(strings.Join([]string{"", constants.ModuleName, constants.ShareQuery}, "/"), QueryRequestHandler(cliContext)).Methods("GET")
-}
+	router.HandleFunc(strings.Join([]string{"", TransactionRoute, constants.MintTransaction}, "/"), burn.RestRequestHandler(cliContext)).Methods("POST")
+	router.HandleFunc(strings.Join([]string{"", TransactionRoute, constants.MintTransaction}, "/"), lock.RestRequestHandler(cliContext)).Methods("POST")
+	router.HandleFunc(strings.Join([]string{"", TransactionRoute, constants.MintTransaction}, "/"), mint.RestRequestHandler(cliContext)).Methods("POST")
+	router.HandleFunc(strings.Join([]string{"", TransactionRoute, constants.SendTransaction}, "/"), send.RestRequestHandler(cliContext)).Methods("POST")
 
-func QueryRequestHandler(cliContext context.CLIContext) http.HandlerFunc {
-	return func(responseWriter http.ResponseWriter, httpRequest *http.Request) {
-		responseWriter.Header().Set("Content-Type", "application/json")
-		rest.PostProcessResponse(responseWriter, cliContext, constants.ShareQuery)
-
-	}
+	router.HandleFunc(strings.Join([]string{"", QuerierRoute, constants.ShareQuery, "{address}"}, "/"), share.RestQueryHandler(cliContext)).Methods("GET")
 }
