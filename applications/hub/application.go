@@ -280,7 +280,7 @@ func NewPersistenceHubApplication(
 	application.reputationKeeper = reputation.NewKeeper(reputationSubspace)
 	application.contractKeeper = contract.NewKeeper(contractSubspace)
 	application.escrowKeeper = escrow.NewKeeper(escrowSubspace)
-	application.shareKeeper = share.NewKeeper(shareSubspace)
+	application.shareKeeper = share.NewKeeper(application.codec, keys[share.StoreKey], shareSubspace)
 
 	application.moduleManager = module.NewManager(
 		genaccounts.NewAppModule(application.accountKeeper),

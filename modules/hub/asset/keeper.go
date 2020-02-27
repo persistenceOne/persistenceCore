@@ -29,13 +29,13 @@ type baseKeeper struct {
 }
 
 func NewKeeper(codec *codec.Codec, storeKey sdkTypes.StoreKey, paramSpace params.Subspace) Keeper {
-	mapper := mapper.NewMapper(codec, storeKey)
+	Mapper := mapper.NewMapper(codec, storeKey)
 	return baseKeeper{
-		burnKeeper:   burn.NewKeeper(mapper),
-		lockKeeper:   lock.NewKeeper(mapper),
-		mintKeeper:   mint.NewKeeper(mapper),
-		sendKeeper:   send.NewKeeper(mapper),
-		assetQuerier: asset.NewQuerier(mapper),
+		burnKeeper:   burn.NewKeeper(Mapper),
+		lockKeeper:   lock.NewKeeper(Mapper),
+		mintKeeper:   mint.NewKeeper(Mapper),
+		sendKeeper:   send.NewKeeper(Mapper),
+		assetQuerier: asset.NewQuerier(Mapper),
 	}
 }
 
