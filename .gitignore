@@ -2,4 +2,3 @@ commands/hub/hubNode/__debug_bin
 commands/hub/hubClient/__debug_bin
 vendor
 .vscode
-.idea
