@@ -1,9 +1,7 @@
 package constants
 
-import sdkTypes "github.com/cosmos/cosmos-sdk/types"
+import "github.com/cosmos/cosmos-sdk/types/errors"
 
-const DefaultCodespace sdkTypes.CodespaceType = ModuleName
-
-const IncorrectMessageCode sdkTypes.CodeType = 101
-const AssetNotFoundCode sdkTypes.CodeType = 201
-const IncorrectQueryCode sdkTypes.CodeType = 301
+var IncorrectMessageCode = errors.Register(ModuleName, 101, "IncorrectMessageCode")
+var AssetNotFoundCode = errors.Register(ModuleName, 201, "AssetNotFoundCode")
+var IncorrectQueryCode = errors.Register(ModuleName, 301, "IncorrectQueryCode")

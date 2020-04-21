@@ -3,6 +3,7 @@ package send
 import (
 	"github.com/asaskevich/govalidator"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/persistenceOne/persistenceSDK/modules/asset/constants"
 )
 
@@ -16,10 +17,10 @@ var _ sdkTypes.Msg = Message{}
 
 func (message Message) Route() string { return constants.ModuleName }
 func (message Message) Type() string  { return constants.SendTransaction }
-func (message Message) ValidateBasic() sdkTypes.Error {
+func (message Message) ValidateBasic() error {
 	var _, error = govalidator.ValidateStruct(message)
 	if error != nil {
-		return incorrectMessageError(error.Error())
+		return errors.Wrap(constants.IncorrectMessageCode, error.Error())
 	}
 	return nil
 }

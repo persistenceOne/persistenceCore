@@ -6,7 +6,7 @@ import (
 )
 
 type Keeper interface {
-	transact(sdkTypes.Context, Message) sdkTypes.Error
+	transact(sdkTypes.Context, Message) error
 }
 
 type baseKeeper struct {
@@ -19,7 +19,7 @@ func NewKeeper(mapper mapper.Mapper) Keeper {
 
 var _ Keeper = (*baseKeeper)(nil)
 
-func (baseKeeper baseKeeper) transact(context sdkTypes.Context, message Message) sdkTypes.Error {
+func (baseKeeper baseKeeper) transact(context sdkTypes.Context, message Message) error {
 	baseKeeper.mapper.Create(context, mapper.NewShareAddress(message.Address), message.To, message.Lock)
 	return nil
 }

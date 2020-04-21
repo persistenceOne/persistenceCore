@@ -5,7 +5,7 @@ import (
 )
 
 type Keeper interface {
-	transact(Message) sdkTypes.Error
+	transact(Message) error
 }
 
 type baseKeeper struct {
@@ -17,6 +17,6 @@ func NewKeeper() Keeper {
 
 var _ Keeper = (*baseKeeper)(nil)
 
-func (baseKeeper baseKeeper) transact(message Message) sdkTypes.Error {
+func (baseKeeper baseKeeper) transact(message Message) error {
 	return nil
 }

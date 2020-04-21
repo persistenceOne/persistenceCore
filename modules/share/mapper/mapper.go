@@ -3,6 +3,8 @@ package mapper
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/persistenceOne/persistenceSDK/modules/share/constants"
 	"github.com/persistenceOne/persistenceSDK/types"
 )
 
@@ -13,9 +15,9 @@ func storeKey(shareAddress types.ShareAddress) []byte {
 }
 
 type Mapper interface {
-	Create(sdkTypes.Context, types.ShareAddress, sdkTypes.AccAddress, bool) sdkTypes.Error
-	Read(sdkTypes.Context, types.ShareAddress) (types.Share, sdkTypes.Error)
-	Update(sdkTypes.Context, types.Share) sdkTypes.Error
+	Create(sdkTypes.Context, types.ShareAddress, sdkTypes.AccAddress, bool) error
+	Read(sdkTypes.Context, types.ShareAddress) (types.Share, error)
+	Update(sdkTypes.Context, types.Share) error
 	Delete(sdkTypes.Context, types.ShareAddress)
 }
 
@@ -33,7 +35,7 @@ func NewMapper(codec *codec.Codec, storeKey sdkTypes.StoreKey) Mapper {
 
 var _ Mapper = (*baseMapper)(nil)
 
-func (baseMapper baseMapper) Create(context sdkTypes.Context, address types.ShareAddress, owner sdkTypes.AccAddress, lock bool) sdkTypes.Error {
+func (baseMapper baseMapper) Create(context sdkTypes.Context, address types.ShareAddress, owner sdkTypes.AccAddress, lock bool) error {
 	share := newShare(address, owner, lock)
 	bytes, err := baseMapper.codec.MarshalBinaryBare(share)
 	if err != nil {
@@ -44,11 +46,11 @@ func (baseMapper baseMapper) Create(context sdkTypes.Context, address types.Shar
 	kvStore.Set(storeKey(shareAddress), bytes)
 	return nil
 }
-func (baseMapper baseMapper) Read(context sdkTypes.Context, address types.ShareAddress) (share types.Share, error sdkTypes.Error) {
+func (baseMapper baseMapper) Read(context sdkTypes.Context, address types.ShareAddress) (share types.Share, error error) {
 	kvStore := context.KVStore(baseMapper.storeKey)
 	bytes := kvStore.Get(storeKey(address))
 	if bytes == nil {
-		return nil, shareNotFoundError(address.String())
+		return nil, errors.Wrap(constants.ShareNotFoundCode, address.String())
 	}
 	err := baseMapper.codec.UnmarshalBinaryBare(bytes, &share)
 	if err != nil {
@@ -56,7 +58,7 @@ func (baseMapper baseMapper) Read(context sdkTypes.Context, address types.ShareA
 	}
 	return share, nil
 }
-func (baseMapper baseMapper) Update(context sdkTypes.Context, share types.Share) sdkTypes.Error {
+func (baseMapper baseMapper) Update(context sdkTypes.Context, share types.Share) error {
 	bytes, err := baseMapper.codec.MarshalBinaryBare(share)
 	if err != nil {
 		panic(err)

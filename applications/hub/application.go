@@ -15,8 +15,8 @@ import (
 	"github.com/persistenceOne/persistenceSDK/modules/asset"
 
 	abciTypes "github.com/tendermint/tendermint/abci/types"
-	tendermintCommon "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
+	tendermintOS "github.com/tendermint/tendermint/libs/os"
 	tendermintTypes "github.com/tendermint/tendermint/types"
 	tendermintDB "github.com/tendermint/tm-db"
 	"honnef.co/go/tools/version"
@@ -337,7 +337,7 @@ func NewPersistenceHubApplication(
 	if loadLatest {
 		err := application.LoadLatestVersion(application.keys[baseapp.MainStoreKey])
 		if err != nil {
-			tendermintCommon.Exit(err.Error())
+			tendermintOS.Exit(err.Error())
 		}
 	}
 

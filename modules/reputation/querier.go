@@ -6,7 +6,7 @@ import (
 )
 
 func NewQuerier(keeper Keeper) sdkTypes.Querier {
-	return func(ctx sdkTypes.Context, path []string, req abciTypes.RequestQuery) ([]byte, sdkTypes.Error) {
+	return func(ctx sdkTypes.Context, path []string, req abciTypes.RequestQuery) ([]byte, error) {
 		switch path[0] {
 
 		default:

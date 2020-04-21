@@ -7,7 +7,7 @@ import (
 )
 
 func NewQuerier(keeper Keeper) sdkTypes.Querier {
-	return func(context sdkTypes.Context, path []string, requestQuery abciTypes.RequestQuery) ([]byte, sdkTypes.Error) {
+	return func(context sdkTypes.Context, path []string, requestQuery abciTypes.RequestQuery) ([]byte, error) {
 		switch path[0] {
 		case constants.ShareQuery:
 			return keeper.getShareQuerier().Query(context, requestQuery)
