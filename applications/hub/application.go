@@ -2,6 +2,8 @@ package hub
 
 import (
 	"encoding/json"
+	"github.com/cosmos/cosmos-sdk/x/evidence"
+	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	"io"
 	"os"
 
@@ -29,7 +31,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	"github.com/cosmos/cosmos-sdk/x/distribution"
-	"github.com/cosmos/cosmos-sdk/x/genaccounts"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	"github.com/cosmos/cosmos-sdk/x/mint"
@@ -52,8 +53,10 @@ var moduleAccountPermissions = map[string][]string{
 	staking.NotBondedPoolName: {supply.Burner, supply.Staking},
 	gov.ModuleName:            {supply.Burner},
 }
+var tokenReceiveAllowedModules = map[string]bool{
+	distribution.ModuleName: true,
+}
 var ModuleBasics = module.NewBasicManager(
-	genaccounts.AppModuleBasic{},
 	genutil.AppModuleBasic{},
 	auth.AppModuleBasic{},
 	bank.AppModuleBasic{},
@@ -97,6 +100,8 @@ type PersistenceHubApplication struct {
 	keys          map[string]*sdkTypes.KVStoreKey
 	transientKeys map[string]*sdkTypes.TransientStoreKey
 
+	subspaces map[string]params.Subspace
+
 	accountKeeper      auth.AccountKeeper
 	bankKeeper         bank.Keeper
 	supplyKeeper       supply.Keeper
@@ -106,12 +111,15 @@ type PersistenceHubApplication struct {
 	distributionKeeper distribution.Keeper
 	govKeeper          gov.Keeper
 	crisisKeeper       crisis.Keeper
+	upgradeKeeper      upgrade.Keeper
 	parameterKeeper    params.Keeper
-	assetKeeper        asset.Keeper
-	reputationKeeper   reputation.Keeper
-	contractKeeper     contract.Keeper
-	escrowKeeper       escrow.Keeper
-	shareKeeper        share.Keeper
+	evidenceKeeper     evidence.Keeper
+
+	assetKeeper      asset.Keeper
+	reputationKeeper reputation.Keeper
+	contractKeeper   contract.Keeper
+	escrowKeeper     escrow.Keeper
+	shareKeeper      share.Keeper
 
 	moduleManager *module.Manager
 }
@@ -170,34 +178,32 @@ func NewPersistenceHubApplication(
 		application.codec,
 		keys[params.StoreKey],
 		transientKeys[params.TStoreKey],
-		params.DefaultCodespace,
 	)
-	authSubspace := application.parameterKeeper.Subspace(auth.DefaultParamspace)
-	bankSubspace := application.parameterKeeper.Subspace(bank.DefaultParamspace)
-	stakingSubspace := application.parameterKeeper.Subspace(staking.DefaultParamspace)
-	mintSubspace := application.parameterKeeper.Subspace(mint.DefaultParamspace)
-	distributionSubspace := application.parameterKeeper.Subspace(distribution.DefaultParamspace)
-	slashingSubspace := application.parameterKeeper.Subspace(slashing.DefaultParamspace)
-	govSubspace := application.parameterKeeper.Subspace(gov.DefaultParamspace)
-	crisisSubspace := application.parameterKeeper.Subspace(crisis.DefaultParamspace)
-	assetSubspace := application.parameterKeeper.Subspace(asset.DefaultParamspace)
-	reputationSubspace := application.parameterKeeper.Subspace(reputation.DefaultParamspace)
-	contractSubspace := application.parameterKeeper.Subspace(contract.DefaultParamspace)
-	escrowSubspace := application.parameterKeeper.Subspace(escrow.DefaultParamspace)
-	shareSubspace := application.parameterKeeper.Subspace(share.DefaultParamspace)
+	application.subspaces[auth.ModuleName] = application.parameterKeeper.Subspace(auth.DefaultParamspace)
+	application.subspaces[bank.ModuleName] = application.parameterKeeper.Subspace(bank.DefaultParamspace)
+	application.subspaces[staking.ModuleName] = application.parameterKeeper.Subspace(staking.DefaultParamspace)
+	application.subspaces[mint.ModuleName] = application.parameterKeeper.Subspace(mint.DefaultParamspace)
+	application.subspaces[distribution.ModuleName] = application.parameterKeeper.Subspace(distribution.DefaultParamspace)
+	application.subspaces[slashing.ModuleName] = application.parameterKeeper.Subspace(slashing.DefaultParamspace)
+	application.subspaces[gov.ModuleName] = application.parameterKeeper.Subspace(gov.DefaultParamspace)
+	application.subspaces[crisis.ModuleName] = application.parameterKeeper.Subspace(crisis.DefaultParamspace)
+	application.subspaces[asset.ModuleName] = application.parameterKeeper.Subspace(asset.DefaultParamspace)
+	application.subspaces[reputation.ModuleName] = application.parameterKeeper.Subspace(reputation.DefaultParamspace)
+	application.subspaces[contract.ModuleName] = application.parameterKeeper.Subspace(contract.DefaultParamspace)
+	application.subspaces[escrow.ModuleName] = application.parameterKeeper.Subspace(escrow.DefaultParamspace)
+	application.subspaces[share.ModuleName] = application.parameterKeeper.Subspace(share.DefaultParamspace)
 
 	application.accountKeeper = auth.NewAccountKeeper(
 		application.codec,
 		keys[auth.StoreKey],
-		authSubspace,
+		application.subspaces[auth.ModuleName],
 		auth.ProtoBaseAccount,
 	)
 
 	application.bankKeeper = bank.NewBaseKeeper(
 		application.accountKeeper,
-		bankSubspace,
-		bank.DefaultCodespace,
-		application.ModuleAccountAddress(),
+		application.subspaces[bank.ModuleName],
+		application.BlacklistedAccAddrs(),
 	)
 
 	application.supplyKeeper = supply.NewKeeper(
@@ -211,15 +217,13 @@ func NewPersistenceHubApplication(
 	stakingKeeper := staking.NewKeeper(
 		application.codec,
 		keys[staking.StoreKey],
-		transientKeys[staking.TStoreKey],
 		application.supplyKeeper,
-		stakingSubspace,
-		staking.DefaultCodespace,
+		application.subspaces[staking.ModuleName],
 	)
 	application.mintKeeper = mint.NewKeeper(
 		application.codec,
 		keys[mint.StoreKey],
-		mintSubspace,
+		application.subspaces[mint.ModuleName],
 		&stakingKeeper,
 		application.supplyKeeper,
 		auth.FeeCollectorName,
@@ -227,10 +231,9 @@ func NewPersistenceHubApplication(
 	application.distributionKeeper = distribution.NewKeeper(
 		application.codec,
 		keys[distribution.StoreKey],
-		distributionSubspace,
+		application.subspaces[distribution.ModuleName],
 		&stakingKeeper,
 		application.supplyKeeper,
-		distribution.DefaultCodespace,
 		auth.FeeCollectorName,
 		application.ModuleAccountAddress(),
 	)
@@ -238,11 +241,10 @@ func NewPersistenceHubApplication(
 		application.codec,
 		keys[slashing.StoreKey],
 		&stakingKeeper,
-		slashingSubspace,
-		slashing.DefaultCodespace,
+		application.subspaces[slashing.ModuleName],
 	)
 	application.crisisKeeper = crisis.NewKeeper(
-		crisisSubspace,
+		application.subspaces[crisis.ModuleName],
 		invCheckPeriod,
 		application.supplyKeeper,
 		auth.FeeCollectorName,
@@ -257,15 +259,16 @@ func NewPersistenceHubApplication(
 	).AddRoute(
 		distribution.RouterKey,
 		distribution.NewCommunityPoolSpendProposalHandler(application.distributionKeeper),
+	).AddRoute(
+		upgrade.RouterKey,
+		upgrade.NewSoftwareUpgradeProposalHandler(application.upgradeKeeper),
 	)
 	application.govKeeper = gov.NewKeeper(
 		application.codec,
 		keys[gov.StoreKey],
-		application.parameterKeeper,
-		govSubspace,
+		application.subspaces[gov.ModuleName],
 		application.supplyKeeper,
 		&stakingKeeper,
-		gov.DefaultCodespace,
 		govRouter,
 	)
 
@@ -276,24 +279,26 @@ func NewPersistenceHubApplication(
 		),
 	)
 
-	application.assetKeeper = asset.NewKeeper(application.codec, keys[asset.StoreKey], assetSubspace)
-	application.reputationKeeper = reputation.NewKeeper(reputationSubspace)
-	application.contractKeeper = contract.NewKeeper(contractSubspace)
-	application.escrowKeeper = escrow.NewKeeper(escrowSubspace)
-	application.shareKeeper = share.NewKeeper(application.codec, keys[share.StoreKey], shareSubspace)
+	application.assetKeeper = asset.NewKeeper(application.codec, keys[asset.StoreKey], application.subspaces[asset.ModuleName])
+	application.reputationKeeper = reputation.NewKeeper(application.codec, keys[asset.StoreKey], application.subspaces[reputation.ModuleName])
+	application.contractKeeper = contract.NewKeeper(application.codec, keys[asset.StoreKey], application.subspaces[contract.ModuleName])
+	application.escrowKeeper = escrow.NewKeeper(application.codec, keys[asset.StoreKey], application.subspaces[escrow.ModuleName])
+	application.shareKeeper = share.NewKeeper(application.codec, keys[share.StoreKey], application.subspaces[share.ModuleName])
 
 	application.moduleManager = module.NewManager(
-		genaccounts.NewAppModule(application.accountKeeper),
 		genutil.NewAppModule(application.accountKeeper, application.stakingKeeper, application.BaseApp.DeliverTx),
 		auth.NewAppModule(application.accountKeeper),
 		bank.NewAppModule(application.bankKeeper, application.accountKeeper),
 		crisis.NewAppModule(&application.crisisKeeper),
 		supply.NewAppModule(application.supplyKeeper, application.accountKeeper),
-		distribution.NewAppModule(application.distributionKeeper, application.supplyKeeper),
-		gov.NewAppModule(application.govKeeper, application.supplyKeeper),
+		gov.NewAppModule(application.govKeeper, application.accountKeeper, application.supplyKeeper),
 		mint.NewAppModule(application.mintKeeper),
-		slashing.NewAppModule(application.slashingKeeper, application.stakingKeeper),
-		staking.NewAppModule(application.stakingKeeper, application.distributionKeeper, application.accountKeeper, application.supplyKeeper),
+		slashing.NewAppModule(application.slashingKeeper, application.accountKeeper, application.stakingKeeper),
+		distribution.NewAppModule(application.distributionKeeper, application.accountKeeper, application.supplyKeeper, application.stakingKeeper),
+		staking.NewAppModule(application.stakingKeeper, application.accountKeeper, application.supplyKeeper),
+		upgrade.NewAppModule(application.upgradeKeeper),
+		evidence.NewAppModule(application.evidenceKeeper),
+
 		asset.NewAppModule(application.assetKeeper),
 		reputation.NewAppModule(application.reputationKeeper),
 		contract.NewAppModule(application.contractKeeper),
@@ -306,16 +311,18 @@ func NewPersistenceHubApplication(
 	application.moduleManager.SetOrderEndBlockers(crisis.ModuleName, gov.ModuleName, staking.ModuleName)
 
 	application.moduleManager.SetOrderInitGenesis(
-		genaccounts.ModuleName,
+		auth.ModuleName,
 		distribution.ModuleName,
 		staking.ModuleName,
-		auth.ModuleName,
-		bank.ModuleName, slashing.ModuleName,
+		bank.ModuleName,
+		slashing.ModuleName,
 		gov.ModuleName,
 		mint.ModuleName,
 		supply.ModuleName,
 		crisis.ModuleName,
 		genutil.ModuleName,
+		evidence.ModuleName,
+
 		asset.ModuleName,
 		reputation.ModuleName,
 		contract.ModuleName,
@@ -381,6 +388,14 @@ func (application *PersistenceHubApplication) ExportApplicationStateAndValidator
 	validators = staking.WriteValidators(ctx, application.stakingKeeper)
 	return applicationState, validators, nil
 }
+func (application *PersistenceHubApplication) BlacklistedAccAddrs() map[string]bool {
+	blacklistedAddresses := make(map[string]bool)
+	for account := range moduleAccountPermissions {
+		blacklistedAddresses[supply.NewModuleAddress(account).String()] = !tokenReceiveAllowedModules[account]
+	}
+
+	return blacklistedAddresses
+}
 
 func (application *PersistenceHubApplication) prepareForZeroHeightGenesis(ctx sdkTypes.Context, jailWhiteList []string) {
 	applyWhiteList := false
@@ -422,7 +437,7 @@ func (application *PersistenceHubApplication) prepareForZeroHeightGenesis(ctx sd
 
 		scraps := application.distributionKeeper.GetValidatorOutstandingRewards(ctx, val.GetOperator())
 		feePool := application.distributionKeeper.GetFeePool(ctx)
-		feePool.CommunityPool = feePool.CommunityPool.Add(scraps)
+		feePool.CommunityPool = feePool.CommunityPool.Add(scraps...)
 		application.distributionKeeper.SetFeePool(ctx, feePool)
 
 		application.distributionKeeper.Hooks().AfterValidatorCreated(ctx, val.GetOperator())

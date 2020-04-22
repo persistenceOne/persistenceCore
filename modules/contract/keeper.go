@@ -1,7 +1,10 @@
 package contract
 
 import (
+	"github.com/cosmos/cosmos-sdk/codec"
+	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
+	"github.com/persistenceOne/persistenceSDK/modules/contract/mapper"
 	"github.com/persistenceOne/persistenceSDK/modules/contract/transactions/bid"
 	"github.com/persistenceOne/persistenceSDK/modules/contract/transactions/sign"
 )
@@ -16,10 +19,11 @@ type baseKeeper struct {
 	signKeeper sign.Keeper
 }
 
-func NewKeeper(paramSpace params.Subspace) Keeper {
+func NewKeeper(codec *codec.Codec, storeKey sdkTypes.StoreKey, paramSpace params.Subspace) Keeper {
+	Mapper := mapper.NewMapper(codec, storeKey)
 	return baseKeeper{
-		bidKeeper:  bid.NewKeeper(),
-		signKeeper: sign.NewKeeper(),
+		bidKeeper:  bid.NewKeeper(Mapper),
+		signKeeper: sign.NewKeeper(Mapper),
 	}
 }
 

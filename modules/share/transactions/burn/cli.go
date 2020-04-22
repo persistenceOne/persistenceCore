@@ -1,6 +1,7 @@
 package burn
 
 import (
+	"bufio"
 	"github.com/persistenceOne/persistenceSDK/modules/share/constants"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -19,8 +20,9 @@ func TransactionCommand(codec *codec.Codec) *cobra.Command {
 		Short: "Create and sign transaction to burn an share",
 		Long:  "",
 		RunE: func(command *cobra.Command, args []string) error {
-			transactionBuilder := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(codec))
-			cliContext := context.NewCLIContext().WithCodec(codec)
+			bufioReader := bufio.NewReader(command.InOrStdin())
+			transactionBuilder := auth.NewTxBuilderFromCLI(bufioReader).WithTxEncoder(auth.DefaultTxEncoder(codec))
+			cliContext := context.NewCLIContextWithInput(bufioReader).WithCodec(codec)
 
 			message := Message{
 				From:    cliContext.GetFromAddress(),

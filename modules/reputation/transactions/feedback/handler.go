@@ -5,18 +5,18 @@ import (
 	"github.com/persistenceOne/persistenceSDK/modules/reputation/constants"
 )
 
-func HandleMessage(ctx sdkTypes.Context, keeper Keeper, message Message) sdkTypes.Result {
+func HandleMessage(context sdkTypes.Context, keeper Keeper, message Message) (*sdkTypes.Result, error) {
 
-	if error := keeper.transact(message); error != nil {
-		return error.Result()
+	if error := keeper.transact(context, message); error != nil {
+		return nil, error
 	}
 
-	ctx.EventManager().EmitEvent(
+	context.EventManager().EmitEvent(
 		sdkTypes.NewEvent(
 			sdkTypes.EventTypeMessage,
 			sdkTypes.NewAttribute(sdkTypes.AttributeKeyModule, constants.AttributeValueCategory),
 		),
 	)
 
-	return sdkTypes.Result{Events: ctx.EventManager().Events()}
+	return &sdkTypes.Result{Events: context.EventManager().Events()}, nil
 }

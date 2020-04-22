@@ -2,6 +2,7 @@ package asset
 
 import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/persistenceOne/persistenceSDK/modules/asset/constants"
 	abciTypes "github.com/tendermint/tendermint/abci/types"
 )
@@ -13,7 +14,7 @@ func NewQuerier(keeper Keeper) sdkTypes.Querier {
 			return keeper.getAssetQuerier().Query(context, requestQuery)
 
 		default:
-			return nil, sdkTypes.ErrUnknownRequest("unknown bank query endpoint")
+			return nil, errors.Wrapf(constants.UnknownQueryCode, "%v", path[0])
 		}
 	}
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"os"
 	"path"
 
@@ -41,7 +42,7 @@ func main() {
 		Short: "Command line interface for interacting with hubNode",
 	}
 
-	rootCommand.PersistentFlags().String(client.FlagChainID, "", "Chain ID of tendermint node")
+	rootCommand.PersistentFlags().String(flags.FlagChainID, "", "Chain ID of tendermint node")
 	rootCommand.PersistentPreRunE = func(_ *cobra.Command, _ []string) error {
 		return initalizeConfiguration(rootCommand)
 	}
@@ -51,13 +52,13 @@ func main() {
 		client.ConfigCmd(hub.DefaultClientHome),
 		queryCommand(codec),
 		transactionCommand(codec),
-		client.LineBreak,
+		flags.LineBreak,
 		lcd.ServeCommand(codec, registerRoutes),
-		client.LineBreak,
+		flags.LineBreak,
 		keys.Commands(),
-		client.LineBreak,
+		flags.LineBreak,
 		version.Cmd,
-		client.NewCompletionCmd(rootCommand, true),
+		flags.NewCompletionCmd(rootCommand, true),
 	)
 
 	executor := cli.PrepareMainCmd(rootCommand, "HC", hub.DefaultClientHome)
@@ -78,12 +79,12 @@ func queryCommand(codec *amino.Codec) *cobra.Command {
 
 	queryCommand.AddCommand(
 		authcmd.GetAccountCmd(codec),
-		client.LineBreak,
+		flags.LineBreak,
 		rpc.ValidatorCommand(codec),
 		rpc.BlockCommand(),
 		authcmd.QueryTxsByEventsCmd(codec),
 		authcmd.QueryTxCmd(codec),
-		client.LineBreak,
+		flags.LineBreak,
 	)
 
 	hub.ModuleBasics.AddQueryCommands(queryCommand, codec)
@@ -99,13 +100,13 @@ func transactionCommand(codec *amino.Codec) *cobra.Command {
 
 	transactionCommand.AddCommand(
 		bankcmd.SendTxCmd(codec),
-		client.LineBreak,
+		flags.LineBreak,
 		authcmd.GetSignCommand(codec),
 		authcmd.GetMultiSignCommand(codec),
-		client.LineBreak,
+		flags.LineBreak,
 		authcmd.GetBroadcastCommand(codec),
 		authcmd.GetEncodeCommand(codec),
-		client.LineBreak,
+		flags.LineBreak,
 	)
 
 	hub.ModuleBasics.AddTxCommands(transactionCommand, codec)
@@ -143,7 +144,7 @@ func initalizeConfiguration(command *cobra.Command) error {
 			return err
 		}
 	}
-	if err := viper.BindPFlag(client.FlagChainID, command.PersistentFlags().Lookup(client.FlagChainID)); err != nil {
+	if err := viper.BindPFlag(flags.FlagChainID, command.PersistentFlags().Lookup(flags.FlagChainID)); err != nil {
 		return err
 	}
 	if err := viper.BindPFlag(cli.EncodingFlag, command.PersistentFlags().Lookup(cli.EncodingFlag)); err != nil {

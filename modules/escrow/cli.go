@@ -1,11 +1,11 @@
 package escrow
 
 import (
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/persistenceOne/persistenceSDK/modules/escrow/transactions/execute"
 	"github.com/spf13/cobra"
-
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/codec"
 )
 
 func GetCLIRootTransactionCommand(codec *codec.Codec) *cobra.Command {
@@ -16,7 +16,7 @@ func GetCLIRootTransactionCommand(codec *codec.Codec) *cobra.Command {
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
-	rootTransactionCommand.AddCommand(client.PostCommands(
+	rootTransactionCommand.AddCommand(flags.PostCommands(
 		execute.TransactionCommand(codec),
 	)...)
 	return rootTransactionCommand

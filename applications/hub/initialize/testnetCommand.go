@@ -4,19 +4,24 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/client/input"
+	cryptoKeys "github.com/cosmos/cosmos-sdk/crypto/keys"
+	"github.com/cosmos/cosmos-sdk/x/auth/exported"
+	tendermintOS "github.com/tendermint/tendermint/libs/os"
 	"net"
 	"os"
 	"path/filepath"
 
+	genutilTypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	tmconfig "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/crypto"
-	cmn "github.com/tendermint/tendermint/libs/common"
+	"github.com/tendermint/tendermint/libs/rand"
 	"github.com/tendermint/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
 
-	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server"
@@ -24,7 +29,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/cosmos/cosmos-sdk/x/genaccounts"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
@@ -59,7 +63,7 @@ Example:
 			config := ctx.Config
 
 			outputDir := viper.GetString(flagOutputDir)
-			chainID := viper.GetString(client.FlagChainID)
+			chainID := viper.GetString(flags.FlagChainID)
 			minGasPrices := viper.GetString(server.FlagMinGasPrices)
 			nodeDirPrefix := viper.GetString(flagNodeDirPrefix)
 			nodeDaemonHome := viper.GetString(flagNodeDaemonHome)
@@ -85,7 +89,7 @@ Example:
 	command.Flags().String(flagStartingIPAddress, "192.168.0.1",
 		"Starting IP address (192.168.0.1 results in persistent peers list ID0@192.168.0.1:46656, ID1@192.168.0.2:46656, ...)")
 	command.Flags().String(
-		client.FlagChainID, "", "genesis file chain-id, if left blank will be randomly created")
+		flags.FlagChainID, "", "genesis file chain-id, if left blank will be randomly created")
 	command.Flags().String(
 		server.FlagMinGasPrices, fmt.Sprintf("0.000006%s", sdk.DefaultBondDenom),
 		"Minimum gas prices to accept for transactions; All fees in a tx must meet this minimum (e.g. 0.01photino,0.001stake)")
@@ -101,7 +105,7 @@ func InitTestnet(command *cobra.Command, config *tmconfig.Config, codec *codec.C
 	nodeCLIHome, startingIPAddress string, numValidators int) error {
 
 	if chainID == "" {
-		chainID = "chain-" + cmn.RandStr(6)
+		chainID = "chain-" + rand.Str(6)
 	}
 
 	monikers := make([]string, numValidators)
@@ -112,8 +116,8 @@ func InitTestnet(command *cobra.Command, config *tmconfig.Config, codec *codec.C
 	hubConfig.MinGasPrices = minGasPrices
 
 	var (
-		accs     []genaccounts.GenesisAccount
 		genFiles []string
+		accs     []exported.GenesisAccount
 	)
 
 	// generate private keys, node IDs, and initial transactions
@@ -156,10 +160,10 @@ func InitTestnet(command *cobra.Command, config *tmconfig.Config, codec *codec.C
 
 		buf := bufio.NewReader(command.InOrStdin())
 		prompt := fmt.Sprintf(
-			"Password for account '%s' (default %s):", nodeDirName, client.DefaultKeyPass,
+			"Password for account '%s' (default %s):", nodeDirName, keys.DefaultKeyPass,
 		)
 
-		keyPass, err := client.GetPassword(prompt, buf)
+		keyPass, err := input.GetPassword(prompt, buf)
 		if err != nil && keyPass != "" {
 			// An error was returned that either failed to read the password from
 			// STDIN or the given password is not empty but failed to meet minimum
@@ -168,10 +172,10 @@ func InitTestnet(command *cobra.Command, config *tmconfig.Config, codec *codec.C
 		}
 
 		if keyPass == "" {
-			keyPass = client.DefaultKeyPass
+			keyPass = keys.DefaultKeyPass
 		}
-
-		addr, secret, err := server.GenerateSaveCoinKey(clientDir, nodeDirName, keyPass, true)
+		keyRing, err := cryptoKeys.NewKeyring(nodeDirName, "test", clientDir, nil)
+		addr, secret, err := server.GenerateSaveCoinKey(keyRing, nodeDirName, keyPass, true)
 		if err != nil {
 			_ = os.RemoveAll(outputDir)
 			return err
@@ -191,7 +195,7 @@ func InitTestnet(command *cobra.Command, config *tmconfig.Config, codec *codec.C
 
 		accTokens := sdk.TokensFromConsensusPower(1000)
 		accStakingTokens := sdk.TokensFromConsensusPower(500)
-		accs = append(accs, genaccounts.GenesisAccount{
+		accs = append(accs, &auth.BaseAccount{
 			Address: addr,
 			Coins: sdk.Coins{
 				sdk.NewCoin(fmt.Sprintf("%stoken", nodeDirName), accTokens),
@@ -204,7 +208,7 @@ func InitTestnet(command *cobra.Command, config *tmconfig.Config, codec *codec.C
 			sdk.ValAddress(addr),
 			valPubKeys[i],
 			sdk.NewCoin(sdk.DefaultBondDenom, valTokens),
-			staking.NewDescription(nodeDirName, "", "", ""),
+			staking.NewDescription(nodeDirName, "", "", "", ""),
 			staking.NewCommissionRates(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
 			sdk.OneInt(),
 		)
@@ -213,9 +217,10 @@ func InitTestnet(command *cobra.Command, config *tmconfig.Config, codec *codec.C
 			return err
 		}
 		tx := auth.NewStdTx([]sdk.Msg{msg}, auth.StdFee{}, []auth.StdSignature{}, memo)
-		txBldr := auth.NewTxBuilderFromCLI().WithChainID(chainID).WithMemo(memo).WithKeybase(kb)
+		bufioReader := bufio.NewReader(command.InOrStdin())
+		txBldr := auth.NewTxBuilderFromCLI(bufioReader).WithChainID(chainID).WithMemo(memo).WithKeybase(kb)
 
-		signedTx, err := txBldr.SignStdTx(nodeDirName, client.DefaultKeyPass, tx, false)
+		signedTx, err := txBldr.SignStdTx(nodeDirName, keys.DefaultKeyPass, tx, false)
 		if err != nil {
 			_ = os.RemoveAll(outputDir)
 			return err
@@ -254,12 +259,12 @@ func InitTestnet(command *cobra.Command, config *tmconfig.Config, codec *codec.C
 }
 
 func initGenFiles(Codec *codec.Codec, mbm module.BasicManager, chainID string,
-	accs []genaccounts.GenesisAccount, genFiles []string, numValidators int) error {
+	accs []exported.GenesisAccount, genFiles []string, numValidators int) error {
 
 	appGenState := mbm.DefaultGenesis()
 
 	// set the accounts in the genesis state
-	appGenState = genaccounts.SetGenesisStateInAppState(Codec, appGenState, accs)
+	appGenState = genutilTypes.SetGenesisStateInAppState(Codec, appGenState, genutilTypes.GetGenesisStateFromAppState(Codec, appGenState))
 
 	appGenStateJSON, err := codec.MarshalJSONIndent(Codec, appGenState)
 	if err != nil {
@@ -356,12 +361,12 @@ func writeFile(name string, dir string, contents []byte) error {
 	writePath := filepath.Join(dir)
 	file := filepath.Join(writePath, name)
 
-	err := cmn.EnsureDir(writePath, 0700)
+	err := tendermintOS.EnsureDir(writePath, 0700)
 	if err != nil {
 		return err
 	}
 
-	err = cmn.WriteFile(file, contents, 0600)
+	err = tendermintOS.WriteFile(file, contents, 0600)
 	if err != nil {
 		return err
 	}

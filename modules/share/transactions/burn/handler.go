@@ -5,10 +5,10 @@ import (
 	"github.com/persistenceOne/persistenceSDK/modules/share/constants"
 )
 
-func HandleMessage(context sdkTypes.Context, keeper Keeper, message Message) sdkTypes.Result {
+func HandleMessage(context sdkTypes.Context, keeper Keeper, message Message) (*sdkTypes.Result, error) {
 
 	if error := keeper.transact(context, message); error != nil {
-		return error.Result()
+		return nil, error
 	}
 
 	context.EventManager().EmitEvent(
@@ -18,5 +18,5 @@ func HandleMessage(context sdkTypes.Context, keeper Keeper, message Message) sdk
 		),
 	)
 
-	return sdkTypes.Result{Events: context.EventManager().Events()}
+	return &sdkTypes.Result{Events: context.EventManager().Events()}, nil
 }

@@ -1,7 +1,8 @@
 package asset
 
 import (
-	"fmt"
+	"github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/persistenceOne/persistenceSDK/modules/asset/constants"
 
 	"github.com/persistenceOne/persistenceSDK/modules/asset/transactions/burn"
 	"github.com/persistenceOne/persistenceSDK/modules/asset/transactions/lock"
@@ -12,7 +13,7 @@ import (
 )
 
 func NewHandler(keeper Keeper) sdkTypes.Handler {
-	return func(context sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.Result {
+	return func(context sdkTypes.Context, msg sdkTypes.Msg) (*sdkTypes.Result, error) {
 		context = context.WithEventManager(sdkTypes.NewEventManager())
 
 		switch message := msg.(type) {
@@ -26,7 +27,7 @@ func NewHandler(keeper Keeper) sdkTypes.Handler {
 			return send.HandleMessage(context, keeper.getSendKeeper(), message)
 
 		default:
-			return sdkTypes.ErrUnknownRequest(fmt.Sprintf("Unknown asset message type: %T", msg)).Result()
+			return nil, errors.Wrapf(constants.UnknownMessageCode, "%T", msg)
 		}
 	}
 }

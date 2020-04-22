@@ -50,7 +50,7 @@ func (baseMapper baseMapper) Read(context sdkTypes.Context, address types.AssetA
 	kvStore := context.KVStore(baseMapper.storeKey)
 	bytes := kvStore.Get(storeKey(address))
 	if bytes == nil {
-		return nil, errors.Wrap(constants.AssetNotFoundCode, address.String())
+		return nil, errors.Wrap(constants.EntityNotFoundCode, address.String())
 	}
 	err := baseMapper.codec.UnmarshalBinaryBare(bytes, &asset)
 	if err != nil {

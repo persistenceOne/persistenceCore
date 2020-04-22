@@ -2,9 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/x/auth"
 	"io"
-
-	"github.com/cosmos/cosmos-sdk/x/genaccounts"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/persistenceOne/persistenceSDK/applications/hub"
@@ -17,7 +17,6 @@ import (
 	tendermintTypes "github.com/tendermint/tendermint/types"
 	tendermintDB "github.com/tendermint/tm-db"
 
-	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/store"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
@@ -59,7 +58,7 @@ func main() {
 	rootCommand.AddCommand(initialize.CollectGenesisTransactionsCommand(
 		serverContext,
 		codec,
-		genaccounts.AppModuleBasic{},
+		auth.GenesisAccountIterator{},
 		hub.DefaultNodeHome,
 	))
 	rootCommand.AddCommand(initialize.MigrateGenesisCommand(
@@ -71,7 +70,7 @@ func main() {
 		codec,
 		hub.ModuleBasics,
 		staking.AppModuleBasic{},
-		genaccounts.AppModuleBasic{},
+		auth.GenesisAccountIterator{},
 		hub.DefaultNodeHome,
 		hub.DefaultClientHome,
 	))
@@ -90,10 +89,10 @@ func main() {
 		serverContext,
 		codec,
 		hub.ModuleBasics,
-		genaccounts.AppModuleBasic{},
+		auth.GenesisAccountIterator{},
 	))
 	rootCommand.AddCommand(initialize.ReplayTransactionsCommand())
-	rootCommand.AddCommand(client.NewCompletionCmd(rootCommand, true))
+	rootCommand.AddCommand(flags.NewCompletionCmd(rootCommand, true))
 	rootCommand.PersistentFlags().UintVar(
 		&invalidCheckPeriod,
 		flagInvalidCheckPeriod,

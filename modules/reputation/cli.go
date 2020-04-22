@@ -1,6 +1,7 @@
 package reputation
 
 import (
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/persistenceOne/persistenceSDK/modules/reputation/transactions/feedback"
 	"github.com/spf13/cobra"
 
@@ -16,7 +17,7 @@ func GetCLIRootTransactionCommand(codec *codec.Codec) *cobra.Command {
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
-	rootTransactionCommand.AddCommand(client.PostCommands(
+	rootTransactionCommand.AddCommand(flags.PostCommands(
 		feedback.TransactionCommand(codec),
 	)...)
 	return rootTransactionCommand

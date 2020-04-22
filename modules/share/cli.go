@@ -1,6 +1,7 @@
 package share
 
 import (
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/persistenceOne/persistenceSDK/modules/share/queries/share"
 	"github.com/persistenceOne/persistenceSDK/modules/share/transactions/burn"
 	"github.com/persistenceOne/persistenceSDK/modules/share/transactions/lock"
@@ -20,7 +21,7 @@ func GetCLIRootTransactionCommand(codec *codec.Codec) *cobra.Command {
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
-	rootTransactionCommand.AddCommand(client.PostCommands(
+	rootTransactionCommand.AddCommand(flags.PostCommands(
 		burn.TransactionCommand(codec),
 		lock.TransactionCommand(codec),
 		mint.TransactionCommand(codec),
@@ -37,7 +38,7 @@ func GetCLIRootQueryCommand(codec *codec.Codec) *cobra.Command {
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
-	rootQueryCommand.AddCommand(client.GetCommands(
+	rootQueryCommand.AddCommand(flags.GetCommands(
 		share.QueryCommand(codec),
 	)...)
 	return rootQueryCommand

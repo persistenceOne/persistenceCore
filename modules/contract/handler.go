@@ -1,7 +1,8 @@
 package contract
 
 import (
-	"fmt"
+	"github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/persistenceOne/persistenceSDK/modules/contract/constants"
 
 	"github.com/persistenceOne/persistenceSDK/modules/contract/transactions/bid"
 	"github.com/persistenceOne/persistenceSDK/modules/contract/transactions/sign"
@@ -10,7 +11,7 @@ import (
 )
 
 func NewHandler(keeper Keeper) sdkTypes.Handler {
-	return func(context sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.Result {
+	return func(context sdkTypes.Context, msg sdkTypes.Msg) (*sdkTypes.Result, error) {
 		context = context.WithEventManager(sdkTypes.NewEventManager())
 
 		switch message := msg.(type) {
@@ -20,7 +21,7 @@ func NewHandler(keeper Keeper) sdkTypes.Handler {
 			return sign.HandleMessage(context, keeper.getSignKeeper(), message)
 
 		default:
-			return sdkTypes.ErrUnknownRequest(fmt.Sprintf("Unknown contract message type: %T", msg)).Result()
+			return nil, errors.Wrapf(constants.UnknownMessageCode, "%T", msg)
 		}
 	}
 }
