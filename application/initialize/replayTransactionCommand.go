@@ -2,12 +2,11 @@ package initialize
 
 import (
 	"fmt"
+	"github.com/persistenceOne/persistenceCore/application"
 	"io"
 	"os"
 	"path/filepath"
 	"time"
-
-	"github.com/persistenceOne/persistenceSDK/applications/hub"
 
 	cpm "github.com/otiai10/copy"
 	"github.com/spf13/cobra"
@@ -90,7 +89,7 @@ func replayTransactions(rootDir string) error {
 
 	// Application
 	fmt.Fprintln(os.Stderr, "Creating application")
-	myapp := hub.NewPersistenceHubApplication(
+	myapp := application.NewPersistenceHubApplication(
 		ctx.Logger,
 		appDB,
 		traceStoreWriter,

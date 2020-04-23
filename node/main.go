@@ -5,10 +5,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/persistenceOne/persistenceCore/application"
 	"io"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
-	"github.com/persistenceOne/persistenceSDK/applications/hub"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -23,7 +23,7 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 
-	"github.com/persistenceOne/persistenceSDK/applications/hub/initialize"
+	"github.com/persistenceOne/persistenceCore/application/initialize"
 )
 
 const flagInvalidCheckPeriod = "invalid-check-period"
@@ -34,7 +34,7 @@ func main() {
 
 	serverContext := server.NewDefaultContext()
 
-	codec := hub.MakeCodec()
+	codec := application.MakeCodec()
 
 	configuration := sdkTypes.GetConfig()
 	configuration.SetBech32PrefixForAccount(sdkTypes.Bech32PrefixAccAddr, sdkTypes.Bech32PrefixAccPub)
@@ -45,7 +45,7 @@ func main() {
 	cobra.EnableCommandSorting = false
 
 	rootCommand := &cobra.Command{
-		Use:               "hubNode",
+		Use:               "node",
 		Short:             "Persistence Hub Node Daemon (server)",
 		PersistentPreRunE: server.PersistentPreRunEFn(serverContext),
 	}
@@ -53,14 +53,14 @@ func main() {
 	rootCommand.AddCommand(initialize.InitializeCommand(
 		serverContext,
 		codec,
-		hub.ModuleBasics,
-		hub.DefaultNodeHome,
+		application.ModuleBasics,
+		application.DefaultNodeHome,
 	))
 	rootCommand.AddCommand(initialize.CollectGenesisTransactionsCommand(
 		serverContext,
 		codec,
 		auth.GenesisAccountIterator{},
-		hub.DefaultNodeHome,
+		application.DefaultNodeHome,
 	))
 	rootCommand.AddCommand(initialize.MigrateGenesisCommand(
 		serverContext,
@@ -69,28 +69,28 @@ func main() {
 	rootCommand.AddCommand(initialize.GenesisTransactionCommand(
 		serverContext,
 		codec,
-		hub.ModuleBasics,
+		application.ModuleBasics,
 		staking.AppModuleBasic{},
 		auth.GenesisAccountIterator{},
-		hub.DefaultNodeHome,
-		hub.DefaultClientHome,
+		application.DefaultNodeHome,
+		application.DefaultClientHome,
 	))
 	rootCommand.AddCommand(initialize.ValidateGenesisCommand(
 		serverContext,
 		codec,
-		hub.ModuleBasics,
+		application.ModuleBasics,
 	))
 	rootCommand.AddCommand(initialize.AddGenesisAccountCommand(
 		serverContext,
 		codec,
-		hub.DefaultNodeHome,
-		hub.DefaultClientHome,
+		application.DefaultNodeHome,
+		application.DefaultClientHome,
 	))
 	rootCommand.AddCommand(flags.NewCompletionCmd(rootCommand, true))
 	rootCommand.AddCommand(initialize.TestnetCommand(
 		serverContext,
 		codec,
-		hub.ModuleBasics,
+		application.ModuleBasics,
 		auth.GenesisAccountIterator{},
 	))
 	rootCommand.AddCommand(initialize.ReplayTransactionsCommand())
@@ -118,7 +118,7 @@ func main() {
 		for _, h := range viper.GetIntSlice(server.FlagUnsafeSkipUpgrades) {
 			skipUpgradeHeights[int64(h)] = true
 		}
-		return hub.NewPersistenceHubApplication(
+		return application.NewPersistenceHubApplication(
 			logger,
 			db,
 			traceStore,
@@ -144,7 +144,7 @@ func main() {
 	) (json.RawMessage, []tendermintTypes.GenesisValidator, error) {
 
 		if height != -1 {
-			genesisApplication := hub.NewPersistenceHubApplication(
+			genesisApplication := application.NewPersistenceHubApplication(
 				logger,
 				db,
 				traceStore,
@@ -160,7 +160,7 @@ func main() {
 			return genesisApplication.ExportApplicationStateAndValidators(forZeroHeight, jailWhiteList)
 		}
 		//else
-		genesisApplication := hub.NewPersistenceHubApplication(
+		genesisApplication := application.NewPersistenceHubApplication(
 			logger,
 			db,
 			traceStore,
@@ -181,7 +181,7 @@ func main() {
 		appExporter,
 	)
 
-	executor := cli.PrepareBaseCmd(rootCommand, "CA", hub.DefaultNodeHome)
+	executor := cli.PrepareBaseCmd(rootCommand, "CA", application.DefaultNodeHome)
 	err := executor.Execute()
 	if err != nil {
 		panic(err)

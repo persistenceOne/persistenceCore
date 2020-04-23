@@ -57,7 +57,7 @@ necessary files (private validator, genesis, config, etc.).
 Note, strict routability for addresses is turned off in the config file.
 
 Example:
-	hubNode testnet --v 4 --output-dir ./output --starting-ip-address 192.168.10.2
+	node testnet --v 4 --output-dir ./output --starting-ip-address 192.168.10.2
 	`,
 		RunE: func(command *cobra.Command, _ []string) error {
 			config := ctx.Config
@@ -82,9 +82,9 @@ Example:
 		"Directory to store initialization data for the testnet")
 	command.Flags().String(flagNodeDirPrefix, "node",
 		"Prefix the directory name for each node with (node results in node0, node1, ...)")
-	command.Flags().String(flagNodeDaemonHome, "hubNode",
+	command.Flags().String(flagNodeDaemonHome, "node",
 		"Home directory of the node's daemon configuration")
-	command.Flags().String(flagNodeCLIHome, "hubClient",
+	command.Flags().String(flagNodeCLIHome, "client",
 		"Home directory of the node's cli configuration")
 	command.Flags().String(flagStartingIPAddress, "192.168.0.1",
 		"Starting IP address (192.168.0.1 results in persistent peers list ID0@192.168.0.1:46656, ID1@192.168.0.2:46656, ...)")

@@ -23,23 +23,23 @@ all: install
 build: go.sum
 ifeq (${OS},Windows_NT)
 	
-	go build -mod=readonly ${BUILD_FLAGS} -o bin/hubClient.exe commands/hub/hubClient/
-	go build -mod=readonly ${BUILD_FLAGS} -o bin/hubNode.exe commands/hub/hubNode/
+	go build -mod=readonly ${BUILD_FLAGS} -o bin/coreClient.exe client/
+	go build -mod=readonly ${BUILD_FLAGS} -o bin/coreNode.exe node/
 
 else
 	
-	go build -mod=readonly ${BUILD_FLAGS} -o bin/hubClient commands/hub/hubClient/
-	go build -mod=readonly ${BUILD_FLAGS} -o bin/hubNode commands/hub/hubNode/
+	go build -mod=readonly ${BUILD_FLAGS} -o bin/coreClient client/
+	go build -mod=readonly ${BUILD_FLAGS} -o bin/coreNode node/
 
 endif
 
 install: go.sum
 	
-	go install -mod=readonly ${BUILD_FLAGS} ./commands/hub/hubClient
-	go install -mod=readonly ${BUILD_FLAGS} ./commands/hub/hubNode
+	go install -mod=readonly ${BUILD_FLAGS} ./client
+	go install -mod=readonly ${BUILD_FLAGS} ./node
 
 go.sum:
-	@echo "--> Ensure dependencies have not been modified"
+	@echo "--> Ensuring dependencies have not been modified."
 	@go mod verify
 
 .PHONY: all build install  go.sum

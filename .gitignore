@@ -1,5 +1,5 @@
-commands/hub/hubNode/__debug_bin
-commands/hub/hubClient/__debug_bin
+node/__debug_bin
+client/__debug_bin
 vendor
 .vscode
 .idea

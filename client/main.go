@@ -3,10 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/persistenceOne/persistenceCore/application"
 	"os"
 	"path"
-
-	"github.com/persistenceOne/persistenceSDK/applications/hub"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/keys"
@@ -29,7 +28,7 @@ import (
 
 func main() {
 	cobra.EnableCommandSorting = false
-	codec := hub.MakeCodec()
+	codec := application.MakeCodec()
 
 	config := sdkTypes.GetConfig()
 	config.SetBech32PrefixForAccount(sdkTypes.Bech32PrefixAccAddr, sdkTypes.Bech32PrefixAccPub)
@@ -38,8 +37,8 @@ func main() {
 	config.Seal()
 
 	rootCommand := &cobra.Command{
-		Use:   "hubClient",
-		Short: "Command line interface for interacting with hubNode",
+		Use:   "client",
+		Short: "Command line interface for interacting with node",
 	}
 
 	rootCommand.PersistentFlags().String(flags.FlagChainID, "", "Chain ID of tendermint node")
@@ -49,7 +48,7 @@ func main() {
 
 	rootCommand.AddCommand(
 		rpc.StatusCommand(),
-		client.ConfigCmd(hub.DefaultClientHome),
+		client.ConfigCmd(application.DefaultClientHome),
 		queryCommand(codec),
 		transactionCommand(codec),
 		flags.LineBreak,
@@ -61,7 +60,7 @@ func main() {
 		flags.NewCompletionCmd(rootCommand, true),
 	)
 
-	executor := cli.PrepareMainCmd(rootCommand, "HC", hub.DefaultClientHome)
+	executor := cli.PrepareMainCmd(rootCommand, "HC", application.DefaultClientHome)
 
 	err := executor.Execute()
 	if err != nil {
@@ -87,7 +86,7 @@ func queryCommand(codec *amino.Codec) *cobra.Command {
 		flags.LineBreak,
 	)
 
-	hub.ModuleBasics.AddQueryCommands(queryCommand, codec)
+	application.ModuleBasics.AddQueryCommands(queryCommand, codec)
 
 	return queryCommand
 }
@@ -109,7 +108,7 @@ func transactionCommand(codec *amino.Codec) *cobra.Command {
 		flags.LineBreak,
 	)
 
-	hub.ModuleBasics.AddTxCommands(transactionCommand, codec)
+	application.ModuleBasics.AddTxCommands(transactionCommand, codec)
 
 	var cmdsToRemove []*cobra.Command
 
@@ -127,7 +126,7 @@ func transactionCommand(codec *amino.Codec) *cobra.Command {
 func registerRoutes(rs *lcd.RestServer) {
 	client.RegisterRoutes(rs.CliCtx, rs.Mux)
 	authrest.RegisterTxRoutes(rs.CliCtx, rs.Mux)
-	hub.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
+	application.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
 }
 
 func initalizeConfiguration(command *cobra.Command) error {

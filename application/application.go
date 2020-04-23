@@ -1,4 +1,4 @@
-package hub
+package application
 
 import (
 	"encoding/json"
@@ -43,8 +43,8 @@ import (
 
 const applicationName = "PersistenceHubApplication"
 
-var DefaultClientHome = os.ExpandEnv("$HOME/.hubClient")
-var DefaultNodeHome = os.ExpandEnv("$HOME/.hubNode")
+var DefaultClientHome = os.ExpandEnv("$HOME/.client")
+var DefaultNodeHome = os.ExpandEnv("$HOME/.node")
 var moduleAccountPermissions = map[string][]string{
 	auth.FeeCollectorName:     nil,
 	distribution.ModuleName:   nil,
