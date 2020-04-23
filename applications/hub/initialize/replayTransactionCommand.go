@@ -19,9 +19,7 @@ import (
 	tmstore "github.com/tendermint/tendermint/store"
 	tm "github.com/tendermint/tendermint/types"
 
-	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/server"
-	"github.com/cosmos/cosmos-sdk/store"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -93,8 +91,13 @@ func replayTransactions(rootDir string) error {
 	// Application
 	fmt.Fprintln(os.Stderr, "Creating application")
 	myapp := hub.NewPersistenceHubApplication(
-		ctx.Logger, appDB, traceStoreWriter, true, uint(1),
-		baseapp.SetPruning(store.PruneEverything), // nothing
+		ctx.Logger,
+		appDB,
+		traceStoreWriter,
+		true,
+		uint(1),
+		map[int64]bool{},
+		"",
 	)
 
 	// Genesis

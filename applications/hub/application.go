@@ -122,6 +122,8 @@ type PersistenceHubApplication struct {
 	shareKeeper      share.Keeper
 
 	moduleManager *module.Manager
+
+	simulationManager *module.SimulationManager
 }
 
 func NewPersistenceHubApplication(
@@ -130,6 +132,8 @@ func NewPersistenceHubApplication(
 	traceStore io.Writer,
 	loadLatest bool,
 	invCheckPeriod uint,
+	skipUpgradeHeights map[int64]bool,
+	home string,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *PersistenceHubApplication {
 
@@ -148,6 +152,7 @@ func NewPersistenceHubApplication(
 	keys := sdkTypes.NewKVStoreKeys(
 		baseapp.MainStoreKey,
 		auth.StoreKey,
+		bank.ModuleName,
 		staking.StoreKey,
 		supply.StoreKey,
 		mint.StoreKey,
@@ -155,6 +160,9 @@ func NewPersistenceHubApplication(
 		slashing.StoreKey,
 		gov.StoreKey,
 		params.StoreKey,
+		evidence.StoreKey,
+		upgrade.StoreKey,
+
 		asset.StoreKey,
 		reputation.StoreKey,
 		contract.StoreKey,
@@ -172,6 +180,7 @@ func NewPersistenceHubApplication(
 		invCheckPeriod: invCheckPeriod,
 		keys:           keys,
 		transientKeys:  transientKeys,
+		subspaces:      make(map[string]params.Subspace),
 	}
 
 	application.parameterKeeper = params.NewKeeper(
@@ -187,6 +196,8 @@ func NewPersistenceHubApplication(
 	application.subspaces[slashing.ModuleName] = application.parameterKeeper.Subspace(slashing.DefaultParamspace)
 	application.subspaces[gov.ModuleName] = application.parameterKeeper.Subspace(gov.DefaultParamspace)
 	application.subspaces[crisis.ModuleName] = application.parameterKeeper.Subspace(crisis.DefaultParamspace)
+	application.subspaces[evidence.ModuleName] = application.parameterKeeper.Subspace(evidence.DefaultParamspace)
+
 	application.subspaces[asset.ModuleName] = application.parameterKeeper.Subspace(asset.DefaultParamspace)
 	application.subspaces[reputation.ModuleName] = application.parameterKeeper.Subspace(reputation.DefaultParamspace)
 	application.subspaces[contract.ModuleName] = application.parameterKeeper.Subspace(contract.DefaultParamspace)
@@ -249,6 +260,21 @@ func NewPersistenceHubApplication(
 		application.supplyKeeper,
 		auth.FeeCollectorName,
 	)
+	application.upgradeKeeper = upgrade.NewKeeper(
+		skipUpgradeHeights,
+		keys[upgrade.StoreKey],
+		codec,
+	)
+	evidenceKeeper := evidence.NewKeeper(
+		codec,
+		keys[evidence.StoreKey],
+		application.subspaces[evidence.ModuleName],
+		&stakingKeeper,
+		application.slashingKeeper,
+	)
+	evidenceRouter := evidence.NewRouter()
+	evidenceKeeper.SetRouter(evidenceRouter)
+	application.evidenceKeeper = *evidenceKeeper
 	govRouter := gov.NewRouter()
 	govRouter.AddRoute(
 		gov.RouterKey,
@@ -279,11 +305,30 @@ func NewPersistenceHubApplication(
 		),
 	)
 
-	application.assetKeeper = asset.NewKeeper(application.codec, keys[asset.StoreKey], application.subspaces[asset.ModuleName])
-	application.reputationKeeper = reputation.NewKeeper(application.codec, keys[asset.StoreKey], application.subspaces[reputation.ModuleName])
-	application.contractKeeper = contract.NewKeeper(application.codec, keys[asset.StoreKey], application.subspaces[contract.ModuleName])
-	application.escrowKeeper = escrow.NewKeeper(application.codec, keys[asset.StoreKey], application.subspaces[escrow.ModuleName])
-	application.shareKeeper = share.NewKeeper(application.codec, keys[share.StoreKey], application.subspaces[share.ModuleName])
+	application.assetKeeper = asset.NewKeeper(
+		application.codec,
+		keys[asset.StoreKey],
+		application.subspaces[asset.ModuleName],
+	)
+	application.reputationKeeper = reputation.NewKeeper(
+		application.codec,
+		keys[asset.StoreKey],
+		application.subspaces[reputation.ModuleName],
+	)
+	application.contractKeeper = contract.NewKeeper(
+		application.codec,
+		keys[asset.StoreKey],
+		application.subspaces[contract.ModuleName],
+	)
+	application.escrowKeeper = escrow.NewKeeper(
+		application.codec,
+		keys[asset.StoreKey],
+		application.subspaces[escrow.ModuleName],
+	)
+	application.shareKeeper = share.NewKeeper(
+		application.codec, keys[share.StoreKey],
+		application.subspaces[share.ModuleName],
+	)
 
 	application.moduleManager = module.NewManager(
 		genutil.NewAppModule(application.accountKeeper, application.stakingKeeper, application.BaseApp.DeliverTx),
@@ -305,15 +350,21 @@ func NewPersistenceHubApplication(
 		escrow.NewAppModule(application.escrowKeeper),
 		share.NewAppModule(application.shareKeeper),
 	)
-
-	application.moduleManager.SetOrderBeginBlockers(mint.ModuleName, distribution.ModuleName, slashing.ModuleName)
-
-	application.moduleManager.SetOrderEndBlockers(crisis.ModuleName, gov.ModuleName, staking.ModuleName)
-
+	application.moduleManager.SetOrderBeginBlockers(
+		upgrade.ModuleName,
+		mint.ModuleName,
+		distribution.ModuleName,
+		slashing.ModuleName,
+	)
+	application.moduleManager.SetOrderEndBlockers(
+		crisis.ModuleName,
+		gov.ModuleName,
+		staking.ModuleName,
+	)
 	application.moduleManager.SetOrderInitGenesis(
-		auth.ModuleName,
 		distribution.ModuleName,
 		staking.ModuleName,
+		auth.ModuleName,
 		bank.ModuleName,
 		slashing.ModuleName,
 		gov.ModuleName,
@@ -329,9 +380,21 @@ func NewPersistenceHubApplication(
 		escrow.ModuleName,
 		share.ModuleName,
 	)
-
 	application.moduleManager.RegisterInvariants(&application.crisisKeeper)
 	application.moduleManager.RegisterRoutes(application.Router(), application.QueryRouter())
+
+	//TODO add peristenceSDK modules to simulation
+	application.simulationManager = module.NewSimulationManager(
+		auth.NewAppModule(application.accountKeeper),
+		bank.NewAppModule(application.bankKeeper, application.accountKeeper),
+		supply.NewAppModule(application.supplyKeeper, application.accountKeeper),
+		gov.NewAppModule(application.govKeeper, application.accountKeeper, application.supplyKeeper),
+		mint.NewAppModule(application.mintKeeper),
+		slashing.NewAppModule(application.slashingKeeper, application.accountKeeper, application.stakingKeeper),
+		distribution.NewAppModule(application.distributionKeeper, application.accountKeeper, application.supplyKeeper, application.stakingKeeper),
+		staking.NewAppModule(application.stakingKeeper, application.accountKeeper, application.supplyKeeper),
+	)
+	application.simulationManager.RegisterStoreDecoders()
 
 	application.MountKVStores(keys)
 	application.MountTransientStores(transientKeys)

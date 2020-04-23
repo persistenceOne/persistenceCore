@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"io"
@@ -85,6 +86,7 @@ func main() {
 		hub.DefaultNodeHome,
 		hub.DefaultClientHome,
 	))
+	rootCommand.AddCommand(flags.NewCompletionCmd(rootCommand, true))
 	rootCommand.AddCommand(initialize.TestnetCommand(
 		serverContext,
 		codec,
@@ -92,7 +94,8 @@ func main() {
 		auth.GenesisAccountIterator{},
 	))
 	rootCommand.AddCommand(initialize.ReplayTransactionsCommand())
-	rootCommand.AddCommand(flags.NewCompletionCmd(rootCommand, true))
+	rootCommand.AddCommand(debug.Cmd(codec))
+
 	rootCommand.PersistentFlags().UintVar(
 		&invalidCheckPeriod,
 		flagInvalidCheckPeriod,
@@ -105,15 +108,29 @@ func main() {
 		db tendermintDB.DB,
 		traceStore io.Writer,
 	) tendermintABSITypes.Application {
+		var cache sdkTypes.MultiStorePersistentCache
+
+		if viper.GetBool(server.FlagInterBlockCache) {
+			cache = store.NewCommitKVStoreCacheManager()
+		}
+
+		skipUpgradeHeights := make(map[int64]bool)
+		for _, h := range viper.GetIntSlice(server.FlagUnsafeSkipUpgrades) {
+			skipUpgradeHeights[int64(h)] = true
+		}
 		return hub.NewPersistenceHubApplication(
 			logger,
 			db,
 			traceStore,
 			true,
 			invalidCheckPeriod,
+			skipUpgradeHeights,
+			viper.GetString(flags.FlagHome),
 			baseapp.SetPruning(store.NewPruningOptionsFromString(viper.GetString("pruning"))),
 			baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)),
-			baseapp.SetHaltHeight(uint64(viper.GetInt(server.FlagHaltHeight))),
+			baseapp.SetHaltHeight(viper.GetUint64(server.FlagHaltHeight)),
+			baseapp.SetHaltTime(viper.GetUint64(server.FlagHaltTime)),
+			baseapp.SetInterBlockCache(cache),
 		)
 	}
 
@@ -133,6 +150,8 @@ func main() {
 				traceStore,
 				false,
 				uint(1),
+				map[int64]bool{},
+				"",
 			)
 			err := genesisApplication.LoadHeight(height)
 			if err != nil {
@@ -146,7 +165,10 @@ func main() {
 			db,
 			traceStore,
 			true,
-			uint(1))
+			uint(1),
+			map[int64]bool{},
+			"",
+		)
 		return genesisApplication.ExportApplicationStateAndValidators(forZeroHeight, jailWhiteList)
 
 	}
