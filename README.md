@@ -1,1 +1,1 @@
-# persistenceSDK
+# persistenceCore
