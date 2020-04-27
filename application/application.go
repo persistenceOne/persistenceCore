@@ -41,10 +41,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/supply"
 )
 
-const applicationName = "PersistenceHubApplication"
+const applicationName = "PersistenceCore"
 
-var DefaultClientHome = os.ExpandEnv("$HOME/.client")
-var DefaultNodeHome = os.ExpandEnv("$HOME/.node")
+var DefaultClientHome = os.ExpandEnv("$HOME/.coreClient")
+var DefaultNodeHome = os.ExpandEnv("$HOME/.coreNode")
 var moduleAccountPermissions = map[string][]string{
 	auth.FeeCollectorName:     nil,
 	distribution.ModuleName:   nil,
