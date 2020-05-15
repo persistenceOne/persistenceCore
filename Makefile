@@ -9,7 +9,7 @@ BUILD_TAGS := -s  -w \
 
 BUILD_FLAGS += -ldflags "${BUILD_TAGS}"
 
-all: verify install
+all: verify build
 
 install:
 ifeq (${OS},Windows_NT)
@@ -24,8 +24,21 @@ else
 
 endif
 
+build:
+ifeq (${OS},Windows_NT)
+
+	go build  ${BUILD_FLAGS} -o ${GOBIN}/coreClient.exe ./client
+	go build  ${BUILD_FLAGS} -o ${GOBIN}/coreNode.exe ./node
+
+else
+
+	go build  ${BUILD_FLAGS} -o ${GOBIN}/coreClient ./client
+	go build  ${BUILD_FLAGS} -o ${GOBIN}/coreNode ./node
+
+endif
+
 verify:
 	@echo "verifying modules"
 	@go mod verify
 
-.PHONY: all install verify
+.PHONY: all install build verify

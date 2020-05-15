@@ -1,4 +1,4 @@
-hubNode start>~/.node/log &
+coreNode start>~/.node/log &
 sleep 10 ; hubClient rest-server --chain-id test>>~/.client/log &
 echo "
 Node and Client started up. For logs:

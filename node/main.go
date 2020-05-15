@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/x/auth"
+	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
+	codecstd "github.com/cosmos/cosmos-sdk/std"
+	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/persistenceOne/persistenceCore/application"
 	"io"
 
@@ -12,7 +14,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	tendermintABSITypes "github.com/tendermint/tendermint/abci/types"
+	tendermintABCITypes "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/cli"
 	"github.com/tendermint/tendermint/libs/log"
 	tendermintTypes "github.com/tendermint/tendermint/types"
@@ -34,7 +36,9 @@ func main() {
 
 	serverContext := server.NewDefaultContext()
 
-	codec := application.MakeCodec()
+	Codec := application.MakeCodec()
+	interfaceRegistry := cdctypes.NewInterfaceRegistry()
+	appCodec := codecstd.NewAppCodec(Codec, interfaceRegistry)
 
 	configuration := sdkTypes.GetConfig()
 	configuration.SetBech32PrefixForAccount(sdkTypes.Bech32PrefixAccAddr, sdkTypes.Bech32PrefixAccPub)
@@ -52,49 +56,44 @@ func main() {
 
 	rootCommand.AddCommand(initialize.InitializeCommand(
 		serverContext,
-		codec,
+		Codec,
 		application.ModuleBasics,
 		application.DefaultNodeHome,
 	))
 	rootCommand.AddCommand(initialize.CollectGenesisTransactionsCommand(
 		serverContext,
-		codec,
-		auth.GenesisAccountIterator{},
+		Codec,
+		bank.GenesisBalancesIterator{},
 		application.DefaultNodeHome,
 	))
 	rootCommand.AddCommand(initialize.MigrateGenesisCommand(
 		serverContext,
-		codec,
+		Codec,
 	))
 	rootCommand.AddCommand(initialize.GenesisTransactionCommand(
 		serverContext,
-		codec,
+		Codec,
 		application.ModuleBasics,
 		staking.AppModuleBasic{},
-		auth.GenesisAccountIterator{},
+		bank.GenesisBalancesIterator{},
 		application.DefaultNodeHome,
 		application.DefaultClientHome,
 	))
 	rootCommand.AddCommand(initialize.ValidateGenesisCommand(
 		serverContext,
-		codec,
+		Codec,
 		application.ModuleBasics,
 	))
 	rootCommand.AddCommand(initialize.AddGenesisAccountCommand(
 		serverContext,
-		codec,
+		Codec,
+		appCodec,
 		application.DefaultNodeHome,
 		application.DefaultClientHome,
 	))
 	rootCommand.AddCommand(flags.NewCompletionCmd(rootCommand, true))
-	rootCommand.AddCommand(initialize.TestnetCommand(
-		serverContext,
-		codec,
-		application.ModuleBasics,
-		auth.GenesisAccountIterator{},
-	))
 	rootCommand.AddCommand(initialize.ReplayTransactionsCommand())
-	rootCommand.AddCommand(debug.Cmd(codec))
+	rootCommand.AddCommand(debug.Cmd(Codec))
 
 	rootCommand.PersistentFlags().UintVar(
 		&invalidCheckPeriod,
@@ -107,7 +106,7 @@ func main() {
 		logger log.Logger,
 		db tendermintDB.DB,
 		traceStore io.Writer,
-	) tendermintABSITypes.Application {
+	) tendermintABCITypes.Application {
 		var cache sdkTypes.MultiStorePersistentCache
 
 		if viper.GetBool(server.FlagInterBlockCache) {
@@ -141,7 +140,7 @@ func main() {
 		height int64,
 		forZeroHeight bool,
 		jailWhiteList []string,
-	) (json.RawMessage, []tendermintTypes.GenesisValidator, error) {
+	) (json.RawMessage, []tendermintTypes.GenesisValidator, *tendermintABCITypes.ConsensusParams, error) {
 
 		if height != -1 {
 			genesisApplication := application.NewPersistenceHubApplication(
@@ -155,7 +154,7 @@ func main() {
 			)
 			err := genesisApplication.LoadHeight(height)
 			if err != nil {
-				return nil, nil, err
+				return nil, nil, nil, err
 			}
 			return genesisApplication.ExportApplicationStateAndValidators(forZeroHeight, jailWhiteList)
 		}
@@ -175,7 +174,7 @@ func main() {
 
 	server.AddCommands(
 		serverContext,
-		codec,
+		Codec,
 		rootCommand,
 		appCreator,
 		appExporter,

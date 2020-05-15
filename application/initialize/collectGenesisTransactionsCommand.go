@@ -11,13 +11,13 @@ import (
 func CollectGenesisTransactionsCommand(
 	serverContext *server.Context,
 	codec *codec.Codec,
-	genesisAccountsIterator types.GenesisAccountsIterator,
+	genesisBalancesIterator types.GenesisBalancesIterator,
 	defaultNodeHome string,
 ) *cobra.Command {
 	return cli.CollectGenTxsCmd(
 		serverContext,
 		codec,
-		genesisAccountsIterator,
+		genesisBalancesIterator,
 		defaultNodeHome,
 	)
 }
