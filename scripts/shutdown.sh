@@ -1,4 +1,4 @@
-killall hubNode
-killall hubClient
+killall coreNode
+killall coreClient
 echo "
 Node and Client Shutdown."

@@ -8,6 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/capability"
 	"github.com/cosmos/cosmos-sdk/x/evidence"
 	"github.com/cosmos/cosmos-sdk/x/ibc"
+	ibcclient "github.com/cosmos/cosmos-sdk/x/ibc/02-client"
 	port "github.com/cosmos/cosmos-sdk/x/ibc/05-port"
 	transfer "github.com/cosmos/cosmos-sdk/x/ibc/20-transfer"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
@@ -55,12 +56,13 @@ const applicationName = "PersistenceCore"
 var DefaultClientHome = os.ExpandEnv("$HOME/.coreClient")
 var DefaultNodeHome = os.ExpandEnv("$HOME/.coreNode")
 var moduleAccountPermissions = map[string][]string{
-	auth.FeeCollectorName:     nil,
-	distribution.ModuleName:   nil,
-	mint.ModuleName:           {auth.Minter},
-	staking.BondedPoolName:    {auth.Burner, auth.Staking},
-	staking.NotBondedPoolName: {auth.Burner, auth.Staking},
-	gov.ModuleName:            {auth.Burner},
+	auth.FeeCollectorName:           nil,
+	distribution.ModuleName:         nil,
+	mint.ModuleName:                 {auth.Minter},
+	staking.BondedPoolName:          {auth.Burner, auth.Staking},
+	staking.NotBondedPoolName:       {auth.Burner, auth.Staking},
+	gov.ModuleName:                  {auth.Burner},
+	transfer.GetModuleAccountName(): {auth.Minter, auth.Burner},
 }
 var tokenReceiveAllowedModules = map[string]bool{
 	distribution.ModuleName: true,
@@ -215,7 +217,7 @@ func NewPersistenceHubApplication(
 	application.subspaces[mint.ModuleName] = application.paramsKeeper.Subspace(mint.DefaultParamspace)
 	application.subspaces[distribution.ModuleName] = application.paramsKeeper.Subspace(distribution.DefaultParamspace)
 	application.subspaces[slashing.ModuleName] = application.paramsKeeper.Subspace(slashing.DefaultParamspace)
-	application.subspaces[gov.ModuleName] = application.paramsKeeper.Subspace(gov.DefaultParamspace)
+	application.subspaces[gov.ModuleName] = application.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
 	application.subspaces[crisis.ModuleName] = application.paramsKeeper.Subspace(crisis.DefaultParamspace)
 
 	application.subspaces[asset.ModuleName] = application.paramsKeeper.Subspace(asset.DefaultParamspace)
@@ -341,16 +343,9 @@ func NewPersistenceHubApplication(
 		&stakingKeeper,
 		application.slashingKeeper,
 	)
-	evidenceRouter := evidence.NewRouter()
+	evidenceRouter := evidence.NewRouter().AddRoute(ibcclient.RouterKey, ibcclient.HandlerClientMisbehaviour(application.ibcKeeper.ClientKeeper))
 	evidenceKeeper.SetRouter(evidenceRouter)
 	application.evidenceKeeper = *evidenceKeeper
-
-	application.stakingKeeper = *stakingKeeper.SetHooks(
-		staking.NewMultiStakingHooks(
-			application.distributionKeeper.Hooks(),
-			application.slashingKeeper.Hooks(),
-		),
-	)
 
 	application.assetKeeper = asset.NewKeeper(
 		application.codec,
@@ -412,17 +407,19 @@ func NewPersistenceHubApplication(
 		staking.ModuleName,
 	)
 	application.moduleManager.SetOrderInitGenesis(
+		capability.ModuleName,
+		auth.ModuleName,
 		distribution.ModuleName,
 		staking.ModuleName,
-		auth.ModuleName,
 		bank.ModuleName,
 		slashing.ModuleName,
 		gov.ModuleName,
 		mint.ModuleName,
-		auth.ModuleName,
 		crisis.ModuleName,
+		ibc.ModuleName,
 		genutil.ModuleName,
 		evidence.ModuleName,
+		transfer.ModuleName,
 
 		asset.ModuleName,
 		reputation.ModuleName,
@@ -437,16 +434,21 @@ func NewPersistenceHubApplication(
 	application.simulationManager = module.NewSimulationManager(
 		auth.NewAppModule(appCodec, application.accountKeeper),
 		bank.NewAppModule(appCodec, application.bankKeeper, application.accountKeeper),
+		capability.NewAppModule(appCodec, *application.capabilityKeeper),
 		gov.NewAppModule(appCodec, application.govKeeper, application.accountKeeper, application.bankKeeper),
 		mint.NewAppModule(appCodec, application.mintKeeper, application.accountKeeper),
-		slashing.NewAppModule(appCodec, application.slashingKeeper, application.accountKeeper, application.bankKeeper, application.stakingKeeper),
-		distribution.NewAppModule(appCodec, application.distributionKeeper, application.accountKeeper, application.bankKeeper, application.stakingKeeper),
 		staking.NewAppModule(appCodec, application.stakingKeeper, application.accountKeeper, application.bankKeeper),
+		distribution.NewAppModule(appCodec, application.distributionKeeper, application.accountKeeper, application.bankKeeper, application.stakingKeeper),
+		slashing.NewAppModule(appCodec, application.slashingKeeper, application.accountKeeper, application.bankKeeper, application.stakingKeeper),
+		params.NewAppModule(application.paramsKeeper),
+		evidence.NewAppModule(application.evidenceKeeper),
 	)
+
 	application.simulationManager.RegisterStoreDecoders()
 
 	application.MountKVStores(keys)
 	application.MountTransientStores(transientStoreKeys)
+	application.MountMemoryStores(memoryStoreKeys)
 
 	application.SetInitChainer(application.InitChainer)
 	application.SetBeginBlocker(application.BeginBlocker)
@@ -459,6 +461,12 @@ func NewPersistenceHubApplication(
 			tendermintOS.Exit(err.Error())
 		}
 	}
+
+	ctx := application.BaseApp.NewUncachedContext(true, abciTypes.Header{})
+	application.capabilityKeeper.InitializeAndSeal(ctx)
+
+	application.scopedIBCKeeper = scopedIBCKeeper
+	application.scopedTransferKeeper = scopedTransferKeeper
 
 	return application
 }

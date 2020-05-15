@@ -4,8 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	codecstd "github.com/cosmos/cosmos-sdk/std"
-
+	"github.com/cosmos/cosmos-sdk/std"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tendermint/go-amino"
@@ -31,7 +30,7 @@ const (
 
 // AddGenesisAccountCmd returns add-genesis-account cobra Command.
 func AddGenesisAccountCommand(
-	ctx *server.Context, depCdc *amino.Codec, cdc *codecstd.Codec, defaultNodeHome, defaultClientHome string,
+	ctx *server.Context, depCdc *amino.Codec, cdc *std.Codec, defaultNodeHome, defaultClientHome string,
 ) *cobra.Command {
 
 	cmd := &cobra.Command{
