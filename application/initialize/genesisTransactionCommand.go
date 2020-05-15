@@ -16,7 +16,7 @@ func GenesisTransactionCommand(
 	codec *codec.Codec,
 	moduleBasicManager module.BasicManager,
 	stakingMessageBuildingHelpers cli.StakingMsgBuildingHelpers,
-	genesisAccountsIterator types.GenesisAccountsIterator,
+	genesisBalancesIterator types.GenesisBalancesIterator,
 	defaultNodeHome string,
 	defaultClientHome string,
 ) *cobra.Command {
@@ -25,7 +25,7 @@ func GenesisTransactionCommand(
 		codec,
 		moduleBasicManager,
 		stakingMessageBuildingHelpers,
-		genesisAccountsIterator,
+		genesisBalancesIterator,
 		defaultNodeHome,
 		defaultClientHome,
 	)

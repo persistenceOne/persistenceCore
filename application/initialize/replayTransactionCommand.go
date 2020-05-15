@@ -177,7 +177,7 @@ func replayTransactions(rootDir string) error {
 
 		t2 := time.Now()
 
-		state, err = blockExec.ApplyBlock(state, blockmeta.BlockID, block)
+		state, _, err = blockExec.ApplyBlock(state, blockmeta.BlockID, block)
 		if err != nil {
 			return err
 		}
