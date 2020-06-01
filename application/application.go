@@ -51,10 +51,10 @@ import (
 	upgradeClient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 )
 
-const applicationName = "PersistenceCore"
+const applicationName = "PersistenceMantle"
 
-var DefaultClientHome = os.ExpandEnv("$HOME/.coreClient")
-var DefaultNodeHome = os.ExpandEnv("$HOME/.coreNode")
+var DefaultClientHome = os.ExpandEnv("$HOME/.assetClient")
+var DefaultNodeHome = os.ExpandEnv("$HOME/.assetNode")
 var moduleAccountPermissions = map[string][]string{
 	auth.FeeCollectorName:           nil,
 	distribution.ModuleName:         nil,

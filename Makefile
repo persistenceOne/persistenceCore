@@ -4,8 +4,8 @@ VERSION := $(shell git branch | grep \* | cut -d ' ' -f2)
 COMMIT := $(shell git rev-parse --short HEAD)
 
 BUILD_TAGS := -s  -w \
-	-X github.com/persistenceOne/persistenceCore/version.Version=${VERSION} \
-	-X github.com/persistenceOne/persistenceCore/version.Commit=${COMMIT}
+	-X github.com/persistenceOne/persistenceMantle/version.Version=${VERSION} \
+	-X github.com/persistenceOne/persistenceMantle/version.Commit=${COMMIT}
 
 BUILD_FLAGS += -ldflags "${BUILD_TAGS}"
 
@@ -14,26 +14,26 @@ all: verify build
 install:
 ifeq (${OS},Windows_NT)
 	
-	go build -mod=readonly ${BUILD_FLAGS} -o ${GOBIN}/coreClient.exe ./client
-	go build -mod=readonly ${BUILD_FLAGS} -o ${GOBIN}/coreNode.exe ./node
+	go build -mod=readonly ${BUILD_FLAGS} -o ${GOBIN}/assetClient.exe ./client
+	go build -mod=readonly ${BUILD_FLAGS} -o ${GOBIN}/assetNode.exe ./node
 
 else
 	
-	go build -mod=readonly ${BUILD_FLAGS} -o ${GOBIN}/coreClient ./client
-	go build -mod=readonly ${BUILD_FLAGS} -o ${GOBIN}/coreNode ./node
+	go build -mod=readonly ${BUILD_FLAGS} -o ${GOBIN}/assetClient ./client
+	go build -mod=readonly ${BUILD_FLAGS} -o ${GOBIN}/assetNode ./node
 
 endif
 
 build:
 ifeq (${OS},Windows_NT)
 
-	go build  ${BUILD_FLAGS} -o ${GOBIN}/coreClient.exe ./client
-	go build  ${BUILD_FLAGS} -o ${GOBIN}/coreNode.exe ./node
+	go build  ${BUILD_FLAGS} -o ${GOBIN}/assetClient.exe ./client
+	go build  ${BUILD_FLAGS} -o ${GOBIN}/assetNode.exe ./node
 
 else
 
-	go build  ${BUILD_FLAGS} -o ${GOBIN}/coreClient ./client
-	go build  ${BUILD_FLAGS} -o ${GOBIN}/coreNode ./node
+	go build  ${BUILD_FLAGS} -o ${GOBIN}/assetClient ./client
+	go build  ${BUILD_FLAGS} -o ${GOBIN}/assetNode ./node
 
 endif
 

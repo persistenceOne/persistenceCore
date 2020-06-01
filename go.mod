@@ -1,4 +1,4 @@
-module github.com/persistenceOne/persistenceCore
+module github.com/persistenceOne/persistenceMantle
 
 go 1.14
 

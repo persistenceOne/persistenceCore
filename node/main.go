@@ -7,7 +7,7 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	codecstd "github.com/cosmos/cosmos-sdk/std"
 	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/persistenceOne/persistenceCore/application"
+	"github.com/persistenceOne/persistenceMantle/application"
 	"io"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -25,7 +25,7 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 
-	"github.com/persistenceOne/persistenceCore/application/initialize"
+	"github.com/persistenceOne/persistenceMantle/application/initialize"
 )
 
 const flagInvalidCheckPeriod = "invalid-check-period"
@@ -49,7 +49,7 @@ func main() {
 	cobra.EnableCommandSorting = false
 
 	rootCommand := &cobra.Command{
-		Use:               "coreNode",
+		Use:               "assetNode",
 		Short:             "Persistence Hub Node Daemon (server)",
 		PersistentPreRunE: server.PersistentPreRunEFn(serverContext),
 	}
