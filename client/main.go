@@ -14,6 +14,7 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	authclient "github.com/cosmos/cosmos-sdk/x/auth/client"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	"github.com/cosmos/cosmos-sdk/x/bank"
@@ -26,9 +27,16 @@ import (
 	"github.com/tendermint/tendermint/libs/cli"
 )
 
+var (
+	appCodec, codec = application.MakeCodecs()
+)
+
+func init() {
+	authclient.Codec = appCodec
+}
+
 func main() {
 	cobra.EnableCommandSorting = false
-	codec := application.MakeCodec()
 
 	config := sdkTypes.GetConfig()
 	config.SetBech32PrefixForAccount(sdkTypes.Bech32PrefixAccAddr, sdkTypes.Bech32PrefixAccPub)

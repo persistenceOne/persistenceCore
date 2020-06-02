@@ -2,7 +2,6 @@ package application
 
 import (
 	"encoding/json"
-	codecTypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/std"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	"github.com/cosmos/cosmos-sdk/x/capability"
@@ -16,8 +15,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/persistenceOne/persistenceSDK/types"
-
+	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	abciTypes "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	tendermintOS "github.com/tendermint/tendermint/libs/os"
@@ -27,7 +25,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
-	codecstd "github.com/cosmos/cosmos-sdk/std"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -83,14 +80,15 @@ var ModuleBasics = module.NewBasicManager(
 
 type GenesisState map[string]json.RawMessage
 
-func MakeCodec() *codec.Codec {
-	var Codec = codec.New()
-	ModuleBasics.RegisterCodec(Codec)
-	sdkTypes.RegisterCodec(Codec)
-	types.RegisterCodec(Codec)
-	codec.RegisterCrypto(Codec)
-	codec.RegisterEvidences(Codec)
-	return Codec
+func MakeCodecs() (*std.Codec, *codec.Codec) {
+	cdc := std.MakeCodec(ModuleBasics)
+	interfaceRegistry := cdctypes.NewInterfaceRegistry()
+	appCodec := std.NewAppCodec(cdc, interfaceRegistry)
+
+	sdkTypes.RegisterInterfaces(interfaceRegistry)
+	ModuleBasics.RegisterInterfaceModules(interfaceRegistry)
+
+	return appCodec, cdc
 }
 
 type PersistenceHubApplication struct {
@@ -141,10 +139,7 @@ func NewPersistenceHubApplication(
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *PersistenceHubApplication {
 
-	Codec := codecstd.MakeCodec(ModuleBasics)
-	interfaceRegistry := codecTypes.NewInterfaceRegistry()
-	appCodec := codecstd.NewAppCodec(Codec, interfaceRegistry)
-
+	appCodec, Codec := MakeCodecs()
 	baseApp := baseapp.NewBaseApp(
 		applicationName,
 		logger,

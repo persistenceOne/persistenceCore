@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
-	codecstd "github.com/cosmos/cosmos-sdk/std"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/persistenceOne/assetMantle/application"
 	"io"
@@ -36,9 +34,7 @@ func main() {
 
 	serverContext := server.NewDefaultContext()
 
-	Codec := application.MakeCodec()
-	interfaceRegistry := cdctypes.NewInterfaceRegistry()
-	appCodec := codecstd.NewAppCodec(Codec, interfaceRegistry)
+	appCodec, Codec := application.MakeCodecs()
 
 	configuration := sdkTypes.GetConfig()
 	configuration.SetBech32PrefixForAccount(sdkTypes.Bech32PrefixAccAddr, sdkTypes.Bech32PrefixAccPub)
