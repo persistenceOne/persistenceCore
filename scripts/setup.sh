@@ -3,6 +3,9 @@ make all
 rm -rf ~/.assetNode
 rm -rf ~/.assetClient
 
+mkdir ~/.assetNode
+mkdir ~/.assetClient
+
 assetNode init --chain-id test test
 assetClient keys add test
 assetNode add-genesis-account test 100000000000000stake

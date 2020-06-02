@@ -12,17 +12,11 @@ import (
 	port "github.com/cosmos/cosmos-sdk/x/ibc/05-port"
 	transfer "github.com/cosmos/cosmos-sdk/x/ibc/20-transfer"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
+	"github.com/persistenceOne/persistenceSDK/modules/assetFactory"
 	"io"
 	"os"
 
 	"github.com/persistenceOne/persistenceSDK/types"
-
-	"github.com/persistenceOne/persistenceSDK/modules/contract"
-	"github.com/persistenceOne/persistenceSDK/modules/escrow"
-	"github.com/persistenceOne/persistenceSDK/modules/reputation"
-	"github.com/persistenceOne/persistenceSDK/modules/share"
-
-	"github.com/persistenceOne/persistenceSDK/modules/asset"
 
 	abciTypes "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -84,11 +78,7 @@ var ModuleBasics = module.NewBasicManager(
 	evidence.AppModuleBasic{},
 	transfer.AppModuleBasic{},
 
-	asset.AppModuleBasic{},
-	reputation.AppModuleBasic{},
-	contract.AppModuleBasic{},
-	escrow.AppModuleBasic{},
-	share.AppModuleBasic{},
+	assetFactory.AppModuleBasic{},
 )
 
 type GenesisState map[string]json.RawMessage
@@ -133,11 +123,7 @@ type PersistenceHubApplication struct {
 	scopedIBCKeeper      capability.ScopedKeeper
 	scopedTransferKeeper capability.ScopedKeeper
 
-	assetKeeper      asset.Keeper
-	reputationKeeper reputation.Keeper
-	contractKeeper   contract.Keeper
-	escrowKeeper     escrow.Keeper
-	shareKeeper      share.Keeper
+	assetFactoryKeeper assetFactory.Keeper
 
 	moduleManager *module.Manager
 
@@ -184,11 +170,7 @@ func NewPersistenceHubApplication(
 		transfer.StoreKey,
 		capability.StoreKey,
 
-		asset.StoreKey,
-		reputation.StoreKey,
-		contract.StoreKey,
-		escrow.StoreKey,
-		share.StoreKey,
+		assetFactory.StoreKey,
 	)
 	transientStoreKeys := sdkTypes.NewTransientStoreKeys(params.TStoreKey)
 	memoryStoreKeys := sdkTypes.NewMemoryStoreKeys(capability.MemStoreKey)
@@ -220,11 +202,7 @@ func NewPersistenceHubApplication(
 	application.subspaces[gov.ModuleName] = application.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
 	application.subspaces[crisis.ModuleName] = application.paramsKeeper.Subspace(crisis.DefaultParamspace)
 
-	application.subspaces[asset.ModuleName] = application.paramsKeeper.Subspace(asset.DefaultParamspace)
-	application.subspaces[reputation.ModuleName] = application.paramsKeeper.Subspace(reputation.DefaultParamspace)
-	application.subspaces[contract.ModuleName] = application.paramsKeeper.Subspace(contract.DefaultParamspace)
-	application.subspaces[escrow.ModuleName] = application.paramsKeeper.Subspace(escrow.DefaultParamspace)
-	application.subspaces[share.ModuleName] = application.paramsKeeper.Subspace(share.DefaultParamspace)
+	application.subspaces[assetFactory.ModuleName] = application.paramsKeeper.Subspace(assetFactory.DefaultParamspace)
 
 	baseApp.SetParamStore(application.paramsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(std.ConsensusParamsKeyTable()))
 
@@ -347,29 +325,10 @@ func NewPersistenceHubApplication(
 	evidenceKeeper.SetRouter(evidenceRouter)
 	application.evidenceKeeper = *evidenceKeeper
 
-	application.assetKeeper = asset.NewKeeper(
+	application.assetFactoryKeeper = assetFactory.NewKeeper(
 		application.codec,
-		keys[asset.StoreKey],
-		application.subspaces[asset.ModuleName],
-	)
-	application.reputationKeeper = reputation.NewKeeper(
-		application.codec,
-		keys[asset.StoreKey],
-		application.subspaces[reputation.ModuleName],
-	)
-	application.contractKeeper = contract.NewKeeper(
-		application.codec,
-		keys[asset.StoreKey],
-		application.subspaces[contract.ModuleName],
-	)
-	application.escrowKeeper = escrow.NewKeeper(
-		application.codec,
-		keys[asset.StoreKey],
-		application.subspaces[escrow.ModuleName],
-	)
-	application.shareKeeper = share.NewKeeper(
-		application.codec, keys[share.StoreKey],
-		application.subspaces[share.ModuleName],
+		keys[assetFactory.StoreKey],
+		application.subspaces[assetFactory.ModuleName],
 	)
 
 	application.moduleManager = module.NewManager(
@@ -389,11 +348,7 @@ func NewPersistenceHubApplication(
 		params.NewAppModule(application.paramsKeeper),
 		transferModule,
 
-		asset.NewAppModule(application.assetKeeper),
-		reputation.NewAppModule(application.reputationKeeper),
-		contract.NewAppModule(application.contractKeeper),
-		escrow.NewAppModule(application.escrowKeeper),
-		share.NewAppModule(application.shareKeeper),
+		assetFactory.NewAppModule(application.assetFactoryKeeper),
 	)
 	application.moduleManager.SetOrderBeginBlockers(
 		upgrade.ModuleName,
@@ -421,11 +376,7 @@ func NewPersistenceHubApplication(
 		evidence.ModuleName,
 		transfer.ModuleName,
 
-		asset.ModuleName,
-		reputation.ModuleName,
-		contract.ModuleName,
-		escrow.ModuleName,
-		share.ModuleName,
+		assetFactory.ModuleName,
 	)
 	application.moduleManager.RegisterInvariants(&application.crisisKeeper)
 	application.moduleManager.RegisterRoutes(application.Router(), application.QueryRouter())
