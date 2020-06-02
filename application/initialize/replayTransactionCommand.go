@@ -2,7 +2,7 @@ package initialize
 
 import (
 	"fmt"
-	"github.com/persistenceOne/persistenceMantle/application"
+	"github.com/persistenceOne/assetMantle/application"
 	"io"
 	"os"
 	"path/filepath"

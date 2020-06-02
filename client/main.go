@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/persistenceOne/persistenceMantle/application"
+	"github.com/persistenceOne/assetMantle/application"
 	"os"
 	"path"
 

@@ -4,8 +4,8 @@ VERSION := $(shell git branch | grep \* | cut -d ' ' -f2)
 COMMIT := $(shell git rev-parse --short HEAD)
 
 BUILD_TAGS := -s  -w \
-	-X github.com/persistenceOne/persistenceMantle/version.Version=${VERSION} \
-	-X github.com/persistenceOne/persistenceMantle/version.Commit=${COMMIT}
+	-X github.com/persistenceOne/assetMantle/version.Version=${VERSION} \
+	-X github.com/persistenceOne/assetMantle/version.Commit=${COMMIT}
 
 BUILD_FLAGS += -ldflags "${BUILD_TAGS}"
 

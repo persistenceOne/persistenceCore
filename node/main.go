@@ -7,7 +7,7 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	codecstd "github.com/cosmos/cosmos-sdk/std"
 	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/persistenceOne/persistenceMantle/application"
+	"github.com/persistenceOne/assetMantle/application"
 	"io"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -25,7 +25,7 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 
-	"github.com/persistenceOne/persistenceMantle/application/initialize"
+	"github.com/persistenceOne/assetMantle/application/initialize"
 )
 
 const flagInvalidCheckPeriod = "invalid-check-period"
