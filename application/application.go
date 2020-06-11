@@ -12,6 +12,7 @@ import (
 	transfer "github.com/cosmos/cosmos-sdk/x/ibc/20-transfer"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	"github.com/persistenceOne/persistenceSDK/modules/assetFactory"
+	"github.com/persistenceOne/persistenceSDK/types"
 	"io"
 	"os"
 
@@ -82,6 +83,7 @@ type GenesisState map[string]json.RawMessage
 
 func MakeCodecs() (*std.Codec, *codec.Codec) {
 	cdc := std.MakeCodec(ModuleBasics)
+	types.RegisterCodec(cdc)
 	interfaceRegistry := cdctypes.NewInterfaceRegistry()
 	appCodec := std.NewAppCodec(cdc, interfaceRegistry)
 
