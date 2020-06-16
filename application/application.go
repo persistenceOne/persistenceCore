@@ -12,8 +12,10 @@ import (
 	transfer "github.com/cosmos/cosmos-sdk/x/ibc/20-transfer"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	"github.com/persistenceOne/persistenceSDK/modules/assetFactory"
+	"github.com/spf13/viper"
 	"io"
 	"os"
+	"path/filepath"
 
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	abciTypes "github.com/tendermint/tendermint/abci/types"
@@ -40,6 +42,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	upgradeClient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
+	"github.com/persistenceOne/wasmd/x/wasm"
 )
 
 const applicationName = "AssetMantle"
@@ -69,12 +72,12 @@ var ModuleBasics = module.NewBasicManager(
 	gov.NewAppModuleBasic(paramsClient.ProposalHandler, distribution.ProposalHandler, upgradeClient.ProposalHandler),
 	params.AppModuleBasic{},
 	crisis.AppModuleBasic{},
+	wasm.AppModuleBasic{},
 	slashing.AppModuleBasic{},
 	ibc.AppModuleBasic{},
 	upgrade.AppModuleBasic{},
 	evidence.AppModuleBasic{},
 	transfer.AppModuleBasic{},
-
 	assetFactory.AppModuleBasic{},
 )
 
@@ -120,12 +123,18 @@ type PersistenceHubApplication struct {
 
 	scopedIBCKeeper      capability.ScopedKeeper
 	scopedTransferKeeper capability.ScopedKeeper
-
-	assetFactoryKeeper assetFactory.Keeper
+	wasmKeeper           wasm.Keeper
+	assetFactoryKeeper   assetFactory.Keeper
 
 	moduleManager *module.Manager
 
 	simulationManager *module.SimulationManager
+}
+
+// WasmWrapper allows us to use namespacing in the config file
+// This is only used for parsing in the app, x/wasm expects WasmConfig
+type WasmWrapper struct {
+	Wasm wasm.WasmConfig `mapstructure:"wasm"`
 }
 
 func NewPersistenceHubApplication(
@@ -164,7 +173,7 @@ func NewPersistenceHubApplication(
 		evidence.StoreKey,
 		transfer.StoreKey,
 		capability.StoreKey,
-
+		wasm.StoreKey,
 		assetFactory.StoreKey,
 	)
 	transientStoreKeys := sdkTypes.NewTransientStoreKeys(params.TStoreKey)
@@ -326,6 +335,23 @@ func NewPersistenceHubApplication(
 		application.subspaces[assetFactory.ModuleName],
 	)
 
+	// just re-use the full router - do we want to limit this more?
+	var wasmRouter = baseApp.Router()
+	wasmDir := filepath.Join(home, wasm.ModuleName)
+
+	wasmWrap := WasmWrapper{Wasm: wasm.DefaultWasmConfig()}
+	err := viper.Unmarshal(&wasmWrap)
+	if err != nil {
+		panic("error while reading wasm config: " + err.Error())
+	}
+	wasmConfig := wasmWrap.Wasm
+
+	// The last arguments can contain custom message handlers, and custom query handlers,
+	// if we want to allow any custom callbacks
+	supportedFeatures := "staking"
+	application.wasmKeeper = wasm.NewKeeper(appCodec, keys[wasm.StoreKey], application.accountKeeper, application.bankKeeper,
+		application.stakingKeeper, wasmRouter, wasmDir, wasmConfig, supportedFeatures, nil, nil)
+
 	application.moduleManager = module.NewManager(
 		genutil.NewAppModule(application.accountKeeper, application.stakingKeeper, application.BaseApp.DeliverTx),
 		auth.NewAppModule(appCodec, application.accountKeeper),
@@ -338,6 +364,7 @@ func NewPersistenceHubApplication(
 		distribution.NewAppModule(appCodec, application.distributionKeeper, application.accountKeeper, application.bankKeeper, application.stakingKeeper),
 		staking.NewAppModule(appCodec, application.stakingKeeper, application.accountKeeper, application.bankKeeper),
 		upgrade.NewAppModule(application.upgradeKeeper),
+		wasm.NewAppModule(application.wasmKeeper),
 		evidence.NewAppModule(application.evidenceKeeper),
 		ibc.NewAppModule(application.ibcKeeper),
 		params.NewAppModule(application.paramsKeeper),
@@ -370,7 +397,7 @@ func NewPersistenceHubApplication(
 		genutil.ModuleName,
 		evidence.ModuleName,
 		transfer.ModuleName,
-
+		wasm.ModuleName,
 		assetFactory.ModuleName,
 	)
 	application.moduleManager.RegisterInvariants(&application.crisisKeeper)
