@@ -25,6 +25,7 @@ import (
 	tendermintDB "github.com/tendermint/tm-db"
 	"honnef.co/go/tools/version"
 
+	"github.com/CosmWasm/wasmd/x/wasm"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
@@ -42,7 +43,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	upgradeClient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
-	"github.com/persistenceOne/wasmd/x/wasm"
 )
 
 const applicationName = "AssetMantle"
@@ -349,8 +349,9 @@ func NewPersistenceHubApplication(
 	// The last arguments can contain custom message handlers, and custom query handlers,
 	// if we want to allow any custom callbacks
 	supportedFeatures := "staking"
-	application.wasmKeeper = wasm.NewKeeper(appCodec, keys[wasm.StoreKey], application.accountKeeper, application.bankKeeper,
-		application.stakingKeeper, wasmRouter, wasmDir, wasmConfig, supportedFeatures, nil, nil)
+	application.wasmKeeper = wasm.NewKeeper(appCodec, keys[wasm.StoreKey],
+		application.accountKeeper, application.bankKeeper, application.stakingKeeper,
+		wasmRouter, wasmDir, wasmConfig, supportedFeatures, nil, nil)
 
 	application.moduleManager = module.NewManager(
 		genutil.NewAppModule(application.accountKeeper, application.stakingKeeper, application.BaseApp.DeliverTx),
