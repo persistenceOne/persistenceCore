@@ -29,6 +29,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
+	sdkErrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/bank"
@@ -136,6 +137,56 @@ type PersistenceHubApplication struct {
 type WasmWrapper struct {
 	Wasm wasm.WasmConfig `mapstructure:"wasm"`
 }
+
+// this is for adding raw messages to wasm //TODO move this someplace else from line 141-
+
+type CustomMsg struct {
+	//	Debug string `json:"debug,omitempty"`
+	Type string `json:"type,required"`
+	Raw  []byte `json:"raw,omitempty"`
+}
+
+// Type will be assetFactory/mint , assetFactory/burn, assetFactory/Mmtate , like codec register types
+
+func wasmCustomMessageEncoder(codec *codec.Codec) *wasm.MessageEncoders {
+
+	return &wasm.MessageEncoders{
+		Custom: customEncoder(codec),
+	}
+}
+
+func customEncoder(codec *codec.Codec) wasm.CustomEncoder {
+	return func(sender sdkTypes.AccAddress, msg json.RawMessage) ([]sdkTypes.Msg, error) {
+		var customMessage CustomMsg
+		err := json.Unmarshal(msg, &customMessage)
+		if err != nil {
+			return nil, sdkErrors.Wrap(sdkErrors.ErrJSONUnmarshal, err.Error())
+		}
+		switch customMessage.Type {
+		case "assetFactory/mint":
+			assetFactoryMintEncoder(codec, customMessage.Raw)
+		case "assetFactory/mutate":
+			assetFactoryMutateEncoder(codec, customMessage.Raw)
+		case "assetFactory/burn":
+			assetFactoryBurnEncoder(codec, customMessage.Raw)
+		}
+		return nil, sdkErrors.Wrap(wasm.ErrInvalidMsg, "Custom variant not supported")
+	}
+}
+
+func assetFactoryMintEncoder(codec *codec.Codec, rawMessage json.RawMessage) ([]sdkTypes.Msg, error) {
+	return nil, sdkErrors.Wrap(wasm.ErrInvalidMsg, "Custom variant not supported")
+}
+
+func assetFactoryMutateEncoder(codec *codec.Codec, rawMessage json.RawMessage) ([]sdkTypes.Msg, error) {
+	return nil, sdkErrors.Wrap(wasm.ErrInvalidMsg, "Custom variant not supported")
+}
+
+func assetFactoryBurnEncoder(codec *codec.Codec, rawMessage json.RawMessage) ([]sdkTypes.Msg, error) {
+	return nil, sdkErrors.Wrap(wasm.ErrInvalidMsg, "Custom variant not supported")
+}
+
+//till here
 
 func NewPersistenceHubApplication(
 	logger log.Logger,
@@ -351,7 +402,7 @@ func NewPersistenceHubApplication(
 	supportedFeatures := "staking"
 	application.wasmKeeper = wasm.NewKeeper(appCodec, keys[wasm.StoreKey],
 		application.accountKeeper, application.bankKeeper, application.stakingKeeper,
-		wasmRouter, wasmDir, wasmConfig, supportedFeatures, nil, nil)
+		wasmRouter, wasmDir, wasmConfig, supportedFeatures, wasmCustomMessageEncoder(Codec), nil)
 
 	application.moduleManager = module.NewManager(
 		genutil.NewAppModule(application.accountKeeper, application.stakingKeeper, application.BaseApp.DeliverTx),
