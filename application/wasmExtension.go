@@ -2,11 +2,13 @@ package application
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/CosmWasm/wasmd/x/wasm"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	sdkErrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/persistenceOne/persistenceSDK/modules/assetFactory/constants"
 	"github.com/persistenceOne/persistenceSDK/modules/assetFactory/transactions/mint"
 	"github.com/persistenceOne/persistenceSDK/types"
 	"strings"
@@ -66,30 +68,30 @@ func assetFactoryMintEncoder(codec *codec.Codec, sender sdkTypes.AccAddress, raw
 
 func EncodeAssestmintMsg(sender sdkTypes.AccAddress, ast AssetMintMessage) ([]sdkTypes.Msg, error) {
 
-	properties := strings.Split(ast.Properties, ",")
-	basePropertyList := make([]types.BaseProperty, 0)
+	properties := strings.Split(ast.Properties, constants.PropertiesSeparator)
+	if len(properties) > constants.MaxTraitCount {
+		panic(errors.New(fmt.Sprintf("")))
+	}
+
+	var propertyList []types.Property
 	for _, property := range properties {
-		traitIDProperty := strings.Split(property, ":")
-		if len(traitIDProperty) == 2 && traitIDProperty[0] != "" {
-			basePropertyList = append(basePropertyList,
-				types.BaseProperty{
-					BaseID:   types.BaseID{IDString: traitIDProperty[0]},
-					BaseFact: types.BaseFact{BaseString: traitIDProperty[1]},
-				})
+		traitIDAndProperty := strings.Split(property, constants.TraitIDAndPropertySeparator)
+		if len(traitIDAndProperty) == 2 && traitIDAndProperty[0] != "" {
+			propertyList = append(propertyList, types.NewProperty(types.NewID(traitIDAndProperty[0]), types.NewFact(traitIDAndProperty[1], types.NewSignatures(nil))))
 		}
 	}
 
-	chainid := types.BaseID{IDString: ast.ChainID}
+	chainid := types.NewID(ast.ChainID)
 	//fromAddr, stderr := sdkTypes.AccAddressFromBech32(ast.From)
 	//if stderr != nil {
 	//	return nil, sdkErrors.Wrap(sdkErrors.ErrInvalidAddress, ast.From)
 	//}
-	maintainersID := types.BaseID{IDString: ast.MaintainersID}
-	burn := types.BaseHeight{Height: ast.Burn}
-	lock := types.BaseHeight{Height: ast.Lock}
-	classificationID := types.BaseID{IDString: ast.ClassificationID}
+	maintainersID := types.NewID(ast.MaintainersID)
+	burn := types.NewHeight(ast.Burn)
+	lock := types.NewHeight(ast.Lock)
+	classificationID := types.NewID(ast.ClassificationID)
 
-	newmg := mint.Message{ChainID: chainid, From: sender, Burn: burn, MaintainersID: maintainersID, Properties: &types.BaseProperties{BasePropertyList: basePropertyList}, ClassificationID: classificationID, Lock: lock}
+	newmg := mint.Message{ChainID: chainid, From: sender, Burn: burn, MaintainersID: maintainersID, Properties: types.NewProperties(propertyList), ClassificationID: classificationID, Lock: lock}
 	fmt.Println(newmg, ast)
 	return []sdkTypes.Msg{newmg}, nil
 }
