@@ -37,7 +37,7 @@ func customEncoder(codec *codec.Codec) wasm.CustomEncoder {
 			return nil, sdkErrors.Wrap(sdkErrors.ErrJSONUnmarshal, err.Error())
 		}
 
-		fmt.Println("customMessage-MessageType: ", customMessage.MsgType, customMessage, string(msg))
+		fmt.Println("customMessage-MessageType: ", customMessage.MsgType, string(msg))
 		switch customMessage.MsgType {
 		case "assetFactory/mint":
 			return assetFactoryMintEncoder(codec, sender, customMessage.Raw)
@@ -55,12 +55,11 @@ func customEncoder(codec *codec.Codec) wasm.CustomEncoder {
 func assetFactoryMintEncoder(codec *codec.Codec, sender sdkTypes.AccAddress, rawMessage json.RawMessage) ([]sdkTypes.Msg, error) {
 	if rawMessage != nil {
 		var assetMessage AssetMintMessage
-		fmt.Println(rawMessage)
 		err := json.Unmarshal(rawMessage, &assetMessage)
 		if err != nil {
 			return nil, sdkErrors.Wrap(sdkErrors.ErrJSONUnmarshal, err.Error())
 		}
-		EncodeAssestmintMsg(sender, assetMessage)
+		return EncodeAssestmintMsg(sender, assetMessage)
 	}
 	return nil, sdkErrors.Wrap(wasm.ErrInvalidMsg, "Custom variant assetMint not supported")
 }
@@ -81,17 +80,17 @@ func EncodeAssestmintMsg(sender sdkTypes.AccAddress, ast AssetMintMessage) ([]sd
 	}
 
 	chainid := types.BaseID{IDString: ast.ChainID}
-	fromAddr, stderr := sdkTypes.AccAddressFromBech32(ast.From)
-	if stderr != nil {
-		return nil, sdkErrors.Wrap(sdkErrors.ErrInvalidAddress, ast.From)
-	}
+	//fromAddr, stderr := sdkTypes.AccAddressFromBech32(ast.From)
+	//if stderr != nil {
+	//	return nil, sdkErrors.Wrap(sdkErrors.ErrInvalidAddress, ast.From)
+	//}
 	maintainersID := types.BaseID{IDString: ast.MaintainersID}
 	burn := types.BaseHeight{Height: ast.Burn}
 	lock := types.BaseHeight{Height: ast.Lock}
 	classificationID := types.BaseID{IDString: ast.ClassificationID}
 
-	newmg := mint.Message{ChainID: chainid, From: fromAddr, Burn: burn, MaintainersID: maintainersID, Properties: &types.BaseProperties{BasePropertyList: basePropertyList}, ClassificationID: classificationID, Lock: lock}
-
+	newmg := mint.Message{ChainID: chainid, From: sender, Burn: burn, MaintainersID: maintainersID, Properties: &types.BaseProperties{BasePropertyList: basePropertyList}, ClassificationID: classificationID, Lock: lock}
+	fmt.Println(newmg, ast)
 	return []sdkTypes.Msg{newmg}, nil
 }
 
