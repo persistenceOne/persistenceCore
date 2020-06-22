@@ -54,19 +54,19 @@ func customEncoder(codec *codec.Codec) wasm.CustomEncoder {
 
 func assetFactoryMintEncoder(codec *codec.Codec, sender sdkTypes.AccAddress, rawMessage json.RawMessage) ([]sdkTypes.Msg, error) {
 	if rawMessage != nil {
-		var assetMessage AssetMintMessage
-		err := json.Unmarshal(rawMessage, &assetMessage)
+		var astMsg AssetMintMessage
+		err := json.Unmarshal(rawMessage, &astMsg)
 		if err != nil {
 			return nil, sdkErrors.Wrap(sdkErrors.ErrJSONUnmarshal, err.Error())
 		}
-		return EncodeAssestmintMsg(sender, assetMessage)
+		return EncodeAssestmintMsg(sender, astMsg)
 	}
 	return nil, sdkErrors.Wrap(wasm.ErrInvalidMsg, "Custom variant assetMint not supported")
 }
 
-func EncodeAssestmintMsg(sender sdkTypes.AccAddress, ast AssetMintMessage) ([]sdkTypes.Msg, error) {
+func EncodeAssestmintMsg(sender sdkTypes.AccAddress, astMsg AssetMintMessage) ([]sdkTypes.Msg, error) {
 
-	properties := strings.Split(ast.Properties, ",")
+	properties := strings.Split(astMsg.Properties, ",")
 	basePropertyList := make([]types.BaseProperty, 0)
 	for _, property := range properties {
 		traitIDProperty := strings.Split(property, ":")
@@ -79,18 +79,18 @@ func EncodeAssestmintMsg(sender sdkTypes.AccAddress, ast AssetMintMessage) ([]sd
 		}
 	}
 
-	chainid := types.BaseID{IDString: ast.ChainID}
+	chainid := types.BaseID{IDString: astMsg.ChainID}
 	//fromAddr, stderr := sdkTypes.AccAddressFromBech32(ast.From)
 	//if stderr != nil {
 	//	return nil, sdkErrors.Wrap(sdkErrors.ErrInvalidAddress, ast.From)
 	//}
-	maintainersID := types.BaseID{IDString: ast.MaintainersID}
-	burn := types.BaseHeight{Height: ast.Burn}
-	lock := types.BaseHeight{Height: ast.Lock}
-	classificationID := types.BaseID{IDString: ast.ClassificationID}
+	maintainersID := types.BaseID{IDString: astMsg.MaintainersID}
+	burn := types.BaseHeight{Height: astMsg.Burn}
+	lock := types.BaseHeight{Height: astMsg.Lock}
+	classificationID := types.BaseID{IDString: astMsg.ClassificationID}
 
 	newmg := mint.Message{ChainID: chainid, From: sender, Burn: burn, MaintainersID: maintainersID, Properties: &types.BaseProperties{BasePropertyList: basePropertyList}, ClassificationID: classificationID, Lock: lock}
-	fmt.Println(newmg, ast)
+	fmt.Println(newmg, astMsg)
 	return []sdkTypes.Msg{newmg}, nil
 }
 
