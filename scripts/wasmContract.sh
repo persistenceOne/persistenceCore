@@ -1,4 +1,6 @@
-assetClient tx wasm store ../../CosmWasm/wasmd/x/wasm/internal/keeper/testdata/contract.wasm --from test --gas 600000  -y --chain-id test
+# genesis account / chain -id is test, commands to store, instantiate, execute a contract. this eg- hackatom, github.com/CosmWasm/cosmwasm/contracts/hackatom
+
+assetClient tx wasm store /PATH_TO_WASM_COMTRACT/_.wasm --from test --gas 900000  -y --chain-id test
 
 CODE_ID=$(assetClient query wasm list-code --chain-id test| jq .[-1].id)
 
@@ -10,10 +12,9 @@ assetClient tx wasm instantiate $CODE_ID "$INIT" --from test --amount=50000stake
 
 CONTRACT=$(assetClient query wasm list-contract-by-code $CODE_ID --chain-id test| jq -r .[0].address)
 
-APPROVE='{"asset_mint":{"properties":"test1:1, test2:4"}}'
+MINT='{"asset_mint":{"properties":"test1:1, test2:4"}}'
 
-assetClient tx wasm execute $CONTRACT "$APPROVE" --from test -y --chain-id test
+assetClient tx wasm execute $CONTRACT "$MINT" --from test -y --chain-id test
 
-# issue assset
-
+# issue asset normal
 assetClient tx assetFactory mint --from test --properties test1:test1,test2:test2  --chain-id test
