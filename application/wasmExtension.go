@@ -78,17 +78,11 @@ func EncodeAssestmintMsg(sender sdkTypes.AccAddress, astMsg AssetMintMessage) ([
 				})
 		}
 	}
-
 	chainid := types.BaseID{IDString: astMsg.ChainID}
-	//fromAddr, stderr := sdkTypes.AccAddressFromBech32(ast.From)
-	//if stderr != nil {
-	//	return nil, sdkErrors.Wrap(sdkErrors.ErrInvalidAddress, ast.From)
-	//}
 	maintainersID := types.BaseID{IDString: astMsg.MaintainersID}
 	burn := types.BaseHeight{Height: astMsg.Burn}
 	lock := types.BaseHeight{Height: astMsg.Lock}
 	classificationID := types.BaseID{IDString: astMsg.ClassificationID}
-
 	newmg := mint.Message{ChainID: chainid, From: sender, Burn: burn, MaintainersID: maintainersID, Properties: &types.BaseProperties{BasePropertyList: basePropertyList}, ClassificationID: classificationID, Lock: lock}
 	fmt.Println(newmg, astMsg)
 	return []sdkTypes.Msg{newmg}, nil
