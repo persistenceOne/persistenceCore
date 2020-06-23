@@ -354,7 +354,7 @@ func NewPersistenceHubApplication(
 	supportedFeatures := "staking"
 	application.wasmKeeper = wasm.NewKeeper(appCodec, keys[wasm.StoreKey],
 		application.accountKeeper, application.bankKeeper, application.stakingKeeper,
-		wasmRouter, wasmDir, wasmConfig, supportedFeatures, wasmCustomMessageEncoder(Codec), nil)
+		wasmRouter, wasmDir, wasmConfig, supportedFeatures, WasmCustomMessageEncoder(Codec), nil)
 
 	application.moduleManager = module.NewManager(
 		genutil.NewAppModule(application.accountKeeper, application.stakingKeeper, application.BaseApp.DeliverTx),
