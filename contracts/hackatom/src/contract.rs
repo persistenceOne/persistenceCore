@@ -185,9 +185,9 @@ fn do_asset_mint<S: Storage, A: Api, Q: Querier>(
 
         let mintMsg = AssetMintRaw {
             from: deps.api.human_address(&env.message.sender)?,
-            chainID: "".to_owned(),
-            maintainersID: "".to_owned(),
-            classificationID: "".to_owned(),
+            chainID: "test".to_owned(),
+            maintainersID: "myid".to_owned(),
+            classificationID: "classid".to_owned(),
             properties: properties,
             lock: -1,
             burn: -1,

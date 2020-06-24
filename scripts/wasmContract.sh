@@ -12,7 +12,7 @@ assetClient tx wasm instantiate $CODE_ID "$INIT" --from test --amount=50000stake
 
 CONTRACT=$(assetClient query wasm list-contract-by-code $CODE_ID --chain-id test| jq -r .[0].address)
 
-MINT='{"asset_mint":{"properties":"test1:1, test2:4"}}'
+MINT='{"asset_mint":{"properties":"test5:7, test89:76"}}'
 
 assetClient tx wasm execute $CONTRACT "$MINT" --from test -y --chain-id test
 
