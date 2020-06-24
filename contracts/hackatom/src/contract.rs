@@ -107,36 +107,6 @@ pub fn handle<S: Storage, A: Api, Q: Querier>(
     }
 }
 
-fn do_release<S: Storage, A: Api, Q: Querier>(
-    deps: &mut Extern<S, A, Q>,
-    env: Env,
-) -> StdResult<HandleResponse> {
-    let data = deps
-        .storage
-        .get(CONFIG_KEY)
-        .ok_or_else(|| not_found("State"))?;
-    let state: State = from_slice(&data)?;
-
-    if env.message.sender == state.verifier {
-        let to_addr = deps.api.human_address(&state.beneficiary)?;
-        let from_addr = deps.api.human_address(&env.contract.address)?;
-        let balance = deps.querier.query_all_balances(&from_addr)?;
-
-        let res = HandleResponse {
-            log: vec![log("action", "release"), log("destination", &to_addr)],
-            messages: vec![BankMsg::Send {
-                from_address: from_addr,
-                to_address: to_addr,
-                amount: balance,
-            }
-                .into()],
-            data: None,
-        };
-        Ok(res)
-    } else {
-        Err(unauthorized())
-    }
-}
 
 /// TerraMsg is an override of CosmosMsg::Custom to add support for Terra's custom message types
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
