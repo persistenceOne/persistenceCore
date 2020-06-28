@@ -1,5 +1,5 @@
-node/__debug_bin
-client/__debug_bin
-vendor
-.vscode
-.idea
+node/__debug_bin/
+client/__debug_bin/
+vendor/
+.vscode/
+.idea/
