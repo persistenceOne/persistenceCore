@@ -113,7 +113,7 @@ func main() {
 		for _, h := range viper.GetIntSlice(server.FlagUnsafeSkipUpgrades) {
 			skipUpgradeHeights[int64(h)] = true
 		}
-		return application.NewPersistenceHubApplication(
+		return application.NewApplication(
 			logger,
 			db,
 			traceStore,
@@ -139,7 +139,7 @@ func main() {
 	) (json.RawMessage, []tendermintTypes.GenesisValidator, *tendermintABCITypes.ConsensusParams, error) {
 
 		if height != -1 {
-			genesisApplication := application.NewPersistenceHubApplication(
+			genesisApplication := application.NewApplication(
 				logger,
 				db,
 				traceStore,
@@ -155,7 +155,7 @@ func main() {
 			return genesisApplication.ExportApplicationStateAndValidators(forZeroHeight, jailWhiteList)
 		}
 		//else
-		genesisApplication := application.NewPersistenceHubApplication(
+		genesisApplication := application.NewApplication(
 			logger,
 			db,
 			traceStore,
