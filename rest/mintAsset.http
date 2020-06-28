@@ -1,0 +1,14 @@
+POST http://localhost:1317/assetFactory/mint
+Content-Type: application/json
+
+{
+  "type": "assetFactory/request",
+  "value": {
+    "baseReq": {
+      "from": "cosmos17hndkqgc6zd8kn8m5p5al4ret7cdrxcymczac2",
+      "chain_id": "test"
+    }
+  }
+}
+
+###
