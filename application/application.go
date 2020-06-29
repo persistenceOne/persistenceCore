@@ -11,7 +11,7 @@ import (
 	port "github.com/cosmos/cosmos-sdk/x/ibc/05-port"
 	transfer "github.com/cosmos/cosmos-sdk/x/ibc/20-transfer"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
-	"github.com/persistenceOne/persistenceSDK/modules/assetFactory"
+	"github.com/persistenceOne/persistenceSDK/modules/assets"
 	"github.com/persistenceOne/persistenceSDK/types"
 	"github.com/spf13/viper"
 	"io"
@@ -80,7 +80,7 @@ var ModuleBasics = module.NewBasicManager(
 	evidence.AppModuleBasic{},
 	transfer.AppModuleBasic{},
 
-	assetFactory.AppModuleBasic{},
+	assets.AppModuleBasic{},
 )
 
 type GenesisState map[string]json.RawMessage
@@ -127,7 +127,7 @@ type Application struct {
 	scopedIBCKeeper      capability.ScopedKeeper
 	scopedTransferKeeper capability.ScopedKeeper
 	wasmKeeper           wasm.Keeper
-	assetFactoryKeeper   assetFactory.Keeper
+	assetsKeeper         assets.Keeper
 
 	moduleManager *module.Manager
 
@@ -177,7 +177,7 @@ func NewApplication(
 		transfer.StoreKey,
 		capability.StoreKey,
 		wasm.StoreKey,
-		assetFactory.StoreKey,
+		assets.StoreKey,
 	)
 	transientStoreKeys := sdkTypes.NewTransientStoreKeys(params.TStoreKey)
 	memoryStoreKeys := sdkTypes.NewMemoryStoreKeys(capability.MemStoreKey)
@@ -209,7 +209,7 @@ func NewApplication(
 	application.subspaces[gov.ModuleName] = application.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
 	application.subspaces[crisis.ModuleName] = application.paramsKeeper.Subspace(crisis.DefaultParamspace)
 
-	application.subspaces[assetFactory.ModuleName] = application.paramsKeeper.Subspace(assetFactory.DefaultParamspace)
+	application.subspaces[assets.ModuleName] = application.paramsKeeper.Subspace(assets.DefaultParamspace)
 
 	baseApp.SetParamStore(application.paramsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(std.ConsensusParamsKeyTable()))
 
@@ -332,10 +332,10 @@ func NewApplication(
 	evidenceKeeper.SetRouter(evidenceRouter)
 	application.evidenceKeeper = *evidenceKeeper
 
-	application.assetFactoryKeeper = assetFactory.NewKeeper(
+	application.assetsKeeper = assets.NewKeeper(
 		application.codec,
-		keys[assetFactory.StoreKey],
-		application.subspaces[assetFactory.ModuleName],
+		keys[assets.StoreKey],
+		application.subspaces[assets.ModuleName],
 	)
 
 	// just re-use the full router - do we want to limit this more?
@@ -374,7 +374,7 @@ func NewApplication(
 		params.NewAppModule(application.paramsKeeper),
 		transferModule,
 
-		assetFactory.NewAppModule(application.assetFactoryKeeper),
+		assets.NewAppModule(application.assetsKeeper),
 	)
 	application.moduleManager.SetOrderBeginBlockers(
 		upgrade.ModuleName,
@@ -402,7 +402,7 @@ func NewApplication(
 		evidence.ModuleName,
 		transfer.ModuleName,
 		wasm.ModuleName,
-		assetFactory.ModuleName,
+		assets.ModuleName,
 	)
 	application.moduleManager.RegisterInvariants(&application.crisisKeeper)
 	application.moduleManager.RegisterRoutes(application.Router(), application.QueryRouter())

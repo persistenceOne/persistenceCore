@@ -17,4 +17,4 @@ MINT='{"asset_mint":{"properties":"test5:7, test89:76"}}'
 assetClient tx wasm execute $CONTRACT "$MINT" --from test -y --chain-id test
 
 # issue asset normal
-assetClient tx assetFactory mint --from test --properties test1:test1,test2:test2  --chain-id test
+assetClient tx assets mint --from test --properties test1:test1,test2:test2  --chain-id test
