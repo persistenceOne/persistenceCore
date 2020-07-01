@@ -8,8 +8,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	sdkErrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/persistenceOne/persistenceSDK/modules/assetFactory/constants"
-	"github.com/persistenceOne/persistenceSDK/modules/assetFactory/transactions/mint"
+	"github.com/persistenceOne/persistenceSDK/modules/assets/constants"
+	"github.com/persistenceOne/persistenceSDK/modules/assets/transactions/mint"
 	"github.com/persistenceOne/persistenceSDK/types"
 	"strings"
 )
@@ -21,7 +21,7 @@ type customMessage struct {
 	Raw     json.RawMessage `json:"raw,omitempty"`
 }
 
-// Type will be assetFactory/mint , assetFactory/burn, assetFactory/Mmtate , (like codec register types)
+// Type will be assets/mint , assets/burn, assets/Mmtate , (like codec register types)
 
 func WasmCustomMessageEncoder(codec *codec.Codec) *wasm.MessageEncoders {
 	return &wasm.MessageEncoders{
@@ -38,19 +38,19 @@ func customEncoder(codec *codec.Codec) wasm.CustomEncoder {
 		}
 
 		switch customMessage.MsgType {
-		case "assetFactory/mint":
-			return assetFactoryMintEncoder(codec, sender, customMessage.Raw)
-		case "assetFactory/mutate":
-			return assetFactoryMutateEncoder(codec, sender, customMessage.Raw)
-		case "assetFactory/burn":
-			return assetFactoryBurnEncoder(codec, sender, customMessage.Raw)
+		case "assets/mint":
+			return assetsMintEncoder(codec, sender, customMessage.Raw)
+		case "assets/mutate":
+			return assetsMutateEncoder(codec, sender, customMessage.Raw)
+		case "assets/burn":
+			return assetsBurnEncoder(codec, sender, customMessage.Raw)
 		default:
 			return nil, sdkErrors.Wrap(wasm.ErrInvalidMsg, "Custom variant not supported in SDK")
 		}
 	}
 }
 
-func assetFactoryMintEncoder(codec *codec.Codec, sender sdkTypes.AccAddress, rawMessage json.RawMessage) ([]sdkTypes.Msg, error) {
+func assetsMintEncoder(codec *codec.Codec, sender sdkTypes.AccAddress, rawMessage json.RawMessage) ([]sdkTypes.Msg, error) {
 	if rawMessage != nil {
 		var assetMintMessage AssetMintMessage
 		err := json.Unmarshal(rawMessage, &assetMintMessage)
@@ -90,11 +90,11 @@ func encodeAssetMintMessage(sender sdkTypes.AccAddress, assetMintMessage AssetMi
 	return []sdkTypes.Msg{mintMessage}, nil
 }
 
-func assetFactoryMutateEncoder(codec *codec.Codec, sender sdkTypes.AccAddress, rawMessage json.RawMessage) ([]sdkTypes.Msg, error) {
+func assetsMutateEncoder(codec *codec.Codec, sender sdkTypes.AccAddress, rawMessage json.RawMessage) ([]sdkTypes.Msg, error) {
 	return nil, sdkErrors.Wrap(wasm.ErrInvalidMsg, "Custom variant assetMutate not supported")
 }
 
-func assetFactoryBurnEncoder(codec *codec.Codec, sender sdkTypes.AccAddress, rawMessage json.RawMessage) ([]sdkTypes.Msg, error) {
+func assetsBurnEncoder(codec *codec.Codec, sender sdkTypes.AccAddress, rawMessage json.RawMessage) ([]sdkTypes.Msg, error) {
 	return nil, sdkErrors.Wrap(wasm.ErrInvalidMsg, "Custom variant assetBurn not supported")
 }
 

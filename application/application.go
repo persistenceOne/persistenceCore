@@ -11,7 +11,7 @@ import (
 	port "github.com/cosmos/cosmos-sdk/x/ibc/05-port"
 	transfer "github.com/cosmos/cosmos-sdk/x/ibc/20-transfer"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
-	"github.com/persistenceOne/persistenceSDK/modules/assetFactory"
+	"github.com/persistenceOne/persistenceSDK/modules/assets"
 	"github.com/persistenceOne/persistenceSDK/types"
 	"github.com/spf13/viper"
 	"io"
@@ -80,7 +80,7 @@ var ModuleBasics = module.NewBasicManager(
 	evidence.AppModuleBasic{},
 	transfer.AppModuleBasic{},
 
-	assetFactory.AppModuleBasic{},
+	assets.AppModuleBasic{},
 )
 
 type GenesisState map[string]json.RawMessage
@@ -97,7 +97,7 @@ func MakeCodecs() (*std.Codec, *codec.Codec) {
 	return appCodec, cdc
 }
 
-type PersistenceHubApplication struct {
+type Application struct {
 	*baseapp.BaseApp
 	codec *codec.Codec
 
@@ -127,7 +127,7 @@ type PersistenceHubApplication struct {
 	scopedIBCKeeper      capability.ScopedKeeper
 	scopedTransferKeeper capability.ScopedKeeper
 	wasmKeeper           wasm.Keeper
-	assetFactoryKeeper   assetFactory.Keeper
+	assetsKeeper         assets.Keeper
 
 	moduleManager *module.Manager
 
@@ -140,7 +140,7 @@ type WasmWrapper struct {
 	Wasm wasm.WasmConfig `mapstructure:"wasm"`
 }
 
-func NewPersistenceHubApplication(
+func NewApplication(
 	logger log.Logger,
 	db tendermintDB.DB,
 	traceStore io.Writer,
@@ -149,7 +149,7 @@ func NewPersistenceHubApplication(
 	skipUpgradeHeights map[int64]bool,
 	home string,
 	baseAppOptions ...func(*baseapp.BaseApp),
-) *PersistenceHubApplication {
+) *Application {
 
 	appCodec, Codec := MakeCodecs()
 	baseApp := baseapp.NewBaseApp(
@@ -177,12 +177,12 @@ func NewPersistenceHubApplication(
 		transfer.StoreKey,
 		capability.StoreKey,
 		wasm.StoreKey,
-		assetFactory.StoreKey,
+		assets.StoreKey,
 	)
 	transientStoreKeys := sdkTypes.NewTransientStoreKeys(params.TStoreKey)
 	memoryStoreKeys := sdkTypes.NewMemoryStoreKeys(capability.MemStoreKey)
 
-	var application = &PersistenceHubApplication{
+	var application = &Application{
 		BaseApp: baseApp,
 		codec:   Codec,
 
@@ -209,7 +209,7 @@ func NewPersistenceHubApplication(
 	application.subspaces[gov.ModuleName] = application.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
 	application.subspaces[crisis.ModuleName] = application.paramsKeeper.Subspace(crisis.DefaultParamspace)
 
-	application.subspaces[assetFactory.ModuleName] = application.paramsKeeper.Subspace(assetFactory.DefaultParamspace)
+	application.subspaces[assets.ModuleName] = application.paramsKeeper.Subspace(assets.DefaultParamspace)
 
 	baseApp.SetParamStore(application.paramsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(std.ConsensusParamsKeyTable()))
 
@@ -332,10 +332,10 @@ func NewPersistenceHubApplication(
 	evidenceKeeper.SetRouter(evidenceRouter)
 	application.evidenceKeeper = *evidenceKeeper
 
-	application.assetFactoryKeeper = assetFactory.NewKeeper(
+	application.assetsKeeper = assets.NewKeeper(
 		application.codec,
-		keys[assetFactory.StoreKey],
-		application.subspaces[assetFactory.ModuleName],
+		keys[assets.StoreKey],
+		application.subspaces[assets.ModuleName],
 	)
 
 	// just re-use the full router - do we want to limit this more?
@@ -374,7 +374,7 @@ func NewPersistenceHubApplication(
 		params.NewAppModule(application.paramsKeeper),
 		transferModule,
 
-		assetFactory.NewAppModule(application.assetFactoryKeeper),
+		assets.NewAppModule(application.assetsKeeper),
 	)
 	application.moduleManager.SetOrderBeginBlockers(
 		upgrade.ModuleName,
@@ -402,7 +402,7 @@ func NewPersistenceHubApplication(
 		evidence.ModuleName,
 		transfer.ModuleName,
 		wasm.ModuleName,
-		assetFactory.ModuleName,
+		assets.ModuleName,
 	)
 	application.moduleManager.RegisterInvariants(&application.crisisKeeper)
 	application.moduleManager.RegisterRoutes(application.Router(), application.QueryRouter())
@@ -447,21 +447,21 @@ func NewPersistenceHubApplication(
 
 	return application
 }
-func (application *PersistenceHubApplication) BeginBlocker(ctx sdkTypes.Context, req abciTypes.RequestBeginBlock) abciTypes.ResponseBeginBlock {
+func (application *Application) BeginBlocker(ctx sdkTypes.Context, req abciTypes.RequestBeginBlock) abciTypes.ResponseBeginBlock {
 	return application.moduleManager.BeginBlock(ctx, req)
 }
-func (application *PersistenceHubApplication) EndBlocker(ctx sdkTypes.Context, req abciTypes.RequestEndBlock) abciTypes.ResponseEndBlock {
+func (application *Application) EndBlocker(ctx sdkTypes.Context, req abciTypes.RequestEndBlock) abciTypes.ResponseEndBlock {
 	return application.moduleManager.EndBlock(ctx, req)
 }
-func (application *PersistenceHubApplication) InitChainer(ctx sdkTypes.Context, req abciTypes.RequestInitChain) abciTypes.ResponseInitChain {
+func (application *Application) InitChainer(ctx sdkTypes.Context, req abciTypes.RequestInitChain) abciTypes.ResponseInitChain {
 	var genesisState GenesisState
 	application.codec.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 	return application.moduleManager.InitGenesis(ctx, application.codec, genesisState)
 }
-func (application *PersistenceHubApplication) LoadHeight(height int64) error {
+func (application *Application) LoadHeight(height int64) error {
 	return application.LoadVersion(height)
 }
-func (application *PersistenceHubApplication) ModuleAccountAddress() map[string]bool {
+func (application *Application) ModuleAccountAddress() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range moduleAccountPermissions {
 		modAccAddrs[auth.NewModuleAddress(acc).String()] = true
@@ -469,7 +469,7 @@ func (application *PersistenceHubApplication) ModuleAccountAddress() map[string]
 
 	return modAccAddrs
 }
-func (application *PersistenceHubApplication) ExportApplicationStateAndValidators(forZeroHeight bool, jailWhiteList []string,
+func (application *Application) ExportApplicationStateAndValidators(forZeroHeight bool, jailWhiteList []string,
 ) (applicationState json.RawMessage, validators []tendermintTypes.GenesisValidator, cp *abciTypes.ConsensusParams, err error) {
 	ctx := application.NewContext(true, abciTypes.Header{Height: application.LastBlockHeight()})
 
@@ -485,7 +485,7 @@ func (application *PersistenceHubApplication) ExportApplicationStateAndValidator
 	validators = staking.WriteValidators(ctx, application.stakingKeeper)
 	return applicationState, validators, application.BaseApp.GetConsensusParams(ctx), nil
 }
-func (application *PersistenceHubApplication) BlacklistedAccAddrs() map[string]bool {
+func (application *Application) BlacklistedAccAddrs() map[string]bool {
 	blacklistedAddresses := make(map[string]bool)
 	for account := range moduleAccountPermissions {
 		blacklistedAddresses[auth.NewModuleAddress(account).String()] = !tokenReceiveAllowedModules[account]
@@ -494,7 +494,7 @@ func (application *PersistenceHubApplication) BlacklistedAccAddrs() map[string]b
 	return blacklistedAddresses
 }
 
-func (application *PersistenceHubApplication) prepareForZeroHeightGenesis(ctx sdkTypes.Context, jailWhiteList []string) {
+func (application *Application) prepareForZeroHeightGenesis(ctx sdkTypes.Context, jailWhiteList []string) {
 	applyWhiteList := false
 
 	if len(jailWhiteList) > 0 {
