@@ -3,6 +3,6 @@ client/__debug_bin
 vendor
 .vscode
 .idea
-contracts/hackatom/target/
-contracts/hackatom/.idea
-contracts/hackatom/.vscode
+contracts/assetContract/target/
+contracts/assetContract/.idea
+contracts/assetContract/.vscode
