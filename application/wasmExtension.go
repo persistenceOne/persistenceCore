@@ -86,7 +86,6 @@ func encodeAssetMintMessage(sender sdkTypes.AccAddress, assetMintMessage AssetMi
 		ClassificationID: types.NewID(assetMintMessage.ClassificationID),
 		Lock:             types.NewHeight(assetMintMessage.Lock),
 	}
-	fmt.Println(mintMessage, assetMintMessage)
 	return []sdkTypes.Msg{mintMessage}, nil
 }
 

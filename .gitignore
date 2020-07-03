@@ -3,3 +3,4 @@ client/__debug_bin/
 vendor/
 .vscode/
 .idea/
+target/
