@@ -127,7 +127,7 @@ pub struct PersistenceSDK {
 
 
 
-// {"mint":{"msgtype":"assetFactory/mint","raw":""}}
+// {"mint":{"msgtype":"assets/mint","raw":""}}
 // this is a helper to be able to return these as CosmosMsg easier
 impl Into<CosmosMsg<PersistenceSDK>> for PersistenceSDK {
     fn into(self) -> CosmosMsg<PersistenceSDK> {
@@ -164,7 +164,7 @@ fn do_asset_mint<S: Storage, A: Api, Q: Querier>(
         let res = HandleResponse {
             log: vec![log("action", "asset_mint"), log("destination", &from_addr)],
             messages: vec![PersistenceSDK {
-                msgtype: "assetFactory/mint".to_string(),
+                msgtype: "assets/mint".to_string(),
                 raw: mintMsg,
             }
                 .into()],
