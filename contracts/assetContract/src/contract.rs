@@ -13,7 +13,6 @@ pub struct InitMsg {
     pub beneficiary: HumanAddr,
 }
 
-////////
 /// MigrateMsg allows a priviledged contract administrator to run
 /// a migration on the contract. In this (demo) case it is just migrating
 /// from one hackatom code to the same code, but taking advantage of the
@@ -54,7 +53,6 @@ pub fn query<S: Storage, A: Api, Q: Querier>(
 
     }
 }
-//////
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct State {
@@ -152,9 +150,10 @@ fn do_asset_mint<S: Storage, A: Api, Q: Querier>(
     if env.message.sender == state.verifier {
         let from_addr = deps.api.human_address(&env.contract.address)?;
 
+        // can add all the parameters as input params
         let mintMsg = AssetMintRaw {
             from: deps.api.human_address(&env.message.sender)?,
-            chainID: "12".to_owned(),
+            chainID: "".to_owned(),
             maintainersID: "".to_owned(),
             classificationID: "".to_owned(),
             properties: properties,
