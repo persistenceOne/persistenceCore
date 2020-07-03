@@ -89,7 +89,7 @@ func replayTransactions(rootDir string) error {
 
 	// Application
 	fmt.Fprintln(os.Stderr, "Creating application")
-	myapp := application.NewPersistenceHubApplication(
+	myapp := application.NewApplication(
 		ctx.Logger,
 		appDB,
 		traceStoreWriter,

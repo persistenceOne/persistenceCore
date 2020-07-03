@@ -1,8 +1,6 @@
-node/__debug_bin
-client/__debug_bin
-vendor
-.vscode
-.idea
-contracts/assetContract/target/
-contracts/assetContract/.idea
-contracts/assetContract/.vscode
+node/__debug_bin/
+client/__debug_bin/
+vendor/
+.vscode/
+.idea/
+target/
