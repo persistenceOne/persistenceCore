@@ -1,14 +1,30 @@
-POST http://localhost:1317/assets/mint
+
+POST http://{{host}}:{{port}}/assets/mint
 Content-Type: application/json
 
 {
-  "type": "/assets/mint/request",
-  "value": {
-    "baseReq": {
-      "from": "cosmos17hndkqgc6zd8kn8m5p5al4ret7cdrxcymczac2",
-      "chain_id": "test"
-    }
-  }
+  "input": {{input}}
 }
+> {%
 
+ client.test("Request executed successfully",function() {
+         client.assert(response.status ===200, "Response id not 200");
+ });
+
+ client.test("Headers option exists", function() {
+        client.assert(response.body.hasOwnProperty("headers"), "Cannot find 'headers' option in response");
+    });
+
+ client.test("Response content-type is json", function() {
+        var type = response.contentType.mimeType;
+        client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+    });
+
+ client.test("Response content-check", function() {
+        var type = response.contentType.body;
+        client.assert(type.data=== "properties", "Expected 'properties' but received '" + type.data + "'");
+    });
+ %}
 ###
+
+
