@@ -105,6 +105,6 @@ type AssetMintMessage struct {
 	MaintainersID    string `json:"maintainersID"`
 	ClassificationID string `json:"classificationID"`
 	Properties       string `json:"properties"`
-	Lock             int    `json:"lock"`
-	Burn             int    `json:"burn"`
+	Lock             int64  `json:"lock"`
+	Burn             int64  `json:"burn"`
 }
