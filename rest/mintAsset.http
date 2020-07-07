@@ -21,8 +21,8 @@ Content-Type: application/json
     });
 
  client.test("Response content-check", function() {
-        var type = response.contentType.body;
-        client.assert(type.data=== "properties", "Expected 'properties' but received '" + type.data + "'");
+        var type = response.contentType.json;
+        client.assert(type !== " ", "Expected 'some value' but received '" + type + "'");
     });
  %}
 ###

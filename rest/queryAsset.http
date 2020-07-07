@@ -1,4 +1,5 @@
-GET http://localhost:1317/assets/assets/-test--cUT2H4P7PdMZIL4zapWPQ_B1L9o=
+GET http://{{host}}:{{port}}/assets/assets/-test={{$uuid}}
 Accept: application/json
 
 ###
+
