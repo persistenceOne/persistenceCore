@@ -3,7 +3,7 @@ POST http://{{host}}:{{port}}/assets/mint
 Content-Type: application/json
 
 {
-  "input": {{input}}
+  "key": {{input}}
 }
 > {%
 
