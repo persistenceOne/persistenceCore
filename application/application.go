@@ -80,7 +80,7 @@ var ModuleBasics = module.NewBasicManager(
 	evidence.AppModuleBasic{},
 	transfer.AppModuleBasic{},
 
-	assets.AppModuleBasic{},
+	assets.Module,
 )
 
 type GenesisState map[string]json.RawMessage
@@ -127,7 +127,6 @@ type Application struct {
 	scopedIBCKeeper      capability.ScopedKeeper
 	scopedTransferKeeper capability.ScopedKeeper
 	wasmKeeper           wasm.Keeper
-	assetsKeeper         assets.Keeper
 
 	moduleManager *module.Manager
 
@@ -177,7 +176,7 @@ func NewApplication(
 		transfer.StoreKey,
 		capability.StoreKey,
 		wasm.StoreKey,
-		assets.StoreKey,
+		assets.Module.GetStoreKey(),
 	)
 	transientStoreKeys := sdkTypes.NewTransientStoreKeys(params.TStoreKey)
 	memoryStoreKeys := sdkTypes.NewMemoryStoreKeys(capability.MemStoreKey)
@@ -209,7 +208,7 @@ func NewApplication(
 	application.subspaces[gov.ModuleName] = application.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
 	application.subspaces[crisis.ModuleName] = application.paramsKeeper.Subspace(crisis.DefaultParamspace)
 
-	application.subspaces[assets.ModuleName] = application.paramsKeeper.Subspace(assets.DefaultParamspace)
+	application.subspaces[assets.Module.Name()] = application.paramsKeeper.Subspace(assets.Module.GetDefaultParamspace())
 
 	baseApp.SetParamStore(application.paramsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(std.ConsensusParamsKeyTable()))
 
@@ -332,10 +331,10 @@ func NewApplication(
 	evidenceKeeper.SetRouter(evidenceRouter)
 	application.evidenceKeeper = *evidenceKeeper
 
-	application.assetsKeeper = assets.NewKeeper(
+	assets.Module.InitializeKeepers(
 		application.codec,
-		keys[assets.StoreKey],
-		application.subspaces[assets.ModuleName],
+		keys[assets.Module.GetStoreKey()],
+		application.subspaces[assets.Module.Name()],
 	)
 
 	// just re-use the full router - do we want to limit this more?
@@ -374,7 +373,7 @@ func NewApplication(
 		params.NewAppModule(application.paramsKeeper),
 		transferModule,
 
-		assets.NewAppModule(application.assetsKeeper),
+		assets.Module,
 	)
 	application.moduleManager.SetOrderBeginBlockers(
 		upgrade.ModuleName,
@@ -402,7 +401,7 @@ func NewApplication(
 		evidence.ModuleName,
 		transfer.ModuleName,
 		wasm.ModuleName,
-		assets.ModuleName,
+		assets.Module.Name(),
 	)
 	application.moduleManager.RegisterInvariants(&application.crisisKeeper)
 	application.moduleManager.RegisterRoutes(application.Router(), application.QueryRouter())
