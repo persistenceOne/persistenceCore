@@ -8,7 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	sdkErrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/persistenceOne/persistenceSDK/modules/assets/constants"
+	"github.com/persistenceOne/persistenceSDK/constants"
 	"github.com/persistenceOne/persistenceSDK/modules/assets/transactions/mint"
 	"github.com/persistenceOne/persistenceSDK/types"
 	"strings"
@@ -78,7 +78,6 @@ func encodeAssetMintMessage(sender sdkTypes.AccAddress, assetMintMessage AssetMi
 	}
 
 	mintMessage := mint.Message{
-		ChainID:          types.NewID(assetMintMessage.ChainID),
 		From:             sender,
 		Burn:             types.NewHeight(assetMintMessage.Burn),
 		MaintainersID:    types.NewID(assetMintMessage.MaintainersID),
@@ -100,7 +99,6 @@ func assetsBurnEncoder(codec *codec.Codec, sender sdkTypes.AccAddress, rawMessag
 // AssetMintMessage should look like rest request, or similar and should be convertible to sdk message
 type AssetMintMessage struct {
 	From             string `json:"from"`
-	ChainID          string `json:"chainID"`
 	MaintainersID    string `json:"maintainersID"`
 	ClassificationID string `json:"classificationID"`
 	Properties       string `json:"properties"`
