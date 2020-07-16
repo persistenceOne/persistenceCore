@@ -12,6 +12,7 @@ import (
 	transfer "github.com/cosmos/cosmos-sdk/x/ibc/20-transfer"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	"github.com/persistenceOne/persistenceSDK/modules/assets"
+	"github.com/persistenceOne/persistenceSDK/modules/identities"
 	"github.com/persistenceOne/persistenceSDK/types"
 	"github.com/spf13/viper"
 	"io"
@@ -81,6 +82,7 @@ var ModuleBasics = module.NewBasicManager(
 	transfer.AppModuleBasic{},
 
 	assets.Module,
+	identities.Module,
 )
 
 type GenesisState map[string]json.RawMessage
@@ -177,6 +179,7 @@ func NewApplication(
 		capability.StoreKey,
 		wasm.StoreKey,
 		assets.Module.GetStoreKey(),
+		identities.Module.GetStoreKey(),
 	)
 	transientStoreKeys := sdkTypes.NewTransientStoreKeys(params.TStoreKey)
 	memoryStoreKeys := sdkTypes.NewMemoryStoreKeys(capability.MemStoreKey)
@@ -209,6 +212,7 @@ func NewApplication(
 	application.subspaces[crisis.ModuleName] = application.paramsKeeper.Subspace(crisis.DefaultParamspace)
 
 	application.subspaces[assets.Module.Name()] = application.paramsKeeper.Subspace(assets.Module.GetDefaultParamspace())
+	application.subspaces[identities.Module.Name()] = application.paramsKeeper.Subspace(identities.Module.GetDefaultParamspace())
 
 	baseApp.SetParamStore(application.paramsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(std.ConsensusParamsKeyTable()))
 
@@ -337,6 +341,12 @@ func NewApplication(
 		application.subspaces[assets.Module.Name()],
 	)
 
+	identities.Module.InitializeKeepers(
+		application.codec,
+		keys[identities.Module.GetStoreKey()],
+		application.subspaces[identities.Module.Name()],
+	)
+
 	// just re-use the full router - do we want to limit this more?
 	var wasmRouter = baseApp.Router()
 	wasmDir := filepath.Join(home, wasm.ModuleName)
@@ -374,6 +384,7 @@ func NewApplication(
 		transferModule,
 
 		assets.Module,
+		identities.Module,
 	)
 	application.moduleManager.SetOrderBeginBlockers(
 		upgrade.ModuleName,
@@ -402,6 +413,7 @@ func NewApplication(
 		transfer.ModuleName,
 		wasm.ModuleName,
 		assets.Module.Name(),
+		identities.Module.Name(),
 	)
 	application.moduleManager.RegisterInvariants(&application.crisisKeeper)
 	application.moduleManager.RegisterRoutes(application.Router(), application.QueryRouter())
