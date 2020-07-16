@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="burn asset" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="assetMantle" />
+    <working_directory value="$PROJECT_DIR$/" />
+    <go_parameters value="-i" />
+    <parameters value="tx assets burn -y --chain-id test --from test --assetID test---cUT2H4P7PdMZIL4zapWPQ_B1L9o=" />
+    <kind value="FILE" />
+    <filePath value="$PROJECT_DIR$/client/main.go" />
+    <package value="github.com/persistenceOne/assetMantle" />
+    <directory value="$PROJECT_DIR$/" />
+    <method v="2" />
+  </configuration>
+</component>

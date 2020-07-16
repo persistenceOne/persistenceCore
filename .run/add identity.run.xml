@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="add identity" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="assetMantle" />
+    <working_directory value="$PROJECT_DIR$/" />
+    <go_parameters value="-i" />
+    <parameters value="tx identities add -y --chain-id test --from test --to cosmos18mwkvetqvsv72y3vm85vfkkffnl3wcd6ejzavs --identityID test---cUT2H4P7PdMZIL4zapWPQ_B1L9o=" />
+    <kind value="FILE" />
+    <filePath value="$PROJECT_DIR$/client/main.go" />
+    <package value="github.com/persistenceOne/assetMantle" />
+    <directory value="$PROJECT_DIR$/" />
+    <method v="2" />
+  </configuration>
+</component>
