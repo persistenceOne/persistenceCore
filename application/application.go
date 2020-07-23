@@ -13,7 +13,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	"github.com/persistenceOne/persistenceSDK/modules/assets"
 	"github.com/persistenceOne/persistenceSDK/modules/identities"
-	"github.com/persistenceOne/persistenceSDK/types"
+	"github.com/persistenceOne/persistenceSDK/schema"
 	"github.com/spf13/viper"
 	"io"
 	"os"
@@ -89,7 +89,7 @@ type GenesisState map[string]json.RawMessage
 
 func MakeCodecs() (*std.Codec, *codec.Codec) {
 	cdc := std.MakeCodec(ModuleBasics)
-	types.RegisterCodec(cdc)
+	schema.RegisterCodec(cdc)
 	interfaceRegistry := cdctypes.NewInterfaceRegistry()
 	appCodec := std.NewAppCodec(cdc, interfaceRegistry)
 

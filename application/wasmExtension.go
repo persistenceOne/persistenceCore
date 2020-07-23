@@ -10,7 +10,8 @@ import (
 	sdkErrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/persistenceOne/persistenceSDK/constants"
 	"github.com/persistenceOne/persistenceSDK/modules/assets/transactions/mint"
-	"github.com/persistenceOne/persistenceSDK/types"
+	"github.com/persistenceOne/persistenceSDK/schema/types"
+	"github.com/persistenceOne/persistenceSDK/schema/types/base"
 	"strings"
 )
 
@@ -73,17 +74,17 @@ func encodeAssetMintMessage(sender sdkTypes.AccAddress, assetMintMessage AssetMi
 	for _, property := range properties {
 		traitIDAndProperty := strings.Split(property, constants.TraitIDAndPropertySeparator)
 		if len(traitIDAndProperty) == 2 && traitIDAndProperty[0] != "" {
-			propertyList = append(propertyList, types.NewProperty(types.NewID(traitIDAndProperty[0]), types.NewFact(traitIDAndProperty[1], types.NewSignatures(nil))))
+			propertyList = append(propertyList, base.NewProperty(base.NewID(traitIDAndProperty[0]), base.NewFact(traitIDAndProperty[1], base.NewSignatures(nil))))
 		}
 	}
 
 	mintMessage := mint.Message{
 		From:             sender,
-		Burn:             types.NewHeight(assetMintMessage.Burn),
-		MaintainersID:    types.NewID(assetMintMessage.MaintainersID),
-		Properties:       types.NewProperties(propertyList),
-		ClassificationID: types.NewID(assetMintMessage.ClassificationID),
-		Lock:             types.NewHeight(assetMintMessage.Lock),
+		Burn:             base.NewHeight(assetMintMessage.Burn),
+		MaintainersID:    base.NewID(assetMintMessage.MaintainersID),
+		Properties:       base.NewProperties(propertyList),
+		ClassificationID: base.NewID(assetMintMessage.ClassificationID),
+		Lock:             base.NewHeight(assetMintMessage.Lock),
 	}
 	return []sdkTypes.Msg{mintMessage}, nil
 }
