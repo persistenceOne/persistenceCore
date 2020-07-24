@@ -336,13 +336,11 @@ func NewApplication(
 	application.evidenceKeeper = *evidenceKeeper
 
 	assets.Module.InitializeKeepers(
-		application.codec,
 		keys[assets.Module.GetStoreKey()],
 		application.subspaces[assets.Module.Name()],
 	)
 
 	identities.Module.InitializeKeepers(
-		application.codec,
 		keys[identities.Module.GetStoreKey()],
 		application.subspaces[identities.Module.Name()],
 	)
