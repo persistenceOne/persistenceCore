@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/persistenceOne/assetMantle/application"
+	keysAdd "github.com/persistenceOne/persistenceSDK/utilities/rest/keys/add"
+	keysRecover "github.com/persistenceOne/persistenceSDK/utilities/rest/keys/recover"
 	"os"
 	"path"
 
@@ -51,7 +53,7 @@ func main() {
 
 	rootCommand.PersistentFlags().String(flags.FlagChainID, "", "Chain ID of tendermint node")
 	rootCommand.PersistentPreRunE = func(_ *cobra.Command, _ []string) error {
-		return initalizeConfiguration(rootCommand)
+		return initializeConfiguration(rootCommand)
 	}
 
 	rootCommand.AddCommand(
@@ -131,13 +133,15 @@ func transactionCommand(codec *amino.Codec) *cobra.Command {
 	return transactionCommand
 }
 
-func registerRoutes(rs *lcd.RestServer) {
-	client.RegisterRoutes(rs.CliCtx, rs.Mux)
-	authrest.RegisterTxRoutes(rs.CliCtx, rs.Mux)
-	application.ModuleBasics.RegisterRESTRoutes(rs.CliCtx, rs.Mux)
+func registerRoutes(restServer *lcd.RestServer) {
+	client.RegisterRoutes(restServer.CliCtx, restServer.Mux)
+	authrest.RegisterTxRoutes(restServer.CliCtx, restServer.Mux)
+	application.ModuleBasics.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
+	keysAdd.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
+	keysRecover.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
 }
 
-func initalizeConfiguration(command *cobra.Command) error {
+func initializeConfiguration(command *cobra.Command) error {
 	home, err := command.PersistentFlags().GetString(cli.HomeFlag)
 	if err != nil {
 		return err
