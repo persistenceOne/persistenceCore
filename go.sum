@@ -395,6 +395,8 @@ github.com/persistenceOne/persistenceSDK v0.0.0-20200723091746-de0d36399f8e h1:H
 github.com/persistenceOne/persistenceSDK v0.0.0-20200723091746-de0d36399f8e/go.mod h1:B81vaFkFFa/AyNnD9S7uIrowcqIQGk+GQHU7/kdQVqs=
 github.com/persistenceOne/persistenceSDK v0.0.0-20200724072628-0ae1cc630457 h1:RMPR8cf+xNuJT3zxiRS/SUlaEeMgVERUIKbBVH9nHRw=
 github.com/persistenceOne/persistenceSDK v0.0.0-20200724072628-0ae1cc630457/go.mod h1:S1uSMkoq61M5Ui0CwgMXoJO4NXaxQVeKn2AsJNZPT8U=
+github.com/persistenceOne/persistenceSDK v0.0.0-20200729111513-25f9fe9c2563 h1:6lwUVv7ZKlwCLxM9Orxaz+xpvO3fPBiU37KRQgKNONE=
+github.com/persistenceOne/persistenceSDK v0.0.0-20200729111513-25f9fe9c2563/go.mod h1:h9kA2gUi9xSht84eO7LRCI46CwHbf1O4/IshEfW1SiE=
 github.com/pierrec/lz4 v1.0.2-0.20190131084431-473cd7ce01a1/go.mod h1:3/3N9NVKO0jef7pBehbT1qWhCMrIgbYNnFAZCqQ5LRc=
 github.com/pierrec/lz4 v2.0.5+incompatible/go.mod h1:pdkljMzZIN41W+lC3N2tnIh5sFi+IEE17M5jbnwPHcY=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
