@@ -178,9 +178,10 @@ func NewApplication(
 		transfer.StoreKey,
 		capability.StoreKey,
 		wasm.StoreKey,
-		assets.Module.GetStoreKey(),
-		identities.Module.GetStoreKey(),
 	)
+	keys[assets.Module.Name()] = assets.Module.GetKVStoreKey()
+	keys[identities.Module.Name()] = identities.Module.GetKVStoreKey()
+
 	transientStoreKeys := sdkTypes.NewTransientStoreKeys(params.TStoreKey)
 	memoryStoreKeys := sdkTypes.NewMemoryStoreKeys(capability.MemStoreKey)
 
@@ -335,15 +336,9 @@ func NewApplication(
 	evidenceKeeper.SetRouter(evidenceRouter)
 	application.evidenceKeeper = *evidenceKeeper
 
-	assets.Module.InitializeKeepers(
-		keys[assets.Module.GetStoreKey()],
-		application.subspaces[assets.Module.Name()],
-	)
+	assets.Module.InitializeKeepers()
 
-	identities.Module.InitializeKeepers(
-		keys[identities.Module.GetStoreKey()],
-		application.subspaces[identities.Module.Name()],
-	)
+	identities.Module.InitializeKeepers()
 
 	// just re-use the full router - do we want to limit this more?
 	var wasmRouter = baseApp.Router()
