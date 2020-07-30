@@ -12,7 +12,9 @@ import (
 	transfer "github.com/cosmos/cosmos-sdk/x/ibc/20-transfer"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	"github.com/persistenceOne/persistenceSDK/modules/assets"
+	"github.com/persistenceOne/persistenceSDK/modules/exchanges"
 	"github.com/persistenceOne/persistenceSDK/modules/identities"
+	"github.com/persistenceOne/persistenceSDK/modules/orders"
 	"github.com/persistenceOne/persistenceSDK/schema"
 	"github.com/spf13/viper"
 	"io"
@@ -82,6 +84,8 @@ var ModuleBasics = module.NewBasicManager(
 	transfer.AppModuleBasic{},
 
 	assets.Module,
+	orders.Module,
+	exchanges.Module,
 	identities.Module,
 )
 
@@ -180,6 +184,8 @@ func NewApplication(
 		wasm.StoreKey,
 	)
 	keys[assets.Module.Name()] = assets.Module.GetKVStoreKey()
+	keys[orders.Module.Name()] = orders.Module.GetKVStoreKey()
+	keys[exchanges.Module.Name()] = exchanges.Module.GetKVStoreKey()
 	keys[identities.Module.Name()] = identities.Module.GetKVStoreKey()
 
 	transientStoreKeys := sdkTypes.NewTransientStoreKeys(params.TStoreKey)
@@ -213,6 +219,8 @@ func NewApplication(
 	application.subspaces[crisis.ModuleName] = application.paramsKeeper.Subspace(crisis.DefaultParamspace)
 
 	application.subspaces[assets.Module.Name()] = application.paramsKeeper.Subspace(assets.Module.GetDefaultParamspace())
+	application.subspaces[orders.Module.Name()] = application.paramsKeeper.Subspace(orders.Module.GetDefaultParamspace())
+	application.subspaces[exchanges.Module.Name()] = application.paramsKeeper.Subspace(exchanges.Module.GetDefaultParamspace())
 	application.subspaces[identities.Module.Name()] = application.paramsKeeper.Subspace(identities.Module.GetDefaultParamspace())
 
 	baseApp.SetParamStore(application.paramsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(std.ConsensusParamsKeyTable()))
@@ -337,7 +345,8 @@ func NewApplication(
 	application.evidenceKeeper = *evidenceKeeper
 
 	assets.Module.InitializeKeepers()
-
+	exchanges.Module.InitializeKeepers()
+	orders.Module.InitializeKeepers(application.bankKeeper, exchanges.Module.GetAuxiliaryKeepers("swap")[0])
 	identities.Module.InitializeKeepers()
 
 	// just re-use the full router - do we want to limit this more?
@@ -377,6 +386,8 @@ func NewApplication(
 		transferModule,
 
 		assets.Module,
+		orders.Module,
+		exchanges.Module,
 		identities.Module,
 	)
 	application.moduleManager.SetOrderBeginBlockers(
@@ -406,6 +417,8 @@ func NewApplication(
 		transfer.ModuleName,
 		wasm.ModuleName,
 		assets.Module.Name(),
+		orders.Module.Name(),
+		exchanges.Module.Name(),
 		identities.Module.Name(),
 	)
 	application.moduleManager.RegisterInvariants(&application.crisisKeeper)
