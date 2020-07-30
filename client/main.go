@@ -136,7 +136,7 @@ func ServeCmd(codec *amino.Codec) *cobra.Command {
 				kafkaState = kafka.NewKafkaState(kafkaPorts)
 				base.KafkaBool = kafkaBool
 				base.KafkaState = kafkaState
-				rs.Mux.HandleFunc("/response/{ticketid}", kafka.QueryDB(codec, rs.Mux, kafkaState.KafkaDB)).Methods("GET")
+				rs.Mux.HandleFunc("/response/{ticketid}", kafka.QueryDB(codec, kafkaState.KafkaDB)).Methods("GET")
 			}
 			registerRoutes(rs)
 			if kafkaBool == true {
