@@ -4,10 +4,15 @@ import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/persistenceOne/assetMantle/application"
+	"github.com/persistenceOne/persistenceSDK/kafka"
+	"github.com/persistenceOne/persistenceSDK/kafka/rest"
+	"github.com/persistenceOne/persistenceSDK/schema/helpers/base"
 	keysAdd "github.com/persistenceOne/persistenceSDK/utilities/rest/keys/add"
 	keysRecover "github.com/persistenceOne/persistenceSDK/utilities/rest/keys/recover"
 	"os"
 	"path"
+	"strings"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/keys"
@@ -62,7 +67,7 @@ func main() {
 		queryCommand(codec),
 		transactionCommand(codec),
 		flags.LineBreak,
-		lcd.ServeCommand(codec, registerRoutes),
+		ServeCmd(codec),
 		flags.LineBreak,
 		keys.Commands(),
 		flags.LineBreak,
@@ -77,6 +82,14 @@ func main() {
 		fmt.Printf("Failed executing CLI command: %s, exiting...\n", err)
 		os.Exit(1)
 	}
+}
+
+func registerRoutes(restServer *lcd.RestServer) {
+	client.RegisterRoutes(restServer.CliCtx, restServer.Mux)
+	authrest.RegisterTxRoutes(restServer.CliCtx, restServer.Mux)
+	application.ModuleBasics.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
+	keysAdd.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
+	keysRecover.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
 }
 
 func queryCommand(codec *amino.Codec) *cobra.Command {
@@ -99,6 +112,55 @@ func queryCommand(codec *amino.Codec) *cobra.Command {
 	application.ModuleBasics.AddQueryCommands(queryCommand, codec)
 
 	return queryCommand
+}
+
+
+// ServeCommand will start the application REST service as a blocking process. It
+// takes a codec to create a RestServer object and a function to register all
+// necessary routes.
+func ServeCmd(codec *amino.Codec) *cobra.Command {
+	flagKafka := "kafka"
+	kafkaPorts := "kafkaPort"
+	cmd := &cobra.Command{
+		Use:   "rest-server",
+		Short: "Start LCD (light-client daemon), a local REST server",
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			rs := lcd.NewRestServer(codec)
+			kafkaBool := viper.GetBool(flagKafka)
+			var kafkaState kafka.KafkaState
+			corsBool := viper.GetBool(flags.FlagUnsafeCORS)
+			if kafkaBool == true {
+				kafkaPort := viper.GetString(kafkaPorts)
+				kafkaPort = strings.Trim(kafkaPort, "\" ")
+				kafkaPorts := strings.Split(kafkaPort, " ")
+				kafkaState = kafka.NewKafkaState(kafkaPorts)
+				base.KafkaBool = kafkaBool
+				base.KafkaState = kafkaState
+				rs.Mux.HandleFunc("/response/{ticketid}", kafka.QueryDB(codec, rs.Mux, kafkaState.KafkaDB)).Methods("GET")
+			}
+			registerRoutes(rs)
+			if kafkaBool == true {
+				go func() {
+					for {
+						rest.KafkaConsumerMsgs(rs.CliCtx, kafkaState)
+						time.Sleep(kafka.SleepRoutine)
+					}
+				}()
+			}
+			// Start the rest server and return error if one exists
+			err = rs.Start(
+				viper.GetString(flags.FlagListenAddr),
+				viper.GetInt(flags.FlagMaxOpenConnections),
+				uint(viper.GetInt(flags.FlagRPCReadTimeout)),
+				uint(viper.GetInt(flags.FlagRPCWriteTimeout)),
+				corsBool,
+			)
+			return err
+		},
+	}
+	cmd.Flags().Bool(flagKafka, false, "Whether have kafka running")
+	cmd.Flags().String(kafkaPorts, "localhost:9092", "Space seperated addresses in quotes of the kafka listening node: example: --kafkaPort \"addr1 addr2\" ")
+	return flags.RegisterRestServerFlags(cmd)
 }
 
 func transactionCommand(codec *amino.Codec) *cobra.Command {
@@ -131,14 +193,6 @@ func transactionCommand(codec *amino.Codec) *cobra.Command {
 	transactionCommand.RemoveCommand(cmdsToRemove...)
 
 	return transactionCommand
-}
-
-func registerRoutes(restServer *lcd.RestServer) {
-	client.RegisterRoutes(restServer.CliCtx, restServer.Mux)
-	authrest.RegisterTxRoutes(restServer.CliCtx, restServer.Mux)
-	application.ModuleBasics.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
-	keysAdd.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
-	keysRecover.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
 }
 
 func initializeConfiguration(command *cobra.Command) error {
