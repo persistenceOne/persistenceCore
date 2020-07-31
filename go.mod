@@ -14,4 +14,3 @@ require (
 	github.com/tendermint/tm-db v0.5.1
 	honnef.co/go/tools v0.0.1-2020.1.3
 )
-
