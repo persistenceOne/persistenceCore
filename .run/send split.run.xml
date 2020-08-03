@@ -1,9 +1,9 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="mint asset" type="GoApplicationRunConfiguration" factoryName="Go Application">
+  <configuration default="false" name="send split" type="GoApplicationRunConfiguration" factoryName="Go Application">
     <module name="assetMantle" />
     <working_directory value="$PROJECT_DIR$/" />
     <go_parameters value="-i" />
-    <parameters value="tx assets mint -y --chain-id test --from test --toID  test---cUT2H4P7PdMZIL4zapWPQ_B1L9o= --properties test1:test1,test2:test2" />
+    <parameters value="tx splits send -y --chain-id test --from test --fromID  test---cUT2H4P7PdMZIL4zapWPQ_B1L9o= --toID  test-ss--cUT2H4P7PdMZIL4zapWPQ_B1L9o= --ownableID test---cUT2H4P7PdMZIL4zapWPQ_B1L9o= --split 1" />
     <kind value="FILE" />
     <filePath value="$PROJECT_DIR$/client/main.go" />
     <package value="github.com/persistenceOne/assetMantle" />
