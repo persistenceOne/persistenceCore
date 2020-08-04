@@ -5,8 +5,8 @@ go 1.14
 require (
 	github.com/CosmWasm/wasmd v0.9.0-alpha2.0.20200622185811-8cf06b93b9da
 	github.com/cosmos/cosmos-sdk v0.34.4-0.20200530180557-ba70f4d4dc2e
-	github.com/persistenceOne/persistenceSDK v0.0.0-20200803162136-52fd6d3cd8ec
 	github.com/otiai10/copy v1.1.1
+	github.com/persistenceOne/persistenceSDK v0.0.0-20200804170557-718a8230c3db
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.7.0
 	github.com/tendermint/go-amino v0.15.1
