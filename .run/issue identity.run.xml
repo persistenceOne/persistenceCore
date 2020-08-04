@@ -3,7 +3,7 @@
     <module name="assetMantle" />
     <working_directory value="$PROJECT_DIR$/" />
     <go_parameters value="-i" />
-    <parameters value="tx identities issue -y --chain-id test --from test --to cosmos1f8hz4kwpp40h8tnqtzqundsunejvz0vgh2l2d2 --properties test1:test1,test2:test2" />
+    <parameters value="tx identities issue -y --chain-id test --from test --to cosmos1pkkayn066msg6kn33wnl5srhdt3tnu2vzasz9c --properties test1:test1,test2:test2" />
     <kind value="FILE" />
     <filePath value="$PROJECT_DIR$/client/main.go" />
     <package value="github.com/persistenceOne/assetMantle" />
