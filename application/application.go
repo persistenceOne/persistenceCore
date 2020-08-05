@@ -13,11 +13,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	"github.com/persistenceOne/persistenceSDK/modules/assets"
 	"github.com/persistenceOne/persistenceSDK/modules/exchanges"
+	"github.com/persistenceOne/persistenceSDK/modules/exchanges/auxiliaries/custody"
+	"github.com/persistenceOne/persistenceSDK/modules/exchanges/auxiliaries/reverse"
 	"github.com/persistenceOne/persistenceSDK/modules/exchanges/auxiliaries/swap"
 	"github.com/persistenceOne/persistenceSDK/modules/identities"
 	identitiesVerify "github.com/persistenceOne/persistenceSDK/modules/identities/auxiliaries/verify"
 	"github.com/persistenceOne/persistenceSDK/modules/orders"
 	"github.com/persistenceOne/persistenceSDK/modules/splits"
+	splitsBurn "github.com/persistenceOne/persistenceSDK/modules/splits/auxiliaries/burn"
 	splitsMint "github.com/persistenceOne/persistenceSDK/modules/splits/auxiliaries/mint"
 	"github.com/persistenceOne/persistenceSDK/schema"
 	"github.com/spf13/viper"
@@ -354,8 +357,12 @@ func NewApplication(
 	identities.Module.InitializeKeepers()
 	splits.Module.InitializeKeepers()
 	assets.Module.InitializeKeepers(splits.Module.GetAuxiliary(splitsMint.AuxiliaryName), identities.Module.GetAuxiliary(identitiesVerify.AuxiliaryName))
-	exchanges.Module.InitializeKeepers()
-	orders.Module.InitializeKeepers(application.bankKeeper, exchanges.Module.GetAuxiliary(swap.AuxiliaryName))
+	exchanges.Module.InitializeKeepers(splits.Module.GetAuxiliary(splitsMint.AuxiliaryName), splits.Module.GetAuxiliary(splitsBurn.AuxiliaryName))
+	orders.Module.InitializeKeepers(application.bankKeeper,
+		exchanges.Module.GetAuxiliary(swap.AuxiliaryName),
+		exchanges.Module.GetAuxiliary(custody.AuxiliaryName),
+		exchanges.Module.GetAuxiliary(reverse.AuxiliaryName),
+		identities.Module.GetAuxiliary(identitiesVerify.AuxiliaryName))
 
 	// just re-use the full router - do we want to limit this more?
 	var wasmRouter = baseApp.Router()
