@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/persistenceOne/assetMantle/application"
-	"github.com/persistenceOne/persistenceSDK/kafka"
-	"github.com/persistenceOne/persistenceSDK/kafka/rest"
 	"github.com/persistenceOne/persistenceSDK/schema/helpers/base"
+	"github.com/persistenceOne/persistenceSDK/utilities/rest/kafka"
+	"github.com/persistenceOne/persistenceSDK/utilities/rest/kafka/rest"
 	keysAdd "github.com/persistenceOne/persistenceSDK/utilities/rest/keys/add"
 	keysRecover "github.com/persistenceOne/persistenceSDK/utilities/rest/keys/recover"
 	"os"
@@ -113,7 +113,6 @@ func queryCommand(codec *amino.Codec) *cobra.Command {
 
 	return queryCommand
 }
-
 
 // ServeCommand will start the application REST service as a blocking process. It
 // takes a codec to create a RestServer object and a function to register all
