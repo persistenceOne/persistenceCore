@@ -411,6 +411,8 @@ github.com/persistenceOne/persistenceSDK v0.0.0-20200804111201-ac5a921f9987 h1:J
 github.com/persistenceOne/persistenceSDK v0.0.0-20200804111201-ac5a921f9987/go.mod h1:H2dyoQq62KlgnuJBMFVBATx8PG06e5M9PZyX/sljwI0=
 github.com/persistenceOne/persistenceSDK v0.0.0-20200804170557-718a8230c3db h1:hPs4iSxtVNwhOjiCMsYV1tQCatYLrvYDHSWP4KV6k7k=
 github.com/persistenceOne/persistenceSDK v0.0.0-20200804170557-718a8230c3db/go.mod h1:H2dyoQq62KlgnuJBMFVBATx8PG06e5M9PZyX/sljwI0=
+github.com/persistenceOne/persistenceSDK v0.0.0-20200806003729-a1fd0b97faa6 h1:snB1WDitKE3X3veuMsu1jgky5tnUdYihB87Bjn6s8FM=
+github.com/persistenceOne/persistenceSDK v0.0.0-20200806003729-a1fd0b97faa6/go.mod h1:H2dyoQq62KlgnuJBMFVBATx8PG06e5M9PZyX/sljwI0=
 github.com/pierrec/lz4 v1.0.2-0.20190131084431-473cd7ce01a1/go.mod h1:3/3N9NVKO0jef7pBehbT1qWhCMrIgbYNnFAZCqQ5LRc=
 github.com/pierrec/lz4 v2.0.5+incompatible h1:2xWsjqPFWcplujydGg4WmhC/6fZqK42wMM8aXeqhl0I=
 github.com/pierrec/lz4 v2.0.5+incompatible/go.mod h1:pdkljMzZIN41W+lC3N2tnIh5sFi+IEE17M5jbnwPHcY=
