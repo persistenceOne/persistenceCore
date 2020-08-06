@@ -356,7 +356,7 @@ func NewApplication(
 
 	identities.Module.InitializeKeepers()
 	splits.Module.InitializeKeepers()
-	assets.Module.InitializeKeepers(splits.Module.GetAuxiliary(splitsMint.AuxiliaryName), identities.Module.GetAuxiliary(identitiesVerify.AuxiliaryName))
+	assets.Module.InitializeKeepers(identities.Module.GetAuxiliary(identitiesVerify.AuxiliaryName), splits.Module.GetAuxiliary(splitsMint.AuxiliaryName), splits.Module.GetAuxiliary(splitsBurn.AuxiliaryName))
 	exchanges.Module.InitializeKeepers(splits.Module.GetAuxiliary(splitsMint.AuxiliaryName), splits.Module.GetAuxiliary(splitsBurn.AuxiliaryName))
 	orders.Module.InitializeKeepers(application.bankKeeper,
 		exchanges.Module.GetAuxiliary(swap.AuxiliaryName),
