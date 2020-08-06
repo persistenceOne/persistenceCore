@@ -3,7 +3,7 @@
     <module name="assetMantle" />
     <working_directory value="$PROJECT_DIR$/" />
     <go_parameters value="-i" />
-    <parameters value="tx splits send -y --chain-id test --from test --fromID  test---cUT2H4P7PdMZIL4zapWPQ_B1L9o= --toID  test-ss--cUT2H4P7PdMZIL4zapWPQ_B1L9o= --ownableID test---cUT2H4P7PdMZIL4zapWPQ_B1L9o= --split 1" />
+    <parameters value="tx splits send -y --chain-id test --from test --fromID  test...cUT2H4P7PdMZIL4zapWPQ_B1L9o= --toID  test.1..cUT2H4P7PdMZIL4zapWPQ_B1L9o= --ownableID test...cUT2H4P7PdMZIL4zapWPQ_B1L9o= --split 1" />
     <kind value="FILE" />
     <filePath value="$PROJECT_DIR$/client/main.go" />
     <package value="github.com/persistenceOne/assetMantle" />
