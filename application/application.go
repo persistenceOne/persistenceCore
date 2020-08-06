@@ -18,6 +18,7 @@ import (
 	identitiesVerify "github.com/persistenceOne/persistenceSDK/modules/identities/auxiliaries/verify"
 	"github.com/persistenceOne/persistenceSDK/modules/orders"
 	"github.com/persistenceOne/persistenceSDK/modules/splits"
+	splitsBurn "github.com/persistenceOne/persistenceSDK/modules/splits/auxiliaries/burn"
 	splitsMint "github.com/persistenceOne/persistenceSDK/modules/splits/auxiliaries/mint"
 	"github.com/persistenceOne/persistenceSDK/schema"
 	"github.com/spf13/viper"
@@ -353,7 +354,7 @@ func NewApplication(
 
 	identities.Module.InitializeKeepers()
 	splits.Module.InitializeKeepers()
-	assets.Module.InitializeKeepers(splits.Module.GetAuxiliary(splitsMint.AuxiliaryName), identities.Module.GetAuxiliary(identitiesVerify.AuxiliaryName))
+	assets.Module.InitializeKeepers(identities.Module.GetAuxiliary(identitiesVerify.AuxiliaryName), splits.Module.GetAuxiliary(splitsMint.AuxiliaryName), splits.Module.GetAuxiliary(splitsBurn.AuxiliaryName))
 	exchanges.Module.InitializeKeepers()
 	orders.Module.InitializeKeepers(application.bankKeeper, exchanges.Module.GetAuxiliary(swap.AuxiliaryName))
 
