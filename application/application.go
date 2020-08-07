@@ -68,6 +68,7 @@ var moduleAccountPermissions = map[string][]string{
 	staking.NotBondedPoolName:       {auth.Burner, auth.Staking},
 	gov.ModuleName:                  {auth.Burner},
 	transfer.GetModuleAccountName(): {auth.Minter, auth.Burner},
+	splits.Module.Name():            nil,
 }
 var tokenReceiveAllowedModules = map[string]bool{
 	distribution.ModuleName: true,
@@ -355,14 +356,26 @@ func NewApplication(
 	application.evidenceKeeper = *evidenceKeeper
 
 	identities.Module.InitializeKeepers()
-	splits.Module.InitializeKeepers()
-	assets.Module.InitializeKeepers(identities.Module.GetAuxiliary(identitiesVerify.AuxiliaryName), splits.Module.GetAuxiliary(splitsMint.AuxiliaryName), splits.Module.GetAuxiliary(splitsBurn.AuxiliaryName))
-	exchanges.Module.InitializeKeepers(splits.Module.GetAuxiliary(splitsMint.AuxiliaryName), splits.Module.GetAuxiliary(splitsBurn.AuxiliaryName))
-	orders.Module.InitializeKeepers(application.bankKeeper,
+	splits.Module.InitializeKeepers(
+		application.bankKeeper,
+		identities.Module.GetAuxiliary(identitiesVerify.AuxiliaryName),
+	)
+	assets.Module.InitializeKeepers(
+		identities.Module.GetAuxiliary(identitiesVerify.AuxiliaryName),
+		splits.Module.GetAuxiliary(splitsMint.AuxiliaryName),
+		splits.Module.GetAuxiliary(splitsBurn.AuxiliaryName),
+	)
+	exchanges.Module.InitializeKeepers(
+		splits.Module.GetAuxiliary(splitsMint.AuxiliaryName),
+		splits.Module.GetAuxiliary(splitsBurn.AuxiliaryName),
+	)
+	orders.Module.InitializeKeepers(
+		application.bankKeeper,
 		exchanges.Module.GetAuxiliary(swap.AuxiliaryName),
 		exchanges.Module.GetAuxiliary(custody.AuxiliaryName),
 		exchanges.Module.GetAuxiliary(reverse.AuxiliaryName),
-		identities.Module.GetAuxiliary(identitiesVerify.AuxiliaryName))
+		identities.Module.GetAuxiliary(identitiesVerify.AuxiliaryName),
+	)
 
 	// just re-use the full router - do we want to limit this more?
 	var wasmRouter = baseApp.Router()
