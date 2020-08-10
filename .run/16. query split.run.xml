@@ -1,9 +1,9 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="mutate asset" type="GoApplicationRunConfiguration" factoryName="Go Application">
+  <configuration default="false" name="16. query split" type="GoApplicationRunConfiguration" factoryName="Go Application">
     <module name="assetMantle" />
     <working_directory value="$PROJECT_DIR$/" />
     <go_parameters value="-i" />
-    <parameters value="tx assets mutate -y --chain-id test --from test --fromID test...cUT2H4P7PdMZIL4zapWPQ_B1L9o= --assetID test...cUT2H4P7PdMZIL4zapWPQ_B1L9o= --properties test1:test1,test2:test3" />
+    <parameters value="query splits splits --chain-id test --splitID test...F_XmPees-8d1CbVD465EvRGCHrY=|test...F_XmPees-8d1CbVD465EvRGCHrY=" />
     <kind value="FILE" />
     <filePath value="$PROJECT_DIR$/client/main.go" />
     <package value="github.com/persistenceOne/assetMantle" />
