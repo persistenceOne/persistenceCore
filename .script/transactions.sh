@@ -3,22 +3,22 @@
 assetClient config chain-id test
 
 #set env variables
-NOUNCE="$RANDOM"
+NONCE="$RANDOM"
 SLEEP=6
 PASSWD="123123123"
 
 #Create users
-assetClient keys add main$NOUNCE <<< "$PASSWD"
-assetClient keys add eve$NOUNCE <<< "$PASSWD"
-assetClient keys add bob$NOUNCE <<< "$PASSWD"
-assetClient keys add alice$NOUNCE <<< "$PASSWD"
+assetClient keys add main$NONCE <<< "$PASSWD"
+assetClient keys add eve$NONCE <<< "$PASSWD"
+assetClient keys add bob$NONCE <<< "$PASSWD"
+assetClient keys add alice$NONCE <<< "$PASSWD"
 
 #name users with their addresses
 TEST=$(assetClient keys show -a test <<< "$PASSWD")
-MAIN=$(assetClient keys show -a main$NOUNCE <<< "$PASSWD")
-ALICE=$(assetClient keys show -a alice$NOUNCE <<< "$PASSWD")
-BOB=$(assetClient keys show -a bob$NOUNCE <<< "$PASSWD")
-EVE=$(assetClient keys show -a eve$NOUNCE <<< "$PASSWD")
+MAIN=$(assetClient keys show -a main$NONCE <<< "$PASSWD")
+ALICE=$(assetClient keys show -a alice$NONCE <<< "$PASSWD")
+BOB=$(assetClient keys show -a bob$NONCE <<< "$PASSWD")
+EVE=$(assetClient keys show -a eve$NONCE <<< "$PASSWD")
 
 #Load coins in main
 assetClient tx send $TEST $MAIN 10000persistence,10000stake,10000atom -y <<< "$PASSWD
@@ -46,9 +46,9 @@ $PASSWD"
 sleep $SLEEP
 
 # identities issue, provision, unprovision
-ID_1=identity1$NOUNCE
-ID_2=identity2$NOUNCE
-ID_3=identity3$NOUNCE
+ID_1=identity1$NONCE
+ID_2=identity2$NONCE
+ID_3=identity3$NONCE
 assetClient tx identities issue -y --from $MAIN --to $MAIN  --properties $ID_1:$ID_1 <<< "$PASSWD
 $PASSWD"
 assetClient tx identities issue -y --from $BOB --to $BOB  --properties $ID_2:$ID_2 <<< "$PASSWD
@@ -69,13 +69,13 @@ sleep $SLEEP
 assetClient query identities identities
 
 #assets mint, mutate burn
-ASSET_P1=assets1$NOUNCE
-ASSET_P2=assets2$NOUNCE
-ASSET_P3=assets3$NOUNCE
-ASSET_P4=assets4$NOUNCE
-ASSET_P5=assets5$NOUNCE
-ASSET_P6=assets6$NOUNCE
-ASSET_P7=assets7$NOUNCE
+ASSET_P1=assets1$NONCE
+ASSET_P2=assets2$NONCE
+ASSET_P3=assets3$NONCE
+ASSET_P4=assets4$NONCE
+ASSET_P5=assets5$NONCE
+ASSET_P6=assets6$NONCE
+ASSET_P7=assets7$NONCE
 assetClient tx assets mint -y --from $MAIN --fromID $MAIN_ID --toID $MAIN_ID --properties $ASSET_P1:$ASSET_P1 <<< "$PASSWD
 $PASSWD"
 assetClient tx assets mint -y --from $BOB --fromID $BOB_ID --toID $BOB_ID --properties $ASSET_P2:$ASSET_P2 <<< "$PASSWD
