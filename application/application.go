@@ -12,6 +12,7 @@ import (
 	transfer "github.com/cosmos/cosmos-sdk/x/ibc/20-transfer"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	"github.com/persistenceOne/persistenceSDK/modules/assets"
+	"github.com/persistenceOne/persistenceSDK/modules/classifications"
 	"github.com/persistenceOne/persistenceSDK/modules/exchanges"
 	"github.com/persistenceOne/persistenceSDK/modules/exchanges/auxiliaries/custody"
 	"github.com/persistenceOne/persistenceSDK/modules/exchanges/auxiliaries/reverse"
@@ -96,6 +97,7 @@ var ModuleBasics = module.NewBasicManager(
 	identities.Module,
 	orders.Module,
 	splits.Module,
+	classifications.Module,
 )
 
 type GenesisState map[string]json.RawMessage
@@ -197,6 +199,7 @@ func NewApplication(
 	keys[identities.Module.Name()] = identities.Module.GetKVStoreKey()
 	keys[orders.Module.Name()] = orders.Module.GetKVStoreKey()
 	keys[splits.Module.Name()] = splits.Module.GetKVStoreKey()
+	keys[classifications.Module.Name()] = classifications.Module.GetKVStoreKey()
 
 	transientStoreKeys := sdkTypes.NewTransientStoreKeys(params.TStoreKey)
 	memoryStoreKeys := sdkTypes.NewMemoryStoreKeys(capability.MemStoreKey)
@@ -233,6 +236,7 @@ func NewApplication(
 	application.subspaces[identities.Module.Name()] = application.paramsKeeper.Subspace(identities.Module.GetDefaultParamspace())
 	application.subspaces[orders.Module.Name()] = application.paramsKeeper.Subspace(orders.Module.GetDefaultParamspace())
 	application.subspaces[splits.Module.Name()] = application.paramsKeeper.Subspace(splits.Module.GetDefaultParamspace())
+	application.subspaces[classifications.Module.Name()] = application.paramsKeeper.Subspace(classifications.Module.GetDefaultParamspace())
 
 	baseApp.SetParamStore(application.paramsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(std.ConsensusParamsKeyTable()))
 
@@ -355,6 +359,7 @@ func NewApplication(
 	evidenceKeeper.SetRouter(evidenceRouter)
 	application.evidenceKeeper = *evidenceKeeper
 
+	classifications.Module.InitializeKeepers()
 	identities.Module.InitializeKeepers()
 	splits.Module.InitializeKeepers(
 		application.bankKeeper,
@@ -418,6 +423,7 @@ func NewApplication(
 		identities.Module,
 		orders.Module,
 		splits.Module,
+		classifications.Module,
 	)
 	application.moduleManager.SetOrderBeginBlockers(
 		upgrade.ModuleName,
@@ -450,11 +456,12 @@ func NewApplication(
 		identities.Module.Name(),
 		orders.Module.Name(),
 		splits.Module.Name(),
+		classifications.Module.Name(),
 	)
 	application.moduleManager.RegisterInvariants(&application.crisisKeeper)
 	application.moduleManager.RegisterRoutes(application.Router(), application.QueryRouter())
 
-	//TODO add peristenceSDK modules to simulation
+	//TODO add persistenceSDK modules to simulation
 	application.simulationManager = module.NewSimulationManager(
 		auth.NewAppModule(appCodec, application.accountKeeper),
 		bank.NewAppModule(appCodec, application.bankKeeper, application.accountKeeper),
