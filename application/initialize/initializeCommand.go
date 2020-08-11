@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func InitializeCommand(
+func Command(
 	serverContext *server.Context,
 	codec *codec.Codec,
 	moduleBasicManager module.BasicManager,

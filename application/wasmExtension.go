@@ -51,7 +51,7 @@ func customEncoder(codec *codec.Codec) wasm.CustomEncoder {
 	}
 }
 
-func assetsMintEncoder(codec *codec.Codec, sender sdkTypes.AccAddress, rawMessage json.RawMessage) ([]sdkTypes.Msg, error) {
+func assetsMintEncoder(_ *codec.Codec, sender sdkTypes.AccAddress, rawMessage json.RawMessage) ([]sdkTypes.Msg, error) {
 	if rawMessage != nil {
 		var assetMintMessage AssetMintMessage
 		err := json.Unmarshal(rawMessage, &assetMintMessage)
@@ -89,11 +89,11 @@ func encodeAssetMintMessage(sender sdkTypes.AccAddress, assetMintMessage AssetMi
 	return []sdkTypes.Msg{mintMessage}, nil
 }
 
-func assetsMutateEncoder(codec *codec.Codec, sender sdkTypes.AccAddress, rawMessage json.RawMessage) ([]sdkTypes.Msg, error) {
+func assetsMutateEncoder(_ *codec.Codec, _ sdkTypes.AccAddress, _ json.RawMessage) ([]sdkTypes.Msg, error) {
 	return nil, sdkErrors.Wrap(wasm.ErrInvalidMsg, "Custom variant assetMutate not supported")
 }
 
-func assetsBurnEncoder(codec *codec.Codec, sender sdkTypes.AccAddress, rawMessage json.RawMessage) ([]sdkTypes.Msg, error) {
+func assetsBurnEncoder(_ *codec.Codec, _ sdkTypes.AccAddress, _ json.RawMessage) ([]sdkTypes.Msg, error) {
 	return nil, sdkErrors.Wrap(wasm.ErrInvalidMsg, "Custom variant assetBurn not supported")
 }
 

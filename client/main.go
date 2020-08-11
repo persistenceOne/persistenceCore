@@ -5,10 +5,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/persistenceOne/assetMantle/application"
 	"github.com/persistenceOne/persistenceSDK/schema/helpers/base"
-	"github.com/persistenceOne/persistenceSDK/utilities/rest/kafka"
-	"github.com/persistenceOne/persistenceSDK/utilities/rest/kafka/rest"
 	keysAdd "github.com/persistenceOne/persistenceSDK/utilities/rest/keys/add"
 	keysRecover "github.com/persistenceOne/persistenceSDK/utilities/rest/keys/recover"
+	"github.com/persistenceOne/persistenceSDK/utilities/rest/queuing"
+	"github.com/persistenceOne/persistenceSDK/utilities/rest/queuing/rest"
 	"os"
 	"path"
 	"strings"
@@ -21,11 +21,11 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	authclient "github.com/cosmos/cosmos-sdk/x/auth/client"
-	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
-	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
+	authClient "github.com/cosmos/cosmos-sdk/x/auth/client"
+	authCLI "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
+	authREST "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	"github.com/cosmos/cosmos-sdk/x/bank"
-	bankcmd "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
+	bankCLI "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -39,7 +39,7 @@ var (
 )
 
 func init() {
-	authclient.Codec = appCodec
+	authClient.Codec = appCodec
 }
 
 func main() {
@@ -86,7 +86,7 @@ func main() {
 
 func registerRoutes(restServer *lcd.RestServer) {
 	client.RegisterRoutes(restServer.CliCtx, restServer.Mux)
-	authrest.RegisterTxRoutes(restServer.CliCtx, restServer.Mux)
+	authREST.RegisterTxRoutes(restServer.CliCtx, restServer.Mux)
 	application.ModuleBasics.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
 	keysAdd.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
 	keysRecover.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
@@ -100,12 +100,12 @@ func queryCommand(codec *amino.Codec) *cobra.Command {
 	}
 
 	queryCommand.AddCommand(
-		authcmd.GetAccountCmd(codec),
+		authCLI.GetAccountCmd(codec),
 		flags.LineBreak,
 		rpc.ValidatorCommand(codec),
 		rpc.BlockCommand(),
-		authcmd.QueryTxsByEventsCmd(codec),
-		authcmd.QueryTxCmd(codec),
+		authCLI.QueryTxsByEventsCmd(codec),
+		authCLI.QueryTxCmd(codec),
 		flags.LineBreak,
 	)
 
@@ -126,23 +126,23 @@ func ServeCmd(codec *amino.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			rs := lcd.NewRestServer(codec)
 			kafkaBool := viper.GetBool(flagKafka)
-			var kafkaState kafka.KafkaState
+			var kafkaState queuing.KafkaState
 			corsBool := viper.GetBool(flags.FlagUnsafeCORS)
 			if kafkaBool == true {
 				kafkaPort := viper.GetString(kafkaPorts)
 				kafkaPort = strings.Trim(kafkaPort, "\" ")
 				kafkaPorts := strings.Split(kafkaPort, " ")
-				kafkaState = kafka.NewKafkaState(kafkaPorts)
+				kafkaState = queuing.NewKafkaState(kafkaPorts)
 				base.KafkaBool = kafkaBool
 				base.KafkaState = kafkaState
-				rs.Mux.HandleFunc("/response/{ticketid}", kafka.QueryDB(codec, kafkaState.KafkaDB)).Methods("GET")
+				rs.Mux.HandleFunc("/response/{ticketID}", queuing.QueryDB(codec, kafkaState.KafkaDB)).Methods("GET")
 			}
 			registerRoutes(rs)
 			if kafkaBool == true {
 				go func() {
 					for {
-						rest.KafkaConsumerMsgs(rs.CliCtx, kafkaState)
-						time.Sleep(kafka.SleepRoutine)
+						rest.KafkaConsumerMessages(rs.CliCtx, kafkaState)
+						time.Sleep(queuing.SleepRoutine)
 					}
 				}()
 			}
@@ -158,7 +158,7 @@ func ServeCmd(codec *amino.Codec) *cobra.Command {
 		},
 	}
 	cmd.Flags().Bool(flagKafka, false, "Whether have kafka running")
-	cmd.Flags().String(kafkaPorts, "localhost:9092", "Space seperated addresses in quotes of the kafka listening node: example: --kafkaPort \"addr1 addr2\" ")
+	cmd.Flags().String(kafkaPorts, "localhost:9092", "Space separated addresses in quotes of the kafka listening node: example: --kafkaPort \"addr1 addr2\" ")
 	return flags.RegisterRestServerFlags(cmd)
 }
 
@@ -169,27 +169,27 @@ func transactionCommand(codec *amino.Codec) *cobra.Command {
 	}
 
 	transactionCommand.AddCommand(
-		bankcmd.SendTxCmd(codec),
+		bankCLI.SendTxCmd(codec),
 		flags.LineBreak,
-		authcmd.GetSignCommand(codec),
-		authcmd.GetMultiSignCommand(codec),
+		authCLI.GetSignCommand(codec),
+		authCLI.GetMultiSignCommand(codec),
 		flags.LineBreak,
-		authcmd.GetBroadcastCommand(codec),
-		authcmd.GetEncodeCommand(codec),
+		authCLI.GetBroadcastCommand(codec),
+		authCLI.GetEncodeCommand(codec),
 		flags.LineBreak,
 	)
 
 	application.ModuleBasics.AddTxCommands(transactionCommand, codec)
 
-	var cmdsToRemove []*cobra.Command
+	var commandListToRemove []*cobra.Command
 
 	for _, cmd := range transactionCommand.Commands() {
 		if cmd.Use == auth.ModuleName || cmd.Use == bank.ModuleName {
-			cmdsToRemove = append(cmdsToRemove, cmd)
+			commandListToRemove = append(commandListToRemove, cmd)
 		}
 	}
 
-	transactionCommand.RemoveCommand(cmdsToRemove...)
+	transactionCommand.RemoveCommand(commandListToRemove...)
 
 	return transactionCommand
 }
