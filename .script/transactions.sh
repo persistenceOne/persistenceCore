@@ -8,20 +8,10 @@ SLEEP=6
 PASSWD="123123123"
 
 #Create users
-
-assetClient keys add main$NONCE --recover <<< "taxi barely trade submit twist unable deposit merit flip ticket soccer budget course like bulb fiber leopard hawk fiction hello muscle trumpet ensure kiss
-$PASSWD"
-assetClient keys add alice$NONCE --recover <<< "burger soon exercise clap squirrel off maximum acoustic obscure check trial immune absent coyote cattle excuse choice twin increase fog chair subway metal remind
-$PASSWD"
-assetClient keys add bob$NONCE --recover <<< "draft warrior marriage dish table tackle now genius brick vast ridge vendor swap bar expire inner catch title force local kind sausage correct brass
-$PASSWD"
-assetClient keys add eve$NONCE --recover <<< "liberty fuel obtain approve will danger ask biology hole bright multiply tobacco wheel poem couple chronic entire case meadow garbage magnet divert surge uncle
-$PASSWD"
-
-#assetClient keys add main$NONCE <<< "$PASSWD"
-#assetClient keys add eve$NONCE <<< "$PASSWD"
-#assetClient keys add bob$NONCE <<< "$PASSWD"
-#assetClient keys add alice$NONCE <<< "$PASSWD"
+assetClient keys add main$NONCE <<< "$PASSWD"
+assetClient keys add eve$NONCE <<< "$PASSWD"
+assetClient keys add bob$NONCE <<< "$PASSWD"
+assetClient keys add alice$NONCE <<< "$PASSWD"
 
 #name users with their addresses
 TEST=$(assetClient keys show -a test <<< "$PASSWD")

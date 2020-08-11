@@ -12,8 +12,7 @@ Content-Type: application/json
     "toID":"{{testAccountID}}",
     "maintainersID":"",
     "classificationID":"",
-    "properties": "test1:test1, test{{$randomInt}}:test{{$randomInt}},test{{$randomInt}}:test{{$randomInt}}",
-    "metaProperties": "test{{$randomInt}}:test{{$randomInt}}",
+    "properties": "test1:test1, {{testAccountName}}:{{testAccountAddress}}",
     "lock": "-1",
     "burn": "-1"
   }
@@ -38,3 +37,4 @@ client.test("Response Code Check", function() {
      client.assert(!JSON.parse(JSON.stringify(response.body)).hasOwnProperty("code") , "Response Code is not 0");
  });
 %}
+###

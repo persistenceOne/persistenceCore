@@ -1,18 +1,15 @@
-POST http://{{host}}:{{port}}/xprt/identities/issue
+POST http://{{host}}:{{port}}/xprt/identities/unprovision
 Content-Type: application/json
 
 {
-"type": "/xprt/identities/issue/request",
+"type": "/xprt/identities/unprovision/request",
  "value": {
     "baseReq": {
       "from": "{{testAccountAddress}}",
       "chain_id": "{{chainID}}"
     },
-    "to": "{{testAccountAddress}}",
-    "fromID": "",
-    "maintainersID":"",
-    "classificationID":"",
-    "properties": "test{{testAccountName}}:test{{testAccountAddress}}"
+    "to": "{{eveAddress}}",
+    "identityID": "{{testAccountID}}"
   }
 }
 
@@ -20,11 +17,11 @@ Content-Type: application/json
    client.test("Request executed successfully", function() {
         client.assert(response.status === 200, "Response status is not 200");
     });
-   client.global.set("identitiesIssueTxHash", JSON.parse(JSON.stringify(response.body)).txhash)
+   client.global.set("identitiesUnprovisionTxHash", JSON.parse(JSON.stringify(response.body)).txhash)
 %}
 
 ###
-GET http://{{host}}:{{port}}/txs/{{identitiesIssueTxHash}}
+GET http://{{host}}:{{port}}/txs/{{identitiesUnprovisionTxHash}}
 Accept: application/json
 
 > {%
