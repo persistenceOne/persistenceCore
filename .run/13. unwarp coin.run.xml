@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="13. unwarp coin" type="GoApplicationRunConfiguration" factoryName="Go Application">
+  <configuration default="false" name="13. unwrap coin" type="GoApplicationRunConfiguration" factoryName="Go Application">
     <module name="assetMantle" />
     <working_directory value="$PROJECT_DIR$/" />
     <go_parameters value="-i" />

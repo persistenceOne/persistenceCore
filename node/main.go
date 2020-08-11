@@ -50,7 +50,7 @@ func main() {
 		PersistentPreRunE: server.PersistentPreRunEFn(serverContext),
 	}
 
-	rootCommand.AddCommand(initialize.InitializeCommand(
+	rootCommand.AddCommand(initialize.Command(
 		serverContext,
 		Codec,
 		application.ModuleBasics,
