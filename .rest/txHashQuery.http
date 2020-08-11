@@ -1,0 +1,12 @@
+GET http://{{host}}:{{port}}/txs/{{txHash}}
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+   client.test("Response Code Check", function() {
+        client.assert(!JSON.parse(JSON.stringify(response.body)).hasOwnProperty("code") , "Response Code is not 0");
+    });
+ %}
+###

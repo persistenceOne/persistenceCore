@@ -1,0 +1,42 @@
+POST http://{{host}}:{{port}}/xprt/identities/issue
+Content-Type: application/json
+
+{
+"type": "/xprt/identities/issue/request",
+ "value": {
+    "baseReq": {
+      "from": "{{testAccountAddress}}",
+      "chain_id": "{{chainID}}"
+    },
+    "to": "{{testAccountAddress}}",
+    "fromID": "",
+    "maintainersID":"",
+    "classificationID":"",
+    "properties": "test{{testAccountName}}:test{{testAccountAddress}}"
+  }
+}
+
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+   client.global.set("identitiesIssueTxHash", JSON.parse(JSON.stringify(response.body)).txhash)
+%}
+
+###
+GET http://{{host}}:{{port}}/txs/{{identitiesIssueTxHash}}
+Accept: application/json
+
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+   client.test("Response Code Check", function() {
+        client.assert(!JSON.parse(JSON.stringify(response.body)).hasOwnProperty("code") , "Response Code is not 0");
+    });
+%}
+
+###
+GET http://{{host}}:{{port}}/xprt/identities/identities/
+
+###

@@ -1,0 +1,40 @@
+POST http://{{host}}:{{port}}/xprt/assets/mint
+Content-Type: application/json
+
+{
+ "type": "/xprt/assets/mint/request",
+ "value": {
+    "baseReq": {
+      "from": "{{testAccountAddress}}",
+      "chain_id": "{{chainID}}"
+    },
+    "fromID":"{{testAccountID}}",
+    "toID":"{{testAccountID}}",
+    "maintainersID":"",
+    "classificationID":"",
+    "properties": "test1:test1, test{{$randomInt}}:test{{$randomInt}},test{{$randomInt}}:test{{$randomInt}}",
+    "metaProperties": "test{{$randomInt}}:test{{$randomInt}}",
+    "lock": "-1",
+    "burn": "-1"
+  }
+}
+
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+   client.global.set("assetsMintTxHash", JSON.parse(JSON.stringify(response.body)).txhash)
+%}
+
+###
+GET http://{{host}}:{{port}}/txs/{{assetsMintTxHash}}
+Accept: application/json
+
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+client.test("Response Code Check", function() {
+     client.assert(!JSON.parse(JSON.stringify(response.body)).hasOwnProperty("code") , "Response Code is not 0");
+ });
+%}
