@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="22. query all identities" type="GoApplicationRunConfiguration" factoryName="Go Application">
+  <configuration default="false" name="23. query all identities" type="GoApplicationRunConfiguration" factoryName="Go Application">
     <module name="assetMantle" />
     <working_directory value="$PROJECT_DIR$/" />
     <go_parameters value="-i" />
