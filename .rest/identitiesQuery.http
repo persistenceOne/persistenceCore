@@ -1,0 +1,4 @@
+GET http://{{host}}:{{port}}/identities/identities/{{testAccountID}}
+Accept: application/json
+
+###

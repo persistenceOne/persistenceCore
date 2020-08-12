@@ -1,0 +1,10 @@
+GET http://{{host}}:{{port}}/assets/assets/{{testAccountAssetID}}
+Content-Type: application/json
+
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###

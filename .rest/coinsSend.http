@@ -1,0 +1,19 @@
+POST http://{{host}}:{{port}}/bank/accounts/{{mainAddress}}/transfers
+Content-Type: application/json
+
+{
+  "base_req": {
+    "from": "{{testAccountAddress}}",
+    "chain_id": "{{chainID}}"
+  },
+  	"amount":[{"denom":"stake","amount":"100"}],
+    "mode" : "block"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+  %}
+
+###

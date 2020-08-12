@@ -1,0 +1,69 @@
+POST http://{{host}}:{{port}}/keys/recover
+Content-Type: application/json
+
+{
+  "name": "{{mainName}}",
+  "mnemonic":"{{mainMnemonic}}"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.global.set("mainAddress", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
+    });
+%}
+
+###
+POST http://{{host}}:{{port}}/keys/recover
+Content-Type: application/json
+
+{
+  "name": "{{aliceName}}",
+  "mnemonic":"{{aliceMnemonic}}"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.global.set("aliceAddress", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
+
+    });
+  %}
+
+###
+POST http://{{host}}:{{port}}/keys/recover
+Content-Type: application/json
+
+{
+  "name": "{{bobName}}",
+  "mnemonic":"{{bobMnemonic}}"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.global.set("bobAddress", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
+    });
+
+
+  %}
+
+###
+POST http://{{host}}:{{port}}/keys/recover
+Content-Type: application/json
+
+{
+  "name": "{{eveName}}",
+  "mnemonic":"{{eveMnemonic}}"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+      client.assert(response.status === 200, "Response status is not 200");
+      client.global.set("eveAddress", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
+    });
+
+
+  %}
+
+###
