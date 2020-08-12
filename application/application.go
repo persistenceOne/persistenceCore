@@ -18,11 +18,13 @@ import (
 	"github.com/persistenceOne/persistenceSDK/modules/exchanges/auxiliaries/reverse"
 	"github.com/persistenceOne/persistenceSDK/modules/exchanges/auxiliaries/swap"
 	"github.com/persistenceOne/persistenceSDK/modules/identities"
-	identitiesVerify "github.com/persistenceOne/persistenceSDK/modules/identities/auxiliaries/verify"
+	"github.com/persistenceOne/persistenceSDK/modules/identities/auxiliaries/verify"
+	"github.com/persistenceOne/persistenceSDK/modules/metas"
+	"github.com/persistenceOne/persistenceSDK/modules/metas/auxiliaries/initialize"
 	"github.com/persistenceOne/persistenceSDK/modules/orders"
 	"github.com/persistenceOne/persistenceSDK/modules/splits"
-	splitsBurn "github.com/persistenceOne/persistenceSDK/modules/splits/auxiliaries/burn"
-	splitsMint "github.com/persistenceOne/persistenceSDK/modules/splits/auxiliaries/mint"
+	"github.com/persistenceOne/persistenceSDK/modules/splits/auxiliaries/burn"
+	auxiliariesMint "github.com/persistenceOne/persistenceSDK/modules/splits/auxiliaries/mint"
 	"github.com/persistenceOne/persistenceSDK/schema"
 	"github.com/spf13/viper"
 	"io"
@@ -93,11 +95,12 @@ var ModuleBasics = module.NewBasicManager(
 	transfer.AppModuleBasic{},
 
 	assets.Module,
+	classifications.Module,
 	exchanges.Module,
 	identities.Module,
+	metas.Module,
 	orders.Module,
 	splits.Module,
-	classifications.Module,
 )
 
 type GenesisState map[string]json.RawMessage
@@ -195,11 +198,12 @@ func NewApplication(
 		wasm.StoreKey,
 	)
 	keys[assets.Module.Name()] = assets.Module.GetKVStoreKey()
+	keys[classifications.Module.Name()] = classifications.Module.GetKVStoreKey()
 	keys[exchanges.Module.Name()] = exchanges.Module.GetKVStoreKey()
 	keys[identities.Module.Name()] = identities.Module.GetKVStoreKey()
+	keys[metas.Module.Name()] = metas.Module.GetKVStoreKey()
 	keys[orders.Module.Name()] = orders.Module.GetKVStoreKey()
 	keys[splits.Module.Name()] = splits.Module.GetKVStoreKey()
-	keys[classifications.Module.Name()] = classifications.Module.GetKVStoreKey()
 
 	transientStoreKeys := sdkTypes.NewTransientStoreKeys(params.TStoreKey)
 	memoryStoreKeys := sdkTypes.NewMemoryStoreKeys(capability.MemStoreKey)
@@ -232,11 +236,12 @@ func NewApplication(
 	application.subspaces[crisis.ModuleName] = application.paramsKeeper.Subspace(crisis.DefaultParamspace)
 
 	application.subspaces[assets.Module.Name()] = application.paramsKeeper.Subspace(assets.Module.GetDefaultParamspace())
+	application.subspaces[classifications.Module.Name()] = application.paramsKeeper.Subspace(classifications.Module.GetDefaultParamspace())
 	application.subspaces[exchanges.Module.Name()] = application.paramsKeeper.Subspace(exchanges.Module.GetDefaultParamspace())
 	application.subspaces[identities.Module.Name()] = application.paramsKeeper.Subspace(identities.Module.GetDefaultParamspace())
+	application.subspaces[metas.Module.Name()] = application.paramsKeeper.Subspace(metas.Module.GetDefaultParamspace())
 	application.subspaces[orders.Module.Name()] = application.paramsKeeper.Subspace(orders.Module.GetDefaultParamspace())
 	application.subspaces[splits.Module.Name()] = application.paramsKeeper.Subspace(splits.Module.GetDefaultParamspace())
-	application.subspaces[classifications.Module.Name()] = application.paramsKeeper.Subspace(classifications.Module.GetDefaultParamspace())
 
 	baseApp.SetParamStore(application.paramsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(std.ConsensusParamsKeyTable()))
 
@@ -361,25 +366,27 @@ func NewApplication(
 
 	classifications.Module.InitializeKeepers()
 	identities.Module.InitializeKeepers()
+	metas.Module.InitializeKeepers()
 	splits.Module.InitializeKeepers(
 		application.bankKeeper,
-		identities.Module.GetAuxiliary(identitiesVerify.AuxiliaryName),
+		identities.Module.GetAuxiliary(verify.AuxiliaryName),
 	)
 	assets.Module.InitializeKeepers(
-		identities.Module.GetAuxiliary(identitiesVerify.AuxiliaryName),
-		splits.Module.GetAuxiliary(splitsMint.AuxiliaryName),
-		splits.Module.GetAuxiliary(splitsBurn.AuxiliaryName),
+		identities.Module.GetAuxiliary(verify.AuxiliaryName),
+		metas.Module.GetAuxiliary(initialize.AuxiliaryName),
+		splits.Module.GetAuxiliary(auxiliariesMint.AuxiliaryName),
+		splits.Module.GetAuxiliary(burn.AuxiliaryName),
 	)
 	exchanges.Module.InitializeKeepers(
-		splits.Module.GetAuxiliary(splitsMint.AuxiliaryName),
-		splits.Module.GetAuxiliary(splitsBurn.AuxiliaryName),
+		splits.Module.GetAuxiliary(auxiliariesMint.AuxiliaryName),
+		splits.Module.GetAuxiliary(burn.AuxiliaryName),
 	)
 	orders.Module.InitializeKeepers(
 		application.bankKeeper,
 		exchanges.Module.GetAuxiliary(swap.AuxiliaryName),
 		exchanges.Module.GetAuxiliary(custody.AuxiliaryName),
 		exchanges.Module.GetAuxiliary(reverse.AuxiliaryName),
-		identities.Module.GetAuxiliary(identitiesVerify.AuxiliaryName),
+		identities.Module.GetAuxiliary(verify.AuxiliaryName),
 	)
 
 	// just re-use the full router - do we want to limit this more?
@@ -419,12 +426,14 @@ func NewApplication(
 		transferModule,
 
 		assets.Module,
+		classifications.Module,
 		exchanges.Module,
 		identities.Module,
+		metas.Module,
 		orders.Module,
 		splits.Module,
-		classifications.Module,
 	)
+
 	application.moduleManager.SetOrderBeginBlockers(
 		upgrade.ModuleName,
 		mint.ModuleName,
@@ -452,11 +461,12 @@ func NewApplication(
 		transfer.ModuleName,
 		wasm.ModuleName,
 		assets.Module.Name(),
+		classifications.Module.Name(),
 		exchanges.Module.Name(),
 		identities.Module.Name(),
+		metas.Module.Name(),
 		orders.Module.Name(),
 		splits.Module.Name(),
-		classifications.Module.Name(),
 	)
 	application.moduleManager.RegisterInvariants(&application.crisisKeeper)
 	application.moduleManager.RegisterRoutes(application.Router(), application.QueryRouter())
