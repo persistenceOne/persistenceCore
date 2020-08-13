@@ -1,9 +1,9 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="22. query all assets" type="GoApplicationRunConfiguration" factoryName="Go Application">
+  <configuration default="false" name="T6.  mutate asset" type="GoApplicationRunConfiguration" factoryName="Go Application">
     <module name="assetMantle" />
     <working_directory value="$PROJECT_DIR$/" />
     <go_parameters value="-i" />
-    <parameters value="query assets assets --chain-id test" />
+    <parameters value="tx assets mutate -y --chain-id test --from test --fromID test...F_XmPees-8d1CbVD465EvRGCHrY= --assetID test...UA8qxbVvbgje9EU70vv6Qm5RohU= --metaProperties test1:test1,test2:test5" />
     <kind value="FILE" />
     <filePath value="$PROJECT_DIR$/client/main.go" />
     <package value="github.com/persistenceOne/assetMantle" />
