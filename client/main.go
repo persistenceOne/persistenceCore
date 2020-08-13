@@ -9,6 +9,7 @@ import (
 	keysRecover "github.com/persistenceOne/persistenceSDK/utilities/rest/keys/recover"
 	"github.com/persistenceOne/persistenceSDK/utilities/rest/queuing"
 	"github.com/persistenceOne/persistenceSDK/utilities/rest/queuing/rest"
+	"github.com/persistenceOne/persistenceSDK/utilities/rest/signTx"
 	"os"
 	"path"
 	"strings"
@@ -90,6 +91,7 @@ func registerRoutes(restServer *lcd.RestServer) {
 	application.ModuleBasics.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
 	keysAdd.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
 	keysRecover.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
+	signTx.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
 }
 
 func queryCommand(codec *amino.Codec) *cobra.Command {

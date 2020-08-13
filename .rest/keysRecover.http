@@ -1,9 +1,9 @@
-POST http://{{host}}:{{port}}/keys/recover
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/keys/recover
 Content-Type: application/json
 
 {
-  "name": "{{mainName}}",
-  "mnemonic":"{{mainMnemonic}}"
+  "name": "{{ACCOUNT_1_NAME}}",
+  "mnemonic":"{{ACCOUNT_1_MNEMONIC}}"
 }
 
 > {%
@@ -14,12 +14,12 @@ Content-Type: application/json
 %}
 
 ###
-POST http://{{host}}:{{port}}/keys/recover
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/keys/recover
 Content-Type: application/json
 
 {
-  "name": "{{aliceName}}",
-  "mnemonic":"{{aliceMnemonic}}"
+  "name": "{{ACCOUNT_2_NAME}}",
+  "mnemonic":"{{ACCOUNT_2_MNEMONIC}}"
 }
 
 > {%
@@ -31,12 +31,12 @@ Content-Type: application/json
   %}
 
 ###
-POST http://{{host}}:{{port}}/keys/recover
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/keys/recover
 Content-Type: application/json
 
 {
-  "name": "{{bobName}}",
-  "mnemonic":"{{bobMnemonic}}"
+  "name": "{{ACCOUNT_3_NAME}}",
+  "mnemonic":"{{ACCOUNT_3_MNEMONIC}}"
 }
 
 > {%
@@ -49,12 +49,12 @@ Content-Type: application/json
   %}
 
 ###
-POST http://{{host}}:{{port}}/keys/recover
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/keys/recover
 Content-Type: application/json
 
 {
-  "name": "{{eveName}}",
-  "mnemonic":"{{eveMnemonic}}"
+  "name": "{{ACCOUNT_4_NAME}}",
+  "mnemonic":"{{ACCOUNT_4_MNEMONIC}}"
 }
 
 > {%
