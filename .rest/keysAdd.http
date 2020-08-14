@@ -1,8 +1,8 @@
-POST http://{{host}}:{{port}}/keys/add
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/keys/add
 Content-Type: application/json
 
 {
-  "name": "{{mainName}}"
+  "name": "{{ACCOUNT_1_NAME}}"
 }
 
 > {%
@@ -13,11 +13,11 @@ Content-Type: application/json
   %}
 
 ###
-POST http://{{host}}:{{port}}/keys/add
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/keys/add
 Content-Type: application/json
 
 {
-  "name": "{{aliceName}}"
+  "name": "{{ACCOUNT_2_NAME}}"
 }
 
 > {%
@@ -28,11 +28,11 @@ Content-Type: application/json
   %}
 
 ###
-POST http://{{host}}:{{port}}/keys/add
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/keys/add
 Content-Type: application/json
 
 {
-  "name": "{{bobName}}"
+  "name": "{{ACCOUNT_3_NAME}}"
 }
 
 > {%
@@ -44,11 +44,11 @@ Content-Type: application/json
   %}
 
 ###
-POST http://{{host}}:{{port}}/keys/add
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/keys/add
 Content-Type: application/json
 
 {
-  "name": "{{eveName}}"
+  "name": "{{ACCOUNT_4_NAME}}"
 }
 
 > {%

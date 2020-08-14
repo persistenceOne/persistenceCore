@@ -1,4 +1,4 @@
-GET http://{{host}}:{{port}}/assets/assets/{{testAccountAssetID}}
+GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/assets/assets/{{testAccountAssetID}}
 Content-Type: application/json
 
 > {%

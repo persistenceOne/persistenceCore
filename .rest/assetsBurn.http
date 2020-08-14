@@ -1,14 +1,14 @@
-POST http://{{host}}:{{port}}/xprt/assets/burn
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/xprt/assets/burn
 Content-Type: application/json
 
 {
  "type": "/xprt/assets/burn/request",
  "value": {
     "baseReq": {
-      "from": "{{testAccountAddress}}",
-      "chain_id": "{{chainID}}"
+      "from": "{{TEST_ACCOUNT_ADDRESS}}",
+      "chain_id": "{{CHAIN_ID}}"
     },
-    "fromID":"{{testAccountID}}",
+    "fromID":"{{TEST_ACCOUNT_ID}}",
     "assetID":"{{testAccountAssetID}}"
   }
 }
@@ -21,7 +21,7 @@ Content-Type: application/json
 %}
 
 ###
-GET http://{{host}}:{{port}}/txs/{{assetsBurnTxHash}}
+GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/txs/{{assetsBurnTxHash}}
 Accept: application/json
 
 > {%

@@ -1,4 +1,4 @@
-GET http://{{host}}:{{port}}/identities/identities/{{testAccountID}}
+GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/identities/identities/{{TEST_ACCOUNT_ID}}
 Accept: application/json
 
 ###

@@ -1,14 +1,14 @@
-POST http://{{host}}:{{port}}/xprt/assets/mutate
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/xprt/assets/mutate
 Content-Type: application/json
 
 {
  "type": "/xprt/assets/mutate/request",
  "value": {
     "baseReq": {
-      "from": "{{testAccountAddress}}",
-      "chain_id": "{{chainID}}"
+      "from": "{{TEST_ACCOUNT_ADDRESS}}",
+      "chain_id": "{{CHAIN_ID}}"
     },
-    "fromID":"{{testAccountID}}",
+    "fromID":"{{TEST_ACCOUNT_ID}}",
     "assetID":"{{testAccountAssetID}}",
     "properties": "test1:test2",
     "lock": "-1",
@@ -24,7 +24,7 @@ Content-Type: application/json
 %}
 
 ###
-GET http://{{host}}:{{port}}/txs/{{assetsMutateTxHash}}
+GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/txs/{{assetsMutateTxHash}}
 Accept: application/json
 
 > {%

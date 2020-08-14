@@ -1,18 +1,18 @@
-POST http://{{host}}:{{port}}/xprt/assets/mint
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/xprt/assets/mint
 Content-Type: application/json
 
 {
  "type": "/xprt/assets/mint/request",
  "value": {
     "baseReq": {
-      "from": "{{testAccountAddress}}",
-      "chain_id": "{{chainID}}"
+      "from": "{{TEST_ACCOUNT_ADDRESS}}",
+      "chain_id": "{{CHAIN_ID}}"
     },
-    "fromID":"{{testAccountID}}",
-    "toID":"{{testAccountID}}",
+    "fromID":"{{TEST_ACCOUNT_ID}}",
+    "toID":"{{TEST_ACCOUNT_ID}}",
     "maintainersID":"",
     "classificationID":"",
-    "properties": "test1:test1, {{testAccountName}}:{{testAccountAddress}}",
+    "properties": "test1:test1, {{TEST_ACCOUNT_NAME}}:{{TEST_ACCOUNT_ADDRESS}}",
     "lock": "-1",
     "burn": "-1"
   }
@@ -26,7 +26,7 @@ Content-Type: application/json
 %}
 
 ###
-GET http://{{host}}:{{port}}/txs/{{assetsMintTxHash}}
+GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/txs/{{assetsMintTxHash}}
 Accept: application/json
 
 > {%

@@ -1,10 +1,10 @@
-POST http://{{host}}:{{port}}/bank/accounts/{{mainAddress}}/transfers
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/bank/accounts/{{ACCOUNT_1_ADDRESS}}/transfers
 Content-Type: application/json
 
 {
   "base_req": {
-    "from": "{{testAccountAddress}}",
-    "chain_id": "{{chainID}}"
+    "from": "{{TEST_ACCOUNT_ADDRESS}}",
+    "chain_id": "{{CHAIN_ID}}"
   },
   	"amount":[{"denom":"stake","amount":"100"}],
     "mode" : "block"
