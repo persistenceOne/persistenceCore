@@ -1,5 +1,0 @@
-GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/assets/assets/-test={{$uuid}}
-Accept: application/json
-
-###
-

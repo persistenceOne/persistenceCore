@@ -64,7 +64,7 @@ Accept: application/json
              }
              return false;
         }
-        function getIdentity(ID){
+        function getID(ID){
              identitiyID = [];
              for (identity in ID.value) {
                  if (ID.value.hasOwnProperty(identity)){
@@ -77,7 +77,7 @@ Accept: application/json
             if (checkProvisionedAddress(client.global.get("ACCOUNT_1_ADDRESS"),identities[i])
              &&
                 checkProperty(client.global.get("ACCOUNT_1_NAME")+"identities"+client.global.get("NONCE"), identities[i])) {
-                client.global.set("ACCOUNT_1_ID", getIdentity(identities[i].value.id));
+                client.global.set("ACCOUNT_1_ID", getID(identities[i].value.id));
             }
         }
  %}
