@@ -8,7 +8,7 @@ Content-Type: application/json
 > {%
     client.test("Request executed successfully", function() {
         client.assert(response.status === 200, "Response status is not 200");
-        client.global.set("mainAddress", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
+        client.global.set("ACCOUNT_1_ADDRESS", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
     });
   %}
 
@@ -23,7 +23,7 @@ Content-Type: application/json
 > {%
     client.test("Request executed successfully", function() {
         client.assert(response.status === 200, "Response status is not 200");
-        client.global.set("aliceAddress", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
+        client.global.set("ACCOUNT_2_ADDRESS", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
     });
   %}
 
@@ -38,7 +38,7 @@ Content-Type: application/json
 > {%
     client.test("Request executed successfully", function() {
         client.assert(response.status === 200, "Response status is not 200");
-        client.global.set("bobAddress", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
+        client.global.set("ACCOUNT_3_ADDRESS", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
 
     });
   %}
@@ -54,7 +54,7 @@ Content-Type: application/json
 > {%
     client.test("Request executed successfully", function() {
         client.assert(response.status === 200, "Response status is not 200");
-        client.global.set("eveAddress", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
+        client.global.set("ACCOUNT_4_ADDRESS", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
     });
   %}
 

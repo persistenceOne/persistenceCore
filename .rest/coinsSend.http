@@ -17,3 +17,97 @@ Content-Type: application/json
   %}
 
 ###
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/signTx
+Content-Type: application/json
+
+{
+  "baseReq":{
+    "from":"{{TEST_ACCOUNT_ADDRESS}}"
+  },
+  "type": "cosmos-sdk/StdTx",
+  "value": {
+    "msg": [
+      {
+        "type": "cosmos-sdk/MsgSend",
+        "value": {
+          "from_address": "{{TEST_ACCOUNT_ADDRESS}}",
+          "to_address": "{{ACCOUNT_1_ADDRESS}}",
+          "amount": [
+            {
+              "denom": "stake",
+              "amount": "1000"
+            }
+          ]
+        }
+      },
+      {
+        "type": "cosmos-sdk/MsgSend",
+        "value": {
+          "from_address": "{{TEST_ACCOUNT_ADDRESS}}",
+          "to_address": "{{ACCOUNT_2_ADDRESS}}",
+          "amount": [
+            {
+              "denom": "stake",
+              "amount": "1000"
+            }
+          ]
+        }
+      },
+      {
+        "type": "cosmos-sdk/MsgSend",
+        "value": {
+          "from_address": "{{TEST_ACCOUNT_ADDRESS}}",
+          "to_address": "{{ACCOUNT_3_ADDRESS}}",
+          "amount": [
+            {
+              "denom": "stake",
+              "amount": "1000"
+            }
+          ]
+        }
+      },
+      {
+        "type": "cosmos-sdk/MsgSend",
+        "value": {
+          "from_address": "{{TEST_ACCOUNT_ADDRESS}}",
+          "to_address": "{{ACCOUNT_4_ADDRESS}}",
+          "amount": [
+            {
+              "denom": "stake",
+              "amount": "1000"
+            }
+          ]
+        }
+      }
+    ],
+    "fee": {
+      "amount": [],
+      "gas": "200000"
+    },
+    "signatures": null,
+    "memo": ""
+  }
+}
+
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.global.set("SIGNED_TX", JSON.stringify(JSON.parse(JSON.stringify(response.body)).result.tx))
+    });
+
+  %}
+
+###
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/txs
+Content-Type: application/json
+
+{
+  "tx":{{SIGNED_TX}},
+  "mode": "block"
+}
+
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+  %}
