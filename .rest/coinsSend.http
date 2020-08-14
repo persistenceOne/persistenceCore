@@ -6,7 +6,7 @@ Content-Type: application/json
     "from": "{{TEST_ACCOUNT_ADDRESS}}",
     "chain_id": "{{CHAIN_ID}}"
   },
-  	"amount":[{"denom":"stake","amount":"100"}],
+  	"amount":[{"denom":"stake","amount":"1000"}],
     "mode" : "block"
 }
 
@@ -110,4 +110,21 @@ Content-Type: application/json
    client.test("Request executed successfully", function() {
         client.assert(response.status === 200, "Response status is not 200");
     });
+    client.global.set("sendCoinTxHash", JSON.parse(JSON.stringify(response.body)).txhash)
+
   %}
+
+###
+GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/txs/{{sendCoinTxHash}}
+Accept: application/json
+
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+   client.test("Response Code Check", function() {
+        client.assert(!JSON.parse(JSON.stringify(response.body)).hasOwnProperty("code") , "Response Code is not 0");
+    });
+%}
+
+###
