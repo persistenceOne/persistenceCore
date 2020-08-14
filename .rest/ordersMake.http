@@ -1,0 +1,79 @@
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/xprt/orders/make
+Content-Type: application/json
+
+{
+ "type": "/xprt/orders/make/request",
+ "value": {
+    "baseReq": {
+      "from": "{{ACCOUNT_1_ADDRESS}}",
+      "chain_id": "{{CHAIN_ID}}"
+    },
+    "fromID":"{{ACCOUNT_1_ID}}",
+    "toID":"",
+    "maintainersID":"",
+    "makerSplit": "10",
+    "makerSplitID": "stake",
+    "exchangeRate": "2",
+    "takerSplitID": "stake"
+    }
+}
+
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+   client.global.set("ordersMakeTxHash", JSON.parse(JSON.stringify(response.body)).txhash)
+%}
+
+###
+GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/txs/{{ordersMakeTxHash}}
+Accept: application/json
+
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+client.test("Response Code Check", function() {
+     client.assert(!JSON.parse(JSON.stringify(response.body)).hasOwnProperty("code") , "Response Code is not 0");
+ });
+%}
+
+###
+GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/orders/orders/-
+Accept: application/json
+
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+        orders = JSON.parse(JSON.stringify(response.body)).result.value.orders.value.list;
+
+        function checkProperty(propertyID, identity){
+            properties = identity.value.immutables.value.properties.value.propertyList
+             for(i = 0; i < properties.length; i++) {
+                 if (propertyID === properties[i].value.id.value.idString){
+                     return true;
+                 }
+             }
+             return false;
+        }
+        function getID(ID){
+             orderID = [];
+             for (id in ID.value) {
+                 if (ID.value.hasOwnProperty(id)){
+                     orderID[orderID.length] = ID.value[id].value.idString;
+                 }
+             }
+             return orderID.join(".");
+        }
+        for (i = 0; i < orders.length; i++) {
+            if (checkProperty("MakerSplit", orders[i])) {
+                client.global.set("ACCOUNT_1_ORDER_ID", getID(orders[i].value.id));
+            }
+        }
+
+
+
+%}
+###
