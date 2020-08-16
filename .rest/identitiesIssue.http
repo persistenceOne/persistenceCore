@@ -38,3 +38,46 @@ Accept: application/json
 %}
 
 ###
+GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/identities/identities/-
+Accept: application/json
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+        identities = JSON.parse(JSON.stringify(response.body)).result.value.identities.value.list;
+        function checkProvisionedAddress(address, identity){
+           for(i = 0; i < identity.value.provisionedAddressList.length; i++) {
+                 if (address === identity.value.provisionedAddressList[i]){
+                     return true;
+                 }
+             }
+             return false;
+        }
+        function checkProperty(propertyID, identity){
+            properties = identity.value.immutables.value.properties.value.propertyList
+             for(i = 0; i < properties.length; i++) {
+                 if (propertyID === properties[i].value.id.value.idString){
+                     return true;
+                 }
+             }
+             return false;
+        }
+        function getID(ID){
+             identitiyID = [];
+             for (identity in ID.value) {
+                 if (ID.value.hasOwnProperty(identity)){
+                     identitiyID[identitiyID.length] = ID.value[identity].value.idString;
+                 }
+             }
+             return identitiyID.join(".");
+        }
+        for (i = 0; i < identities.length; i++) {
+            if (checkProvisionedAddress(client.global.get("ACCOUNT_1_ADDRESS"),identities[i])
+             &&
+                checkProperty(client.global.get("ACCOUNT_1_NAME")+"identities"+client.global.get("NONCE"), identities[i])) {
+                client.global.set("ACCOUNT_1_ID", getID(identities[i].value.id));
+            }
+        }
+ %}

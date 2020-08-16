@@ -1,30 +1,26 @@
-POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/xprt/assets/mutate
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/xprt/orders/cancel
 Content-Type: application/json
 
 {
- "type": "/xprt/assets/mutate/request",
+ "type": "/xprt/orders/cancel/request",
  "value": {
     "baseReq": {
       "from": "{{ACCOUNT_1_ADDRESS}}",
       "chain_id": "{{CHAIN_ID}}"
     },
-    "fromID":"{{ACCOUNT_1_ID}}",
-    "assetID":"{{ACCOUNT_1_ASSET_ID}}",
-    "properties": "test1:test2",
-    "lock": "-1",
-    "burn": "-1"
-  }
+    "orderID":"{{ACCOUNT_1_ORDER_ID}}"
+    }
 }
 
 > {%
    client.test("Request executed successfully", function() {
         client.assert(response.status === 200, "Response status is not 200");
     });
-   client.global.set("assetsMutateTxHash", JSON.parse(JSON.stringify(response.body)).txhash)
+   client.global.set("ordersCancelTxHash", JSON.parse(JSON.stringify(response.body)).txhash)
 %}
 
 ###
-GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/txs/{{assetsMutateTxHash}}
+GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/txs/{{ordersCancelTxHash}}
 Accept: application/json
 
 > {%
@@ -34,5 +30,15 @@ Accept: application/json
 client.test("Response Code Check", function() {
      client.assert(!JSON.parse(JSON.stringify(response.body)).hasOwnProperty("code") , "Response Code is not 0");
  });
+%}
+
+###
+GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/orders/orders/-
+Accept: application/json
+
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
 %}
 ###

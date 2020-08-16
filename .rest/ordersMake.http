@@ -1,32 +1,32 @@
-POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/xprt/assets/mint
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/xprt/orders/make
 Content-Type: application/json
 
 {
- "type": "/xprt/assets/mint/request",
+ "type": "/xprt/orders/make/request",
  "value": {
     "baseReq": {
       "from": "{{ACCOUNT_1_ADDRESS}}",
       "chain_id": "{{CHAIN_ID}}"
     },
     "fromID":"{{ACCOUNT_1_ID}}",
-    "toID":"{{ACCOUNT_1_ID}}",
+    "toID":"",
     "maintainersID":"",
-    "classificationID":"",
-    "properties": "{{ACCOUNT_1_NAME}}assets{{NONCE}}:{{ACCOUNT_1_NAME}}assets{{NONCE}}, test1:test1",
-    "lock": "-1",
-    "burn": "-1"
-  }
+    "makerSplit": "10",
+    "makerSplitID": "stake",
+    "exchangeRate": "2",
+    "takerSplitID": "stake"
+    }
 }
 
 > {%
    client.test("Request executed successfully", function() {
         client.assert(response.status === 200, "Response status is not 200");
     });
-   client.global.set("assetsMintTxHash", JSON.parse(JSON.stringify(response.body)).txhash)
+   client.global.set("ordersMakeTxHash", JSON.parse(JSON.stringify(response.body)).txhash)
 %}
 
 ###
-GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/txs/{{assetsMintTxHash}}
+GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/txs/{{ordersMakeTxHash}}
 Accept: application/json
 
 > {%
@@ -39,7 +39,7 @@ client.test("Response Code Check", function() {
 %}
 
 ###
-GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/assets/assets/-
+GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/orders/orders/-
 Accept: application/json
 
 > {%
@@ -47,9 +47,7 @@ Accept: application/json
         client.assert(response.status === 200, "Response status is not 200");
     });
 
-
-
-        assets = JSON.parse(JSON.stringify(response.body)).result.value.assets.value.list;
+        orders = JSON.parse(JSON.stringify(response.body)).result.value.orders.value.list;
 
         function checkProperty(propertyID, identity){
             properties = identity.value.immutables.value.properties.value.propertyList
@@ -61,17 +59,17 @@ Accept: application/json
              return false;
         }
         function getID(ID){
-             assetID = [];
+             orderID = [];
              for (id in ID.value) {
                  if (ID.value.hasOwnProperty(id)){
-                     assetID[assetID.length] = ID.value[id].value.idString;
+                     orderID[orderID.length] = ID.value[id].value.idString;
                  }
              }
-             return assetID.join(".");
+             return orderID.join(".");
         }
-        for (i = 0; i < assets.length; i++) {
-            if (checkProperty(client.global.get("ACCOUNT_1_NAME")+"assets"+client.global.get("NONCE"), assets[i])) {
-                client.global.set("ACCOUNT_1_ASSET_ID", getID(assets[i].value.id));
+        for (i = 0; i < orders.length; i++) {
+            if (checkProperty("MakerSplit", orders[i])) {
+                client.global.set("ACCOUNT_1_ORDER_ID", getID(orders[i].value.id));
             }
         }
 
