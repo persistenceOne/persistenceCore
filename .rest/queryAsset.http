@@ -1,5 +1,0 @@
-GET http://{{host}}:{{port}}/assets/assets/-test={{$uuid}}
-Accept: application/json
-
-###
-

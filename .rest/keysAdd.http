@@ -1,60 +1,60 @@
-POST http://{{host}}:{{port}}/keys/add
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/keys/add
 Content-Type: application/json
 
 {
-  "name": "{{mainName}}"
+  "name": "{{ACCOUNT_1_NAME}}"
 }
 
 > {%
     client.test("Request executed successfully", function() {
         client.assert(response.status === 200, "Response status is not 200");
-        client.global.set("mainAddress", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
+        client.global.set("ACCOUNT_1_ADDRESS", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
     });
   %}
 
 ###
-POST http://{{host}}:{{port}}/keys/add
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/keys/add
 Content-Type: application/json
 
 {
-  "name": "{{aliceName}}"
+  "name": "{{ACCOUNT_2_NAME}}"
 }
 
 > {%
     client.test("Request executed successfully", function() {
         client.assert(response.status === 200, "Response status is not 200");
-        client.global.set("aliceAddress", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
+        client.global.set("ACCOUNT_2_ADDRESS", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
     });
   %}
 
 ###
-POST http://{{host}}:{{port}}/keys/add
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/keys/add
 Content-Type: application/json
 
 {
-  "name": "{{bobName}}"
+  "name": "{{ACCOUNT_3_NAME}}"
 }
 
 > {%
     client.test("Request executed successfully", function() {
         client.assert(response.status === 200, "Response status is not 200");
-        client.global.set("bobAddress", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
+        client.global.set("ACCOUNT_3_ADDRESS", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
 
     });
   %}
 
 ###
-POST http://{{host}}:{{port}}/keys/add
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/keys/add
 Content-Type: application/json
 
 {
-  "name": "{{eveName}}"
+  "name": "{{ACCOUNT_4_NAME}}"
 }
 
 > {%
     client.test("Request executed successfully", function() {
         client.assert(response.status === 200, "Response status is not 200");
-        client.global.set("eveAddress", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
+        client.global.set("ACCOUNT_4_ADDRESS", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
     });
   %}
 

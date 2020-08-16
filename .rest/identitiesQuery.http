@@ -1,4 +1,9 @@
-GET http://{{host}}:{{port}}/identities/identities/{{testAccountID}}
+GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/identities/identities/{{ACCOUNT_1_ID}}
 Accept: application/json
 
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
 ###

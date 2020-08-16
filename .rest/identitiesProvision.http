@@ -1,15 +1,15 @@
-POST http://{{host}}:{{port}}/xprt/identities/provision
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/xprt/identities/provision
 Content-Type: application/json
 
 {
 "type": "/xprt/identities/provision/request",
  "value": {
     "baseReq": {
-      "from": "{{testAccountAddress}}",
-      "chain_id": "{{chainID}}"
+      "from": "{{ACCOUNT_1_ADDRESS}}",
+      "chain_id": "{{CHAIN_ID}}"
     },
-    "to": "{{eveAddress}}",
-    "identityID": "{{testAccountID}}"
+    "to": "{{ACCOUNT_4_ADDRESS}}",
+    "identityID": "{{ACCOUNT_1_ID}}"
   }
 }
 
@@ -21,7 +21,7 @@ Content-Type: application/json
 %}
 
 ###
-GET http://{{host}}:{{port}}/txs/{{identitiesProvisionTxHash}}
+GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/txs/{{identitiesProvisionTxHash}}
 Accept: application/json
 
 > {%
