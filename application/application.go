@@ -21,6 +21,7 @@ import (
 	"github.com/persistenceOne/persistenceSDK/modules/splits"
 	"github.com/persistenceOne/persistenceSDK/modules/splits/auxiliaries/burn"
 	auxiliariesMint "github.com/persistenceOne/persistenceSDK/modules/splits/auxiliaries/mint"
+	"github.com/persistenceOne/persistenceSDK/schema"
 	"github.com/spf13/viper"
 	"io"
 	"os"
@@ -98,7 +99,7 @@ type GenesisState map[string]json.RawMessage
 
 func MakeCodec() *codec.Codec {
 	var cdc = codec.New()
-
+	schema.RegisterCodec(cdc)
 	ModuleBasics.RegisterCodec(cdc)
 	sdkTypes.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
@@ -253,10 +254,6 @@ func NewApplication(
 		keys[staking.StoreKey],
 		application.supplyKeeper,
 		application.subspaces[staking.ModuleName],
-	)
-
-	application.stakingKeeper = *stakingKeeper.SetHooks(
-		staking.NewMultiStakingHooks(),
 	)
 
 	application.mintKeeper = mint.NewKeeper(
