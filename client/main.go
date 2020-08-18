@@ -156,6 +156,7 @@ func ServeCmd(codec *amino.Codec) *cobra.Command {
 	}
 	cmd.Flags().Bool(flagKafka, false, "Whether have kafka running")
 	cmd.Flags().String(kafkaPorts, "localhost:9092", "Space separated addresses in quotes of the kafka listening node: example: --kafkaPort \"addr1 addr2\" ")
+	cmd.Flags().String(flags.FlagKeyringBackend, flags.DefaultKeyringBackend, "Select keyring's backend (os|file|kwallet|pass|test)")
 	return flags.RegisterRestServerFlags(cmd)
 }
 
