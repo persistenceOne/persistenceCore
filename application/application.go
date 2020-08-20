@@ -2,39 +2,6 @@ package application
 
 import (
 	"encoding/json"
-	"github.com/cosmos/cosmos-sdk/x/auth/ante"
-	authvesting "github.com/cosmos/cosmos-sdk/x/auth/vesting"
-	"github.com/cosmos/cosmos-sdk/x/evidence"
-	"github.com/cosmos/cosmos-sdk/x/supply"
-	"github.com/cosmos/cosmos-sdk/x/upgrade"
-	"github.com/persistenceOne/persistenceSDK/modules/assets"
-	"github.com/persistenceOne/persistenceSDK/modules/classifications"
-	"github.com/persistenceOne/persistenceSDK/modules/exchanges"
-	"github.com/persistenceOne/persistenceSDK/modules/exchanges/auxiliaries/custody"
-	"github.com/persistenceOne/persistenceSDK/modules/exchanges/auxiliaries/reverse"
-	"github.com/persistenceOne/persistenceSDK/modules/exchanges/auxiliaries/swap"
-	"github.com/persistenceOne/persistenceSDK/modules/identities"
-	"github.com/persistenceOne/persistenceSDK/modules/identities/auxiliaries/verify"
-	"github.com/persistenceOne/persistenceSDK/modules/metas"
-	"github.com/persistenceOne/persistenceSDK/modules/metas/auxiliaries/initialize"
-	"github.com/persistenceOne/persistenceSDK/modules/orders"
-	"github.com/persistenceOne/persistenceSDK/modules/splits"
-	"github.com/persistenceOne/persistenceSDK/modules/splits/auxiliaries/burn"
-	auxiliariesMint "github.com/persistenceOne/persistenceSDK/modules/splits/auxiliaries/mint"
-	"github.com/persistenceOne/persistenceSDK/schema"
-	"github.com/spf13/viper"
-	"io"
-	"os"
-	"path/filepath"
-	"strings"
-
-	abciTypes "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/log"
-	tendermintOS "github.com/tendermint/tendermint/libs/os"
-	tendermintTypes "github.com/tendermint/tendermint/types"
-	tendermintDB "github.com/tendermint/tm-db"
-	"honnef.co/go/tools/version"
-
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmClient "github.com/CosmWasm/wasmd/x/wasm/client"
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -42,9 +9,12 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/auth/ante"
+	authvesting "github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	"github.com/cosmos/cosmos-sdk/x/distribution"
+	"github.com/cosmos/cosmos-sdk/x/evidence"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	"github.com/cosmos/cosmos-sdk/x/mint"
@@ -52,7 +22,34 @@ import (
 	paramsClient "github.com/cosmos/cosmos-sdk/x/params/client"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	"github.com/cosmos/cosmos-sdk/x/staking"
+	"github.com/cosmos/cosmos-sdk/x/supply"
+	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradeClient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
+	"github.com/persistenceOne/persistenceSDK/modules/assets"
+	"github.com/persistenceOne/persistenceSDK/modules/classifications"
+	"github.com/persistenceOne/persistenceSDK/modules/classifications/auxiliaries/conform"
+	"github.com/persistenceOne/persistenceSDK/modules/exchanges"
+	"github.com/persistenceOne/persistenceSDK/modules/identities"
+	"github.com/persistenceOne/persistenceSDK/modules/identities/auxiliaries/verify"
+	"github.com/persistenceOne/persistenceSDK/modules/metas"
+	"github.com/persistenceOne/persistenceSDK/modules/metas/auxiliaries/scrub"
+	"github.com/persistenceOne/persistenceSDK/modules/metas/auxiliaries/supplement"
+	"github.com/persistenceOne/persistenceSDK/modules/orders"
+	"github.com/persistenceOne/persistenceSDK/modules/splits"
+	"github.com/persistenceOne/persistenceSDK/modules/splits/auxiliaries/burn"
+	auxiliariesMint "github.com/persistenceOne/persistenceSDK/modules/splits/auxiliaries/mint"
+	"github.com/persistenceOne/persistenceSDK/modules/splits/auxiliaries/transfer"
+	"github.com/persistenceOne/persistenceSDK/schema"
+	"github.com/spf13/viper"
+	abciTypes "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/log"
+	tendermintOS "github.com/tendermint/tendermint/libs/os"
+	tendermintTypes "github.com/tendermint/tendermint/types"
+	tendermintDB "github.com/tendermint/tm-db"
+	"honnef.co/go/tools/version"
+	"io"
+	"os"
+	"path/filepath"
 )
 
 const applicationName = "AssetMantle"
@@ -147,30 +144,8 @@ type WasmWrapper struct {
 	Wasm wasm.WasmConfig `mapstructure:"wasm"`
 }
 
-// If EnabledSpecificProposals is "", and this is "true", then enable all x/wasm proposals.
-// If EnabledSpecificProposals is "", and this is not "true", then disable all x/wasm proposals.
-var ProposalsEnabled = "false"
-
-// If set to non-empty string it must be comma-separated list of values that are all a subset
-// of "EnableAllProposals" (takes precedence over ProposalsEnabled)
-// https://github.com/CosmWasm/wasmd/blob/02a54d33ff2c064f3539ae12d75d027d9c665f05/x/wasm/internal/types/proposal.go#L28-L34
-var EnableSpecificProposals = ""
-
-// GetEnabledProposals parses the ProposalsEnabled / EnableSpecificProposals values to
-// produce a list of enabled proposals to pass into wasmd app.
 func GetEnabledProposals() []wasm.ProposalType {
-	if EnableSpecificProposals == "" {
-		if ProposalsEnabled == "true" {
-			return wasm.EnableAllProposals
-		}
-		return wasm.DisableAllProposals
-	}
-	chunks := strings.Split(EnableSpecificProposals, ",")
-	proposals, err := wasm.ConvertToProposals(chunks)
-	if err != nil {
-		panic(err)
-	}
-	return proposals
+	return wasm.EnableAllProposals
 }
 
 func NewApplication(
@@ -349,29 +324,33 @@ func NewApplication(
 		staking.NewMultiStakingHooks(application.distributionKeeper.Hooks(), application.slashingKeeper.Hooks()),
 	)
 
-	classifications.Module.InitializeKeepers()
-	identities.Module.InitializeKeepers()
-	metas.Module.InitializeKeepers()
-	splits.Module.InitializeKeepers(
+	metasModule := metas.Module.Initialize()
+	classificationModule := classifications.Module.Initialize(metasModule.GetAuxiliary(scrub.AuxiliaryName))
+	identitiesModule := identities.Module.Initialize(classificationModule.GetAuxiliary(conform.AuxiliaryName))
+	splitsModule := splits.Module.Initialize(
 		application.supplyKeeper,
-		identities.Module.GetAuxiliary(verify.AuxiliaryName),
+		identitiesModule.GetAuxiliary(verify.AuxiliaryName),
 	)
-	assets.Module.InitializeKeepers(
-		identities.Module.GetAuxiliary(verify.AuxiliaryName),
-		metas.Module.GetAuxiliary(initialize.AuxiliaryName),
-		splits.Module.GetAuxiliary(auxiliariesMint.AuxiliaryName),
-		splits.Module.GetAuxiliary(burn.AuxiliaryName),
+	assets.Module.Initialize(
+		classificationModule.GetAuxiliary(conform.AuxiliaryName),
+		identitiesModule.GetAuxiliary(verify.AuxiliaryName),
+		metasModule.GetAuxiliary(scrub.AuxiliaryName),
+		metasModule.GetAuxiliary(supplement.AuxiliaryName),
+		splitsModule.GetAuxiliary(auxiliariesMint.AuxiliaryName),
+		splitsModule.GetAuxiliary(burn.AuxiliaryName),
 	)
-	exchanges.Module.InitializeKeepers(
-		splits.Module.GetAuxiliary(auxiliariesMint.AuxiliaryName),
-		splits.Module.GetAuxiliary(burn.AuxiliaryName),
+	exchanges.Module.Initialize(
+		splitsModule.GetAuxiliary(auxiliariesMint.AuxiliaryName),
+		splitsModule.GetAuxiliary(burn.AuxiliaryName),
 	)
-	orders.Module.InitializeKeepers(
+	orders.Module.Initialize(
 		application.bankKeeper,
-		exchanges.Module.GetAuxiliary(swap.AuxiliaryName),
-		exchanges.Module.GetAuxiliary(custody.AuxiliaryName),
-		exchanges.Module.GetAuxiliary(reverse.AuxiliaryName),
-		identities.Module.GetAuxiliary(verify.AuxiliaryName),
+		classificationModule.GetAuxiliary(conform.AuxiliaryName),
+		metasModule.GetAuxiliary(supplement.AuxiliaryName),
+		splitsModule.GetAuxiliary(auxiliariesMint.AuxiliaryName),
+		metasModule.GetAuxiliary(scrub.AuxiliaryName),
+		splitsModule.GetAuxiliary(transfer.AuxiliaryName),
+		identitiesModule.GetAuxiliary(verify.AuxiliaryName),
 	)
 
 	// just re-use the full router - do we want to limit this more?
