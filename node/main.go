@@ -122,6 +122,7 @@ func main() {
 			traceStore,
 			true,
 			invalidCheckPeriod,
+			application.GetEnabledProposals(),
 			skipUpgradeHeights,
 			viper.GetString(flags.FlagHome),
 			baseapp.SetPruning(pruningOpts),
@@ -148,6 +149,7 @@ func main() {
 				traceStore,
 				false,
 				uint(1),
+				application.GetEnabledProposals(),
 				map[int64]bool{},
 				"",
 			)
@@ -164,6 +166,7 @@ func main() {
 			traceStore,
 			true,
 			uint(1),
+			application.GetEnabledProposals(),
 			map[int64]bool{},
 			"",
 		)

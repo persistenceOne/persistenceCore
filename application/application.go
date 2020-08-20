@@ -26,6 +26,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	abciTypes "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -146,12 +147,39 @@ type WasmWrapper struct {
 	Wasm wasm.WasmConfig `mapstructure:"wasm"`
 }
 
+// If EnabledSpecificProposals is "", and this is "true", then enable all x/wasm proposals.
+// If EnabledSpecificProposals is "", and this is not "true", then disable all x/wasm proposals.
+var ProposalsEnabled = "false"
+
+// If set to non-empty string it must be comma-separated list of values that are all a subset
+// of "EnableAllProposals" (takes precedence over ProposalsEnabled)
+// https://github.com/CosmWasm/wasmd/blob/02a54d33ff2c064f3539ae12d75d027d9c665f05/x/wasm/internal/types/proposal.go#L28-L34
+var EnableSpecificProposals = ""
+
+// GetEnabledProposals parses the ProposalsEnabled / EnableSpecificProposals values to
+// produce a list of enabled proposals to pass into wasmd app.
+func GetEnabledProposals() []wasm.ProposalType {
+	if EnableSpecificProposals == "" {
+		if ProposalsEnabled == "true" {
+			return wasm.EnableAllProposals
+		}
+		return wasm.DisableAllProposals
+	}
+	chunks := strings.Split(EnableSpecificProposals, ",")
+	proposals, err := wasm.ConvertToProposals(chunks)
+	if err != nil {
+		panic(err)
+	}
+	return proposals
+}
+
 func NewApplication(
 	logger log.Logger,
 	db tendermintDB.DB,
 	traceStore io.Writer,
 	loadLatest bool,
 	invCheckPeriod uint,
+	enabledProposals []wasm.ProposalType,
 	skipUpgradeHeights map[int64]bool,
 	home string,
 	baseAppOptions ...func(*baseapp.BaseApp),
@@ -321,15 +349,6 @@ func NewApplication(
 		staking.NewMultiStakingHooks(application.distributionKeeper.Hooks(), application.slashingKeeper.Hooks()),
 	)
 
-	application.govKeeper = gov.NewKeeper(
-		Codec,
-		keys[gov.StoreKey],
-		application.subspaces[gov.ModuleName],
-		application.supplyKeeper,
-		&stakingKeeper,
-		govRouter,
-	)
-
 	classifications.Module.InitializeKeepers()
 	identities.Module.InitializeKeepers()
 	metas.Module.InitializeKeepers()
@@ -372,6 +391,20 @@ func NewApplication(
 	application.wasmKeeper = wasm.NewKeeper(Codec, keys[wasm.StoreKey], application.subspaces[wasm.ModuleName],
 		application.accountKeeper, application.bankKeeper, application.stakingKeeper,
 		wasmRouter, wasmDir, wasmConfig, supportedFeatures, WasmCustomMessageEncoder(Codec), nil)
+
+	// The gov proposal types can be individually enabled
+	if len(enabledProposals) != 0 {
+		govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(application.wasmKeeper, enabledProposals))
+	}
+
+	application.govKeeper = gov.NewKeeper(
+		Codec,
+		keys[gov.StoreKey],
+		application.subspaces[gov.ModuleName],
+		application.supplyKeeper,
+		&stakingKeeper,
+		govRouter,
+	)
 
 	application.moduleManager = module.NewManager(
 		genutil.NewAppModule(application.accountKeeper, application.stakingKeeper, application.BaseApp.DeliverTx),
