@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	//"github.com/CosmWasm/wasmd/app"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/persistenceOne/assetMantle/application"
 	"github.com/persistenceOne/persistenceSDK/schema/helpers/base"
@@ -22,7 +23,6 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	authClient "github.com/cosmos/cosmos-sdk/x/auth/client"
 	authCLI "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	authREST "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	"github.com/cosmos/cosmos-sdk/x/bank"
@@ -35,16 +35,11 @@ import (
 	"github.com/tendermint/tendermint/libs/cli"
 )
 
-var (
-	appCodec, codec = application.MakeCodecs()
-)
-
-func init() {
-	authClient.Codec = appCodec
-}
-
 func main() {
 	cobra.EnableCommandSorting = false
+
+	// Instantiate the codec for the command line application
+	codec := application.MakeCodec()
 
 	config := sdkTypes.GetConfig()
 	config.SetBech32PrefixForAccount(sdkTypes.Bech32PrefixAccAddr, sdkTypes.Bech32PrefixAccPub)
@@ -161,6 +156,7 @@ func ServeCmd(codec *amino.Codec) *cobra.Command {
 	}
 	cmd.Flags().Bool(flagKafka, false, "Whether have kafka running")
 	cmd.Flags().String(kafkaPorts, "localhost:9092", "Space separated addresses in quotes of the kafka listening node: example: --kafkaPort \"addr1 addr2\" ")
+	cmd.Flags().String(flags.FlagKeyringBackend, flags.DefaultKeyringBackend, "Select keyring's backend (os|file|kwallet|pass|test)")
 	return flags.RegisterRestServerFlags(cmd)
 }
 

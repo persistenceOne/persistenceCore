@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/persistenceOne/assetMantle/application"
 	"io"
 
@@ -34,7 +34,7 @@ func main() {
 
 	serverContext := server.NewDefaultContext()
 
-	appCodec, Codec := application.MakeCodecs()
+	Codec := application.MakeCodec()
 
 	configuration := sdkTypes.GetConfig()
 	configuration.SetBech32PrefixForAccount(sdkTypes.Bech32PrefixAccAddr, sdkTypes.Bech32PrefixAccPub)
@@ -59,7 +59,7 @@ func main() {
 	rootCommand.AddCommand(initialize.CollectGenesisTransactionsCommand(
 		serverContext,
 		Codec,
-		bank.GenesisBalancesIterator{},
+		auth.GenesisAccountIterator{},
 		application.DefaultNodeHome,
 	))
 	rootCommand.AddCommand(initialize.MigrateGenesisCommand(
@@ -71,7 +71,7 @@ func main() {
 		Codec,
 		application.ModuleBasics,
 		staking.AppModuleBasic{},
-		bank.GenesisBalancesIterator{},
+		auth.GenesisAccountIterator{},
 		application.DefaultNodeHome,
 		application.DefaultClientHome,
 	))
@@ -83,7 +83,6 @@ func main() {
 	rootCommand.AddCommand(initialize.AddGenesisAccountCommand(
 		serverContext,
 		Codec,
-		appCodec,
 		application.DefaultNodeHome,
 		application.DefaultClientHome,
 	))
@@ -113,15 +112,20 @@ func main() {
 		for _, h := range viper.GetIntSlice(server.FlagUnsafeSkipUpgrades) {
 			skipUpgradeHeights[int64(h)] = true
 		}
+		pruningOpts, err := server.GetPruningOptionsFromFlags()
+		if err != nil {
+			panic(err)
+		}
 		return application.NewApplication(
 			logger,
 			db,
 			traceStore,
 			true,
 			invalidCheckPeriod,
+			application.GetEnabledProposals(),
 			skipUpgradeHeights,
 			viper.GetString(flags.FlagHome),
-			baseapp.SetPruning(store.NewPruningOptionsFromString(viper.GetString("pruning"))),
+			baseapp.SetPruning(pruningOpts),
 			baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)),
 			baseapp.SetHaltHeight(viper.GetUint64(server.FlagHaltHeight)),
 			baseapp.SetHaltTime(viper.GetUint64(server.FlagHaltTime)),
@@ -136,7 +140,7 @@ func main() {
 		height int64,
 		forZeroHeight bool,
 		jailWhiteList []string,
-	) (json.RawMessage, []tendermintTypes.GenesisValidator, *tendermintABCITypes.ConsensusParams, error) {
+	) (json.RawMessage, []tendermintTypes.GenesisValidator, error) {
 
 		if height != -1 {
 			genesisApplication := application.NewApplication(
@@ -145,12 +149,13 @@ func main() {
 				traceStore,
 				false,
 				uint(1),
+				application.GetEnabledProposals(),
 				map[int64]bool{},
 				"",
 			)
 			err := genesisApplication.LoadHeight(height)
 			if err != nil {
-				return nil, nil, nil, err
+				return nil, nil, err
 			}
 			return genesisApplication.ExportApplicationStateAndValidators(forZeroHeight, jailWhiteList)
 		}
@@ -161,6 +166,7 @@ func main() {
 			traceStore,
 			true,
 			uint(1),
+			application.GetEnabledProposals(),
 			map[int64]bool{},
 			"",
 		)
