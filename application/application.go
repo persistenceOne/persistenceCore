@@ -10,7 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
-	authvesting "github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	authVesting "github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	"github.com/cosmos/cosmos-sdk/x/distribution"
@@ -31,6 +31,7 @@ import (
 	"github.com/persistenceOne/persistenceSDK/modules/exchanges"
 	"github.com/persistenceOne/persistenceSDK/modules/identities"
 	"github.com/persistenceOne/persistenceSDK/modules/identities/auxiliaries/verify"
+	"github.com/persistenceOne/persistenceSDK/modules/maintainers"
 	"github.com/persistenceOne/persistenceSDK/modules/metas"
 	"github.com/persistenceOne/persistenceSDK/modules/metas/auxiliaries/scrub"
 	"github.com/persistenceOne/persistenceSDK/modules/metas/auxiliaries/supplement"
@@ -40,6 +41,7 @@ import (
 	auxiliariesMint "github.com/persistenceOne/persistenceSDK/modules/splits/auxiliaries/mint"
 	"github.com/persistenceOne/persistenceSDK/modules/splits/auxiliaries/transfer"
 	"github.com/persistenceOne/persistenceSDK/schema"
+	wasmUtilities "github.com/persistenceOne/persistenceSDK/utilities/wasm"
 	"github.com/spf13/viper"
 	abciTypes "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -102,7 +104,7 @@ func MakeCodec() *codec.Codec {
 	sdkTypes.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
 	codec.RegisterEvidences(cdc)
-	authvesting.RegisterCodec(cdc)
+	authVesting.RegisterCodec(cdc)
 
 	return cdc.Seal()
 }
@@ -353,7 +355,6 @@ func NewApplication(
 		identitiesModule.GetAuxiliary(verify.AuxiliaryName),
 	)
 
-	// just re-use the full router - do we want to limit this more?
 	var wasmRouter = baseApp.Router()
 	wasmDir := filepath.Join(home, wasm.ModuleName)
 
@@ -364,12 +365,20 @@ func NewApplication(
 	}
 	wasmConfig := wasmWrap.Wasm
 
-	// The last arguments can contain custom message handlers, and custom query handlers,
-	// if we want to allow any custom callbacks
 	supportedFeatures := "staking"
-	application.wasmKeeper = wasm.NewKeeper(Codec, keys[wasm.StoreKey], application.subspaces[wasm.ModuleName],
-		application.accountKeeper, application.bankKeeper, application.stakingKeeper,
-		wasmRouter, wasmDir, wasmConfig, supportedFeatures, WasmCustomMessageEncoder(Codec), nil)
+	application.wasmKeeper = wasm.NewKeeper(
+		Codec,
+		keys[wasm.StoreKey],
+		application.subspaces[wasm.ModuleName],
+		application.accountKeeper,
+		application.bankKeeper,
+		application.stakingKeeper,
+		wasmRouter,
+		wasmDir,
+		wasmConfig,
+		supportedFeatures,
+		&wasm.MessageEncoders{Custom: wasmUtilities.CustomEncoder(assets.Module, classifications.Module, exchanges.Module, identities.Module, maintainers.Module, metas.Module, orders.Module, splits.Module)},
+		nil)
 
 	// The gov proposal types can be individually enabled
 	if len(enabledProposals) != 0 {
@@ -490,12 +499,12 @@ func (application *Application) LoadHeight(height int64) error {
 	return application.LoadVersion(height, application.keys[baseapp.MainStoreKey])
 }
 func (application *Application) ModuleAccountAddress() map[string]bool {
-	modAccAddrs := make(map[string]bool)
+	moduleAccountAddress := make(map[string]bool)
 	for acc := range moduleAccountPermissions {
-		modAccAddrs[supply.NewModuleAddress(acc).String()] = true
+		moduleAccountAddress[supply.NewModuleAddress(acc).String()] = true
 	}
 
-	return modAccAddrs
+	return moduleAccountAddress
 }
 func (application *Application) ExportApplicationStateAndValidators(forZeroHeight bool, jailWhiteList []string,
 ) (applicationState json.RawMessage, validators []tendermintTypes.GenesisValidator, err error) {
@@ -534,7 +543,7 @@ func (application *Application) prepareForZeroHeightGenesis(ctx sdkTypes.Context
 	for _, address := range jailWhiteList {
 		_, err := sdkTypes.ValAddressFromBech32(address)
 		if err != nil {
-			//log.Fatal(err) //todo
+			return
 		}
 		whiteListMap[address] = true
 	}
