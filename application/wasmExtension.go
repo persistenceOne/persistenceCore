@@ -11,7 +11,6 @@ import (
 	"github.com/persistenceOne/persistenceSDK/constants"
 	"github.com/persistenceOne/persistenceSDK/modules/assets/transactions/mint"
 	"github.com/persistenceOne/persistenceSDK/schema/types/base"
-	"github.com/persistenceOne/persistenceSDK/utilities/request"
 )
 
 // this is for adding raw messages to wasm //
@@ -63,16 +62,13 @@ func assetsMintEncoder(_ *codec.Codec, sender sdkTypes.AccAddress, rawMessage js
 }
 
 func encodeAssetMintMessage(sender sdkTypes.AccAddress, assetMintMessage AssetMintMessage) ([]sdkTypes.Msg, error) {
-	properties := request.ReadProperties(assetMintMessage.Properties)
+	properties := base.ReadProperties(assetMintMessage.Properties)
 	if len(properties.GetList()) > constants.MaxTraitCount {
 		panic(errors.New(fmt.Sprintf("")))
 	}
 	mintMessage := mint.Message{
 		From:             sender,
-		Burn:             base.NewHeight(assetMintMessage.Burn),
-		MaintainersID:    base.NewID(assetMintMessage.MaintainersID),
 		ClassificationID: base.NewID(assetMintMessage.ClassificationID),
-		Lock:             base.NewHeight(assetMintMessage.Lock),
 	}
 	return []sdkTypes.Msg{mintMessage}, nil
 }
