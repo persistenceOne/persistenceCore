@@ -1,9 +1,9 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="identities query" type="GoApplicationRunConfiguration" factoryName="Go Application">
+  <configuration default="false" name="classifications query" type="GoApplicationRunConfiguration" factoryName="Go Application">
     <module name="assetMantle" />
     <working_directory value="$PROJECT_DIR$/" />
     <go_parameters value="-i" />
-    <parameters value="query identities identities --chain-id test --identityID test.cGn3HMW8M3t5gMDv-wXa9sseHnA=|cXbKF6hGMB0ei8unCEjb1z_s8r4=" />
+    <parameters value="query classifications classifications --chain-id test --classificationID test.Savede7NEFcRTjnDARhhWcJaVn8=" />
     <kind value="FILE" />
     <filePath value="$PROJECT_DIR$/client/main.go" />
     <package value="github.com/persistenceOne/assetMantle" />
