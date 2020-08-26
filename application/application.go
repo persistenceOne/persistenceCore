@@ -28,10 +28,13 @@ import (
 	"github.com/persistenceOne/persistenceSDK/modules/assets"
 	"github.com/persistenceOne/persistenceSDK/modules/classifications"
 	"github.com/persistenceOne/persistenceSDK/modules/classifications/auxiliaries/conform"
+	"github.com/persistenceOne/persistenceSDK/modules/classifications/auxiliaries/define"
 	"github.com/persistenceOne/persistenceSDK/modules/exchanges"
 	"github.com/persistenceOne/persistenceSDK/modules/identities"
 	"github.com/persistenceOne/persistenceSDK/modules/identities/auxiliaries/verify"
 	"github.com/persistenceOne/persistenceSDK/modules/maintainers"
+	"github.com/persistenceOne/persistenceSDK/modules/maintainers/auxiliaries/maintain"
+	"github.com/persistenceOne/persistenceSDK/modules/maintainers/auxiliaries/super"
 	"github.com/persistenceOne/persistenceSDK/modules/metas"
 	"github.com/persistenceOne/persistenceSDK/modules/metas/auxiliaries/scrub"
 	"github.com/persistenceOne/persistenceSDK/modules/metas/auxiliaries/supplement"
@@ -90,6 +93,7 @@ var ModuleBasics = module.NewBasicManager(
 	classifications.Module,
 	exchanges.Module,
 	identities.Module,
+	maintainers.Module,
 	metas.Module,
 	orders.Module,
 	splits.Module,
@@ -191,6 +195,7 @@ func NewApplication(
 	keys[classifications.Module.Name()] = classifications.Module.GetKVStoreKey()
 	keys[exchanges.Module.Name()] = exchanges.Module.GetKVStoreKey()
 	keys[identities.Module.Name()] = identities.Module.GetKVStoreKey()
+	keys[maintainers.Module.Name()] = maintainers.Module.GetKVStoreKey()
 	keys[metas.Module.Name()] = metas.Module.GetKVStoreKey()
 	keys[orders.Module.Name()] = orders.Module.GetKVStoreKey()
 	keys[splits.Module.Name()] = splits.Module.GetKVStoreKey()
@@ -229,6 +234,7 @@ func NewApplication(
 	application.subspaces[classifications.Module.Name()] = application.paramsKeeper.Subspace(classifications.Module.GetDefaultParamspace())
 	application.subspaces[exchanges.Module.Name()] = application.paramsKeeper.Subspace(exchanges.Module.GetDefaultParamspace())
 	application.subspaces[identities.Module.Name()] = application.paramsKeeper.Subspace(identities.Module.GetDefaultParamspace())
+	application.subspaces[maintainers.Module.Name()] = application.paramsKeeper.Subspace(maintainers.Module.GetDefaultParamspace())
 	application.subspaces[metas.Module.Name()] = application.paramsKeeper.Subspace(metas.Module.GetDefaultParamspace())
 	application.subspaces[orders.Module.Name()] = application.paramsKeeper.Subspace(orders.Module.GetDefaultParamspace())
 	application.subspaces[splits.Module.Name()] = application.paramsKeeper.Subspace(splits.Module.GetDefaultParamspace())
@@ -327,9 +333,13 @@ func NewApplication(
 	)
 
 	metasModule := metas.Module.Initialize()
-	classificationModule := classifications.Module.Initialize(metasModule.GetAuxiliary(scrub.AuxiliaryName))
+	maintainersModule := maintainers.Module.Initialize()
+	classificationsModule := classifications.Module.Initialize(metasModule.GetAuxiliary(scrub.AuxiliaryName))
 	identitiesModule := identities.Module.Initialize(
-		classificationModule.GetAuxiliary(conform.AuxiliaryName),
+		classificationsModule.GetAuxiliary(conform.AuxiliaryName),
+		classificationsModule.GetAuxiliary(define.AuxiliaryName),
+		maintainersModule.GetAuxiliary(super.AuxiliaryName),
+		maintainersModule.GetAuxiliary(maintain.AuxiliaryName),
 		metasModule.GetAuxiliary(scrub.AuxiliaryName),
 	)
 	splitsModule := splits.Module.Initialize(
@@ -337,8 +347,11 @@ func NewApplication(
 		identitiesModule.GetAuxiliary(verify.AuxiliaryName),
 	)
 	assets.Module.Initialize(
-		classificationModule.GetAuxiliary(conform.AuxiliaryName),
+		classificationsModule.GetAuxiliary(conform.AuxiliaryName),
+		classificationsModule.GetAuxiliary(define.AuxiliaryName),
 		identitiesModule.GetAuxiliary(verify.AuxiliaryName),
+		maintainersModule.GetAuxiliary(super.AuxiliaryName),
+		maintainersModule.GetAuxiliary(maintain.AuxiliaryName),
 		metasModule.GetAuxiliary(scrub.AuxiliaryName),
 		metasModule.GetAuxiliary(supplement.AuxiliaryName),
 		splitsModule.GetAuxiliary(auxiliariesMint.AuxiliaryName),
@@ -350,9 +363,12 @@ func NewApplication(
 	)
 	orders.Module.Initialize(
 		application.bankKeeper,
-		classificationModule.GetAuxiliary(conform.AuxiliaryName),
+		classificationsModule.GetAuxiliary(conform.AuxiliaryName),
+		classificationsModule.GetAuxiliary(define.AuxiliaryName),
 		metasModule.GetAuxiliary(supplement.AuxiliaryName),
 		splitsModule.GetAuxiliary(auxiliariesMint.AuxiliaryName),
+		maintainersModule.GetAuxiliary(super.AuxiliaryName),
+		maintainersModule.GetAuxiliary(maintain.AuxiliaryName),
 		metasModule.GetAuxiliary(scrub.AuxiliaryName),
 		splitsModule.GetAuxiliary(transfer.AuxiliaryName),
 		identitiesModule.GetAuxiliary(verify.AuxiliaryName),
