@@ -6,7 +6,7 @@ require (
 	github.com/CosmWasm/wasmd v0.10.0
 	github.com/cosmos/cosmos-sdk v0.39.1-0.20200727135228-9d00f712e334
 	github.com/otiai10/copy v1.1.1
-	github.com/persistenceOne/persistenceSDK v0.0.0-20200826103919-fa7fb2ef110f
+	github.com/persistenceOne/persistenceSDK v0.0.0-20200826235450-413773e971b4
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.7.1
 	github.com/tendermint/go-amino v0.15.1
