@@ -29,7 +29,6 @@ import (
 	"github.com/persistenceOne/persistenceSDK/modules/classifications"
 	"github.com/persistenceOne/persistenceSDK/modules/classifications/auxiliaries/conform"
 	"github.com/persistenceOne/persistenceSDK/modules/classifications/auxiliaries/define"
-	"github.com/persistenceOne/persistenceSDK/modules/exchanges"
 	"github.com/persistenceOne/persistenceSDK/modules/identities"
 	"github.com/persistenceOne/persistenceSDK/modules/identities/auxiliaries/verify"
 	"github.com/persistenceOne/persistenceSDK/modules/maintainers"
@@ -91,7 +90,6 @@ var ModuleBasics = module.NewBasicManager(
 
 	assets.Module,
 	classifications.Module,
-	exchanges.Module,
 	identities.Module,
 	maintainers.Module,
 	metas.Module,
@@ -193,7 +191,6 @@ func NewApplication(
 	)
 	keys[assets.Module.Name()] = assets.Module.GetKVStoreKey()
 	keys[classifications.Module.Name()] = classifications.Module.GetKVStoreKey()
-	keys[exchanges.Module.Name()] = exchanges.Module.GetKVStoreKey()
 	keys[identities.Module.Name()] = identities.Module.GetKVStoreKey()
 	keys[maintainers.Module.Name()] = maintainers.Module.GetKVStoreKey()
 	keys[metas.Module.Name()] = metas.Module.GetKVStoreKey()
@@ -232,7 +229,6 @@ func NewApplication(
 
 	application.subspaces[assets.Module.Name()] = application.paramsKeeper.Subspace(assets.Module.GetDefaultParamspace())
 	application.subspaces[classifications.Module.Name()] = application.paramsKeeper.Subspace(classifications.Module.GetDefaultParamspace())
-	application.subspaces[exchanges.Module.Name()] = application.paramsKeeper.Subspace(exchanges.Module.GetDefaultParamspace())
 	application.subspaces[identities.Module.Name()] = application.paramsKeeper.Subspace(identities.Module.GetDefaultParamspace())
 	application.subspaces[maintainers.Module.Name()] = application.paramsKeeper.Subspace(maintainers.Module.GetDefaultParamspace())
 	application.subspaces[metas.Module.Name()] = application.paramsKeeper.Subspace(metas.Module.GetDefaultParamspace())
@@ -357,10 +353,6 @@ func NewApplication(
 		splitsModule.GetAuxiliary(auxiliariesMint.AuxiliaryName),
 		splitsModule.GetAuxiliary(burn.AuxiliaryName),
 	)
-	exchanges.Module.Initialize(
-		splitsModule.GetAuxiliary(auxiliariesMint.AuxiliaryName),
-		splitsModule.GetAuxiliary(burn.AuxiliaryName),
-	)
 	orders.Module.Initialize(
 		application.bankKeeper,
 		classificationsModule.GetAuxiliary(conform.AuxiliaryName),
@@ -396,7 +388,7 @@ func NewApplication(
 		wasmDir,
 		wasmConfig,
 		supportedFeatures,
-		&wasm.MessageEncoders{Custom: wasmUtilities.CustomEncoder(assets.Module, classifications.Module, exchanges.Module, identities.Module, maintainers.Module, metas.Module, orders.Module, splits.Module)},
+		&wasm.MessageEncoders{Custom: wasmUtilities.CustomEncoder(assets.Module, classifications.Module, identities.Module, maintainers.Module, metas.Module, orders.Module, splits.Module)},
 		nil)
 
 	// The gov proposal types can be individually enabled
@@ -430,7 +422,6 @@ func NewApplication(
 
 		assets.Module,
 		classifications.Module,
-		exchanges.Module,
 		identities.Module,
 		metas.Module,
 		orders.Module,
@@ -463,7 +454,6 @@ func NewApplication(
 		wasm.ModuleName,
 		assets.Module.Name(),
 		classifications.Module.Name(),
-		exchanges.Module.Name(),
 		identities.Module.Name(),
 		metas.Module.Name(),
 		orders.Module.Name(),
