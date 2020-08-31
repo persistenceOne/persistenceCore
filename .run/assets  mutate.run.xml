@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="assets  mutate" type="GoApplicationRunConfiguration" factoryName="Go Application">
+  <configuration default="false" name=" mutate" type="GoApplicationRunConfiguration" factoryName="Go Application" folderName="assets">
     <module name="assetMantle" />
     <working_directory value="$PROJECT_DIR$/" />
     <go_parameters value="-i" />
