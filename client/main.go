@@ -7,7 +7,6 @@ import (
 	"github.com/persistenceOne/assetMantle/application"
 	"github.com/persistenceOne/persistenceSDK/schema/helpers/base"
 	keysAdd "github.com/persistenceOne/persistenceSDK/utilities/rest/keys/add"
-	keysRecover "github.com/persistenceOne/persistenceSDK/utilities/rest/keys/recover"
 	"github.com/persistenceOne/persistenceSDK/utilities/rest/queuing"
 	"github.com/persistenceOne/persistenceSDK/utilities/rest/queuing/rest"
 	"github.com/persistenceOne/persistenceSDK/utilities/rest/signTx"
@@ -85,7 +84,6 @@ func registerRoutes(restServer *lcd.RestServer) {
 	authREST.RegisterTxRoutes(restServer.CliCtx, restServer.Mux)
 	application.ModuleBasics.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
 	keysAdd.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
-	keysRecover.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
 	signTx.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
 }
 
@@ -121,7 +119,10 @@ func ServeCmd(codec *amino.Codec) *cobra.Command {
 		Use:   "rest-server",
 		Short: "Start LCD (light-client daemon), a local REST server",
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			generateOnly := viper.GetBool(flags.FlagGenerateOnly)
+			viper.Set(flags.FlagGenerateOnly, false)
 			rs := lcd.NewRestServer(codec)
+			viper.Set(flags.FlagGenerateOnly, generateOnly)
 			kafkaBool := viper.GetBool(flagKafka)
 			var kafkaState queuing.KafkaState
 			corsBool := viper.GetBool(flags.FlagUnsafeCORS)
@@ -157,6 +158,9 @@ func ServeCmd(codec *amino.Codec) *cobra.Command {
 	cmd.Flags().Bool(flagKafka, false, "Whether have kafka running")
 	cmd.Flags().String(kafkaPorts, "localhost:9092", "Space separated addresses in quotes of the kafka listening node: example: --kafkaPort \"addr1 addr2\" ")
 	cmd.Flags().String(flags.FlagKeyringBackend, flags.DefaultKeyringBackend, "Select keyring's backend (os|file|kwallet|pass|test)")
+	cmd.Flags().Bool(flags.FlagGenerateOnly, false, "Build an unsigned transaction and write it as response to rest (when enabled, the local Keybase is not accessible and the node operates offline)")
+	cmd.Flags().StringP(flags.FlagBroadcastMode, "b", flags.BroadcastSync, "Transaction broadcasting mode (sync|async|block)")
+
 	return flags.RegisterRestServerFlags(cmd)
 }
 
