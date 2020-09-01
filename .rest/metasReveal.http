@@ -31,6 +31,7 @@ client.test("Response Code Check", function() {
      client.assert(!JSON.parse(JSON.stringify(response.body)).hasOwnProperty("code") , "Response Code is not 0");
  });
 %}
+
 ###
 GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/metas/metas/-
 Accept: application/json
@@ -40,4 +41,5 @@ Accept: application/json
         client.assert(response.status === 200, "Response status is not 200");
     });
 %}
+
 ###
