@@ -32,4 +32,5 @@ client.test("Response Code Check", function() {
      client.assert(!JSON.parse(JSON.stringify(response.body)).hasOwnProperty("code") , "Response Code is not 0");
  });
 %}
+
 ###

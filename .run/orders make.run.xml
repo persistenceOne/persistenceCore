@@ -1,13 +1,13 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="orders make" type="GoApplicationRunConfiguration" factoryName="Go Application">
-    <module name="assetMantle" />
-    <working_directory value="$PROJECT_DIR$/" />
-    <go_parameters value="-i" />
-    <parameters value="tx orders make -y --chain-id test --from test" />
-    <kind value="FILE" />
-    <filePath value="$PROJECT_DIR$/client/main.go" />
-    <package value="github.com/persistenceOne/assetMantle" />
-    <directory value="$PROJECT_DIR$/" />
-    <method v="2" />
-  </configuration>
+    <configuration default="false" name="orders make" type="GoApplicationRunConfiguration" factoryName="Go Application">
+        <module name="assetMantle"/>
+        <working_directory value="$PROJECT_DIR$/"/>
+        <go_parameters value="-i"/>
+        <parameters value="tx orders make -y --chain-id test --from test"/>
+        <kind value="FILE"/>
+        <filePath value="$PROJECT_DIR$/client/main.go"/>
+        <package value="github.com/persistenceOne/assetMantle"/>
+        <directory value="$PROJECT_DIR$/"/>
+        <method v="2"/>
+    </configuration>
 </component>

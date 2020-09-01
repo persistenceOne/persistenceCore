@@ -1,3 +1,8 @@
+/*
+ Copyright [2019] - [2020], PERSISTENCE TECHNOLOGIES PTE. LTD. and the assetMantle contributors
+ SPDX-License-Identifier: Apache-2.0
+*/
+
 package main
 
 import (
@@ -34,8 +39,6 @@ func main() {
 
 	serverContext := server.NewDefaultContext()
 
-	Codec := application.MakeCodec()
-
 	configuration := sdkTypes.GetConfig()
 	configuration.SetBech32PrefixForAccount(sdkTypes.Bech32PrefixAccAddr, sdkTypes.Bech32PrefixAccPub)
 	configuration.SetBech32PrefixForValidator(sdkTypes.Bech32PrefixValAddr, sdkTypes.Bech32PrefixValPub)
@@ -52,23 +55,23 @@ func main() {
 
 	rootCommand.AddCommand(initialize.Command(
 		serverContext,
-		Codec,
+		application.Codec,
 		application.ModuleBasics,
 		application.DefaultNodeHome,
 	))
 	rootCommand.AddCommand(initialize.CollectGenesisTransactionsCommand(
 		serverContext,
-		Codec,
+		application.Codec,
 		auth.GenesisAccountIterator{},
 		application.DefaultNodeHome,
 	))
 	rootCommand.AddCommand(initialize.MigrateGenesisCommand(
 		serverContext,
-		Codec,
+		application.Codec,
 	))
 	rootCommand.AddCommand(initialize.GenesisTransactionCommand(
 		serverContext,
-		Codec,
+		application.Codec,
 		application.ModuleBasics,
 		staking.AppModuleBasic{},
 		auth.GenesisAccountIterator{},
@@ -77,18 +80,18 @@ func main() {
 	))
 	rootCommand.AddCommand(initialize.ValidateGenesisCommand(
 		serverContext,
-		Codec,
+		application.Codec,
 		application.ModuleBasics,
 	))
 	rootCommand.AddCommand(initialize.AddGenesisAccountCommand(
 		serverContext,
-		Codec,
+		application.Codec,
 		application.DefaultNodeHome,
 		application.DefaultClientHome,
 	))
 	rootCommand.AddCommand(flags.NewCompletionCmd(rootCommand, true))
 	rootCommand.AddCommand(initialize.ReplayTransactionsCommand())
-	rootCommand.AddCommand(debug.Cmd(Codec))
+	rootCommand.AddCommand(debug.Cmd(application.Codec))
 
 	rootCommand.PersistentFlags().UintVar(
 		&invalidCheckPeriod,
@@ -122,7 +125,6 @@ func main() {
 			traceStore,
 			true,
 			invalidCheckPeriod,
-			application.GetEnabledProposals(),
 			skipUpgradeHeights,
 			viper.GetString(flags.FlagHome),
 			baseapp.SetPruning(pruningOpts),
@@ -149,7 +151,6 @@ func main() {
 				traceStore,
 				false,
 				uint(1),
-				application.GetEnabledProposals(),
 				map[int64]bool{},
 				"",
 			)
@@ -166,7 +167,6 @@ func main() {
 			traceStore,
 			true,
 			uint(1),
-			application.GetEnabledProposals(),
 			map[int64]bool{},
 			"",
 		)
@@ -176,7 +176,7 @@ func main() {
 
 	server.AddCommands(
 		serverContext,
-		Codec,
+		application.Codec,
 		rootCommand,
 		appCreator,
 		appExporter,

@@ -1,3 +1,8 @@
+/*
+ Copyright [2019] - [2020], PERSISTENCE TECHNOLOGIES PTE. LTD. and the assetMantle contributors
+ SPDX-License-Identifier: Apache-2.0
+*/
+
 package initialize
 
 import (
@@ -85,7 +90,6 @@ func replayTransactions(rootDir string) error {
 		traceStoreWriter,
 		true,
 		uint(1),
-		application.GetEnabledProposals(),
 		map[int64]bool{},
 		viper.GetString(flags.FlagHome),
 	)
