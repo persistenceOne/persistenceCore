@@ -37,9 +37,6 @@ import (
 func main() {
 	cobra.EnableCommandSorting = false
 
-	// Instantiate the codec for the command line application
-	codec := application.MakeCodec()
-
 	config := sdkTypes.GetConfig()
 	config.SetBech32PrefixForAccount(sdkTypes.Bech32PrefixAccAddr, sdkTypes.Bech32PrefixAccPub)
 	config.SetBech32PrefixForValidator(sdkTypes.Bech32PrefixValAddr, sdkTypes.Bech32PrefixValPub)
@@ -59,10 +56,10 @@ func main() {
 	rootCommand.AddCommand(
 		rpc.StatusCommand(),
 		client.ConfigCmd(application.DefaultClientHome),
-		queryCommand(codec),
-		transactionCommand(codec),
+		queryCommand(application.Codec),
+		transactionCommand(application.Codec),
 		flags.LineBreak,
-		ServeCmd(codec),
+		ServeCmd(application.Codec),
 		flags.LineBreak,
 		keys.Commands(),
 		flags.LineBreak,

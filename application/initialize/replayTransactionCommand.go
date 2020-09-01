@@ -85,7 +85,6 @@ func replayTransactions(rootDir string) error {
 		traceStoreWriter,
 		true,
 		uint(1),
-		application.GetEnabledProposals(),
 		map[int64]bool{},
 		viper.GetString(flags.FlagHome),
 	)
