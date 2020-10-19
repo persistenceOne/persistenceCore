@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
     <configuration default="false" name="splits wrap coin" type="GoApplicationRunConfiguration"
-                   factoryName="Go Application">
+                   factoryName="Go Application" folderName="splits">
         <module name="assetMantle"/>
         <working_directory value="$PROJECT_DIR$/"/>
         <go_parameters value="-i"/>
