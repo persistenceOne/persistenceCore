@@ -1,9 +1,9 @@
 {
-  "ip":"http://localhost:",
-  "port":"1317",
-  "testAccountAddress":"cosmos1pkkayn066msg6kn33wnl5srhdt3tnu2vzasz9c",
-  "chain_id":"test",
-  "nubID":"nubID",
+  "ip": "http://localhost:",
+  "port": "1317",
+  "testAccountAddress": "cosmos1pkkayn066msg6kn33wnl5srhdt3tnu2vzasz9c",
+  "chain_id": "test",
+  "nubID": "nubID",
   "tries_threshold": 5,
   "keysAdd": "/keys/add",
   "signTx": "/signTx",
@@ -51,10 +51,10 @@
   "splitval": "0.000000000000000001",
   "coins": "100stake",
   "retry_count": 10,
-  "timeout":2000,
+  "timeout": 2000,
   "exchangeRate": 10,
   "makerownablesplit": "0.000000000000000001",
-  "expiry":"1000000",
-  "takerownableid":"stake",
-  "makerownableid":"stake"
+  "expiry": "1000000",
+  "takerownableid": "stake",
+  "makerownableid": "stake"
 }

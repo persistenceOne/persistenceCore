@@ -5,7 +5,7 @@
         <working_directory value="$PROJECT_DIR$/"/>
         <go_parameters value="-i"/>
         <parameters
-                value="tx assets mint -y --chain-id test --from test --fromID test.cGn3HMW8M3t5gMDv-wXa9sseHnA=|cXbKF6hGMB0ei8unCEjb1z_s8r4= --toID test.cGn3HMW8M3t5gMDv-wXa9sseHnA=|cXbKF6hGMB0ei8unCEjb1z_s8r4= --classificationID test.Savede7NEFcRTjnDARhhWcJaVn8= --immutableMetaProperties A:S|a --immutableProperties B:S|b --mutableMetaProperties C:S|a --mutableProperties D:S|a"/>
+                value="tx assets mint -y --chain-id test --from test --fromID test.cGn3HMW8M3t5gMDv-wXa9sseHnA=|cXbKF6hGMB0ei8unCEjb1z_s8r4= --toID test.cGn3HMW8M3t5gMDv-wXa9sseHnA=|cXbKF6hGMB0ei8unCEjb1z_s8r4= --classificationID test.2T141SVYvYOF3nT_sylhNLoYG2w= --immutableMetaProperties A:S|a --immutableProperties B:S|b --mutableMetaProperties C:S|c --mutableProperties D:S|d"/>
         <kind value="FILE"/>
         <filePath value="$PROJECT_DIR$/client/main.go"/>
         <package value="github.com/persistenceOne/assetMantle"/>

@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
     <configuration default="false" name="metas query all" type="GoApplicationRunConfiguration"
-                   factoryName="Go Application">
+                   factoryName="Go Application" folderName="metas">
         <module name="assetMantle"/>
         <working_directory value="$PROJECT_DIR$/"/>
         <go_parameters value="-i"/>

@@ -5,13 +5,11 @@ process.env.NODE_ENV = 'test';
 
 class helpers {
     async generateRandomInteger(min, max) {
-        return Math.floor(min + Math.random()*(max + 1 - min))
+        return Math.floor(min + Math.random() * (max + 1 - min))
     }
 
-    async delay(interval)
-    {
-        return it('should delay', done =>
-        {
+    async delay(interval) {
+        return it('should delay', done => {
             setTimeout(() => done(), interval)
 
         }).timeout(interval + 100) // The extra 100ms should guarantee the test will not fail due to exceeded timeout

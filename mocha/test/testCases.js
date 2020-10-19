@@ -8,13 +8,13 @@ let async = require('async');
 let should = chai.should();
 let expect = chai.expect
 const crypto = require("crypto");
-const { request } = require('chai')
+const {request} = require('chai')
 var assert = chai.assert
 
 var config = require('./config.json');
 var temp = require('./helpers/helpers');
 var helper = new temp()
-const { type } = require('os');
+const {type} = require('os');
 const retry = require('async-retry')
 const fetch = require('node-fetch')
 
@@ -168,7 +168,6 @@ describe('Account Creation, Sign and Broadcast for User1', async () => {
             .send(obj)
 
 
-
         res.should.have.status(200);
         res.body.should.be.a('object');
         expect(res.body.txhash).to.not.equal(null)
@@ -205,7 +204,6 @@ describe('Account Creation, Sign and Broadcast for User2', async () => {
         var err, res = await chai.request('http://localhost:1317')
             .post(config.keysAdd)
             .send(name)
-
 
 
         res.should.have.status(200);
@@ -254,7 +252,6 @@ describe('Account Creation, Sign and Broadcast for User2', async () => {
         var err, res = await chai.request(server)
             .post(config.signTx)
             .send(obj)
-
 
 
         res.should.have.status(200);
@@ -308,7 +305,6 @@ describe('Account Creation, Sign and Broadcast for User2', async () => {
         var err, res = await chai.request(server)
             .post(config.broadcastTx)
             .send(obj)
-
 
 
         res.should.have.status(200);
@@ -371,7 +367,7 @@ describe('Nub Tx', async () => {
             .get('/txs/' + txHash)
         var data1 = JSON.stringify(res.body)
 
-        async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+        async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
             if ((data1.indexOf('error') != -1)) {
                 callbackretry('failed')
@@ -470,7 +466,7 @@ describe('Identity', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -544,7 +540,7 @@ describe('Identity', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -631,7 +627,7 @@ describe('Identity', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -718,7 +714,7 @@ describe('Identity', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -801,7 +797,7 @@ describe('Identity', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -893,7 +889,7 @@ describe('Identity', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -967,7 +963,7 @@ describe('Identity', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -1059,7 +1055,7 @@ describe('Identity', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -1133,7 +1129,7 @@ describe('Identity', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -1234,7 +1230,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -1307,7 +1303,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -1409,7 +1405,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -1517,7 +1513,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -1607,7 +1603,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -1680,7 +1676,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -1740,7 +1736,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -1793,7 +1789,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -1883,7 +1879,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -1954,7 +1950,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -2044,7 +2040,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -2117,7 +2113,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -2185,7 +2181,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -2275,7 +2271,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -2346,7 +2342,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -2448,7 +2444,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -2541,7 +2537,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -2593,7 +2589,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -2685,7 +2681,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -2758,7 +2754,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -2818,7 +2814,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -2869,7 +2865,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -2914,7 +2910,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -2968,7 +2964,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -3020,7 +3016,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -3110,7 +3106,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -3182,7 +3178,7 @@ describe('Assets', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -3313,7 +3309,7 @@ describe('Splits', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -3410,7 +3406,7 @@ describe('Splits', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -3490,7 +3486,7 @@ describe('Splits', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -3611,7 +3607,7 @@ describe('Splits', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -3709,7 +3705,7 @@ describe('Metas', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -3782,7 +3778,7 @@ describe('Metas', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -3842,7 +3838,7 @@ describe('Metas', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -3897,7 +3893,7 @@ describe('Metas', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -3952,7 +3948,7 @@ describe('Metas', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -4007,7 +4003,7 @@ describe('Metas', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -4062,7 +4058,7 @@ describe('Metas', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -4117,7 +4113,7 @@ describe('Metas', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -4213,7 +4209,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -4302,7 +4298,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -4411,7 +4407,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -4503,7 +4499,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -4592,7 +4588,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -4661,7 +4657,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -4748,7 +4744,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -4813,7 +4809,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -4873,7 +4869,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -4983,7 +4979,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -5075,7 +5071,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -5165,7 +5161,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -5234,7 +5230,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -5339,7 +5335,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -5429,7 +5425,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -5588,7 +5584,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -5675,7 +5671,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -5764,7 +5760,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -5888,7 +5884,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -5904,7 +5900,6 @@ describe('Orders', async () => {
                 }
             })
         });
-
 
 
         it('Query Classification: ', async () => {
@@ -5961,7 +5956,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -6029,7 +6024,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -6104,7 +6099,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -6228,7 +6223,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -6244,7 +6239,6 @@ describe('Orders', async () => {
                 }
             })
         });
-
 
 
         it('Query Classification: ', async () => {
@@ -6301,7 +6295,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -6369,7 +6363,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -6444,7 +6438,7 @@ describe('Orders', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
@@ -6574,7 +6568,7 @@ describe('Maintainer', async () => {
                 .get('/txs/' + txHash)
             var data1 = JSON.stringify(res.body)
 
-            async.retry({ times: config.retry_count, interval: config.timeout }, function (callbackretry) {
+            async.retry({times: config.retry_count, interval: config.timeout}, function (callbackretry) {
 
                 if ((data1.indexOf('error') != -1)) {
                     callbackretry('failed')
