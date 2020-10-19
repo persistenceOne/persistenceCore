@@ -9,6 +9,8 @@ BUILD_TAGS := -s  -w \
 
 BUILD_FLAGS += -ldflags "${BUILD_TAGS}"
 
+GOBIN = $(shell go env GOPATH)/bin
+
 all: verify build
 
 install:

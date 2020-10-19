@@ -1,0 +1,20 @@
+name: Test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: Run JMeter Tests
+        uses: rbhadti94/apache-jmeter-action@v0.2.0
+        with:
+          testFilePath: .jmeter/assetMantleTestCases.jmx
