@@ -49,7 +49,7 @@
   "qAsset": "/xprt/assets/assets/-test=test",
   "qOrder": "/xprt/orders/orders/-test=test",
   "splitval": "0.000000000000000001",
-  "coins": "100stake",
+  "coins": "100000stake",
   "retry_count": 10,
   "timeout": 2000,
   "exchangeRate": 10,
