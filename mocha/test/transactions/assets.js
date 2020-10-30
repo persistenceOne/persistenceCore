@@ -2,19 +2,16 @@
 process.env.NODE_ENV = 'test';
 let chai = require('chai');
 let chaiHttp = require('chai-http');
-let async = require('async');
 let should = chai.should();
 let expect = chai.expect
-const crypto = require("crypto");
 const {request} = require('chai')
-var assert = chai.assert
+const assert = chai.assert
 
-var config = require('../config.json');
-const {type} = require('os');
-var server = config.ip + config.port
+const config = require('../config.json');
+const server = config.ip + config.port
 
-var assets = require('../helpers/assets')
-var cls = require('../helpers/classifications')
+const assets = require('../helpers/assets')
+const cls = require('../helpers/classifications')
 const identity = require("../helpers/identities");
 
 chai.use(chaiHttp);
@@ -341,7 +338,7 @@ describe('Assets', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.defineAssetPath)
                 .send(obj)
 
@@ -375,7 +372,7 @@ describe('Assets', async () => {
 
                 }
             }
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.mintAssetPath)
                 .send(obj)
 
@@ -416,7 +413,7 @@ describe('Assets', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.defineAssetPath)
                 .send(obj)
 
@@ -451,7 +448,7 @@ describe('Assets', async () => {
             }
 
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.mintAssetPath)
                 .send(obj)
 
@@ -483,7 +480,7 @@ describe('Assets', async () => {
             }
 
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.mutateAssetPath)
                 .send(obj)
 
@@ -524,7 +521,7 @@ describe('Assets', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.defineAssetPath)
                 .send(obj)
 
@@ -536,46 +533,6 @@ describe('Assets', async () => {
             expect(res.body.raw_log).to.contain('failed')
         });
     });
-
-    // describe('Mutate Asset to add more that 22 properties', async () => {
-    //
-    //     beforeEach(function (done) {
-    //         this.timeout(6000)
-    //         setTimeout(function () {
-    //             done()
-    //         }, 5000)
-    //     })
-    //
-    //     it('Mutate Asset to add more that 22 properties: ', async () => {
-    //
-    //         let identityID = await identity.queryIdentity("immutableMetaTraits1")
-    //         let assetID = await assets.queryAsset("P4")
-    //
-    //         let obj = {
-    //             "type": config.mutateAssetType,
-    //             "value": {
-    //                 "baseReq": {
-    //                     "from": config.testAccountAddress,
-    //                     "chain_id": config.chain_id
-    //                 },
-    //                 "fromID": identityID,
-    //                 "assetID": assetID,
-    //                 "mutableProperties": "ASSET_A5:S|A,ASSET_A5:S|B,ASSET_A5:S|C,ASSET_A5:S|D,ASSET_A5:S|E,ASSET_A5:S|F,ASSET_A5:S|G,ASSET_A5:S|H,ASSET_A5:S|I,ASSET_A5:S|J,ASSET_A5:S|K,ASSET_A5:S|L,ASSET_A5:S|M,ASSET_A5:S|N",
-    //                 "mutableMetaProperties": "ASSET_A7:S|O,ASSET_A7:S|P,ASSET_A7:S|Q,ASSET_A7:S|R,ASSET_A7:S|S,ASSET_A7:S|T,ASSET_A7:S|U,ASSET_A7:S|V,ASSET_A7:S|W"
-    //             }
-    //         }
-    //         console.log(obj)
-    //         var err, res = await chai.request(server)
-    //             .post(config.mutateAssetPath)
-    //             .send(obj)
-    //
-    //         res.should.have.status(200);
-    //         res.body.should.be.a('object');
-    //         expect(res.body.txhash).to.not.equal(null)
-    //         expect(res.body.txhash).to.not.equal('')
-    //         expect(res.body.raw_log).to.contain('failed')
-    //     });
-    // });
 
     describe('Mint Asset with burn greater than forseeable block height', async () => {
 
@@ -605,7 +562,7 @@ describe('Assets', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.defineAssetPath)
                 .send(obj)
 
@@ -640,7 +597,7 @@ describe('Assets', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.mintAssetPath)
                 .send(obj)
 
@@ -665,7 +622,7 @@ describe('Assets', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.metaRevealPath)
                 .send(obj)
 
@@ -692,7 +649,7 @@ describe('Assets', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.burnAssetPath)
                 .send(obj)
 
@@ -716,7 +673,7 @@ describe('Assets', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.metaRevealPath)
                 .send(obj)
 
@@ -746,7 +703,7 @@ describe('Assets', async () => {
             }
 
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.mutateAssetPath)
                 .send(obj)
 
@@ -776,7 +733,7 @@ describe('Assets', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.burnAssetPath)
                 .send(obj)
 
@@ -1021,7 +978,7 @@ describe('Assets', async () => {
             }
 
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.defineAssetPath)
                 .send(obj)
 
@@ -1055,7 +1012,7 @@ describe('Assets', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.mintAssetPath)
                 .send(obj)
 
@@ -1155,7 +1112,7 @@ describe('Assets', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.metaRevealPath)
                 .send(obj)
 
@@ -1181,7 +1138,7 @@ describe('Assets', async () => {
                     "assetID": assetID
                 }
             }
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.burnAssetPath)
                 .send(obj)
 

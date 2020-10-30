@@ -15,12 +15,6 @@ function delay(interval) {
     }).timeout(interval + 100) // The extra 100ms should guarantee the test will not fail due to exceeded timeout
 }
 
-function sleep(ms) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
-}
-
 function FindInResponse(type, list, id) {
     let data = {
         'clasificationID': '',

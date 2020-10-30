@@ -1,6 +1,6 @@
 "use strict";
-var helper = require('../helpers/helpers');
-var config = require('../config.json');
+const helper = require('../helpers/helpers');
+const config = require('../config.json');
 const request = require('request');
 const Promise = require('promise');
 //During the test the env variable is set to test

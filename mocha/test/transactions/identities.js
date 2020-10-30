@@ -2,20 +2,16 @@
 process.env.NODE_ENV = 'test';
 let chai = require('chai');
 let chaiHttp = require('chai-http');
-let async = require('async');
 let should = chai.should();
 let expect = chai.expect
-const crypto = require("crypto");
 const {request} = require('chai')
-var assert = chai.assert
+let assert = chai.assert
 
-var config = require('../config.json');
-var temp = require('../helpers/helpers');
-const {type} = require('os');
-var server = config.ip + config.port
-var keys = require('../helpers/keys')
-var identity = require('../helpers/identities')
-var cls = require('../helpers/classifications')
+let config = require('../config.json');
+let server = config.ip + config.port
+let keys = require('../helpers/keys')
+let identity = require('../helpers/identities')
+let cls = require('../helpers/classifications')
 
 chai.use(chaiHttp);
 
@@ -44,7 +40,7 @@ describe('Identity', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.nubPath)
                 .send(obj)
 
@@ -85,7 +81,7 @@ describe('Identity', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.defineIdentityPath)
                 .send(obj)
 
@@ -120,7 +116,7 @@ describe('Identity', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.issueIdentityPath)
                 .send(obj)
 
@@ -158,7 +154,7 @@ describe('Identity', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.provisionKeyPath)
                 .send(obj)
 
@@ -197,7 +193,7 @@ describe('Identity', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.unprovisionKeyPath)
                 .send(obj)
 
@@ -235,7 +231,7 @@ describe('Identity', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.provisionKeyPath)
                 .send(obj)
 
@@ -274,7 +270,7 @@ describe('Identity', async () => {
                     "immutableMetaTraits": "immutableMetaTraits2:S|num4"
                 }
             }
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.defineIdentityPath)
                 .send(obj)
 
@@ -308,7 +304,7 @@ describe('Identity', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.issueIdentityPath)
                 .send(obj)
 
@@ -349,7 +345,7 @@ describe('Identity', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.defineIdentityPath)
                 .send(obj)
 
@@ -382,7 +378,7 @@ describe('Identity', async () => {
                     "immutableMetaProperties": "immutableMetaTraits3:S|num4"
                 }
             }
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.issueIdentityPath)
                 .send(obj)
 

@@ -95,7 +95,6 @@ function decryptStore(file, password) {
 }
 
 module.exports = {
-    getWallet,
     createRandomWallet,
     createWallet,
     createStore,

@@ -2,22 +2,16 @@
 process.env.NODE_ENV = 'test';
 let chai = require('chai');
 let chaiHttp = require('chai-http');
-let async = require('async');
 let should = chai.should();
 let expect = chai.expect
-const crypto = require("crypto");
 const {request} = require('chai')
-var assert = chai.assert
-
-var config = require('../config.json');
-var temp = require('../helpers/helpers');
-const {type} = require('os');
-var server = config.ip + config.port
-var identity = require('../helpers/identities')
-var cls = require('../helpers/classifications')
+let assert = chai.assert
+let config = require('../config.json');
+let server = config.ip + config.port
+let identity = require('../helpers/identities')
+let cls = require('../helpers/classifications')
 
 chai.use(chaiHttp);
-
 
 describe('Metas', async () => {
 
@@ -49,7 +43,7 @@ describe('Metas', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.defineAssetPath)
                 .send(obj)
 
@@ -83,7 +77,7 @@ describe('Metas', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.mintAssetPath)
                 .send(obj)
 
@@ -108,7 +102,7 @@ describe('Metas', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.metaRevealPath)
                 .send(obj)
 
@@ -140,7 +134,7 @@ describe('Metas', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.metaRevealPath)
                 .send(obj)
 
@@ -173,7 +167,7 @@ describe('Metas', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.metaRevealPath)
                 .send(obj)
 
@@ -206,7 +200,7 @@ describe('Metas', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.metaRevealPath)
                 .send(obj)
 
@@ -239,7 +233,7 @@ describe('Metas', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.metaRevealPath)
                 .send(obj)
 
@@ -272,7 +266,7 @@ describe('Metas', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.metaRevealPath)
                 .send(obj)
 

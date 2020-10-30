@@ -2,22 +2,19 @@
 process.env.NODE_ENV = 'test';
 let chai = require('chai');
 let chaiHttp = require('chai-http');
-let async = require('async');
 let should = chai.should();
 let expect = chai.expect
-const crypto = require("crypto");
 const {request} = require('chai')
-var assert = chai.assert
+let assert = chai.assert
 
-var config = require('../config.json');
-var temp = require('../helpers/helpers');
-const {type} = require('os');
-var server = config.ip + config.port
-var identity = require('../helpers/identities')
-var cls = require('../helpers/classifications')
-var assets = require('../helpers/assets')
-var orders = require('../helpers/orders')
+let config = require('../config.json');
+let server = config.ip + config.port
+let identity = require('../helpers/identities')
+let cls = require('../helpers/classifications')
+let assets = require('../helpers/assets')
+let orders = require('../helpers/orders')
 
+chai.use(chaiHttp);
 
 describe('Orders', async () => {
 
@@ -114,7 +111,7 @@ describe('Orders', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.defineOrderPath)
                 .send(obj)
 
@@ -152,7 +149,7 @@ describe('Orders', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.makeOrderPath)
                 .send(obj)
 
@@ -191,7 +188,7 @@ describe('Orders', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.cancelOrderPath)
                 .send(obj)
 
@@ -239,7 +236,7 @@ describe('Orders', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.makeOrderPath)
                 .send(obj)
 
@@ -269,8 +266,8 @@ describe('Orders', async () => {
                     "split": config.splitval
                 }
             }
-            
-            var err, res = await chai.request(server)
+
+            let err, res = await chai.request(server)
                 .post(config.sendSplitPath)
                 .send(obj)
 
@@ -300,7 +297,7 @@ describe('Orders', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.takeOrderPath)
                 .send(obj)
 
@@ -406,7 +403,7 @@ describe('Orders', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.defineOrderPath)
                 .send(obj)
 
@@ -435,7 +432,7 @@ describe('Orders', async () => {
             }
 
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.wrapCoinPath)
                 .send(obj)
 
@@ -472,7 +469,7 @@ describe('Orders', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.makeOrderPath)
                 .send(obj)
 
@@ -511,7 +508,7 @@ describe('Orders', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.cancelOrderPath)
                 .send(obj)
 
@@ -558,7 +555,7 @@ describe('Orders', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.makeOrderPath)
                 .send(obj)
 
@@ -590,7 +587,7 @@ describe('Orders', async () => {
             }
 
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.takeOrderPath)
                 .send(obj)
 
@@ -696,7 +693,7 @@ describe('Orders', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.defineOrderPath)
                 .send(obj)
 
@@ -735,7 +732,7 @@ describe('Orders', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.makeOrderPath)
                 .send(obj)
 
@@ -765,7 +762,7 @@ describe('Orders', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.takeOrderPath)
                 .send(obj)
 
@@ -794,7 +791,7 @@ describe('Orders', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.takeOrderPath)
                 .send(obj)
 
@@ -836,7 +833,7 @@ describe('Orders', async () => {
             }
 
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.defineAssetPath)
                 .send(obj)
 
@@ -871,7 +868,7 @@ describe('Orders', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.mintAssetPath)
                 .send(obj)
 
@@ -903,7 +900,7 @@ describe('Orders', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.defineOrderPath)
                 .send(obj)
 
@@ -940,7 +937,7 @@ describe('Orders', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.makeOrderPath)
                 .send(obj)
 
@@ -970,7 +967,7 @@ describe('Orders', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.takeOrderPath)
                 .send(obj)
 

@@ -1,6 +1,6 @@
 "use strict";
-var config = require('../config.json');
-var helper = require('../helpers/helpers');
+const config = require('../config.json');
+const helper = require('../helpers/helpers');
 const request = require('request');
 const Promise = require('promise');
 //During the test the env variable is set to test
@@ -20,7 +20,7 @@ function queryClassification(id) {
             let result = JSON.parse(res.body)
             let list = result.result.value.classifications.value.list
             let find = await helper.FindInResponse("classifications", list, id)
-            var clsID = find.chainID + '.' + find.hashID
+            let clsID = find.chainID + '.' + find.hashID
             resolve(clsID)
         });
     });

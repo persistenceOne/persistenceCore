@@ -2,32 +2,28 @@
 process.env.NODE_ENV = 'test';
 let chai = require('chai');
 let chaiHttp = require('chai-http');
-let async = require('async');
 let should = chai.should();
 let expect = chai.expect
 const crypto = require("crypto");
 const {request} = require('chai')
-var assert = chai.assert
+let assert = chai.assert
 
-var config = require('../config.json');
-
-const {type} = require('os');
-var server = config.ip + config.port
-
+let config = require('../config.json');
+let server = config.ip + config.port
 
 chai.use(chaiHttp);
 
 const name1 = crypto.randomBytes(16).toString("hex");
 const name2 = crypto.randomBytes(16).toString("hex");
 
-var names1 = {
+let names1 = {
     address: '',
     typekey: '',
     value: '',
     signature: ''
 }
 
-var names2 = {
+let names2 = {
     address: '',
     typekey: '',
     value: '',
@@ -55,7 +51,7 @@ describe('Keys', async () => {
                 name: name1
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.keysAdd)
                 .send(name)
 
@@ -103,7 +99,7 @@ describe('Keys', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.signTx)
                 .send(obj)
 
@@ -155,7 +151,7 @@ describe('Keys', async () => {
             }
 
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.broadcastTx)
                 .send(obj)
 
@@ -165,9 +161,9 @@ describe('Keys', async () => {
             expect(res.body.txhash).to.not.equal(null)
             expect(res.body.txhash).to.not.equal('')
 
-            var hash = res.body.txhash
+            let hash = res.body.txhash
 
-            var err, res = await chai.request(server)
+            err, res = await chai.request(server)
                 .get('/txs/' + hash)
         });
     });
@@ -193,7 +189,7 @@ describe('Keys', async () => {
                 name: name2
             }
 
-            var err, res = await chai.request('http://localhost:1317')
+            let err, res = await chai.request('http://localhost:1317')
                 .post(config.keysAdd)
                 .send(name)
 
@@ -241,7 +237,7 @@ describe('Keys', async () => {
                 }
             }
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.signTx)
                 .send(obj)
 
@@ -294,7 +290,7 @@ describe('Keys', async () => {
             }
 
 
-            var err, res = await chai.request(server)
+            let err, res = await chai.request(server)
                 .post(config.broadcastTx)
                 .send(obj)
 
