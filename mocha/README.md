@@ -23,7 +23,7 @@ cd /persistenceOne/assetMantle/mocha
 
 npm install
 
-npm run test:awesome
+Run ./resetChain.sh: This will reset the chain and run mocha tests
 
 NOTE: If any error comes which says: Error: Cannot find module 'xxx'
 then run "npm install xxx --save"
