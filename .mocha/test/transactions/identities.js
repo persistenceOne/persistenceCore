@@ -100,7 +100,7 @@ describe('Identity', async () => {
             let clsID = await cls.queryClassification("immutableMetaTraits1")
 
             let obj = {
-                "type": config.issuedentityType,
+                "type": config.issueIdentityType,
                 "value": {
                     "baseReq": {
                         "from": config.testAccountAddress,
@@ -288,7 +288,7 @@ describe('Identity', async () => {
             let clsID = await cls.queryClassification("immutableMetaTraits2")
 
             let obj = {
-                "type": config.issuedentityType,
+                "type": config.issueIdentityType,
                 "value": {
                     "baseReq": {
                         "from": config.testAccountAddress,
@@ -363,7 +363,7 @@ describe('Identity', async () => {
             let clsID = await cls.queryClassification("immutableMetaTraits3")
 
             let obj = {
-                "type": config.issuedentityType,
+                "type": config.issueIdentityType,
                 "value": {
                     "baseReq": {
                         "from": config.testAccountAddress,

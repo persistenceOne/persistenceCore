@@ -263,7 +263,7 @@ describe('Orders', async () => {
                     "fromID": identityID,
                     "toID": identityID1,
                     "ownableID": "stake",
-                    "split": config.splitval
+                    "split": config.splitVal
                 }
             }
 
@@ -292,7 +292,7 @@ describe('Orders', async () => {
                         "chain_id": config.chain_id
                     },
                     "fromID": identityID,
-                    "takerOwnableSplit": config.makerownablesplit,
+                    "takerOwnableSplit": config.makerOwnableSplit,
                     "orderID": orderID
                 }
             }
@@ -581,7 +581,7 @@ describe('Orders', async () => {
                         "chain_id": config.chain_id
                     },
                     "fromID": identityID,
-                    "takerOwnableSplit": config.makerownablesplit,
+                    "takerOwnableSplit": config.makerOwnableSplit,
                     "orderID": orderID
                 }
             }
@@ -757,7 +757,7 @@ describe('Orders', async () => {
                         "chain_id": config.chain_id
                     },
                     "fromID": identityID1,
-                    "takerOwnableSplit": config.makerownablesplit,
+                    "takerOwnableSplit": config.makerOwnableSplit,
                     "orderID": orderID
                 }
             }
@@ -786,7 +786,7 @@ describe('Orders', async () => {
                         "chain_id": config.chain_id
                     },
                     "fromID": identityID1,
-                    "takerOwnableSplit": config.makerownablesplit,
+                    "takerOwnableSplit": config.makerOwnableSplit,
                     "orderID": orderID
                 }
             }

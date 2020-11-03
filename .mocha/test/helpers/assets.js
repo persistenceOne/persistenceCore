@@ -20,7 +20,7 @@ async function queryAsset(id) {
             let result = JSON.parse(res.body)
             let list = result.result.value.assets.value.list
             let find = await helper.FindInResponse("assets", list, id)
-            let assetID = find.clasificationID + "|" + find.hashID
+            let assetID = find.classificationID + "|" + find.hashID
             resolve(assetID)
         });
     });

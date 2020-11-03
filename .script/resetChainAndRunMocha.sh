@@ -1,18 +1,8 @@
-
 .script/shutdown.sh
-
 sleep 4
-
 .script/setup.sh
-
-assetNode start >~/.assetNode/log &
-sleep 10
-assetClient rest-server --chain-id test -b block >~/.assetClient/log &
-
-echo "
-Node and Client started up. For logs:
-tail -f ~/.assetNode/log
-tail -f ~/.assetClient/log
-"
-cd mocha/
+flag1="-b"
+flag2="block"
+.script/startup.sh $flag1 $flag2
+cd .mocha
 npm run test:awesome

@@ -17,12 +17,12 @@ function delay(interval) {
 
 function FindInResponse(type, list, id) {
     let data = {
-        'clasificationID': '',
+        'classificationID': '',
         'hashID': ''
     }
 
     let ordersData = {
-        'clasificationID': '',
+        'classificationID': '',
         'makerOwnableID':'',
         'takerOwnableID':'',
         'makerID':'',
@@ -34,7 +34,7 @@ function FindInResponse(type, list, id) {
             case 'assets':
                 list.forEach(function (value) {
                     if (value.value.immutables.value.properties.value.propertyList[0].value.id.value.idString === id) {
-                        data.clasificationID = value.value.id.value.classificationID.value.idString
+                        data.classificationID = value.value.id.value.classificationID.value.idString
                         data.hashID = value.value.id.value.hashID.value.idString
                         resolve(data);
                     }
@@ -43,7 +43,7 @@ function FindInResponse(type, list, id) {
             case 'identities':
                 list.forEach(function (value) {
                     if (value.value.immutables.value.properties.value.propertyList[0].value.id.value.idString === id) {
-                        data.clasificationID = value.value.id.value.classificationID.value.idString
+                        data.classificationID = value.value.id.value.classificationID.value.idString
                         data.hashID = value.value.id.value.hashID.value.idString
                         resolve(data);
                     }
@@ -61,7 +61,7 @@ function FindInResponse(type, list, id) {
             case 'orders':
                 list.forEach(function (value) {
                     if (value.value.immutables.value.properties.value.propertyList[0].value.id.value.idString === id) {
-                        ordersData.clasificationID = value.value.id.value.classificationID.value.idString
+                        ordersData.classificationID = value.value.id.value.classificationID.value.idString
                         ordersData.makerOwnableID = value.value.id.value.makerOwnableID.value.idString
                         ordersData.takerOwnableID = value.value.id.value.takerOwnableID.value.idString
                         ordersData.makerID = value.value.id.value.makerID.value.idString

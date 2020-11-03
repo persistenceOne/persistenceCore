@@ -109,7 +109,7 @@ describe('Splits', async () => {
                     "fromID": identityID,
                     "toID": identityID1,
                     "ownableID": assetID,
-                    "split": config.splitval
+                    "split": config.splitVal
                 }
             }
 
@@ -226,7 +226,7 @@ describe('Splits', async () => {
                     "fromID": identityID,
                     "toID": identityID1,
                     "ownableID": "stake",
-                    "split": config.splitval
+                    "split": config.splitVal
                 }
             }
 
