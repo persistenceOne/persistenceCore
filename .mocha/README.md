@@ -41,7 +41,7 @@ For more information, visit https://autom8able.com.
 
 ## Testing
 
-To test, go to the  assetMantle/mocha folder and type :
+To test, go to the  assetMantle/.mocha folder and type :
 
     $ npm run test:awesome
    
@@ -49,9 +49,9 @@ To test, go to the  assetMantle/mocha folder and type :
  
 ## Report
 
-[mochawesome] Report JSON saved to assetMantle/mocha/mochawesome-report/mochawesome.json
+[mochawesome] Report JSON saved to assetMantle/.mocha/mochawesome-report/mochawesome.json
 
-[mochawesome] Report HTML saved to assetMantle/mocha/mochawesome-report/mochawesome.html
+[mochawesome] Report HTML saved to assetMantle/.mocha/mochawesome-report/mochawesome.html
 
 
 * * *
