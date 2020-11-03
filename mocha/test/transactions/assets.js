@@ -745,7 +745,7 @@ describe('Assets', async () => {
         });
     });
 
-    describe('Send splits of an asset and then Mutate ', async () => {
+    describe('Send splits of an asset and then mutate ', async () => {
         beforeEach(function (done) {
             this.timeout(5000)
             setTimeout(function () {
@@ -818,7 +818,7 @@ describe('Assets', async () => {
             expect(res.body.raw_log).to.not.contain('error')
         });
 
-        it('Send Asset: ', async () => {
+        it('Send asset: ', async () => {
 
             let identityID = await identity.queryIdentity("immutableMetaTraits1")
             let identityID1 = await identity.queryIdentity("immutableMetaTraits2")
@@ -850,7 +850,7 @@ describe('Assets', async () => {
             expect(res.body.raw_log).to.not.contain('error')
         });
 
-        it('Mutate Asset: ', async () => {
+        it('Mutate asset: ', async () => {
 
             let identityID = await identity.queryIdentity("immutableMetaTraits2")
             let assetID = await assets.queryAsset("Four")
@@ -917,7 +917,7 @@ describe('Assets', async () => {
             expect(res.body.raw_log).to.not.contain('error')
         });
 
-        it('Mutate Asset: ', async () => {
+        it('Mutate asset: ', async () => {
 
             let identityID = await identity.queryIdentity("immutableMetaTraits2")
             let assetID = await assets.queryAsset("Four")
@@ -990,7 +990,7 @@ describe('Assets', async () => {
             expect(res.body.raw_log).to.not.contain('error')
         });
 
-        it('Mint Asset: ', async () => {
+        it('Mint asset: ', async () => {
 
             let identityID = await identity.queryIdentity("immutableMetaTraits1")
             let clsID = await cls.queryClassification("ASSETA4")
@@ -1065,7 +1065,7 @@ describe('Assets', async () => {
             expect(res.body.raw_log).to.not.contain('error')
         });
 
-        it('Mint Asset: ', async () => {
+        it('Mint asset: ', async () => {
 
             let identityID = await identity.queryIdentity("immutableMetaTraits1")
             let clsID = await cls.queryClassification("Eight")
@@ -1099,7 +1099,7 @@ describe('Assets', async () => {
             expect(res.body.raw_log).to.not.contain('error')
         });
 
-        it('Meta Reveal: ', async () => {
+        it('Meta reveal: ', async () => {
 
             let obj = {
                 "type": config.metaRevealType,
@@ -1122,7 +1122,7 @@ describe('Assets', async () => {
             expect(res.body.raw_log).to.not.contain('error')
         });
 
-        it('Burn Asset', async () => {
+        it('Burn asset', async () => {
 
             let identityID = await identity.queryIdentity("immutableMetaTraits1")
             let assetID = await assets.queryAsset("Eight")
