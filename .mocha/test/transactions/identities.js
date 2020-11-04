@@ -53,7 +53,7 @@ describe('Identity', async () => {
         });
     });
 
-    describe('Issue Identity 1', async () => {
+    describe('Issue identity 1', async () => {
 
         beforeEach(function (done) {
             this.timeout(5000)
@@ -62,7 +62,7 @@ describe('Identity', async () => {
             }, 4000)
         })
 
-        it('Define Identity: ', async () => {
+        it('Define identity: ', async () => {
 
             let identityID = await identity.queryIdentity(config.nubID)
 
@@ -94,13 +94,13 @@ describe('Identity', async () => {
         });
 
 
-        it('Issue Identity: ', async () => {
+        it('Issue identity: ', async () => {
 
             let identityID = await identity.queryIdentity(config.nubID)
             let clsID = await cls.queryClassification("immutableMetaTraits1")
 
             let obj = {
-                "type": config.issuedentityType,
+                "type": config.issueIdentityType,
                 "value": {
                     "baseReq": {
                         "from": config.testAccountAddress,
@@ -129,7 +129,7 @@ describe('Identity', async () => {
         });
     });
 
-    describe('Provision Key', async () => {
+    describe('Provision key', async () => {
 
         beforeEach(function (done) {
             this.timeout(5000)
@@ -168,7 +168,7 @@ describe('Identity', async () => {
         });
     });
 
-    describe('Unprovision Key', async () => {
+    describe('Unprovision key', async () => {
 
         beforeEach(function (done) {
             this.timeout(5000)
@@ -177,7 +177,7 @@ describe('Identity', async () => {
             }, 4000)
         })
 
-        it('Unprovision Key: ', async () => {
+        it('Unprovision key: ', async () => {
 
             let identityID = await identity.queryIdentity(config.nubID)
 
@@ -243,7 +243,7 @@ describe('Identity', async () => {
         });
     });
 
-    describe('Issue Identity 2', async () => {
+    describe('Issue identity 2', async () => {
 
         beforeEach(function (done) {
             this.timeout(5000)
@@ -252,7 +252,7 @@ describe('Identity', async () => {
             }, 4000)
         })
 
-        it('Define Identity: ', async () => {
+        it('Define identity: ', async () => {
 
             let identityID = await identity.queryIdentity(config.nubID)
 
@@ -282,13 +282,13 @@ describe('Identity', async () => {
             expect(res.body.raw_log).to.not.contain('error')
         });
 
-        it('Issue Identity 2: ', async () => {
+        it('Issue identity 2: ', async () => {
 
             let identityID = await identity.queryIdentity(config.nubID)
             let clsID = await cls.queryClassification("immutableMetaTraits2")
 
             let obj = {
-                "type": config.issuedentityType,
+                "type": config.issueIdentityType,
                 "value": {
                     "baseReq": {
                         "from": config.testAccountAddress,
@@ -317,7 +317,7 @@ describe('Identity', async () => {
         });
     });
 
-    describe('Issue Identity 3', async () => {
+    describe('Issue identity 3', async () => {
 
         beforeEach(function (done) {
             this.timeout(5000)
@@ -326,7 +326,7 @@ describe('Identity', async () => {
             }, 4000)
         })
 
-        it('Define Identity: ', async () => {
+        it('Define identity: ', async () => {
 
             let identityID = await identity.queryIdentity(config.nubID)
 
@@ -357,13 +357,13 @@ describe('Identity', async () => {
             expect(res.body.raw_log).to.not.contain('error')
         });
 
-        it('Issue Identity 3: ', async () => {
+        it('Issue identity 3: ', async () => {
 
             let identityID = await identity.queryIdentity(config.nubID)
             let clsID = await cls.queryClassification("immutableMetaTraits3")
 
             let obj = {
-                "type": config.issuedentityType,
+                "type": config.issueIdentityType,
                 "value": {
                     "baseReq": {
                         "from": config.testAccountAddress,

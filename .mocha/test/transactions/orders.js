@@ -5,20 +5,20 @@ let chaiHttp = require('chai-http');
 let should = chai.should();
 let expect = chai.expect
 const {request} = require('chai')
-const assert = chai.assert
+let assert = chai.assert
 
-const config = require('../config.json');
-const server = config.ip + config.port
-
-const assets = require('../helpers/assets')
-const cls = require('../helpers/classifications')
-const identity = require("../helpers/identities");
+let config = require('../config.json');
+let server = config.ip + config.port
+let identity = require('../helpers/identities')
+let cls = require('../helpers/classifications')
+let assets = require('../helpers/assets')
+let orders = require('../helpers/orders')
 
 chai.use(chaiHttp);
 
-describe('Assets', async () => {
+describe('Orders', async () => {
 
-    describe('Mint Asset', async () => {
+    describe('Create an asset make order', async () => {
 
         beforeEach(function (done) {
             this.timeout(5000)
@@ -39,10 +39,10 @@ describe('Assets', async () => {
                         "chain_id": config.chain_id
                     },
                     "fromID": identityID,
-                    "mutableTraits": "ASSET1:S|" + ",burn:H|1",
-                    "immutableTraits": "ASSET2:S|",
-                    "mutableMetaTraits": "ASSET3:S|",
-                    "immutableMetaTraits": "ASSET4:S|"
+                    "mutableTraits": "A_P1:S|" + ",burn:H|1",
+                    "immutableTraits": "A_P2:S|",
+                    "mutableMetaTraits": "A_P3:S|",
+                    "immutableMetaTraits": "A_P4:S|"
                 }
             }
 
@@ -61,7 +61,7 @@ describe('Assets', async () => {
         it('Mint Asset: ', async () => {
 
             let identityID = await identity.queryIdentity("immutableMetaTraits1")
-            let clsID = await cls.queryClassification("ASSET4")
+            let clsID = await cls.queryClassification("A_P4")
 
             let obj = {
                 "type": config.mintAssetType,
@@ -73,527 +73,10 @@ describe('Assets', async () => {
                     "toID": identityID,
                     "fromID": identityID,
                     "classificationID": clsID,
-                    "mutableProperties": "ASSET1:S|num1" + ",burn:H|1",
-                    "immutableProperties": "ASSET2:S|num2",
-                    "mutableMetaProperties": "ASSET3:S|num3",
-                    "immutableMetaProperties": "ASSET4:S|num4"
-                }
-            }
-
-            let err, res = await chai.request(server)
-                .post(config.mintAssetPath)
-                .send(obj)
-
-            res.should.have.status(200);
-            res.body.should.be.a('object');
-            expect(res.body.txhash).to.not.equal(null)
-            expect(res.body.txhash).to.not.equal('')
-            expect(res.body.raw_log).to.not.contain('failed')
-            expect(res.body.raw_log).to.not.contain('error')
-        });
-    });
-
-    describe('Mutate Asset', async () => {
-
-        beforeEach(function (done) {
-            this.timeout(5000)
-            setTimeout(function () {
-                done()
-            }, 4000)
-        })
-
-        it('Mutate Asset: ', async () => {
-
-            let identityID = await identity.queryIdentity("immutableMetaTraits1")
-            let assetID = await assets.queryAsset("ASSET4")
-
-            let obj = {
-                "type": config.mutateAssetType,
-                "value": {
-                    "baseReq": {
-                        "from": config.testAccountAddress,
-                        "chain_id": config.chain_id
-                    },
-                    "fromID": identityID,
-                    "assetID": assetID,
-                    "mutableProperties": "ASSET1:S|",
-                    "mutableMetaProperties": "ASSET3:S|num3"
-                }
-            }
-
-
-            let err, res = await chai.request(server)
-                .post(config.mutateAssetPath)
-                .send(obj);
-
-            res.should.have.status(200);
-            res.body.should.be.a('object');
-            expect(res.body.txhash).to.not.equal(null)
-            expect(res.body.txhash).to.not.equal('')
-            expect(res.body.raw_log).to.not.contain('failed')
-            expect(res.body.raw_log).to.not.contain('error')
-        });
-    });
-
-    describe('Mint Asset with meta properties', async () => {
-
-        beforeEach(function (done) {
-            this.timeout(5000)
-            setTimeout(function () {
-                done()
-            }, 4000)
-        })
-
-        it('Mint Asset with meta properties: ', async () => {
-
-            let identityID = await identity.queryIdentity("immutableMetaTraits1")
-            let clsID = await cls.queryClassification("ASSET4")
-
-            let obj = {
-                "type": config.mintAssetType,
-                "value": {
-                    "baseReq": {
-                        "from": config.testAccountAddress,
-                        "chain_id": config.chain_id
-                    },
-                    "toID": identityID,
-                    "fromID": identityID,
-                    "classificationID": clsID,
-                    "mutableProperties": "ASSET1:S|num5" + ",burn:H|1",
-                    "immutableProperties": "ASSET2:S|num6",
-                    "mutableMetaProperties": "ASSET3:S|num7",
-                    "immutableMetaProperties": "ASSET4:S|num8"
-                }
-            }
-
-            let err, res = await chai.request(server)
-                .post(config.mintAssetPath)
-                .send(obj);
-
-            res.should.have.status(200);
-            res.body.should.be.a('object');
-            expect(res.body.txhash).to.not.equal(null)
-            expect(res.body.txhash).to.not.equal('')
-            expect(res.body.raw_log).to.not.contain('failed')
-            expect(res.body.raw_log).to.not.contain('error')
-        });
-    });
-
-    describe('Mutate asset non meta properties to meta properties', async () => {
-
-        beforeEach(function (done) {
-            this.timeout(5000)
-            setTimeout(function () {
-                done()
-            }, 4000)
-        })
-
-        it('Define Asset: ', async () => {
-
-            let identityID = await identity.queryIdentity("immutableMetaTraits1")
-
-            let obj = {
-                "type": config.defineAssetType,
-                "value": {
-                    "baseReq": {
-                        "from": config.testAccountAddress,
-                        "chain_id": config.chain_id
-                    },
-                    "fromID": identityID,
-                    "mutableTraits": "ASSETS1:S|" + ",burn:H|1",
-                    "immutableTraits": "ASSETS2:S|",
-                    "mutableMetaTraits": "ASSETS3:S|",
-                    "immutableMetaTraits": "ASSETS4:S|"
-                }
-            }
-
-
-            let err, res = await chai.request(server)
-                .post(config.defineAssetPath)
-                .send(obj);
-
-            res.should.have.status(200);
-            res.body.should.be.a('object');
-            expect(res.body.txhash).to.not.equal(null)
-            expect(res.body.txhash).to.not.equal('')
-            expect(res.body.raw_log).to.not.contain('failed')
-            expect(res.body.raw_log).to.not.contain('error')
-        });
-
-        it('Mint Asset: ', async () => {
-
-            let identityID = await identity.queryIdentity("immutableMetaTraits1")
-            let clsID = await cls.queryClassification("ASSETS4")
-
-            let obj = {
-                "type": config.mintAssetType,
-                "value": {
-                    "baseReq": {
-                        "from": config.testAccountAddress,
-                        "chain_id": config.chain_id
-                    },
-                    "toID": identityID,
-                    "fromID": identityID,
-                    "classificationID": clsID,
-                    "mutableProperties": "ASSETS1:S|num5" + ",burn:H|1",
-                    "immutableProperties": "ASSETS2:S|num6",
-                    "mutableMetaProperties": "ASSETS3:S|num7",
-                    "immutableMetaProperties": "ASSETS4:S|num8"
-                }
-            }
-
-            let err, res = await chai.request(server)
-                .post(config.mintAssetPath)
-                .send(obj);
-
-            res.should.have.status(200);
-            res.body.should.be.a('object');
-            expect(res.body.txhash).to.not.equal(null)
-            expect(res.body.txhash).to.not.equal('')
-            expect(res.body.raw_log).to.not.contain('failed')
-            expect(res.body.raw_log).to.not.contain('error')
-        });
-
-        it('Meta Reveal: ', async () => {
-
-            let obj = {
-                "type": config.metaRevealType,
-                "value": {
-                    "baseReq": {
-                        "from": config.testAccountAddress,
-                        "chain_id": config.chain_id
-                    },
-                    "metaFact": "S|num5"
-                }
-            }
-
-            let err, res = await chai.request(server)
-                .post(config.metaRevealPath)
-                .send(obj);
-
-            expect(res.body.txhash).to.not.equal(null)
-            expect(res.body.txhash).to.not.equal('')
-            expect(res.body.raw_log).to.not.contain('failed')
-            expect(res.body.raw_log).to.not.contain('error')
-        });
-
-        it('Mutate Asset non meta properties to meta properties: ', async () => {
-
-            let identityID = await identity.queryIdentity("immutableMetaTraits1")
-            let assetID = await assets.queryAsset("ASSETS4")
-
-            let obj = {
-                "type": config.mutateAssetType,
-                "value": {
-                    "baseReq": {
-                        "from": config.testAccountAddress,
-                        "chain_id": config.chain_id
-                    },
-                    "fromID": identityID,
-                    "assetID": assetID,
-                    "mutableProperties": "ASSETS1:S|",
-                    "mutableMetaProperties": "ASSETS3:S|num5"
-                }
-            }
-
-
-            let err, res = await chai.request(server)
-                .post(config.mutateAssetPath)
-                .send(obj);
-
-            res.should.have.status(200);
-            res.body.should.be.a('object');
-            expect(res.body.txhash).to.not.equal(null)
-            expect(res.body.txhash).to.not.equal('')
-            expect(res.body.raw_log).to.not.contain('failed')
-            expect(res.body.raw_log).to.not.contain('error')
-        });
-    });
-
-    describe('Mint Asset with 22 properties', async () => {
-
-        beforeEach(function (done) {
-            this.timeout(5000)
-            setTimeout(function () {
-                done()
-            }, 4000)
-        })
-
-        it('Define Asset: ', async () => {
-
-            let identityID = await identity.queryIdentity("immutableMetaTraits1")
-
-            let obj = {
-                "type": config.defineAssetType,
-                "value": {
-                    "baseReq": {
-                        "from": config.testAccountAddress,
-                        "chain_id": config.chain_id
-                    },
-                    "fromID": identityID,
-                    "mutableTraits": "ASSETP1:S|A,ASSETP11:S|B,ASSETP12:S|C,ASSETP13:S|D,ASSETP14:S|E,burn:H|2",
-                    "immutableTraits": "ASSETP2:S|G,ASSETP21:S|H,ASSETP22:S|I,ASSETP23:S|J,ASSETP24:S|K",
-                    "mutableMetaTraits": "ASSETP3:S|L,ASSETP31:S|M,ASSETP32:S|N,ASSETP33:S|O,ASSETP34:S|P",
-                    "immutableMetaTraits": "ASSETP4:S|Q,ASSETP41:S|R,ASSETP42:S|S,ASSETP43:S|T,ASSETP44:S|U,ASSETP45:S|V"
-                }
-            }
-
-            let err, res = await chai.request(server)
-                .post(config.defineAssetPath)
-                .send(obj)
-
-            res.should.have.status(200);
-            res.body.should.be.a('object');
-            expect(res.body.txhash).to.not.equal(null)
-            expect(res.body.txhash).to.not.equal('')
-            expect(res.body.raw_log).to.not.contain('failed')
-            expect(res.body.raw_log).to.not.contain('error')
-        });
-
-        it('Mint Asset: ', async () => {
-
-            let identityID = await identity.queryIdentity("immutableMetaTraits1")
-            let clsID = await cls.queryClassification("ASSETP4")
-
-            let obj = {
-                "type": config.mintAssetType,
-                "value": {
-                    "baseReq": {
-                        "from": config.testAccountAddress,
-                        "chain_id": config.chain_id
-                    },
-                    "toID": identityID,
-                    "fromID": identityID,
-                    "classificationID": clsID,
-                    "mutableProperties": "ASSETP1:S|A,ASSETP11:S|B,ASSETP12:S|C,ASSETP13:S|D,ASSETP14:S|E,burn:H|1",
-                    "immutableProperties": "ASSETP2:S|G,ASSETP21:S|H,ASSETP22:S|I,ASSETP23:S|J,ASSETP24:S|K",
-                    "mutableMetaProperties": "ASSETP3:S|L,ASSETP31:S|M,ASSETP32:S|N,ASSETP33:S|O,ASSETP34:S|P",
-                    "immutableMetaProperties": "ASSETP4:S|Q,ASSETP41:S|R,ASSETP42:S|S,ASSETP43:S|T,ASSETP44:S|U,ASSETP45:S|V"
-
-                }
-            }
-            let err, res = await chai.request(server)
-                .post(config.mintAssetPath)
-                .send(obj)
-
-            res.should.have.status(200);
-            res.body.should.be.a('object');
-            expect(res.body.txhash).to.not.equal(null)
-            expect(res.body.txhash).to.not.equal('')
-            expect(res.body.raw_log).to.not.contain('failed')
-            expect(res.body.raw_log).to.not.contain('error')
-        });
-    });
-
-    describe('Add asset properties on mutation', async () => {
-
-        beforeEach(function (done) {
-            this.timeout(5000)
-            setTimeout(function () {
-                done()
-            }, 4000)
-        })
-
-        it('Define Asset: ', async () => {
-
-            let identityID = await identity.queryIdentity("immutableMetaTraits1")
-
-            let obj = {
-                "type": config.defineAssetType,
-                "value": {
-                    "baseReq": {
-                        "from": config.testAccountAddress,
-                        "chain_id": config.chain_id
-                    },
-                    "fromID": identityID,
-                    "mutableTraits": "ASSET_A5:S|, burn:H|1",
-                    "immutableTraits": "ASSET_A6:S|",
-                    "mutableMetaTraits": "ASSET_A7:S|",
-                    "immutableMetaTraits": "ASSET_A8:S|"
-                }
-            }
-
-            let err, res = await chai.request(server)
-                .post(config.defineAssetPath)
-                .send(obj)
-
-            res.should.have.status(200);
-            res.body.should.be.a('object');
-            expect(res.body.txhash).to.not.equal(null)
-            expect(res.body.txhash).to.not.equal('')
-            expect(res.body.raw_log).to.not.contain('failed')
-            expect(res.body.raw_log).to.not.contain('error')
-        });
-
-        it('Mint Asset: ', async () => {
-
-            let identityID = await identity.queryIdentity("immutableMetaTraits1")
-            let clsID = await cls.queryClassification("ASSET_A8")
-
-            let obj = {
-                "type": config.mintAssetType,
-                "value": {
-                    "baseReq": {
-                        "from": config.testAccountAddress,
-                        "chain_id": config.chain_id
-                    },
-                    "toID": identityID,
-                    "fromID": identityID,
-                    "classificationID": clsID,
-                    "mutableProperties": "ASSET_A5:S|A, burn:H|1",
-                    "immutableProperties": "ASSET_A6:S|B",
-                    "mutableMetaProperties": "ASSET_A7:S|C",
-                    "immutableMetaProperties": "ASSET_A8:S|D"
-                }
-            }
-
-
-            let err, res = await chai.request(server)
-                .post(config.mintAssetPath)
-                .send(obj)
-
-            res.should.have.status(200);
-            res.body.should.be.a('object');
-            expect(res.body.txhash).to.not.equal(null)
-            expect(res.body.txhash).to.not.equal('')
-            expect(res.body.raw_log).to.not.contain('failed')
-            expect(res.body.raw_log).to.not.contain('error')
-        });
-
-        it('Add asset properties on mutation: ', async () => {
-
-            let identityID = await identity.queryIdentity("immutableMetaTraits1")
-            let assetID = await assets.queryAsset("ASSET_A8")
-
-            let obj = {
-                "type": config.mutateAssetType,
-                "value": {
-                    "baseReq": {
-                        "from": config.testAccountAddress,
-                        "chain_id": config.chain_id
-                    },
-                    "fromID": identityID,
-                    "assetID": assetID,
-                    "mutableProperties": "ASSET_A5:S|AA",
-                    "mutableMetaProperties": "ASSET_A7:S|CC"
-                }
-            }
-
-
-            let err, res = await chai.request(server)
-                .post(config.mutateAssetPath)
-                .send(obj)
-
-            res.should.have.status(200);
-            res.body.should.be.a('object');
-            expect(res.body.txhash).to.not.equal(null)
-            expect(res.body.txhash).to.not.equal('')
-            expect(res.body.raw_log).to.not.contain('failed')
-            expect(res.body.raw_log).to.not.contain('error')
-        });
-    });
-
-    describe('Mint Asset with more than 22 properties', async () => {
-
-        beforeEach(function (done) {
-            this.timeout(5000)
-            setTimeout(function () {
-                done()
-            }, 4000)
-        })
-
-        it('Define Asset: ', async () => {
-
-            let identityID = await identity.queryIdentity("immutableMetaTraits1")
-
-            let obj = {
-                "type": config.defineAssetType,
-                "value": {
-                    "baseReq": {
-                        "from": config.testAccountAddress,
-                        "chain_id": config.chain_id
-                    },
-                    "fromID": identityID,
-                    "mutableTraits": "P1:S|A,P11:S|B,P12:S|C,P13:S|D,P14:S|E,P14:S|F,burn:H|1",
-                    "immutableTraits": "P2:S|G,P21:S|H,P22:S|I,P23:S|J,P24:S|K",
-                    "mutableMetaTraits": "P3:S|L,P31:S|M,P32:S|N,P33:S|O,P34:S|P",
-                    "immutableMetaTraits": "P4:S|Q,P41:S|R,P42:S|S,P43:S|T,P44:S|U,P45:S|V"
-                }
-            }
-
-            let err, res = await chai.request(server)
-                .post(config.defineAssetPath)
-                .send(obj)
-
-            res.should.have.status(200);
-            res.body.should.be.a('object');
-            expect(res.body.txhash).to.not.equal(null)
-            expect(res.body.txhash).to.not.equal('')
-            expect(res.body.raw_log).to.contain('InvalidRequest')
-            expect(res.body.raw_log).to.contain('failed')
-        });
-    });
-
-    describe('Mint Asset with burn greater than forseeable block height', async () => {
-
-        beforeEach(function (done) {
-            this.timeout(5000)
-            setTimeout(function () {
-                done()
-            }, 4000)
-        })
-
-        it('Define Asset: ', async () => {
-
-            let identityID = await identity.queryIdentity("immutableMetaTraits1")
-
-            let obj = {
-                "type": config.defineAssetType,
-                "value": {
-                    "baseReq": {
-                        "from": config.testAccountAddress,
-                        "chain_id": config.chain_id
-                    },
-                    "fromID": identityID,
-                    "mutableTraits": "AssetA:S|num1" + ",burn:H|1",
-                    "immutableTraits": "AssetB:S|",
-                    "mutableMetaTraits": "AssetC:S|num3",
-                    "immutableMetaTraits": "AssetD:S|num4"
-                }
-            }
-
-            let err, res = await chai.request(server)
-                .post(config.defineAssetPath)
-                .send(obj)
-
-            res.should.have.status(200);
-            res.body.should.be.a('object');
-            expect(res.body.txhash).to.not.equal(null)
-            expect(res.body.txhash).to.not.equal('')
-            expect(res.body.raw_log).to.not.contain('failed')
-            expect(res.body.raw_log).to.not.contain('error')
-        });
-
-        it('Mint Asset: ', async () => {
-
-            let identityID = await identity.queryIdentity("immutableMetaTraits1")
-            let clsID = await cls.queryClassification("AssetD")
-
-            let obj = {
-                "type": config.mintAssetType,
-                "value": {
-                    "baseReq": {
-                        "from": config.testAccountAddress,
-                        "chain_id": config.chain_id
-                    },
-                    "toID": identityID,
-                    "fromID": identityID,
-                    "classificationID": clsID,
-                    "mutableProperties": "AssetA:S|num1" + ",burn:H|100000000",
-                    "immutableProperties": "AssetB:S|num2",
-                    "mutableMetaProperties": "AssetC:S|num3",
-                    "immutableMetaProperties": "AssetD:S|num4"
-
+                    "mutableProperties": "A_P1:S|,burn:H|1",
+                    "immutableProperties": "A_P2:S|",
+                    "mutableMetaProperties": "A_P3:S|",
+                    "immutableMetaProperties": "A_P4:S|"
                 }
             }
 
@@ -609,102 +92,27 @@ describe('Assets', async () => {
             expect(res.body.raw_log).to.not.contain('error')
         });
 
-        it('Meta Reveal: ', async () => {
-
-            let obj = {
-                "type": config.metaRevealType,
-                "value": {
-                    "baseReq": {
-                        "from": config.testAccountAddress,
-                        "chain_id": config.chain_id
-                    },
-                    "metaFact": "H|100000000"
-                }
-            }
-
-            let err, res = await chai.request(server)
-                .post(config.metaRevealPath)
-                .send(obj)
-
-            expect(res.body.txhash).to.not.equal(null)
-            expect(res.body.txhash).to.not.equal('')
-            expect(res.body.raw_log).to.not.contain('failed')
-            expect(res.body.raw_log).to.not.contain('error')
-        });
-
-        it('Burn Asset', async () => {
+        it('Define Order: ', async () => {
 
             let identityID = await identity.queryIdentity("immutableMetaTraits1")
-            let assetID = await assets.queryAsset("AssetD")
 
             let obj = {
-                "type": config.burnAssetType,
+                "type": config.defineOrderType,
                 "value": {
                     "baseReq": {
                         "from": config.testAccountAddress,
                         "chain_id": config.chain_id
                     },
                     "fromID": identityID,
-                    "assetID": assetID
+                    "immutableMetaTraits": "Name:S|,Gifts:S|Exchange,OrderID:S|",
+                    "immutableTraits": "Which Gifts:S|,What Gifts:S|",
+                    "mutableMetaTraits": "exchangeRate:D|1,makerOwnableSplit:D|0.000000000000000001,expiry:H|1000000,takerID:I|ID,makerSplit:D|0.000000000000000001",
+                    "mutableTraits": "descriptions:S|"
                 }
             }
 
             let err, res = await chai.request(server)
-                .post(config.burnAssetPath)
-                .send(obj)
-
-            res.should.have.status(200);
-            res.body.should.be.a('object');
-            expect(res.body.txhash).to.not.equal(null)
-            expect(res.body.txhash).to.not.equal('')
-            expect(res.body.raw_log).to.contain('failed')
-        });
-
-        it('Meta Reveal: ', async () => {
-
-            let obj = {
-                "type": config.metaRevealType,
-                "value": {
-                    "baseReq": {
-                        "from": config.testAccountAddress,
-                        "chain_id": config.chain_id
-                    },
-                    "metaFact": "H|100"
-                }
-            }
-
-            let err, res = await chai.request(server)
-                .post(config.metaRevealPath)
-                .send(obj)
-
-            expect(res.body.txhash).to.not.equal(null)
-            expect(res.body.txhash).to.not.equal('')
-            expect(res.body.raw_log).to.not.contain('failed')
-            expect(res.body.raw_log).to.not.contain('error')
-        });
-
-        it('Mutate Asset: ', async () => {
-
-            let identityID = await identity.queryIdentity("immutableMetaTraits1")
-            let assetID = await assets.queryAsset("AssetD")
-
-            let obj = {
-                "type": config.mutateAssetType,
-                "value": {
-                    "baseReq": {
-                        "from": config.testAccountAddress,
-                        "chain_id": config.chain_id
-                    },
-                    "fromID": identityID,
-                    "assetID": assetID,
-                    "mutableProperties": "AssetA:S|ABCd,burn:H|100",
-                    "mutableMetaProperties": "AssetC:S|num3"
-                }
-            }
-
-
-            let err, res = await chai.request(server)
-                .post(config.mutateAssetPath)
+                .post(config.defineOrderPath)
                 .send(obj)
 
             res.should.have.status(200);
@@ -713,39 +121,49 @@ describe('Assets', async () => {
             expect(res.body.txhash).to.not.equal('')
             expect(res.body.raw_log).to.not.contain('failed')
             expect(res.body.raw_log).to.not.contain('error')
-
         });
 
-        it('Burn Asset', async () => {
+        it('Asset Make Order: ', async () => {
 
             let identityID = await identity.queryIdentity("immutableMetaTraits1")
-            let assetID = await assets.queryAsset("AssetD")
+            let clsID = await cls.queryClassification("Name")
+            let assetID = await assets.queryAsset("A_P4")
 
             let obj = {
-                "type": config.burnAssetType,
+                "type": config.makeOrderType,
                 "value": {
                     "baseReq": {
                         "from": config.testAccountAddress,
                         "chain_id": config.chain_id
                     },
                     "fromID": identityID,
-                    "assetID": assetID
+                    "classificationID": clsID,
+                    "makerOwnableID": assetID,
+                    "takerOwnableID":"stake",
+                    "expiresIn":"100000",
+                    "makerOwnableSplit":"0.000000000000000001",
+                    "immutableMetaProperties": "Name:S|Board,Gifts:S|Exchange,OrderID:S|12345",
+                    "immutableProperties": "Which Gifts:S|Christmas Gift,What Gifts:S|kitty",
+                    "mutableMetaProperties": "exchangeRate:D|1,makerSplit:D|0.000000000000000001",
+                    "mutableProperties": "descriptions:S|awesomekitty"
                 }
             }
 
             let err, res = await chai.request(server)
-                .post(config.burnAssetPath)
+                .post(config.makeOrderPath)
                 .send(obj)
 
             res.should.have.status(200);
             res.body.should.be.a('object');
             expect(res.body.txhash).to.not.equal(null)
             expect(res.body.txhash).to.not.equal('')
-            expect(res.body.raw_log).to.contain('failed')
+            expect(res.body.raw_log).to.not.contain('failed')
+            expect(res.body.raw_log).to.not.contain('error')
         });
-    });
+    })
 
-    describe('Send splits of an asset and then Mutate ', async () => {
+    describe('Cancel an asset order', async () => {
+
         beforeEach(function (done) {
             this.timeout(5000)
             setTimeout(function () {
@@ -753,28 +171,26 @@ describe('Assets', async () => {
             }, 4000)
         })
 
-        it('Define Asset: ', async () => {
+        it('Cancel Order: ', async () => {
 
             let identityID = await identity.queryIdentity("immutableMetaTraits1")
+            let orderID = await orders.queryOrder("Name")
 
             let obj = {
-                "type": config.defineAssetType,
+                "type": config.cancelOrderType,
                 "value": {
                     "baseReq": {
                         "from": config.testAccountAddress,
                         "chain_id": config.chain_id
                     },
                     "fromID": identityID,
-                    "mutableTraits": "One:S|" + ",burn:H|1",
-                    "immutableTraits": "Two:S|",
-                    "mutableMetaTraits": "Three:S|",
-                    "immutableMetaTraits": "Four:S|"
+                    "orderID": orderID
                 }
             }
 
             let err, res = await chai.request(server)
-                .post(config.defineAssetPath)
-                .send(obj);
+                .post(config.cancelOrderPath)
+                .send(obj)
 
             res.should.have.status(200);
             res.body.should.be.a('object');
@@ -783,31 +199,45 @@ describe('Assets', async () => {
             expect(res.body.raw_log).to.not.contain('failed')
             expect(res.body.raw_log).to.not.contain('error')
         });
+    })
 
-        it('Mint Asset: ', async () => {
+    describe('Take an asset take order', async () => {
+
+        beforeEach(function (done) {
+            this.timeout(5000)
+            setTimeout(function () {
+                done()
+            }, 4000)
+        })
+
+        it('Make Order: ', async () => {
 
             let identityID = await identity.queryIdentity("immutableMetaTraits1")
-            let clsID = await cls.queryClassification("Four")
+            let clsID = await cls.queryClassification("Name")
+            let assetID = await assets.queryAsset("A_P4")
 
             let obj = {
-                "type": config.mintAssetType,
+                "type": config.makeOrderType,
                 "value": {
                     "baseReq": {
                         "from": config.testAccountAddress,
                         "chain_id": config.chain_id
                     },
-                    "toID": identityID,
                     "fromID": identityID,
                     "classificationID": clsID,
-                    "mutableProperties": "One:S|One" + ",burn:H|1",
-                    "immutableProperties": "Two:S|Two",
-                    "mutableMetaProperties": "Three:S|Three",
-                    "immutableMetaProperties": "Four:S|Four"
+                    "makerOwnableID": assetID,
+                    "takerOwnableID":"stake",
+                    "expiresIn":"100000",
+                    "makerOwnableSplit":"0.000000000000000001",
+                    "immutableMetaProperties": "Name:S|Board,Gifts:S|Exchange,OrderID:S|12345",
+                    "immutableProperties": "Which Gifts:S|Christmas Gift,What Gifts:S|kitty",
+                    "mutableMetaProperties": "exchangeRate:D|1,makerSplit:D|0.000000000000000001",
+                    "mutableProperties": "descriptions:S|awesomekitty"
                 }
             }
 
             let err, res = await chai.request(server)
-                .post(config.mintAssetPath)
+                .post(config.makeOrderPath)
                 .send(obj)
 
             res.should.have.status(200);
@@ -818,11 +248,10 @@ describe('Assets', async () => {
             expect(res.body.raw_log).to.not.contain('error')
         });
 
-        it('Send Asset: ', async () => {
+        it('Splits send: ', async () => {
 
             let identityID = await identity.queryIdentity("immutableMetaTraits1")
             let identityID1 = await identity.queryIdentity("immutableMetaTraits2")
-            let assetID = await assets.queryAsset("Four")
 
             let obj = {
                 "type": config.sendSplitType,
@@ -833,8 +262,8 @@ describe('Assets', async () => {
                     },
                     "fromID": identityID,
                     "toID": identityID1,
-                    "ownableID": assetID,
-                    "split":"0.000000000000000001"
+                    "ownableID": "stake",
+                    "split": config.splitVal
                 }
             }
 
@@ -850,64 +279,27 @@ describe('Assets', async () => {
             expect(res.body.raw_log).to.not.contain('error')
         });
 
-        it('Mutate Asset: ', async () => {
+        it('Take Order: ', async () => {
 
             let identityID = await identity.queryIdentity("immutableMetaTraits2")
-            let assetID = await assets.queryAsset("Four")
+            let orderID = await orders.queryOrder("Name")
 
             let obj = {
-                "type": config.mutateAssetType,
+                "type": config.takeOrderType,
                 "value": {
                     "baseReq": {
                         "from": config.testAccountAddress,
                         "chain_id": config.chain_id
                     },
                     "fromID": identityID,
-                    "assetID": assetID,
-                    "mutableProperties": "One:S|One" + ",burn:H|1",
-                    "mutableMetaProperties": "Three:S|Three",
+                    "takerOwnableSplit": config.makerOwnableSplit,
+                    "orderID": orderID
                 }
             }
 
-
             let err, res = await chai.request(server)
-                .post(config.mutateAssetPath)
-                .send(obj);
-
-            res.should.have.status(200);
-            res.body.should.be.a('object');
-            expect(res.body.txhash).to.not.equal(null)
-            expect(res.body.txhash).to.not.equal('')
-            expect(res.body.raw_log).to.contain('failed')
-        });
-
-        it('Make toID as maintainer: ', async () => {
-
-            let identityID = await identity.queryIdentity("immutableMetaTraits1")
-            let identityID1 = await identity.queryIdentity("immutableMetaTraits2")
-            let clsID = await cls.queryClassification("Four")
-
-            let obj = {
-                "type": config.deputizeType,
-                "value": {
-                    "baseReq": {
-                        "from": config.testAccountAddress,
-                        "chain_id": config.chain_id
-                    },
-                    "toID": identityID1,
-                    "classificationID": clsID,
-                    "fromID": identityID,
-                    "maintainedTraits": "One:S|One,Three:S|Three,burn:H|1",
-                    "addMaintainer": true,
-                    "removeMaintainer": true,
-                    "mutateMaintainer": true
-                }
-            }
-
-
-            let err, res = await chai.request(server)
-                .post(config.deputizePath)
-                .send(obj);
+                .post(config.takeOrderPath)
+                .send(obj)
 
             res.should.have.status(200);
             res.body.should.be.a('object');
@@ -915,41 +307,10 @@ describe('Assets', async () => {
             expect(res.body.txhash).to.not.equal('')
             expect(res.body.raw_log).to.not.contain('failed')
             expect(res.body.raw_log).to.not.contain('error')
-        });
-
-        it('Mutate Asset: ', async () => {
-
-            let identityID = await identity.queryIdentity("immutableMetaTraits2")
-            let assetID = await assets.queryAsset("Four")
-
-            let obj = {
-                "type": config.mutateAssetType,
-                "value": {
-                    "baseReq": {
-                        "from": config.testAccountAddress,
-                        "chain_id": config.chain_id
-                    },
-                    "fromID": identityID,
-                    "assetID": assetID,
-                    "mutableProperties": "One:S|One" + ",burn:H|1",
-                    "mutableMetaProperties": "Three:S|Three",
-                }
-            }
-
-
-            let err, res = await chai.request(server)
-                .post(config.mutateAssetPath)
-                .send(obj);
-
-            res.should.have.status(200);
-            res.body.should.be.a('object');
-            expect(res.body.txhash).to.not.equal(null)
-            expect(res.body.txhash).to.not.equal('')
-            expect(res.body.raw_log).to.not.contain('failed')
         });
     })
 
-    describe('Mint Asset with extra properties when mutable trait is not defined', async () => {
+    describe('Create a coin make order', async () => {
 
         beforeEach(function (done) {
             this.timeout(5000)
@@ -970,86 +331,10 @@ describe('Assets', async () => {
                         "chain_id": config.chain_id
                     },
                     "fromID": identityID,
-                    "mutableTraits": "ASSETA1:S|,burn:H|1",
-                    "immutableTraits": "ASSETA2:S|G",
-                    "mutableMetaTraits": "ASSETA3:S|L",
-                    "immutableMetaTraits": "ASSETA4:S|Q"
-                }
-            }
-
-
-            let err, res = await chai.request(server)
-                .post(config.defineAssetPath)
-                .send(obj)
-
-            res.should.have.status(200);
-            res.body.should.be.a('object');
-            expect(res.body.txhash).to.not.equal(null)
-            expect(res.body.txhash).to.not.equal('')
-            expect(res.body.raw_log).to.not.contain('failed')
-            expect(res.body.raw_log).to.not.contain('error')
-        });
-
-        it('Mint Asset: ', async () => {
-
-            let identityID = await identity.queryIdentity("immutableMetaTraits1")
-            let clsID = await cls.queryClassification("ASSETA4")
-
-            let obj = {
-                "type": config.mintAssetType,
-                "value": {
-                    "baseReq": {
-                        "from": config.testAccountAddress,
-                        "chain_id": config.chain_id
-                    },
-                    "toID": identityID,
-                    "fromID": identityID,
-                    "classificationID": clsID,
-                    "mutableProperties": "ASSETA1:S|A,burn:H|1,ASSETA11:S|B,ASSETA111:S|C",
-                    "immutableProperties": "ASSETA2:S|G",
-                    "mutableMetaProperties": "ASSETA3:S|L",
-                    "immutableMetaProperties": "ASSETA4:S|Q"
-                }
-            }
-
-            let err, res = await chai.request(server)
-                .post(config.mintAssetPath)
-                .send(obj)
-
-            res.should.have.status(200);
-            res.body.should.be.a('object');
-            expect(res.body.txhash).to.not.equal(null)
-            expect(res.body.txhash).to.not.equal('')
-            expect(res.body.raw_log).to.contain('failed')
-            expect(res.body.raw_log).to.contain('NotAuthorized')
-        });
-    });
-
-    describe('Burn Asset', async () => {
-
-        beforeEach(function (done) {
-            this.timeout(5000)
-            setTimeout(function () {
-                done()
-            }, 4000)
-        })
-
-        it('Define Asset: ', async () => {
-
-            let identityID = await identity.queryIdentity("immutableMetaTraits1")
-
-            let obj = {
-                "type": config.defineAssetType,
-                "value": {
-                    "baseReq": {
-                        "from": config.testAccountAddress,
-                        "chain_id": config.chain_id
-                    },
-                    "fromID": identityID,
-                    "mutableTraits": "Five:S|" + ",burn:H|1",
-                    "immutableTraits": "Six:S|",
-                    "mutableMetaTraits": "Seven:S|",
-                    "immutableMetaTraits": "Eight:S|"
+                    "mutableTraits": "A_PP1:S|" + ",burn:H|1",
+                    "immutableTraits": "A_PP2:S|",
+                    "mutableMetaTraits": "A_PP3:S|",
+                    "immutableMetaTraits": "A_PP4:S|"
                 }
             }
 
@@ -1068,7 +353,7 @@ describe('Assets', async () => {
         it('Mint Asset: ', async () => {
 
             let identityID = await identity.queryIdentity("immutableMetaTraits1")
-            let clsID = await cls.queryClassification("Eight")
+            let clsID = await cls.queryClassification("A_PP4")
 
             let obj = {
                 "type": config.mintAssetType,
@@ -1080,10 +365,10 @@ describe('Assets', async () => {
                     "toID": identityID,
                     "fromID": identityID,
                     "classificationID": clsID,
-                    "mutableProperties": "Five:S|One" + ",burn:H|1",
-                    "immutableProperties": "Six:S|Two",
-                    "mutableMetaProperties": "Seven:S|Three",
-                    "immutableMetaProperties": "Eight:S|Four"
+                    "mutableProperties": "A_PP1:S|,burn:H|1",
+                    "immutableProperties": "A_PP2:S|",
+                    "mutableMetaProperties": "A_PP3:S|",
+                    "immutableMetaProperties": "A_PP4:S|"
                 }
             }
 
@@ -1099,47 +384,27 @@ describe('Assets', async () => {
             expect(res.body.raw_log).to.not.contain('error')
         });
 
-        it('Meta Reveal: ', async () => {
-
-            let obj = {
-                "type": config.metaRevealType,
-                "value": {
-                    "baseReq": {
-                        "from": config.testAccountAddress,
-                        "chain_id": config.chain_id
-                    },
-                    "metaFact": "H|1"
-                }
-            }
-
-            let err, res = await chai.request(server)
-                .post(config.metaRevealPath)
-                .send(obj)
-
-            expect(res.body.txhash).to.not.equal(null)
-            expect(res.body.txhash).to.not.equal('')
-            expect(res.body.raw_log).to.not.contain('failed')
-            expect(res.body.raw_log).to.not.contain('error')
-        });
-
-        it('Burn Asset', async () => {
+        it('Define Order: ', async () => {
 
             let identityID = await identity.queryIdentity("immutableMetaTraits1")
-            let assetID = await assets.queryAsset("Eight")
 
             let obj = {
-                "type": config.burnAssetType,
+                "type": config.defineOrderType,
                 "value": {
                     "baseReq": {
                         "from": config.testAccountAddress,
                         "chain_id": config.chain_id
                     },
                     "fromID": identityID,
-                    "assetID": assetID
+                    "immutableMetaTraits": "Name1:S|,Gifts1:S|Exchange,OrderID1:S|",
+                    "immutableTraits": "Which Gifts1:S|,What Gifts1:S|",
+                    "mutableMetaTraits": "exchangeRate:D|1,makerOwnableSplit:D|0.000000000000000001,expiry:H|1000000,takerID:I|ID,makerSplit:D|0.000000000000000001",
+                    "mutableTraits": "descriptions1:S|"
                 }
             }
+
             let err, res = await chai.request(server)
-                .post(config.burnAssetPath)
+                .post(config.defineOrderPath)
                 .send(obj)
 
             res.should.have.status(200);
@@ -1149,5 +414,569 @@ describe('Assets', async () => {
             expect(res.body.raw_log).to.not.contain('failed')
             expect(res.body.raw_log).to.not.contain('error')
         });
-    });
-});
+
+        it('Wrap a coin: ', async () => {
+
+            let identityID = await identity.queryIdentity("immutableMetaTraits1")
+
+            let obj = {
+                "type": config.wrapCoinType,
+                "value": {
+                    "baseReq": {
+                        "from": config.testAccountAddress,
+                        "chain_id": config.chain_id
+                    },
+                    "fromID": identityID,
+                    "coins": config.coins
+                }
+            }
+
+
+            let err, res = await chai.request(server)
+                .post(config.wrapCoinPath)
+                .send(obj)
+
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            expect(res.body.txhash).to.not.equal(null)
+            expect(res.body.txhash).to.not.equal('')
+            expect(res.body.raw_log).to.not.contain('failed')
+            expect(res.body.raw_log).to.not.contain('error')
+        });
+
+        it('Coin Make Order: ', async () => {
+
+            let identityID = await identity.queryIdentity("immutableMetaTraits1")
+            let clsID = await cls.queryClassification("Name1")
+
+            let obj = {
+                "type": config.makeOrderType,
+                "value": {
+                    "baseReq": {
+                        "from": config.testAccountAddress,
+                        "chain_id": config.chain_id
+                    },
+                    "fromID": identityID,
+                    "classificationID": clsID,
+                    "makerOwnableID": "stake",
+                    "takerOwnableID":"stake",
+                    "expiresIn":"100000",
+                    "makerOwnableSplit":"0.000000000000000001",
+                    "immutableMetaProperties": "Name1:S|Board,Gifts1:S|Exchange,OrderID1:S|12345",
+                    "immutableProperties": "Which Gifts1:S|Christmas Gift,What Gifts1:S|kitty",
+                    "mutableMetaProperties": "exchangeRate:D|1,makerSplit:D|0.000000000000000001",
+                    "mutableProperties": "descriptions1:S|awesomekitty"
+                }
+            }
+
+            let err, res = await chai.request(server)
+                .post(config.makeOrderPath)
+                .send(obj)
+
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            expect(res.body.txhash).to.not.equal(null)
+            expect(res.body.txhash).to.not.equal('')
+            expect(res.body.raw_log).to.not.contain('failed')
+            expect(res.body.raw_log).to.not.contain('error')
+        });
+    })
+
+    describe('Cancel a coin order', async () => {
+
+        beforeEach(function (done) {
+            this.timeout(5000)
+            setTimeout(function () {
+                done()
+            }, 4000)
+        })
+
+        it('Cancel Order: ', async () => {
+
+            let identityID = await identity.queryIdentity("immutableMetaTraits1")
+            let orderID = await orders.queryOrder("Name1")
+
+            let obj = {
+                "type": config.cancelOrderType,
+                "value": {
+                    "baseReq": {
+                        "from": config.testAccountAddress,
+                        "chain_id": config.chain_id
+                    },
+                    "fromID": identityID,
+                    "orderID": orderID
+                }
+            }
+
+            let err, res = await chai.request(server)
+                .post(config.cancelOrderPath)
+                .send(obj)
+
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            expect(res.body.txhash).to.not.equal(null)
+            expect(res.body.txhash).to.not.equal('')
+            expect(res.body.raw_log).to.not.contain('failed')
+            expect(res.body.raw_log).to.not.contain('error')
+        });
+    })
+
+    describe('Take a coin take order', async () => {
+
+        beforeEach(function (done) {
+            this.timeout(5000)
+            setTimeout(function () {
+                done()
+            }, 4000)
+        })
+
+        it('Coin Make Order: ', async () => {
+
+            let identityID = await identity.queryIdentity("immutableMetaTraits1")
+            let clsID = await cls.queryClassification("Name1")
+
+            let obj = {
+                "type": config.makeOrderType,
+                "value": {
+                    "baseReq": {
+                        "from": config.testAccountAddress,
+                        "chain_id": config.chain_id
+                    },
+                    "fromID": identityID,
+                    "classificationID": clsID,
+                    "makerOwnableID": "stake",
+                    "takerOwnableID":"stake",
+                    "expiresIn":"100000",
+                    "makerOwnableSplit":"0.000000000000000001",
+                    "immutableMetaProperties": "Name1:S|Board,Gifts1:S|Exchange,OrderID1:S|12345",
+                    "immutableProperties": "Which Gifts1:S|Christmas Gift,What Gifts1:S|kitty",
+                    "mutableMetaProperties": "exchangeRate:D|1,makerSplit:D|0.000000000000000001",
+                    "mutableProperties": "descriptions1:S|awesomekitty"
+                }
+            }
+
+            let err, res = await chai.request(server)
+                .post(config.makeOrderPath)
+                .send(obj)
+
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            expect(res.body.txhash).to.not.equal(null)
+            expect(res.body.txhash).to.not.equal('')
+            expect(res.body.raw_log).to.not.contain('failed')
+            expect(res.body.raw_log).to.not.contain('error')
+        });
+
+
+        it('Coin Take Order: ', async () => {
+
+            let identityID = await identity.queryIdentity("immutableMetaTraits1")
+            let orderID = await orders.queryOrder("Name1")
+
+            let obj = {
+                "type": config.takeOrderType,
+                "value": {
+                    "baseReq": {
+                        "from": config.testAccountAddress,
+                        "chain_id": config.chain_id
+                    },
+                    "fromID": identityID,
+                    "takerOwnableSplit": config.makerOwnableSplit,
+                    "orderID": orderID
+                }
+            }
+
+
+            let err, res = await chai.request(server)
+                .post(config.takeOrderPath)
+                .send(obj)
+
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            expect(res.body.txhash).to.not.equal(null)
+            expect(res.body.txhash).to.not.equal('')
+            expect(res.body.raw_log).to.not.contain('failed')
+            expect(res.body.raw_log).to.not.contain('error')
+        });
+    })
+
+    describe('Create an order with correct takerID', async () => {
+
+        beforeEach(function (done) {
+            this.timeout(5000)
+            setTimeout(function () {
+                done()
+            }, 4000)
+        })
+
+        it('Define Asset: ', async () => {
+
+            let identityID = await identity.queryIdentity("immutableMetaTraits1")
+
+            let obj = {
+                "type": config.defineAssetType,
+                "value": {
+                    "baseReq": {
+                        "from": config.testAccountAddress,
+                        "chain_id": config.chain_id
+                    },
+                    "fromID": identityID,
+                    "mutableTraits": "A_PPP1:S|" + ",burn:H|1",
+                    "immutableTraits": "A_PPP2:S|",
+                    "mutableMetaTraits": "A_PPP3:S|",
+                    "immutableMetaTraits": "A_PPP4:S|"
+                }
+            }
+
+            let err, res = await chai.request(server)
+                .post(config.defineAssetPath)
+                .send(obj);
+
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            expect(res.body.txhash).to.not.equal(null)
+            expect(res.body.txhash).to.not.equal('')
+            expect(res.body.raw_log).to.not.contain('failed')
+            expect(res.body.raw_log).to.not.contain('error')
+        });
+
+        it('Mint Asset: ', async () => {
+
+            let identityID = await identity.queryIdentity("immutableMetaTraits1")
+            let clsID = await cls.queryClassification("A_PPP4")
+
+            let obj = {
+                "type": config.mintAssetType,
+                "value": {
+                    "baseReq": {
+                        "from": config.testAccountAddress,
+                        "chain_id": config.chain_id
+                    },
+                    "toID": identityID,
+                    "fromID": identityID,
+                    "classificationID": clsID,
+                    "mutableProperties": "A_PPP1:S|,burn:H|1",
+                    "immutableProperties": "A_PPP2:S|",
+                    "mutableMetaProperties": "A_PPP3:S|",
+                    "immutableMetaProperties": "A_PPP4:S|"
+                }
+            }
+
+            let err, res = await chai.request(server)
+                .post(config.mintAssetPath)
+                .send(obj)
+
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            expect(res.body.txhash).to.not.equal(null)
+            expect(res.body.txhash).to.not.equal('')
+            expect(res.body.raw_log).to.not.contain('failed')
+            expect(res.body.raw_log).to.not.contain('error')
+        });
+
+        it('Define Order: ', async () => {
+
+            let identityID = await identity.queryIdentity("immutableMetaTraits1")
+
+            let obj = {
+                "type": config.defineOrderType,
+                "value": {
+                    "baseReq": {
+                        "from": config.testAccountAddress,
+                        "chain_id": config.chain_id
+                    },
+                    "fromID": identityID,
+                    "immutableMetaTraits": "Name2:S|,Gifts2:S|Exchange,OrderID2:S|",
+                    "immutableTraits": "Which Gifts2:S|,What Gifts2:S|",
+                    "mutableMetaTraits": "exchangeRate:D|1,makerOwnableSplit:D|0.000000000000000001,expiry:H|1000000,takerID:I|ID,makerSplit:D|0.000000000000000001",
+                    "mutableTraits": "descriptions2:S|"
+                }
+            }
+
+            let err, res = await chai.request(server)
+                .post(config.defineOrderPath)
+                .send(obj)
+
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            expect(res.body.txhash).to.not.equal(null)
+            expect(res.body.txhash).to.not.equal('')
+            expect(res.body.raw_log).to.not.contain('failed')
+            expect(res.body.raw_log).to.not.contain('error')
+        });
+
+        it('Asset Make Order: ', async () => {
+
+            let identityID = await identity.queryIdentity("immutableMetaTraits1")
+            let identityID1 = await identity.queryIdentity("immutableMetaTraits2")
+            let clsID = await cls.queryClassification("Name2")
+            let assetID = await assets.queryAsset("A_PPP4")
+
+            let obj = {
+                "type": config.makeOrderType,
+                "value": {
+                    "baseReq": {
+                        "from": config.testAccountAddress,
+                        "chain_id": config.chain_id
+                    },
+                    "fromID": identityID,
+                    "classificationID": clsID,
+                    "makerOwnableID": assetID,
+                    "takerOwnableID":identityID1,
+                    "expiresIn":"100000",
+                    "makerOwnableSplit":"0.000000000000000001",
+                    "immutableMetaProperties": "Name2:S|Board,Gifts2:S|Exchange,OrderID2:S|12345",
+                    "immutableProperties": "Which Gifts2:S|Christmas Gift,What Gifts2:S|kitty",
+                    "mutableMetaProperties": "exchangeRate:D|1,makerSplit:D|0.000000000000000001",
+                    "mutableProperties": "descriptions2:S|awesomekitty"
+                }
+            }
+
+            let err, res = await chai.request(server)
+                .post(config.makeOrderPath)
+                .send(obj)
+
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            expect(res.body.txhash).to.not.equal(null)
+            expect(res.body.txhash).to.not.equal('')
+            expect(res.body.raw_log).to.not.contain('failed')
+            expect(res.body.raw_log).to.not.contain('error')
+        });
+
+        it('Take Order with Incorrect ID: ', async () => {
+
+            let identityID1 = await identity.queryIdentity("immutableMetaTraits3")
+            let orderID = await orders.queryOrder("Name2")
+
+            let obj = {
+                "type": config.takeOrderType,
+                "value": {
+                    "baseReq": {
+                        "from": config.testAccountAddress,
+                        "chain_id": config.chain_id
+                    },
+                    "fromID": identityID1,
+                    "takerOwnableSplit": config.makerOwnableSplit,
+                    "orderID": orderID
+                }
+            }
+
+            let err, res = await chai.request(server)
+                .post(config.takeOrderPath)
+                .send(obj)
+
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            expect(res.body.txhash).to.not.equal(null)
+            expect(res.body.txhash).to.not.equal('')
+            expect(res.body.raw_log).to.contain('failed')
+        });
+
+        it('Take Order with correct ID: ', async () => {
+
+            let identityID1 = await identity.queryIdentity("immutableMetaTraits2")
+            let orderID = await orders.queryOrder("Name2")
+
+            let obj = {
+                "type": config.takeOrderType,
+                "value": {
+                    "baseReq": {
+                        "from": config.testAccountAddress,
+                        "chain_id": config.chain_id
+                    },
+                    "fromID": identityID1,
+                    "takerOwnableSplit": config.makerOwnableSplit,
+                    "orderID": orderID
+                }
+            }
+
+            let err, res = await chai.request(server)
+                .post(config.takeOrderPath)
+                .send(obj)
+
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            expect(res.body.txhash).to.not.equal(null)
+            expect(res.body.txhash).to.not.equal('')
+            expect(res.body.raw_log).to.contain('failed')
+        });
+    })
+
+    describe('Sell assets with splits, where taker gives more splits than he is supposed to', async () => {
+
+        beforeEach(function (done) {
+            this.timeout(5000)
+            setTimeout(function () {
+                done()
+            }, 4000)
+        })
+
+
+        it('Define Asset: ', async () => {
+
+            let identityID = await identity.queryIdentity("immutableMetaTraits1")
+
+            let obj = {
+                "type": config.defineAssetType,
+                "value": {
+                    "baseReq": {
+                        "from": config.testAccountAddress,
+                        "chain_id": config.chain_id
+                    },
+                    "fromID": identityID,
+                    "mutableTraits": "ASSETS10:S|num1" + ",burn:H|1",
+                    "immutableTraits": "ASSETS11:S|",
+                    "mutableMetaTraits": "ASSETS12:S|num3",
+                    "immutableMetaTraits": "ASSETS13:S|num4"
+                }
+            }
+
+
+            let err, res = await chai.request(server)
+                .post(config.defineAssetPath)
+                .send(obj)
+
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            expect(res.body.txhash).to.not.equal(null)
+            expect(res.body.txhash).to.not.equal('')
+            expect(res.body.txhash).to.not.equal('')
+            expect(res.body.raw_log).to.not.contain('failed')
+            expect(res.body.raw_log).to.not.contain('error')
+        });
+
+        it('Mint Asset: ', async () => {
+
+            let identityID = await identity.queryIdentity("immutableMetaTraits1")
+            let clsID = await cls.queryClassification("ASSETS13")
+
+            let obj = {
+                "type": config.mintAssetType,
+                "value": {
+                    "baseReq": {
+                        "from": config.testAccountAddress,
+                        "chain_id": config.chain_id
+                    },
+                    "toID": identityID,
+                    "fromID": identityID,
+                    "classificationID": clsID,
+                    "mutableProperties": "ASSETS10:S|num1" + ",burn:H|1",
+                    "immutableProperties": "ASSETS11:S|abc",
+                    "mutableMetaProperties": "ASSETS12:S|num3",
+                    "immutableMetaProperties": "ASSETS13:S|num4"
+                }
+            }
+
+            let err, res = await chai.request(server)
+                .post(config.mintAssetPath)
+                .send(obj)
+
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            expect(res.body.txhash).to.not.equal(null)
+            expect(res.body.txhash).to.not.equal('')
+            expect(res.body.txhash).to.not.equal('')
+            expect(res.body.raw_log).to.not.contain('failed')
+            expect(res.body.raw_log).to.not.contain('error')
+        });
+
+        it('Define Order: ', async () => {
+
+            let identityID = await identity.queryIdentity("immutableMetaTraits1")
+
+            let obj = {
+                "type": config.defineOrderType,
+                "value": {
+                    "baseReq": {
+                        "from": config.testAccountAddress,
+                        "chain_id": config.chain_id
+                    },
+                    "fromID": identityID,
+                    "immutableMetaTraits": "Name3:S|,Gifts3:S|Exchange,OrderID3:S|",
+                    "immutableTraits": "Which Gifts3:S|,What Gifts3:S|",
+                    "mutableMetaTraits": "exchangeRate:D|1,makerOwnableSplit:D|0.000000000000000001,expiry:H|1000000,takerID:I|ID,makerSplit:D|0.000000000000000001",
+                    "mutableTraits": "descriptions3:S|"
+                }
+            }
+
+            let err, res = await chai.request(server)
+                .post(config.defineOrderPath)
+                .send(obj)
+
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            expect(res.body.txhash).to.not.equal(null)
+            expect(res.body.txhash).to.not.equal('')
+            expect(res.body.raw_log).to.not.contain('failed')
+            expect(res.body.raw_log).to.not.contain('error')
+        });
+
+        it('Make Order: ', async () => {
+
+            let identityID = await identity.queryIdentity("immutableMetaTraits1")
+            let clsID = await cls.queryClassification("Name3")
+
+            let obj = {
+                "type": config.makeOrderType,
+                "value": {
+                    "baseReq": {
+                        "from": config.testAccountAddress,
+                        "chain_id": config.chain_id
+                    },
+                    "fromID": identityID,
+                    "classificationID": clsID,
+                    "makerOwnableID": "stake",
+                    "takerOwnableID":"stake",
+                    "expiresIn":"100000",
+                    "makerOwnableSplit":"100",
+                    "immutableMetaProperties": "Name3:S|Board,Gifts3:S|Exchange,OrderID3:S|12345",
+                    "immutableProperties": "Which Gifts3:S|Christmas Gift,What Gifts3:S|kitty",
+                    "mutableMetaProperties": "exchangeRate:D|1,makerSplit:D|0.000000000000000001",
+                    "mutableProperties": "descriptions3:S|awesomekitty"
+                }
+            }
+
+            let err, res = await chai.request(server)
+                .post(config.makeOrderPath)
+                .send(obj)
+
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            expect(res.body.txhash).to.not.equal(null)
+            expect(res.body.txhash).to.not.equal('')
+            expect(res.body.raw_log).to.not.contain('failed')
+            expect(res.body.raw_log).to.not.contain('error')
+        });
+
+        it('Take Order: ', async () => {
+
+            let identityID = await identity.queryIdentity("immutableMetaTraits1")
+            let orderID = await orders.queryOrder("Name3")
+
+            let obj = {
+                "type": config.takeOrderType,
+                "value": {
+                    "baseReq": {
+                        "from": config.testAccountAddress,
+                        "chain_id": config.chain_id
+                    },
+                    "fromID": identityID,
+                    "takerOwnableSplit": "200",
+                    "orderID": orderID
+                }
+            }
+
+            let err, res = await chai.request(server)
+                .post(config.takeOrderPath)
+                .send(obj)
+
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            expect(res.body.txhash).to.not.equal(null)
+            expect(res.body.txhash).to.not.equal('')
+            expect(res.body.raw_log).to.not.contain('failed')
+            expect(res.body.raw_log).to.not.contain('error')
+        });
+    })
+})

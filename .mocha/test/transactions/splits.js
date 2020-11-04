@@ -18,7 +18,7 @@ chai.use(chaiHttp);
 
 describe('Splits', async () => {
 
-    describe('send split of an asset', async () => {
+    describe('Send split of an asset', async () => {
 
         beforeEach(function (done) {
             this.timeout(5000)
@@ -58,7 +58,7 @@ describe('Splits', async () => {
             expect(res.body.raw_log).to.not.contain('error')
         });
 
-        it('Mint Asset: ', async () => {
+        it('Mint asset: ', async () => {
 
             let identityID = await identity.queryIdentity("immutableMetaTraits1")
             let clsID = await cls.queryClassification("AssetDDef4")
@@ -109,7 +109,7 @@ describe('Splits', async () => {
                     "fromID": identityID,
                     "toID": identityID1,
                     "ownableID": assetID,
-                    "split": config.splitval
+                    "split": config.splitVal
                 }
             }
 
@@ -202,7 +202,7 @@ describe('Splits', async () => {
         });
     })
 
-    describe('send split of an coin', async () => {
+    describe('Send split of an coin', async () => {
 
         beforeEach(function (done) {
             this.timeout(5000)
@@ -226,7 +226,7 @@ describe('Splits', async () => {
                     "fromID": identityID,
                     "toID": identityID1,
                     "ownableID": "stake",
-                    "split": config.splitval
+                    "split": config.splitVal
                 }
             }
 

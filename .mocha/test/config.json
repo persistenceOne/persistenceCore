@@ -16,7 +16,7 @@
   "unprovisionKeyPath": "/xprt/identities/unprovision",
   "defineIdentityType": "/xprt/identities/define/request",
   "defineIdentityPath": "/xprt/identities/define",
-  "issuedentityType": "/xprt/identities/issue/request",
+  "issueIdentityType": "/xprt/identities/issue/request",
   "issueIdentityPath": "/xprt/identities/issue",
   "defineAssetType": "/xprt/assets/define/request",
   "defineAssetPath": "/xprt/assets/define",
@@ -48,13 +48,11 @@
   "qIdentity": "/xprt/identities/identities/-test=test",
   "qAsset": "/xprt/assets/assets/-test=test",
   "qOrder": "/xprt/orders/orders/-test=test",
-  "splitval": "0.000000000000000001",
+  "splitVal": "0.000000000000000001",
   "coins": "100000stake",
   "retry_count": 10,
   "timeout": 2000,
   "exchangeRate": 10,
-  "makerownablesplit": "0.000000000000000001",
-  "expiry": "1000000",
-  "takerownableid": "stake",
-  "makerownableid": "stake"
+  "makerOwnableSplit": "0.000000000000000001",
+  "expiry": "1000000"
 }

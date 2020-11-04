@@ -160,11 +160,6 @@ describe('Keys', async () => {
             res.body.should.be.a('object');
             expect(res.body.txhash).to.not.equal(null)
             expect(res.body.txhash).to.not.equal('')
-
-            let hash = res.body.txhash
-
-            err, res = await chai.request(server)
-                .get('/txs/' + hash)
         });
     });
 
@@ -294,12 +289,10 @@ describe('Keys', async () => {
                 .post(config.broadcastTx)
                 .send(obj)
 
-
             res.should.have.status(200);
             res.body.should.be.a('object');
             expect(res.body.txhash).to.not.equal(null)
             expect(res.body.txhash).to.not.equal('')
-
         });
     });
 })

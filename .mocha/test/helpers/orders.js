@@ -20,12 +20,11 @@ async function queryOrder(id) {
             let result = JSON.parse(res.body)
             let list = result.result.value.orders.value.list
             let find = await helper.FindInResponse("orders", list, id)
-            let orderID = find.clasificationID + "*" + find.makerownableid + "*" + find.takerownableid + "*" + find.makerID + "*" + find.hashID
+            let orderID = find.classificationID + "*" + find.makerOwnableID + "*" + find.takerOwnableID + "*" + find.makerID + "*" + find.hashID
             resolve(orderID)
         });
     });
 }
-
 
 module.exports = {
     queryOrder

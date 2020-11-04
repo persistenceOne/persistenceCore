@@ -19,11 +19,13 @@ For more information, visit https://www.digitalocean.com/community/tutorials/how
 
 ```
 
-cd /persistenceOne/assetMantle/mocha
+cd assetMantle/mocha
 
 npm install
 
-Run ./resetChain.sh: This will reset the chain and run mocha tests
+cd ..
+
+Run .script/resetChainAndRunMocha.sh: This will reset the chain and run mocha tests
 
 NOTE: If any error comes which says: Error: Cannot find module 'xxx'
 then run "npm install xxx --save"
@@ -39,7 +41,7 @@ For more information, visit https://autom8able.com.
 
 ## Testing
 
-To test, go to the  go/src/github.com/persistenceOne/assetMantle/mocha folder and type :
+To test, go to the  assetMantle/.mocha folder and type :
 
     $ npm run test:awesome
    
@@ -47,9 +49,9 @@ To test, go to the  go/src/github.com/persistenceOne/assetMantle/mocha folder an
  
 ## Report
 
-[mochawesome] Report JSON saved to go/src/github.com/persistenceOne/assetMantle/mocha/mochawesome-report/mochawesome.json
+[mochawesome] Report JSON saved to assetMantle/.mocha/mochawesome-report/mochawesome.json
 
-[mochawesome] Report HTML saved to go/src/github.com/persistenceOne/assetMantle/mocha/mochawesome-report/mochawesome.html
+[mochawesome] Report HTML saved to assetMantle/.mocha/mochawesome-report/mochawesome.html
 
 
 * * *
