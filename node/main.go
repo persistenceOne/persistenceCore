@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/persistenceOne/assetMantle/application"
 	"io"
@@ -92,7 +93,7 @@ func main() {
 	rootCommand.AddCommand(flags.NewCompletionCmd(rootCommand, true))
 	rootCommand.AddCommand(initialize.ReplayTransactionsCommand())
 	rootCommand.AddCommand(debug.Cmd(application.Codec))
-
+	rootCommand.AddCommand(version.Cmd)
 	rootCommand.PersistentFlags().UintVar(
 		&invalidCheckPeriod,
 		flagInvalidCheckPeriod,

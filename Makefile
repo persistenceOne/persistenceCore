@@ -1,13 +1,19 @@
 export GO111MODULE=on
 
-VERSION := $(shell git branch | grep \* | cut -d ' ' -f2)
+VERSION := $(shell echo $(shell git describe --tags) | sed 's/^v//')
 COMMIT := $(shell git rev-parse --short HEAD)
 
-BUILD_TAGS := -s  -w \
-	-X github.com/persistenceOne/assetMantle/version.Version=${VERSION} \
-	-X github.com/persistenceOne/assetMantle/version.Commit=${COMMIT}
+build_tags = netgo
+build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 
-BUILD_FLAGS += -ldflags "${BUILD_TAGS}"
+ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=assetMantle \
+		  -X github.com/cosmos/cosmos-sdk/version.ServerName=assetNode \
+		  -X github.com/cosmos/cosmos-sdk/version.ClientName=assetClient \
+		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
+		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
+		  -X github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)
+
+BUILD_FLAGS += -ldflags "${ldflags}"
 
 GOBIN = $(shell go env GOPATH)/bin
 
