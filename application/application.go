@@ -41,7 +41,7 @@ var moduleAccountPermissions = map[string][]string{
 	staking.BondedPoolName:    {supply.Burner, supply.Staking},
 	staking.NotBondedPoolName: {supply.Burner, supply.Staking},
 	gov.ModuleName:            {supply.Burner},
-	splits.Module.Name():      nil,
+	splits.Prototype().Name(): nil,
 }
 var tokenReceiveAllowedModules = map[string]bool{
 	distribution.ModuleName: true,
@@ -62,13 +62,13 @@ var ModuleBasics = module.NewBasicManager(
 	upgrade.AppModuleBasic{},
 	evidence.AppModuleBasic{},
 
-	assets.Module,
-	classifications.Module,
-	identities.Module,
-	maintainers.Module,
-	metas.Module,
-	orders.Module,
-	splits.Module,
+	assets.Prototype(),
+	classifications.Prototype(),
+	identities.Prototype(),
+	maintainers.Prototype(),
+	metas.Prototype(),
+	orders.Prototype(),
+	splits.Prototype(),
 )
 var NewApplication = base.Prototype(
 	Name,
