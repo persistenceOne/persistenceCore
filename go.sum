@@ -374,8 +374,8 @@ github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/9
 github.com/pelletier/go-toml v1.6.0 h1:aetoXYr0Tv7xRU/V4B4IZJ2QcbtMUFoNb3ORp7TzIK4=
 github.com/pelletier/go-toml v1.6.0/go.mod h1:5N711Q9dKgbdkxHL+MEfF31hpT7l0S0s/t2kKREewys=
 github.com/performancecopilot/speed v3.0.0+incompatible/go.mod h1:/CLtqpZ5gBg1M9iaPbIdPPGyKcA8hKdoy6hAWba7Yac=
-github.com/persistenceOne/persistenceSDK v0.1.0 h1:wm9TI/ijXdLHr7gs8TBlFw5D8b9uHt0v7xqiz+nbkjo=
-github.com/persistenceOne/persistenceSDK v0.1.0/go.mod h1:wySK6Fx13zUmBpxR+4R1AptlmSGOwpzOy5VkTFVMC/c=
+github.com/persistenceOne/persistenceSDK v0.1.1-0.20201124085720-8b431555d38e h1:LfkxlSgIs9utI2JYJF9xSCvKu8eq6t8elmwygP9HWig=
+github.com/persistenceOne/persistenceSDK v0.1.1-0.20201124085720-8b431555d38e/go.mod h1:bZQc1eT5enD6eZMWjTxRSovxlFv1UarN53uZo06tjZk=
 github.com/pierrec/lz4 v1.0.2-0.20190131084431-473cd7ce01a1/go.mod h1:3/3N9NVKO0jef7pBehbT1qWhCMrIgbYNnFAZCqQ5LRc=
 github.com/pierrec/lz4 v2.0.5+incompatible h1:2xWsjqPFWcplujydGg4WmhC/6fZqK42wMM8aXeqhl0I=
 github.com/pierrec/lz4 v2.0.5+incompatible/go.mod h1:pdkljMzZIN41W+lC3N2tnIh5sFi+IEE17M5jbnwPHcY=
