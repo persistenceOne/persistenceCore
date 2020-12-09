@@ -18,7 +18,7 @@ function queryClassification(id) {
         request(options, async function (error, res) {
             if (error) throw new Error(error);
             let result = JSON.parse(res.body)
-            let list = result.result.value.classifications.value.list
+            let list = result.result.list
             let find = await helper.FindInResponse("classifications", list, id)
             let clsID = find.chainID + '.' + find.hashID
             resolve(clsID)

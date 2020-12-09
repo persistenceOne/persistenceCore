@@ -18,7 +18,7 @@ function queryIdentity(id) {
         request(options, async function (error, res) {
             if (error) throw new Error(error);
             let result = JSON.parse(res.body)
-            let list = result.result.value.identities.value.list
+            let list = result.result.list
             let find = await helper.FindInResponse("identities", list, id)
             let identityID = find.classificationID + "|" + find.hashID
             resolve(identityID)
