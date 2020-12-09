@@ -18,7 +18,7 @@ async function queryOrder(id) {
         request(options, async function (error, res) {
             if (error) throw new Error(error);
             let result = JSON.parse(res.body)
-            let list = result.result.value.orders.value.list
+            let list = result.result.list
             let find = await helper.FindInResponse("orders", list, id)
             let orderID = find.classificationID + "*" + find.makerOwnableID + "*" + find.takerOwnableID + "*" + find.makerID + "*" + find.hashID
             resolve(orderID)

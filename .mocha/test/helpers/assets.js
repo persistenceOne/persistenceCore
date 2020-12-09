@@ -18,7 +18,8 @@ async function queryAsset(id) {
         request(options, async function (error, res) {
             if (error) throw new Error(error);
             let result = JSON.parse(res.body)
-            let list = result.result.value.assets.value.list
+            console.log("result: " + JSON.stringify(result))
+            let list = result.result.list
             let find = await helper.FindInResponse("assets", list, id)
             let assetID = find.classificationID + "|" + find.hashID
             resolve(assetID)
