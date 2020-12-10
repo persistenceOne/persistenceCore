@@ -1,6 +1,7 @@
 node/__debug_bin/
 client/__debug_bin/
 vendor/
+.mocha/node_modules/
 .vscode/
 .idea/
 target/
