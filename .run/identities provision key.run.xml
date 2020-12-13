@@ -1,15 +1,13 @@
 <component name="ProjectRunConfigurationManager">
-    <configuration default="false" name="provision key" type="GoApplicationRunConfiguration"
-                   factoryName="Go Application" folderName="identities">
-        <module name="assetMantle"/>
-        <working_directory value="$PROJECT_DIR$/"/>
-        <go_parameters value="-i"/>
-        <parameters
-                value="tx identities provision -y --chain-id test --from test --to cosmos18mwkvetqvsv72y3vm85vfkkffnl3wcd6ejzavs --identityID test...F_XmPees-8d1CbVD465EvRGCHrY="/>
-        <kind value="FILE"/>
-        <filePath value="$PROJECT_DIR$/client/main.go"/>
-        <package value="github.com/persistenceOne/assetMantle"/>
-        <directory value="$PROJECT_DIR$/"/>
-        <method v="2"/>
-    </configuration>
+  <configuration default="false" name="identites provision key" type="GoApplicationRunConfiguration" factoryName="Go Application" folderName="identities">
+    <module name="assetMantle" />
+    <working_directory value="$PROJECT_DIR$/" />
+    <go_parameters value="-i" />
+    <parameters value="tx identities provision -y --chain-id test --from test --to cosmos18mwkvetqvsv72y3vm85vfkkffnl3wcd6ejzavs --identityID test...F_XmPees-8d1CbVD465EvRGCHrY=" />
+    <kind value="FILE" />
+    <filePath value="$PROJECT_DIR$/client/main.go" />
+    <package value="github.com/persistenceOne/assetMantle" />
+    <directory value="$PROJECT_DIR$/" />
+    <method v="2" />
+  </configuration>
 </component>
