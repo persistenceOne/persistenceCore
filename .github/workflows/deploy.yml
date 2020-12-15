@@ -23,4 +23,4 @@ jobs:
           username: ${{ secrets.TESTING_USER }}
           key: ${{ secrets.TESTING_SSH_KEY}}
           port: 22
-          script: /root/deployment/update_blockchain.sh
+          script: ${{ secrets.TESTING_SCRIPT }}
