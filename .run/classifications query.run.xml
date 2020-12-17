@@ -3,7 +3,7 @@
     <module name="assetMantle" />
     <working_directory value="$PROJECT_DIR$/" />
     <go_parameters value="-i" />
-    <parameters value="query classifications classifications --chain-id test --classificationID test.Savede7NEFcRTjnDARhhWcJaVn8=" />
+    <parameters value="query classifications classifications --chain-id test --classificationID test.2T141SVYvYOF3nT_sylhNLoYG2w=" />
     <kind value="FILE" />
     <filePath value="$PROJECT_DIR$/client/main.go" />
     <package value="github.com/persistenceOne/assetMantle" />
