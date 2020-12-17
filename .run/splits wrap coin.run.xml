@@ -1,15 +1,13 @@
 <component name="ProjectRunConfigurationManager">
-    <configuration default="false" name="splits wrap coin" type="GoApplicationRunConfiguration"
-                   factoryName="Go Application" folderName="splits">
-        <module name="assetMantle"/>
-        <working_directory value="$PROJECT_DIR$/"/>
-        <go_parameters value="-i"/>
-        <parameters
-                value="tx splits wrap -y --chain-id test --from test --fromID  test...F_XmPees-8d1CbVD465EvRGCHrY= --coins 1stake"/>
-        <kind value="FILE"/>
-        <filePath value="$PROJECT_DIR$/client/main.go"/>
-        <package value="github.com/persistenceOne/assetMantle"/>
-        <directory value="$PROJECT_DIR$/"/>
-        <method v="2"/>
-    </configuration>
+  <configuration default="false" name="splits wrap coin" type="GoApplicationRunConfiguration" factoryName="Go Application" folderName="splits">
+    <module name="assetMantle" />
+    <working_directory value="$PROJECT_DIR$/" />
+    <go_parameters value="-i" />
+    <parameters value="tx splits wrap -y --chain-id test --from test --fromID  test.cGn3HMW8M3t5gMDv-wXa9sseHnA=|cXbKF6hGMB0ei8unCEjb1z_s8r4= --coins 1stake" />
+    <kind value="FILE" />
+    <filePath value="$PROJECT_DIR$/client/main.go" />
+    <package value="github.com/persistenceOne/assetMantle" />
+    <directory value="$PROJECT_DIR$/" />
+    <method v="2" />
+  </configuration>
 </component>

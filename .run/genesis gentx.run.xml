@@ -1,11 +1,11 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="identities query all" type="GoApplicationRunConfiguration" factoryName="Go Application" folderName="identities">
+  <configuration default="false" name="genesis gentx" type="GoApplicationRunConfiguration" factoryName="Go Application" folderName="genesis">
     <module name="assetMantle" />
     <working_directory value="$PROJECT_DIR$/" />
     <go_parameters value="-i" />
-    <parameters value="query identities identities --chain-id test" />
+    <parameters value="gentx --name test --amount 1000000000stake" />
     <kind value="FILE" />
-    <filePath value="$PROJECT_DIR$/client/main.go" />
+    <filePath value="$PROJECT_DIR$/node/main.go" />
     <package value="github.com/persistenceOne/assetMantle" />
     <directory value="$PROJECT_DIR$/" />
     <method v="2" />
