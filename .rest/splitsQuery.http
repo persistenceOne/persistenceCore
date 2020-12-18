@@ -1,4 +1,4 @@
-GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/identities/identities/test.XTJ0wkxGAeMlEqfw3Dx9oR6ZlIE=|IWlaJpSQCEHboqlKYYyzLK_Sq2k=
+GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/splits/splits/test.cGn3HMW8M3t5gMDv-wXa9sseHnA=|eYA_gY99Ft1MaMGPmPIyipHQdyo=*stake
 Accept: application/json
 
 > {%
@@ -6,4 +6,5 @@ Accept: application/json
         client.assert(response.status === 200, "Response status is not 200");
     });
 %}
+
 ###

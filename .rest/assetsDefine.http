@@ -1,0 +1,39 @@
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/assets/define
+Content-Type: application/json
+
+{
+ "type": "/xprt/assets/github.com/persistenceOne/persistenceSDK/modules/assets/internal/transactions/define/transactionRequest",
+ "value": {
+    "baseReq": {
+      "from": "{{ACCOUNT_1_ADDRESS}}",
+      "chain_id": "{{CHAIN_ID}}"
+    },
+    "fromID":"test.MgVN53MovlOXmVrFOb6Rk8efEho=|Hi4ALDaDs923R0w64cr02MffbNA=",
+    "immutableMetaTraits":"ImmutableMetaPropertyName1:S|ImmutableMetaPropertyValue1,ImmutableMetaPropertyName2:I|",
+    "immutableTraits":"ImmutablePropertyName3:H|,ImmutablePropertyName4:D|",
+    "mutableMetaTraits":"MutableMetaPropertyName5:S|,MutableMetaPropertyName6:S|,burn:H|,lock:H|",
+    "mutableTraits":"MutablePropertyName7:S|,MutablePropertyName8:S|"
+  }
+}
+
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+   client.global.set("assetsDefineTxHash", JSON.parse(JSON.stringify(response.body)).txhash)
+%}
+
+###
+GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/txs/{{assetsDefineTxHash}}
+Accept: application/json
+
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+client.test("Response Code Check", function() {
+     client.assert(!JSON.parse(JSON.stringify(response.body)).hasOwnProperty("code") , "Response Code is not 0");
+ });
+%}
+
+###
