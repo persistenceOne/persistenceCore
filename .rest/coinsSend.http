@@ -1,4 +1,4 @@
-POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/bank/accounts/{{ACCOUNT_1_ADDRESS}}/transfers
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/bank/accounts/cosmos1w7gv22gf6xsce3umdayp7qdhq0swqccaxcnt93/transfers
 Content-Type: application/json
 
 {
@@ -6,8 +6,7 @@ Content-Type: application/json
     "from": "{{TEST_ACCOUNT_ADDRESS}}",
     "chain_id": "{{CHAIN_ID}}"
   },
-  	"amount":[{"denom":"stake","amount":"1000"}],
-    "mode" : "block"
+  	"amount":[{"denom":"stake","amount":"1000"}]
 }
 
 > {%
@@ -31,46 +30,7 @@ Content-Type: application/json
         "type": "cosmos-sdk/MsgSend",
         "value": {
           "from_address": "{{TEST_ACCOUNT_ADDRESS}}",
-          "to_address": "{{ACCOUNT_1_ADDRESS}}",
-          "amount": [
-            {
-              "denom": "stake",
-              "amount": "1000"
-            }
-          ]
-        }
-      },
-      {
-        "type": "cosmos-sdk/MsgSend",
-        "value": {
-          "from_address": "{{TEST_ACCOUNT_ADDRESS}}",
-          "to_address": "{{ACCOUNT_2_ADDRESS}}",
-          "amount": [
-            {
-              "denom": "stake",
-              "amount": "1000"
-            }
-          ]
-        }
-      },
-      {
-        "type": "cosmos-sdk/MsgSend",
-        "value": {
-          "from_address": "{{TEST_ACCOUNT_ADDRESS}}",
-          "to_address": "{{ACCOUNT_3_ADDRESS}}",
-          "amount": [
-            {
-              "denom": "stake",
-              "amount": "1000"
-            }
-          ]
-        }
-      },
-      {
-        "type": "cosmos-sdk/MsgSend",
-        "value": {
-          "from_address": "{{TEST_ACCOUNT_ADDRESS}}",
-          "to_address": "{{ACCOUNT_4_ADDRESS}}",
+          "to_address": "cosmos1w7gv22gf6xsce3umdayp7qdhq0swqccaxcnt93",
           "amount": [
             {
               "denom": "stake",

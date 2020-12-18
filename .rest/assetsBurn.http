@@ -1,15 +1,15 @@
-POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/xprt/assets/burn
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/assets/burn
 Content-Type: application/json
 
 {
- "type": "/xprt/assets/burn/request",
+ "type": "/xprt/assets/github.com/persistenceOne/persistenceSDK/modules/assets/internal/transactions/burn/transactionRequest",
  "value": {
     "baseReq": {
       "from": "{{ACCOUNT_1_ADDRESS}}",
       "chain_id": "{{CHAIN_ID}}"
     },
-    "fromID":"{{ACCOUNT_1_ID}}",
-    "assetID":"{{ACCOUNT_1_ASSET_ID}}"
+    "fromID":"test.XTJ0wkxGAeMlEqfw3Dx9oR6ZlIE=|IWlaJpSQCEHboqlKYYyzLK_Sq2k=",
+    "assetID":"test.zZN_aVdLtKcK4556f5i6IwFEm7k=|9mK1kvuzV4pXiEvhC6Iy3oDPn-M="
   }
 }
 

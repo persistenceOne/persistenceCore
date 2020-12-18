@@ -42,122 +42,187 @@ assetClient tx send $ACCOUNT_2 $ACCOUNT_4 5stake -y $KEYRING $MODE
 assetClient tx send $ACCOUNT_4 $ACCOUNT_2 5stake -y $KEYRING $MODE
 sleep $SLEEP
 
-# identities issue, provision, unprovision
-ID_1=identity1$NONCE
-ID_2=identity2$NONCE
-ID_3=identity3$NONCE
-assetClient tx identities issue -y --from $ACCOUNT_1 --to $ACCOUNT_1  --properties $ID_1:$ID_1 $KEYRING $MODE
-assetClient tx identities issue -y --from $ACCOUNT_3 --to $ACCOUNT_3  --properties $ID_2:$ID_2  $KEYRING $MODE
-assetClient tx identities issue -y --from $ACCOUNT_2 --to $ACCOUNT_2  --properties $ID_3:$ID_3  $KEYRING $MODE
+# identities nub, define, issue, provision, unprovision
+NUB_ID_1=nubID1$NONCE
+NUB_ID_2=nubID2$NONCE
+NUB_ID_3=nubID3$NONCE
+assetClient tx identities nub -y --from $ACCOUNT_1 --nubID $NUB_ID_1 $KEYRING $MODE
+assetClient tx identities nub -y --from $ACCOUNT_2 --nubID $NUB_ID_2 $KEYRING $MODE
+assetClient tx identities nub -y --from $ACCOUNT_3 --nubID $NUB_ID_3 $KEYRING $MODE
 sleep $SLEEP
-ACCOUNT_1_ID=test...$(echo $(assetClient q identities identities) | awk -v var=$ID_1 '{for(i=1;i<=NF;i++)if($i=="hashid:" && $(i+14)==var)print $(i+2)}')
-ACCOUNT_3_ID=test...$(echo $(assetClient q identities identities) | awk -v var=$ID_2 '{for(i=1;i<=NF;i++)if($i=="hashid:" && $(i+14)==var)print $(i+2)}')
-ACCOUNT_2_ID=test...$(echo $(assetClient q identities identities) | awk -v var=$ID_3 '{for(i=1;i<=NF;i++)if($i=="hashid:" && $(i+14)==var)print $(i+2)}')
-#provision identities
-assetClient tx identities provision -y --from $ACCOUNT_1 --to $ACCOUNT_4 --identityID $ACCOUNT_1_ID  $KEYRING $MODE
+ACCOUNT_1_NUB_ID=$(echo $(assetClient q identities identities) | awk -v var="$ACCOUNT_1" '{for(i=1;i<=NF;i++)if($i==var)print $(i-6)"|"$(i-3)}')
+ACCOUNT_2_NUB_ID=$(echo $(assetClient q identities identities) | awk -v var="$ACCOUNT_2" '{for(i=1;i<=NF;i++)if($i==var)print $(i-6)"|"$(i-3)}')
+ACCOUNT_3_NUB_ID=$(echo $(assetClient q identities identities) | awk -v var="$ACCOUNT_3" '{for(i=1;i<=NF;i++)if($i==var)print $(i-6)"|"$(i-3)}')
+
+IDENTITY_DEFINE_IMMUTABLE_1_ID="identityDefineImmutable1$NONCE"
+IDENTITY_DEFINE_IMMUTABLE_1="$IDENTITY_DEFINE_IMMUTABLE_1_ID:S|"
+IDENTITY_DEFINE_IMMUTABLE_META_1_ID="identityDefineImmutableMeta1$NONCE"
+IDENTITY_DEFINE_IMMUTABLE_META_1="$IDENTITY_DEFINE_IMMUTABLE_META_1_ID:I|identityDefineImmutableMeta1$NONCE"
+IDENTITY_DEFINE_MUTABLE_1_ID="identityDefineMutable1$NONCE"
+IDENTITY_DEFINE_MUTABLE_1="$IDENTITY_DEFINE_MUTABLE_1_ID:D|"
+IDENTITY_DEFINE_MUTABLE_META_1_ID="identityDefineMutableMeta1$NONCE"
+IDENTITY_DEFINE_MUTABLE_META_1="$IDENTITY_DEFINE_MUTABLE_META_1_ID:H|"
+assetClient tx identities define -y --from $ACCOUNT_1 --fromID $ACCOUNT_1_NUB_ID \
+ --immutableTraits "$IDENTITY_DEFINE_IMMUTABLE_1" \
+ --immutableMetaTraits "$IDENTITY_DEFINE_IMMUTABLE_META_1" \
+ --mutableTraits "$IDENTITY_DEFINE_MUTABLE_1" \
+ --mutableMetaTraits "$IDENTITY_DEFINE_MUTABLE_META_1" $KEYRING $MODE
+
 sleep $SLEEP
-assetClient tx identities unprovision -y --from $ACCOUNT_1 --to $ACCOUNT_4 --identityID $ACCOUNT_1_ID $KEYRING $MODE
+IDENTITY_DEFINE_CLASSIFICATION=$(echo $(assetClient q classifications classifications) | awk -v var="$IDENTITY_DEFINE_IMMUTABLE_META_1_ID" '{for(i=1;i<=NF;i++)if($i==var)print $(i-10)"."$(i-7)}')
+
+assetClient tx identities issue -y --from $ACCOUNT_1 --fromID $ACCOUNT_1_NUB_ID --classificationID $IDENTITY_DEFINE_CLASSIFICATION --to $ACCOUNT_1 \
+ --immutableProperties "$IDENTITY_DEFINE_IMMUTABLE_1""stringValue" \
+ --immutableMetaProperties "$IDENTITY_DEFINE_IMMUTABLE_META_1" \
+ --mutableProperties "$IDENTITY_DEFINE_MUTABLE_1""1.01" \
+ --mutableMetaProperties "$IDENTITY_DEFINE_MUTABLE_META_1""123" \
+ $KEYRING $MODE
+
 sleep $SLEEP
-assetClient query identities identities
+IDENTITY_ISSUE_ACCOUNT_1=$(echo $(assetClient q identities identities) | awk -v var="$IDENTITY_DEFINE_CLASSIFICATION" '{for(i=1;i<=NF;i++)if($i==var)print $i"|"$(i+3)}')
+assetClient tx identities provision -y --from $ACCOUNT_1 --to $ACCOUNT_4 --identityID $IDENTITY_ISSUE_ACCOUNT_1  $KEYRING $MODE
+sleep $SLEEP
+assetClient tx identities unprovision -y --from $ACCOUNT_1 --to $ACCOUNT_4 --identityID $IDENTITY_ISSUE_ACCOUNT_1 $KEYRING $MODE
+sleep $SLEEP
+
 
 #metas reveal
-assetClient tx metas reveal -y --from $ACCOUNT_1 --fromID $ACCOUNT_1_ID --data $ID_1
-assetClient tx metas reveal -y --from $ACCOUNT_2 --fromID $ACCOUNT_2_ID --data $ID_2
-assetClient tx metas reveal -y --from $ACCOUNT_3 --fromID $ACCOUNT_3_ID --data $ID_3
+assetClient tx metas reveal -y --from $ACCOUNT_1 --metaFact "S|stringValue$NONCE"
+assetClient tx metas reveal -y --from $ACCOUNT_2 --metaFact "I|identityValue$NONCE"
+assetClient tx metas reveal -y --from $ACCOUNT_3 --metaFact "D|0.101010$NONCE"
+assetClient tx metas reveal -y --from $ACCOUNT_4 --metaFact "H|1$NONCE"
 sleep $SLEEP
 
 #assets mint, mutate burn
-ASSET_P1=assets1$NONCE
-ASSET_P2=assets2$NONCE
-ASSET_P3=assets3$NONCE
-ASSET_P4=assets4$NONCE
-ASSET_P5=assets5$NONCE
-ASSET_P6=assets6$NONCE
-ASSET_P7=assets7$NONCE
-assetClient tx assets mint -y --from $ACCOUNT_1 --fromID $ACCOUNT_1_ID --toID $ACCOUNT_1_ID --properties $ASSET_P1:$ASSET_P1  $KEYRING $MODE
-assetClient tx assets mint -y --from $ACCOUNT_3 --fromID $ACCOUNT_3_ID --toID $ACCOUNT_3_ID --properties $ASSET_P2:$ASSET_P2  $KEYRING $MODE
+ASSET_DEFINE_IMMUTABLE_1_ID="assetDefineImmutable1$NONCE"
+ASSET_DEFINE_IMMUTABLE_1="$ASSET_DEFINE_IMMUTABLE_1_ID:S|"
+ASSET_DEFINE_IMMUTABLE_META_1_ID="assetDefineImmutableMeta1$NONCE"
+ASSET_DEFINE_IMMUTABLE_META_1="$ASSET_DEFINE_IMMUTABLE_META_1_ID:I|assetDefineImmutableMeta1$NONCE"
+ASSET_DEFINE_MUTABLE_1_ID="assetDefineMutable1$NONCE"
+ASSET_DEFINE_MUTABLE_1="$ASSET_DEFINE_MUTABLE_1_ID:D|"
+ASSET_DEFINE_MUTABLE_META_1_ID="assetDefineMutableMeta1$NONCE"
+ASSET_DEFINE_MUTABLE_META_1="$ASSET_DEFINE_MUTABLE_META_1_ID:H|"
+assetClient tx assets define -y --from $ACCOUNT_1 --fromID $ACCOUNT_1_NUB_ID \
+ --immutableTraits "$ASSET_DEFINE_IMMUTABLE_1" \
+ --immutableMetaTraits "$ASSET_DEFINE_IMMUTABLE_META_1" \
+ --mutableTraits "$ASSET_DEFINE_MUTABLE_1" \
+ --mutableMetaTraits "$ASSET_DEFINE_MUTABLE_META_1" $KEYRING $MODE
+
+
+ASSET_DEFINE_IMMUTABLE_2_ID="assetDefineImmutable2$NONCE"
+ASSET_DEFINE_IMMUTABLE_2="$ASSET_DEFINE_IMMUTABLE_2_ID:S|"
+ASSET_DEFINE_IMMUTABLE_META_2_ID="assetDefineImmutableMeta2$NONCE"
+ASSET_DEFINE_IMMUTABLE_META_2="$ASSET_DEFINE_IMMUTABLE_META_2_ID:I|assetDefineImmutableMeta$NONCE"
+ASSET_DEFINE_MUTABLE_2_ID="assetDefineMutable2$NONCE"
+ASSET_DEFINE_MUTABLE_2="$ASSET_DEFINE_MUTABLE_2_ID:D|"
+ASSET_DEFINE_MUTABLE_META_2_ID="assetDefineMutableMeta2$NONCE"
+ASSET_DEFINE_MUTABLE_META_2="$ASSET_DEFINE_MUTABLE_META_2_ID:H|"
+assetClient tx assets define -y --from $ACCOUNT_2 --fromID $ACCOUNT_2_NUB_ID \
+ --immutableTraits "$ASSET_DEFINE_IMMUTABLE_2" \
+ --immutableMetaTraits "$ASSET_DEFINE_IMMUTABLE_META_2" \
+ --mutableTraits "$ASSET_DEFINE_MUTABLE_2" \
+ --mutableMetaTraits "$ASSET_DEFINE_MUTABLE_META_2" $KEYRING $MODE
+
 sleep $SLEEP
-ACCOUNT_1_ASSET_1=test...$(echo $(assetClient q assets assets) | awk -v var=$ASSET_P1 '{for(i=1;i<=NF;i++)if($i=="hashid:" && $(i+15)==var)print $(i+2)}')
-ACCOUNT_3_ASSET_1=test...$(echo $(assetClient q assets assets) | awk -v var=$ASSET_P2 '{for(i=1;i<=NF;i++)if($i=="hashid:" && $(i+15)==var)print $(i+2)}')
-assetClient tx assets mutate -y --from $ACCOUNT_1 --fromID $ACCOUNT_1_ID --assetID $ACCOUNT_1_ASSET_1 --properties $ASSET_P1:mutated$ASSET_P1  $KEYRING $MODE
+ASSET_DEFINE_CLASSIFICATION_1=$(echo $(assetClient q classifications classifications) | awk -v var="$ASSET_DEFINE_IMMUTABLE_META_1_ID" '{for(i=1;i<=NF;i++)if($i==var)print $(i-10)"."$(i-7)}')
+assetClient tx assets mint -y --from $ACCOUNT_1 --fromID $ACCOUNT_1_NUB_ID --classificationID $ASSET_DEFINE_CLASSIFICATION_1 --toID $ACCOUNT_1_NUB_ID \
+ --immutableProperties "$ASSET_DEFINE_IMMUTABLE_1""stringValue" \
+ --immutableMetaProperties "$ASSET_DEFINE_IMMUTABLE_META_1" \
+ --mutableProperties "$ASSET_DEFINE_MUTABLE_1""1.01" \
+ --mutableMetaProperties "$ASSET_DEFINE_MUTABLE_META_1""123" \
+ $KEYRING $MODE
+
+ASSET_DEFINE_CLASSIFICATION_2=$(echo $(assetClient q classifications classifications) | awk -v var="$ASSET_DEFINE_IMMUTABLE_META_2_ID" '{for(i=1;i<=NF;i++)if($i==var)print $(i-10)"."$(i-7)}')
+assetClient tx assets mint -y --from $ACCOUNT_2 --fromID $ACCOUNT_2_NUB_ID --classificationID $ASSET_DEFINE_CLASSIFICATION_2 --toID $ACCOUNT_2_NUB_ID \
+ --immutableProperties "$ASSET_DEFINE_IMMUTABLE_2""stringValue" \
+ --immutableMetaProperties "$ASSET_DEFINE_IMMUTABLE_META_2" \
+ --mutableProperties "$ASSET_DEFINE_MUTABLE_2""1.01" \
+ --mutableMetaProperties "$ASSET_DEFINE_MUTABLE_META_2""123" \
+ $KEYRING $MODE
+
 sleep $SLEEP
-assetClient tx assets burn -y --from $ACCOUNT_1 --fromID $ACCOUNT_1_ID --assetID $ACCOUNT_1_ASSET_1  $KEYRING $MODE
+ASSET_MINT_1=$(echo $(assetClient q assets assets) | awk -v var="$ASSET_DEFINE_CLASSIFICATION_1" '{for(i=1;i<=NF;i++)if($i==var)print $i"|"$(i+3)}')
+ASSET_MINT_2=$(echo $(assetClient q assets assets) | awk -v var="$ASSET_DEFINE_CLASSIFICATION_2" '{for(i=1;i<=NF;i++)if($i==var)print $i"|"$(i+3)}')
+
+assetClient tx assets mutate -y --from $ACCOUNT_1 --fromID $ACCOUNT_1_NUB_ID --assetID $ASSET_MINT_1 \
+ --mutableProperties "$ASSET_DEFINE_MUTABLE_1""1.012" \
+ --mutableMetaProperties "$ASSET_DEFINE_MUTABLE_META_1""1234" $KEYRING $MODE
+assetClient tx assets burn -y --from $ACCOUNT_2 --fromID $ACCOUNT_2_NUB_ID --assetID $ASSET_MINT_2 $KEYRING $MODE
 sleep $SLEEP
-assetClient tx assets mint -y --from $ACCOUNT_1 --fromID $ACCOUNT_1_ID --toID $ACCOUNT_1_ID --properties $ASSET_P1:$ASSET_P1  $KEYRING $MODE
+#remint asset2
+assetClient tx assets mint -y --from $ACCOUNT_2 --fromID $ACCOUNT_2_NUB_ID --classificationID $ASSET_DEFINE_CLASSIFICATION_2 --toID $ACCOUNT_2_NUB_ID \
+ --immutableProperties "$ASSET_DEFINE_IMMUTABLE_2""stringValue" \
+ --immutableMetaProperties "$ASSET_DEFINE_IMMUTABLE_META_2" \
+ --mutableProperties "$ASSET_DEFINE_MUTABLE_2""1.01" \
+ --mutableMetaProperties "$ASSET_DEFINE_MUTABLE_META_2""123" \
+ $KEYRING $MODE
 sleep $SLEEP
 
-assetClient tx assets mint -y --from $ACCOUNT_1 --fromID $ACCOUNT_1_ID --toID $ACCOUNT_1_ID --properties $ASSET_P3:$ASSET_P3  $KEYRING $MODE
-assetClient tx assets mint -y --from $ACCOUNT_2 --fromID $ACCOUNT_2_ID --toID $ACCOUNT_2_ID --properties $ASSET_P4:$ASSET_P4  $KEYRING $MODE
+##wraping unwrapping send coins
+assetClient tx splits wrap -y --from $ACCOUNT_1 --fromID $ACCOUNT_1_NUB_ID --coins 20stake $KEYRING $MODE
+assetClient tx splits wrap -y --from $ACCOUNT_2 --fromID $ACCOUNT_2_NUB_ID --coins 20stake $KEYRING $MODE
+assetClient tx splits wrap -y --from $ACCOUNT_3 --fromID $ACCOUNT_3_NUB_ID --coins 20stake $KEYRING $MODE
 sleep $SLEEP
-ACCOUNT_1_ASSET_2=test...$(echo $(assetClient q assets assets) | awk -v var=$ASSET_P3 '{for(i=1;i<=NF;i++)if($i=="hashid:" && $(i+15)==var)print $(i+2)}')
-ACCOUNT_2_ASSET_1=test...$(echo $(assetClient q assets assets) | awk -v var=$ASSET_P4 '{for(i=1;i<=NF;i++)if($i=="hashid:" && $(i+15)==var)print $(i+2)}')
+assetClient tx splits unwrap -y --from $ACCOUNT_1 --fromID $ACCOUNT_1_NUB_ID --ownableID stake --split 1 $KEYRING $MODE
+assetClient tx splits unwrap -y --from $ACCOUNT_2 --fromID $ACCOUNT_2_NUB_ID --ownableID stake --split 1 $KEYRING $MODE
+assetClient tx splits unwrap -y --from $ACCOUNT_3 --fromID $ACCOUNT_3_NUB_ID --ownableID stake --split 1 $KEYRING $MODE
+sleep $SLEEP
+assetClient tx splits send -y --from $ACCOUNT_3 --fromID $ACCOUNT_3_NUB_ID --toID $ACCOUNT_3_NUB_ID --ownableID stake --split 1 $KEYRING $MODE
 
-assetClient query assets assets
+#order make take cancel
+ORDER_MUTABLE_META_TRAITS="takerID:I|,exchangeRate:D|,expiry:H|,makerOwnableSplit:D|"
+ORDER_DEFINE_IMMUTABLE_1_ID="orderDefineImmutable1$NONCE"
+ORDER_DEFINE_IMMUTABLE_1="$ORDER_DEFINE_IMMUTABLE_1_ID:S|"
+ORDER_DEFINE_IMMUTABLE_META_1_ID="orderDefineImmutableMeta1$NONCE"
+ORDER_DEFINE_IMMUTABLE_META_1="$ORDER_DEFINE_IMMUTABLE_META_1_ID:I|orderDefineImmutableMeta1$NONCE"
+ORDER_DEFINE_MUTABLE_1_ID="orderDefineMutable1$NONCE"
+ORDER_DEFINE_MUTABLE_1="$ORDER_DEFINE_MUTABLE_1_ID:D|"
+ORDER_DEFINE_MUTABLE_META_1_ID="orderDefineMutableMeta1$NONCE"
+ORDER_DEFINE_MUTABLE_META_1="$ORDER_DEFINE_MUTABLE_META_1_ID:H|"
+assetClient tx orders define -y --from $ACCOUNT_1 --fromID $ACCOUNT_1_NUB_ID \
+ --immutableTraits "$ORDER_DEFINE_IMMUTABLE_1" \
+ --immutableMetaTraits "$ORDER_DEFINE_IMMUTABLE_META_1" \
+ --mutableTraits "$ORDER_DEFINE_MUTABLE_1" \
+ --mutableMetaTraits "$ORDER_DEFINE_MUTABLE_META_1"",takerID:I|,exchangeRate:D|,expiry:H|,makerOwnableSplit:D|" $KEYRING $MODE
 
-assetClient query splits splits
+ORDER_DEFINE_IMMUTABLE_2_ID="orderDefineImmutable2$NONCE"
+ORDER_DEFINE_IMMUTABLE_2="$ORDER_DEFINE_IMMUTABLE_2_ID:S|"
+ORDER_DEFINE_IMMUTABLE_META_2_ID="orderDefineImmutableMeta2$NONCE"
+ORDER_DEFINE_IMMUTABLE_META_2="$ORDER_DEFINE_IMMUTABLE_META_2_ID:I|orderDefineImmutableMeta2$NONCE"
+ORDER_DEFINE_MUTABLE_2_ID="orderDefineMutable2$NONCE"
+ORDER_DEFINE_MUTABLE_2="$ORDER_DEFINE_MUTABLE_2_ID:D|"
+ORDER_DEFINE_MUTABLE_META_2_ID="orderDefineMutableMeta2$NONCE"
+ORDER_DEFINE_MUTABLE_META_2="$ORDER_DEFINE_MUTABLE_META_2_ID:H|"
+assetClient tx orders define -y --from $ACCOUNT_2 --fromID $ACCOUNT_2_NUB_ID \
+ --immutableTraits "$ORDER_DEFINE_IMMUTABLE_2" \
+ --immutableMetaTraits "$ORDER_DEFINE_IMMUTABLE_META_2" \
+ --mutableTraits "$ORDER_DEFINE_MUTABLE_2" \
+ --mutableMetaTraits "$ORDER_DEFINE_MUTABLE_META_2"",takerID:I|,exchangeRate:D|,expiry:H|,makerOwnableSplit:D|" $KEYRING $MODE
 
-#order make and cancel
-assetClient tx orders make --from $ACCOUNT_1 --fromID $ACCOUNT_1_ID --toID $ACCOUNT_3_ID --makerSplit 1 --makerSplitID $ACCOUNT_1_ASSET_1 --exchangeRate="1" --takerSplitID $ACCOUNT_3_ASSET_1 -y $KEYRING $MODE
 sleep $SLEEP
-ACCOUNT_1_ACCOUNT_3_ORDER_1=test..$(echo $(assetClient q orders orders) | awk -v var=$ACCOUNT_1_ASSET_1 '{for(i=1;i<=NF;i++)if($i=="hashid:"){for(j=1;j<=i+40;j++)if($j==var){print $(i+2)}}}')
-assetClient tx orders cancel --from $ACCOUNT_1 --orderID $ACCOUNT_1_ACCOUNT_3_ORDER_1 -y  $KEYRING $MODE
-sleep $SLEEP
+ORDER_DEFINE_CLASSIFICATION_1=$(echo $(assetClient q classifications classifications) | awk -v var="$ORDER_DEFINE_IMMUTABLE_META_1_ID" '{for(i=1;i<=NF;i++)if($i==var)print $(i-10)"."$(i-7)}')
+assetClient tx orders make -y --from $ACCOUNT_1 --fromID $ACCOUNT_1_NUB_ID --classificationID $ORDER_DEFINE_CLASSIFICATION_1 --toID $ACCOUNT_1_NUB_ID \
+ --makerOwnableID "$ASSET_MINT_1" --makerOwnableSplit "0.000000000000000001" --takerOwnableID stake\
+ --immutableProperties "$ORDER_DEFINE_IMMUTABLE_1""stringValue" \
+ --immutableMetaProperties "$ORDER_DEFINE_IMMUTABLE_META_1" \
+ --mutableProperties "$ORDER_DEFINE_MUTABLE_1""1.01" \
+ --mutableMetaProperties "$ORDER_DEFINE_MUTABLE_META_1""123,takerID:I|,exchangeRate:D|1" \
+ $KEYRING $MODE
 
-assetClient tx metas reveal -y --from $ACCOUNT_1 --data $ACCOUNT_1_ID
-sleep $SLEEP
-assetClient tx metas reveal -y --from $ACCOUNT_1 --data 1.000000000000000000
-sleep $SLEEP
-assetClient tx metas reveal -y --from $ACCOUNT_1 --data $ACCOUNT_1_ASSET_1
-sleep $SLEEP
+ORDER_DEFINE_CLASSIFICATION_2=$(echo $(assetClient q classifications classifications) | awk -v var="$ORDER_DEFINE_IMMUTABLE_META_2_ID" '{for(i=1;i<=NF;i++)if($i==var)print $(i-10)"."$(i-7)}')
+assetClient tx orders make -y --from $ACCOUNT_2 --fromID $ACCOUNT_2_NUB_ID --classificationID $ORDER_DEFINE_CLASSIFICATION_2 --toID $ACCOUNT_2_NUB_ID \
+ --makerOwnableID "$ASSET_MINT_2" --makerOwnableSplit "0.000000000000000001" --takerOwnableID "$ASSET_MINT_1"\
+ --immutableProperties "$ORDER_DEFINE_IMMUTABLE_2""stringValue" \
+ --immutableMetaProperties "$ORDER_DEFINE_IMMUTABLE_META_2" \
+ --mutableProperties "$ORDER_DEFINE_MUTABLE_2""1.01" \
+ --mutableMetaProperties "$ORDER_DEFINE_MUTABLE_META_2""123,takerID:I|,exchangeRate:D|1" \
+ $KEYRING $MODE
 
-#order make and take private
-assetClient tx orders make --from $ACCOUNT_1 --fromID $ACCOUNT_1_ID --toID $ACCOUNT_3_ID --makerSplit 1 --makerSplitID $ACCOUNT_1_ASSET_1 --exchangeRate="1" --takerSplitID $ACCOUNT_3_ASSET_1 -y  $KEYRING $MODE
 sleep $SLEEP
-ACCOUNT_1_ACCOUNT_3_ORDER_1=test..$(echo $(assetClient q orders orders) | awk -v var=$ACCOUNT_1_ASSET_1 '{for(i=1;i<=NF;i++)if($i=="hashid:"){for(j=1;j<=i+40;j++)if($j==var){print $(i+2)}}}')
-assetClient tx orders take --from $ACCOUNT_3 --orderID $ACCOUNT_1_ACCOUNT_3_ORDER_1 --takerSplit 1 --fromID $ACCOUNT_3_ID -y  $KEYRING $MODE
+ORDER_MAKE_1_ID=$(echo $(assetClient q orders orders) | awk -v var="$ORDER_DEFINE_IMMUTABLE_META_1_ID" '{for(i=1;i<=NF;i++)if($i==var)print $(i-19)"*"$(i-16)"*"$(i-13)"*"$(i-10)"*"$(i-7)}')
+assetClient tx orders cancel -y --from $ACCOUNT_1 --fromID $ACCOUNT_1_NUB_ID --orderID "$ORDER_MAKE_1_ID" $KEYRING $MODE
+ORDER_MAKE_2_ID=$(echo $(assetClient q orders orders) | awk -v var="$ORDER_DEFINE_IMMUTABLE_META_2_ID" '{for(i=1;i<=NF;i++)if($i==var)print $(i-19)"*"$(i-16)"*"$(i-13)"*"$(i-10)"*"$(i-7)}')
 sleep $SLEEP
+assetClient tx orders take -y --from $ACCOUNT_1 --fromID $ACCOUNT_1_NUB_ID --orderID "$ORDER_MAKE_2_ID" --takerOwnableSplit "0.000000000000000001" $KEYRING $MODE
 
-#order make and take public
-assetClient tx orders make --from $ACCOUNT_1 --fromID $ACCOUNT_1_ID --makerSplit 1 --makerSplitID $ACCOUNT_1_ASSET_2 --exchangeRate="1" --takerSplitID $ACCOUNT_2_ASSET_1 -y $KEYRING $MODE
-sleep $SLEEP
-ACCOUNT_1_ORDER_2=test..$(echo $(assetClient q orders orders) | awk -v var=$ACCOUNT_1_ASSET_2 '{for(i=1;i<=NF;i++)if($i=="hashid:"){for(j=1;j<=i+40;j++)if($j==var){print $(i+2)}}}')
-assetClient tx orders take  --from $ACCOUNT_2 --orderID $ACCOUNT_1_ORDER_2 --takerSplit 1 --fromID $ACCOUNT_2_ID -y  $KEYRING $MODE
-sleep $SLEEP
-
-#splits send
-assetClient tx splits send -y --from $ACCOUNT_1 --fromID $ACCOUNT_1_ID --toID $ACCOUNT_3_ID --ownableID $ACCOUNT_3_ASSET_1 --split "1"  $KEYRING $MODE
-assetClient tx splits send -y --from $ACCOUNT_3 --fromID $ACCOUNT_3_ID --toID $ACCOUNT_1_ID --ownableID $ACCOUNT_1_ASSET_1 --split "1"  $KEYRING $MODE
-assetClient tx splits send -y --from $ACCOUNT_2 --fromID $ACCOUNT_2_ID --toID $ACCOUNT_1_ID --ownableID $ACCOUNT_1_ASSET_2 --split "1"  $KEYRING $MODE
-sleep $SLEEP
-assetClient tx splits send -y --from $ACCOUNT_1 --fromID $ACCOUNT_1_ID --toID $ACCOUNT_2_ID --ownableID $ACCOUNT_2_ASSET_1 --split "1"  $KEYRING $MODE
-sleep $SLEEP
-
-##wraping coins
-assetClient tx splits wrap -y --from $ACCOUNT_1 --fromID $ACCOUNT_1_ID --coins 50stake $KEYRING $MODE
-assetClient tx splits wrap -y --from $ACCOUNT_3 --fromID $ACCOUNT_3_ID --coins 50stake $KEYRING $MODE
-assetClient tx splits wrap -y --from $ACCOUNT_2 --fromID $ACCOUNT_2_ID --coins 50stake $KEYRING $MODE
-sleep $SLEEP
-assetClient tx splits unwrap -y --from $ACCOUNT_1 --fromID $ACCOUNT_1_ID --ownableID stake --split 1 $KEYRING $MODE
-assetClient tx splits unwrap -y --from $ACCOUNT_3 --fromID $ACCOUNT_3_ID --ownableID stake --split 1 $KEYRING $MODE
-assetClient tx splits unwrap -y --from $ACCOUNT_2 --fromID $ACCOUNT_2_ID --ownableID stake --split 1 $KEYRING $MODE
-sleep $SLEEP
-# orders maker asset taker split
-assetClient tx orders make --from $ACCOUNT_1 --fromID $ACCOUNT_1_ID --makerSplit 1 --makerSplitID $ACCOUNT_1_ASSET_1 --exchangeRate="2.25" --takerSplitID stake -y $KEYRING $MODE
-sleep $SLEEP
-ACCOUNT_1_ORDER_1=test..$(echo $(assetClient q orders orders) | awk -v var=$ACCOUNT_1_ASSET_1 '{for(i=1;i<=NF;i++)if($i=="hashid:"){for(j=1;j<=i+40;j++)if($j==var){print $(i+2)}}}') $KEYRING $MODE
-assetClient tx orders take --from $ACCOUNT_3 --fromID $ACCOUNT_3_ID --orderID $ACCOUNT_1_ORDER_1 --takerSplit 5 -y  $KEYRING $MODE
-sleep $SLEEP
-
-# orders maker split taker asset
-assetClient tx orders make --from $ACCOUNT_1 --fromID $ACCOUNT_1_ID --makerSplit 10 --makerSplitID stake --exchangeRate="0.1" --takerSplitID $ACCOUNT_1_ASSET_1 -y $KEYRING $MODE
-sleep $SLEEP
-ACCOUNT_1_ORDER_1=test..$(echo $(assetClient q orders orders) | awk -v var=$ACCOUNT_1_ASSET_1 '{for(i=1;i<=NF;i++)if($i=="hashid:"){for(j=1;j<=i+60;j++)if($j==var){print $(i+2)}}}')
-assetClient tx orders take --from $ACCOUNT_3 --fromID $ACCOUNT_3_ID --orderID $ACCOUNT_1_ORDER_1 --takerSplit 1 -y  $KEYRING $MODE
-sleep $SLEEP
-
-# orders maker split taker split
-assetClient tx orders make --from $ACCOUNT_1 --fromID $ACCOUNT_1_ID --makerSplit 10 --makerSplitID stake --exchangeRate="0.7" --takerSplitID stake -y $KEYRING $MODE
-sleep $SLEEP
-ACCOUNT_1_ORDER_2=test..$(echo $(assetClient q orders orders) | awk -v var=ACCOUNT_1_ID '{for(i=1;i<=NF;i++)if($i=="hashid:"){for(j=1;j<=i+40;j++)if($j==var){print $(i+2)}}}')
-assetClient tx orders take --from $ACCOUNT_2 --fromID $ACCOUNT_2_ID --orderID $ACCOUNT_1_ORDER_2 --takerSplit 9 -y  $KEYRING $MODE
-sleep $SLEEP
+#Maintainers deputize

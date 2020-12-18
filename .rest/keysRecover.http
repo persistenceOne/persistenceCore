@@ -1,4 +1,4 @@
-POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/keys/recover
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/keys/add
 Content-Type: application/json
 
 {
@@ -12,58 +12,4 @@ Content-Type: application/json
         client.global.set("ACCOUNT_1_ADDRESS", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
     });
 %}
-
-###
-POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/keys/recover
-Content-Type: application/json
-
-{
-  "name": "{{ACCOUNT_2_NAME}}",
-  "mnemonic":"{{ACCOUNT_2_MNEMONIC}}"
-}
-
-> {%
-    client.test("Request executed successfully", function() {
-        client.assert(response.status === 200, "Response status is not 200");
-        client.global.set("ACCOUNT_2_ADDRESS", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
-
-    });
-  %}
-
-###
-POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/keys/recover
-Content-Type: application/json
-
-{
-  "name": "{{ACCOUNT_3_NAME}}",
-  "mnemonic":"{{ACCOUNT_3_MNEMONIC}}"
-}
-
-> {%
-    client.test("Request executed successfully", function() {
-        client.assert(response.status === 200, "Response status is not 200");
-        client.global.set("ACCOUNT_3_ADDRESS", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
-    });
-
-
-  %}
-
-###
-POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/keys/recover
-Content-Type: application/json
-
-{
-  "name": "{{ACCOUNT_4_NAME}}",
-  "mnemonic":"{{ACCOUNT_4_MNEMONIC}}"
-}
-
-> {%
-    client.test("Request executed successfully", function() {
-      client.assert(response.status === 200, "Response status is not 200");
-      client.global.set("ACCOUNT_4_ADDRESS", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
-    });
-
-
-  %}
-
 ###
