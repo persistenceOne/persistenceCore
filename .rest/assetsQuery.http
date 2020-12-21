@@ -1,4 +1,5 @@
-GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/assets/assets/{{ACCOUNT_1_ASSET_ID}}
+GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/assets/assets/test.zZN_aVdLtKcK4556f5i6IwFEm7k=|9mK1kvuzV4pXiEvhC6Iy3oDPn-M=
+
 Content-Type: application/json
 
 > {%

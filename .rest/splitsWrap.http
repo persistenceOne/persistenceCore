@@ -1,15 +1,15 @@
-POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/xprt/splits/wrap
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/splits/wrap
 Content-Type: application/json
 
 {
- "type": "/xprt/splits/wrap/request",
+ "type": "/xprt/splits/github.com/persistenceOne/persistenceSDK/modules/splits/internal/transactions/wrap/transactionRequest",
  "value": {
     "baseReq": {
       "from": "{{ACCOUNT_1_ADDRESS}}",
       "chain_id": "{{CHAIN_ID}}"
     },
-    "fromID":"{{ACCOUNT_1_ID}}",
-    "coins": "100stake"
+    "fromID":"test.MgVN53MovlOXmVrFOb6Rk8efEho=|Hi4ALDaDs923R0w64cr02MffbNA=",
+    "coins":"100000stake"
   }
 }
 
@@ -31,16 +31,6 @@ Accept: application/json
 client.test("Response Code Check", function() {
      client.assert(!JSON.parse(JSON.stringify(response.body)).hasOwnProperty("code") , "Response Code is not 0");
  });
-%}
-
-###
-GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/splits/splits/-
-Accept: application/json
-
-> {%
-   client.test("Request executed successfully", function() {
-        client.assert(response.status === 200, "Response status is not 200");
-    });
 %}
 
 ###

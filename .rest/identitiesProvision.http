@@ -1,15 +1,15 @@
-POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/xprt/identities/provision
+POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/identities/provision
 Content-Type: application/json
 
 {
-"type": "/xprt/identities/provision/request",
+"type": "/xprt/identities/github.com/persistenceOne/persistenceSDK/modules/identities/internal/transactions/provision/transactionRequest",
  "value": {
     "baseReq": {
       "from": "{{ACCOUNT_1_ADDRESS}}",
       "chain_id": "{{CHAIN_ID}}"
     },
-    "to": "{{ACCOUNT_4_ADDRESS}}",
-    "identityID": "{{ACCOUNT_1_ID}}"
+    "identityID":"test.XTJ0wkxGAeMlEqfw3Dx9oR6ZlIE=|IWlaJpSQCEHboqlKYYyzLK_Sq2k=",
+    "to":"cosmos17e8msgelqjfjcusgln55zxkpr4vhfl73yhwzwp"
   }
 }
 

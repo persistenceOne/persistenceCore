@@ -1,0 +1,10 @@
+GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/orders/orders/test.Arm2oecLPTkvNNGwI7tO7rmoNK8=*test.zZN_aVdLtKcK4556f5i6IwFEm7k=|9mK1kvuzV4pXiEvhC6Iy3oDPn-M=*test.zZN_aVdLtKcK4556f5i6IwFEm7k=|3yJjxpvCGdIQK2XylzRMRJEQaFI=*test.XTJ0wkxGAeMlEqfw3Dx9oR6ZlIE=|TSoEUuNKNf_lmLlUFABkO4ziyKk=*h-mgcOVdM_puXrTLqfTT5ZWaeJk=
+Accept: application/json
+
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###

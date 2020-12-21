@@ -8,12 +8,11 @@ Content-Type: application/json
       "from": "{{ACCOUNT_1_ADDRESS}}",
       "chain_id": "{{CHAIN_ID}}"
     },
-    "fromID":"{{ACCOUNT_1_ID}}",
-    "assetID":"{{ACCOUNT_1_ASSET_ID}}",
-    "properties": "test1:test2",
-    "lock": "-1",
-    "burn": "-1"
-  }
+    "fromID":"test.MgVN53MovlOXmVrFOb6Rk8efEho=|Hi4ALDaDs923R0w64cr02MffbNA=",
+    "assetID":"test.zZN_aVdLtKcK4556f5i6IwFEm7k=|9mK1kvuzV4pXiEvhC6Iy3oDPn-M=",
+    "mutableMetaProperties":"MutableMetaPropertyName5:S|MutableMetaPropertyValueNew5,MutableMetaPropertyName6:S|MutableMetaPropertyValueNew6",
+    "mutableProperties":"MutablePropertyName7:S|MutablePropertyValue7,MutablePropertyName8:S|MutablePropertyValueNew8"
+ }
 }
 
 > {%
