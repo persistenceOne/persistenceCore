@@ -125,20 +125,20 @@ func ServeCmd(codec *amino.Codec) *cobra.Command {
 			viper.Set(flags.FlagGenerateOnly, false)
 			rs := lcd.NewRestServer(codec)
 			viper.Set(flags.FlagGenerateOnly, generateOnly)
-			kafkaBool := viper.GetBool(flagKafka)
+			kafka := viper.GetBool(flagKafka)
 			var kafkaState queuing.KafkaState
 			corsBool := viper.GetBool(flags.FlagUnsafeCORS)
-			if kafkaBool == true {
+			if kafka {
 				kafkaPort := viper.GetString(kafkaPorts)
 				kafkaPort = strings.Trim(kafkaPort, "\" ")
 				kafkaPorts := strings.Split(kafkaPort, " ")
 				kafkaState = queuing.NewKafkaState(kafkaPorts)
-				base.KafkaBool = kafkaBool
+				base.KafkaBool = kafka
 				base.KafkaState = kafkaState
 				rs.Mux.HandleFunc("/response/{ticketID}", queuing.QueryDB(codec, kafkaState.KafkaDB)).Methods("GET")
 			}
 			registerRoutes(rs)
-			if kafkaBool == true {
+			if kafka {
 				go func() {
 					for {
 						rest.KafkaConsumerMessages(rs.CliCtx, kafkaState)
