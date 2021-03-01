@@ -1,4 +1,4 @@
-POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/xprt/assets/mutate
+POST http://{{PERSISTENCE_CORE_CLIENT_HOST}}:{{PERSISTENCE_CORE_CLIENT_PORT}}/xprt/assets/mutate
 Content-Type: application/json
 
 {
@@ -23,7 +23,7 @@ Content-Type: application/json
 %}
 
 ###
-GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/txs/{{assetsMutateTxHash}}
+GET http://{{PERSISTENCE_CORE_CLIENT_HOST}}:{{PERSISTENCE_CORE_CLIENT_PORT}}/txs/{{assetsMutateTxHash}}
 Accept: application/json
 
 > {%

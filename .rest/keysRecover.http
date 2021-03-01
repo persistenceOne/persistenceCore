@@ -1,4 +1,4 @@
-POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/keys/add
+POST http://{{PERSISTENCE_CORE_CLIENT_HOST}}:{{PERSISTENCE_CORE_CLIENT_PORT}}/keys/add
 Content-Type: application/json
 
 {

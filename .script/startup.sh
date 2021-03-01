@@ -1,8 +1,8 @@
-assetNode start >~/.assetNode/log &
+persistenceNode start >~/.persistenceNode/log &
 sleep 10
-assetClient rest-server --chain-id test $1 $2>~/.assetClient/log &
+persistenceClient rest-server --chain-id test $1 $2>~/.persistenceClient/log &
 echo "
 Node and Client started up. For logs:
-tail -f ~/.assetNode/log
-tail -f ~/.assetClient/log
+tail -f ~/.persistenceNode/log
+tail -f ~/.persistenceClient/log
 "

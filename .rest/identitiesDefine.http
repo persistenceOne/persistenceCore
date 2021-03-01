@@ -1,4 +1,4 @@
-POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/identities/define
+POST http://{{PERSISTENCE_CORE_CLIENT_HOST}}:{{PERSISTENCE_CORE_CLIENT_PORT}}/identities/define
 Content-Type: application/json
 
 {
@@ -24,7 +24,7 @@ Content-Type: application/json
 %}
 
 ###
-GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/txs/{{identitiesDefineTxHash}}
+GET http://{{PERSISTENCE_CORE_CLIENT_HOST}}:{{PERSISTENCE_CORE_CLIENT_PORT}}/txs/{{identitiesDefineTxHash}}
 Accept: application/json
 
 > {%

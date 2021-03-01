@@ -1,4 +1,4 @@
-POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/assets/burn
+POST http://{{PERSISTENCE_CORE_CLIENT_HOST}}:{{PERSISTENCE_CORE_CLIENT_PORT}}/assets/burn
 Content-Type: application/json
 
 {
@@ -21,7 +21,7 @@ Content-Type: application/json
 %}
 
 ###
-GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/txs/{{assetsBurnTxHash}}
+GET http://{{PERSISTENCE_CORE_CLIENT_HOST}}:{{PERSISTENCE_CORE_CLIENT_PORT}}/txs/{{assetsBurnTxHash}}
 Accept: application/json
 
 > {%

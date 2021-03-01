@@ -1,5 +1,5 @@
 /*
- Copyright [2019] - [2020], PERSISTENCE TECHNOLOGIES PTE. LTD. and the assetMantle contributors
+ Copyright [2019] - [2020], PERSISTENCE TECHNOLOGIES PTE. LTD. and the persistenceCore contributors
  SPDX-License-Identifier: Apache-2.0
 */
 
@@ -8,7 +8,7 @@ package initialize
 import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/persistenceOne/assetMantle/application"
+	"github.com/persistenceOne/persistenceCore/application"
 	"github.com/spf13/viper"
 	"io"
 	"os"

@@ -1,4 +1,4 @@
-POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/xprt/orders/make
+POST http://{{PERSISTENCE_CORE_CLIENT_HOST}}:{{PERSISTENCE_CORE_CLIENT_PORT}}/xprt/orders/make
 Content-Type: application/json
 
 {
@@ -30,7 +30,7 @@ Content-Type: application/json
 %}
 
 ###
-GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/txs/{{ordersMakeTxHash}}
+GET http://{{PERSISTENCE_CORE_CLIENT_HOST}}:{{PERSISTENCE_CORE_CLIENT_PORT}}/txs/{{ordersMakeTxHash}}
 Accept: application/json
 
 > {%

@@ -1,5 +1,5 @@
 /*
- Copyright [2019] - [2020], PERSISTENCE TECHNOLOGIES PTE. LTD. and the assetMantle contributors
+ Copyright [2019] - [2020], PERSISTENCE TECHNOLOGIES PTE. LTD. and the persistenceCore contributors
  SPDX-License-Identifier: Apache-2.0
 */
 
@@ -11,7 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/persistenceOne/assetMantle/application"
+	"github.com/persistenceOne/persistenceCore/application"
 	"io"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -29,7 +29,7 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 
-	"github.com/persistenceOne/assetMantle/application/initialize"
+	"github.com/persistenceOne/persistenceCore/application/initialize"
 )
 
 const flagInvalidCheckPeriod = "invalid-check-period"
@@ -49,7 +49,7 @@ func main() {
 	cobra.EnableCommandSorting = false
 
 	rootCommand := &cobra.Command{
-		Use:               "assetNode",
+		Use:               "persistenceNode",
 		Short:             "Persistence Hub Node Daemon (server)",
 		PersistentPreRunE: server.PersistentPreRunEFn(serverContext),
 	}

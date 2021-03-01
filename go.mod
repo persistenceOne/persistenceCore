@@ -1,4 +1,4 @@
-module github.com/persistenceOne/assetMantle
+module github.com/persistenceOne/persistenceCore
 
 go 1.14
 

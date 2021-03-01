@@ -1,12 +1,12 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="splits query" type="GoApplicationRunConfiguration" factoryName="Go Application" folderName="splits">
-    <module name="assetMantle" />
+    <module name="persistenceCore" />
     <working_directory value="$PROJECT_DIR$/" />
     <go_parameters value="-i" />
     <parameters value="query splits splits --chain-id test --splitID test.cGn3HMW8M3t5gMDv-wXa9sseHnA=|cXbKF6hGMB0ei8unCEjb1z_s8r4=*test.2T141SVYvYOF3nT_sylhNLoYG2w=|uhFRF8Enx5N5jzGL05J_FHVxVzk=" />
     <kind value="FILE" />
     <filePath value="$PROJECT_DIR$/client/main.go" />
-    <package value="github.com/persistenceOne/assetMantle" />
+    <package value="github.com/persistenceOne/persistenceCore" />
     <directory value="$PROJECT_DIR$/" />
     <method v="2" />
   </configuration>

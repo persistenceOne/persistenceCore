@@ -1,4 +1,4 @@
-POST http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/identities/unprovision
+POST http://{{PERSISTENCE_CORE_CLIENT_HOST}}:{{PERSISTENCE_CORE_CLIENT_PORT}}/identities/unprovision
 Content-Type: application/json
 
 {
@@ -21,7 +21,7 @@ Content-Type: application/json
 %}
 
 ###
-GET http://{{ASSET_MANTLE_CLIENT_HOST}}:{{ASSET_MANTLE_CLIENT_PORT}}/txs/{{identitiesUnprovisionTxHash}}
+GET http://{{PERSISTENCE_CORE_CLIENT_HOST}}:{{PERSISTENCE_CORE_CLIENT_PORT}}/txs/{{identitiesUnprovisionTxHash}}
 Accept: application/json
 
 > {%

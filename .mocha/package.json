@@ -1,7 +1,7 @@
 {
-  "name": "assetmantle",
+  "name": "persistencecore",
   "version": "1.0.0",
-  "description": "Test Cases for Asset Mantle",
+  "description": "Test Cases for Persistence Core",
   "main": "src/index.js",
   "scripts": {
     "preinstall": "npx npm-force-resolutions",
@@ -32,6 +32,7 @@
     "chai-http": "^4.3.0",
     "glob": "^7.1.6",
     "node-fetch": "^2.6.1",
+    "package.json": "^2.0.1",
     "promise": "^8.1.0",
     "request": "^2.88.2",
     "sleep": "^6.3.0",

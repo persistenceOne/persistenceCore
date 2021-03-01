@@ -1,14 +1,14 @@
 make all
 
-rm -rf ~/.assetNode
-rm -rf ~/.assetClient
+rm -rf ~/.persistenceNode
+rm -rf ~/.persistenceClient
 
-mkdir ~/.assetNode
-mkdir ~/.assetClient
+mkdir ~/.persistenceNode
+mkdir ~/.persistenceClient
 
-assetNode init --chain-id test test
-assetClient keys add test --recover<<<"y
+persistenceNode init --chain-id test test
+persistenceClient keys add test --recover<<<"y
 wage thunder live sense resemble foil apple course spin horse glass mansion midnight laundry acoustic rhythm loan scale talent push green direct brick please"
-assetNode add-genesis-account test 100000000000000stake
-assetNode gentx --name test --amount 1000000000stake
-assetNode collect-gentxs
+persistenceNode add-genesis-account test 100000000000000stake
+persistenceNode gentx --name test --amount 1000000000stake
+persistenceNode collect-gentxs

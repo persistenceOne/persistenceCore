@@ -1,12 +1,12 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="genesis gentx" type="GoApplicationRunConfiguration" factoryName="Go Application" folderName="genesis">
-    <module name="assetMantle" />
+    <module name="persistenceCore" />
     <working_directory value="$PROJECT_DIR$/" />
     <go_parameters value="-i" />
     <parameters value="gentx --name test --amount 1000000000stake" />
     <kind value="FILE" />
     <filePath value="$PROJECT_DIR$/node/main.go" />
-    <package value="github.com/persistenceOne/assetMantle" />
+    <package value="github.com/persistenceOne/persistenceCore" />
     <directory value="$PROJECT_DIR$/" />
     <method v="2" />
   </configuration>

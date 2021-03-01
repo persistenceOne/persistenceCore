@@ -19,12 +19,12 @@ For more information, visit https://www.digitalocean.com/community/tutorials/how
 ## Installation
 
 ```
-cd assetMantle/.mocha
+cd persistenceCore/.mocha
 npm install
 ```
 ## Testing
 
-To test, go to the  assetMantle/.mocha folder and type :
+To test, go to the  persistenceCore/.mocha folder and type :
 
 ```
 ./.script/resetChainAndRunMocha.sh
@@ -48,9 +48,9 @@ For more information, visit https://autom8able.com.
  
 ## Report
 
-[mochawesome] Report JSON saved to assetMantle/.mocha/mochawesome-report/mochawesome.json
+[mochawesome] Report JSON saved to persistenceCore/.mocha/mochawesome-report/mochawesome.json
 
-[mochawesome] Report HTML saved to assetMantle/.mocha/mochawesome-report/mochawesome.html
+[mochawesome] Report HTML saved to persistenceCore/.mocha/mochawesome-report/mochawesome.html
 
 
 * * *

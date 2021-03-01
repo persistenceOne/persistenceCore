@@ -1,12 +1,12 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="start client" type="GoApplicationRunConfiguration" factoryName="Go Application" folderName="start">
-    <module name="assetMantle" />
+    <module name="persistenceCore" />
     <working_directory value="$PROJECT_DIR$/" />
     <go_parameters value="-i" />
     <parameters value="rest-server --chain-id test" />
     <kind value="FILE" />
     <filePath value="$PROJECT_DIR$/client/main.go" />
-    <package value="github.com/persistenceOne/assetMantle" />
+    <package value="github.com/persistenceOne/persistenceCore" />
     <directory value="$PROJECT_DIR$/" />
     <method v="2" />
   </configuration>

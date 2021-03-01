@@ -17,4 +17,4 @@ jobs:
       - name: Run JMeter Tests
         uses: rbhadti94/apache-jmeter-action@v0.2.0
         with:
-          testFilePath: .jmeter/assetMantleTestCases.jmx
+          testFilePath: .jmeter/persistenceSDKTestCases.jmx

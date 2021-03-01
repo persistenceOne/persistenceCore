@@ -1,5 +1,5 @@
 /*
- Copyright [2019] - [2020], PERSISTENCE TECHNOLOGIES PTE. LTD. and the assetMantle contributors
+ Copyright [2019] - [2020], PERSISTENCE TECHNOLOGIES PTE. LTD. and the persistenceCore contributors
  SPDX-License-Identifier: Apache-2.0
 */
 
@@ -9,7 +9,7 @@ import (
 	"fmt"
 	//"github.com/CosmWasm/wasmd/app"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/persistenceOne/assetMantle/application"
+	"github.com/persistenceOne/persistenceCore/application"
 	"github.com/persistenceOne/persistenceSDK/schema/helpers/base"
 	keysAdd "github.com/persistenceOne/persistenceSDK/utilities/rest/keys/add"
 	"github.com/persistenceOne/persistenceSDK/utilities/rest/queuing"
