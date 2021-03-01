@@ -1,0 +1,44 @@
+{
+  "name": "persistencecore",
+  "version": "1.0.0",
+  "description": "Test Cases for Persistence Core",
+  "main": "src/index.js",
+  "scripts": {
+    "preinstall": "npx npm-force-resolutions",
+    "test": "mocha test/tests.js --timeout 100000",
+    "test:awesome": "mocha --reporter mochawesome || true",
+    "open:report": "open mochawesome-report/mochawesome.html"
+  },
+  "mochaOpts": {
+    "enableTimeouts": false
+  },
+  "keywords": [],
+  "author": "PersistenceOne",
+  "license": "PersistenceOne",
+  "devDependencies": {
+    "have": "^0.4.0",
+    "mocha": "^7.2.0",
+    "mochawesome": "^6.1.1",
+    "should": "^13.2.3",
+    "yargs-parser": "^20.2.0"
+  },
+  "dependencies": {
+    "@tendermint/sig": "^0.6.0",
+    "async": "^3.2.0",
+    "async-retry": "^1.3.1",
+    "bip32": "^2.0.6",
+    "bip39": "^3.0.2",
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
+    "glob": "^7.1.6",
+    "node-fetch": "^2.6.1",
+    "package.json": "^2.0.1",
+    "promise": "^8.1.0",
+    "request": "^2.88.2",
+    "sleep": "^6.3.0",
+    "supertest": "^4.0.2"
+  },
+  "resolutions": {
+    "yargs-parser": "^18.1.3"
+  }
+}

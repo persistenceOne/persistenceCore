@@ -1,0 +1,90 @@
+POST http://{{PERSISTENCE_CORE_CLIENT_HOST}}:{{PERSISTENCE_CORE_CLIENT_PORT}}/bank/accounts/cosmos1w7gv22gf6xsce3umdayp7qdhq0swqccaxcnt93/transfers
+Content-Type: application/json
+
+{
+  "base_req": {
+    "from": "{{TEST_ACCOUNT_ADDRESS}}",
+    "chain_id": "{{CHAIN_ID}}"
+  },
+  	"amount":[{"denom":"stake","amount":"1000"}]
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+  %}
+
+###
+POST http://{{PERSISTENCE_CORE_CLIENT_HOST}}:{{PERSISTENCE_CORE_CLIENT_PORT}}/signTx
+Content-Type: application/json
+
+{
+  "baseReq":{
+    "from":"{{TEST_ACCOUNT_ADDRESS}}"
+  },
+  "type": "cosmos-sdk/StdTx",
+  "value": {
+    "msg": [
+      {
+        "type": "cosmos-sdk/MsgSend",
+        "value": {
+          "from_address": "{{TEST_ACCOUNT_ADDRESS}}",
+          "to_address": "cosmos1w7gv22gf6xsce3umdayp7qdhq0swqccaxcnt93",
+          "amount": [
+            {
+              "denom": "stake",
+              "amount": "1000"
+            }
+          ]
+        }
+      }
+    ],
+    "fee": {
+      "amount": [],
+      "gas": "200000"
+    },
+    "signatures": null,
+    "memo": ""
+  }
+}
+
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.global.set("SIGNED_TX", JSON.stringify(JSON.parse(JSON.stringify(response.body)).result.tx))
+    });
+
+  %}
+
+###
+POST http://{{PERSISTENCE_CORE_CLIENT_HOST}}:{{PERSISTENCE_CORE_CLIENT_PORT}}/txs
+Content-Type: application/json
+
+{
+  "tx":{{SIGNED_TX}},
+  "mode": "block"
+}
+
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    client.global.set("sendCoinTxHash", JSON.parse(JSON.stringify(response.body)).txhash)
+
+  %}
+
+###
+GET http://{{PERSISTENCE_CORE_CLIENT_HOST}}:{{PERSISTENCE_CORE_CLIENT_PORT}}/txs/{{sendCoinTxHash}}
+Accept: application/json
+
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+   client.test("Response Code Check", function() {
+        client.assert(!JSON.parse(JSON.stringify(response.body)).hasOwnProperty("code") , "Response Code is not 0");
+    });
+%}
+
+###

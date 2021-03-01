@@ -1,0 +1,14 @@
+POST http://{{PERSISTENCE_CORE_CLIENT_HOST}}:{{PERSISTENCE_CORE_CLIENT_PORT}}/keys/add
+Content-Type: application/json
+
+{
+  "name": "{{ACCOUNT_1_NAME}}"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.global.set("ACCOUNT_1_ADDRESS", JSON.parse(JSON.stringify(response.body)).result.KeyOutput.address);
+    });
+  %}
+###

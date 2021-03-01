@@ -1,3 +1,8 @@
+/*
+ Copyright [2019] - [2021], PERSISTENCE TECHNOLOGIES PTE. LTD. and the persistenceCore contributors
+ SPDX-License-Identifier: Apache-2.0
+*/
+
 package initialize
 
 import (
@@ -9,7 +14,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func InitializeCommand(
+func Command(
 	serverContext *server.Context,
 	codec *codec.Codec,
 	moduleBasicManager module.BasicManager,

@@ -1,0 +1,10 @@
+GET http://{{PERSISTENCE_CORE_CLIENT_HOST}}:{{PERSISTENCE_CORE_CLIENT_PORT}}/metas/metas/QL0AFWMIX8NRZTKeof9cXsvbvu8=
+Accept: application/json
+
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###

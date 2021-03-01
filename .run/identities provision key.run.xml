@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="identities provision key" type="GoApplicationRunConfiguration" factoryName="Go Application" folderName="identities">
+    <module name="persistenceCore" />
+    <working_directory value="$PROJECT_DIR$/" />
+    <go_parameters value="-i" />
+    <parameters value="tx identities provision -y --chain-id test --from test --to cosmos18mwkvetqvsv72y3vm85vfkkffnl3wcd6ejzavs --identityID test.2T141SVYvYOF3nT_sylhNLoYG2w=|uhFRF8Enx5N5jzGL05J_FHVxVzk=" />
+    <kind value="FILE" />
+    <filePath value="$PROJECT_DIR$/client/main.go" />
+    <package value="github.com/persistenceOne/persistenceCore" />
+    <directory value="$PROJECT_DIR$/" />
+    <method v="2" />
+  </configuration>
+</component>

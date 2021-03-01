@@ -1,12 +1,16 @@
+/*
+ Copyright [2019] - [2021], PERSISTENCE TECHNOLOGIES PTE. LTD. and the persistenceCore contributors
+ SPDX-License-Identifier: Apache-2.0
+*/
+
 package main
 
 import (
 	"encoding/json"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
-	codecstd "github.com/cosmos/cosmos-sdk/std"
-	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/cosmos/cosmos-sdk/version"
+	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/persistenceOne/persistenceCore/application"
 	"io"
 
@@ -36,10 +40,6 @@ func main() {
 
 	serverContext := server.NewDefaultContext()
 
-	Codec := application.MakeCodec()
-	interfaceRegistry := cdctypes.NewInterfaceRegistry()
-	appCodec := codecstd.NewAppCodec(Codec, interfaceRegistry)
-
 	configuration := sdkTypes.GetConfig()
 	configuration.SetBech32PrefixForAccount(sdkTypes.Bech32PrefixAccAddr, sdkTypes.Bech32PrefixAccPub)
 	configuration.SetBech32PrefixForValidator(sdkTypes.Bech32PrefixValAddr, sdkTypes.Bech32PrefixValPub)
@@ -49,52 +49,51 @@ func main() {
 	cobra.EnableCommandSorting = false
 
 	rootCommand := &cobra.Command{
-		Use:               "coreNode",
+		Use:               "persistenceNode",
 		Short:             "Persistence Hub Node Daemon (server)",
 		PersistentPreRunE: server.PersistentPreRunEFn(serverContext),
 	}
 
-	rootCommand.AddCommand(initialize.InitializeCommand(
+	rootCommand.AddCommand(initialize.Command(
 		serverContext,
-		Codec,
+		application.Codec,
 		application.ModuleBasics,
 		application.DefaultNodeHome,
 	))
 	rootCommand.AddCommand(initialize.CollectGenesisTransactionsCommand(
 		serverContext,
-		Codec,
-		bank.GenesisBalancesIterator{},
+		application.Codec,
+		auth.GenesisAccountIterator{},
 		application.DefaultNodeHome,
 	))
 	rootCommand.AddCommand(initialize.MigrateGenesisCommand(
 		serverContext,
-		Codec,
+		application.Codec,
 	))
 	rootCommand.AddCommand(initialize.GenesisTransactionCommand(
 		serverContext,
-		Codec,
+		application.Codec,
 		application.ModuleBasics,
 		staking.AppModuleBasic{},
-		bank.GenesisBalancesIterator{},
+		auth.GenesisAccountIterator{},
 		application.DefaultNodeHome,
 		application.DefaultClientHome,
 	))
 	rootCommand.AddCommand(initialize.ValidateGenesisCommand(
 		serverContext,
-		Codec,
+		application.Codec,
 		application.ModuleBasics,
 	))
 	rootCommand.AddCommand(initialize.AddGenesisAccountCommand(
 		serverContext,
-		Codec,
-		appCodec,
+		application.Codec,
 		application.DefaultNodeHome,
 		application.DefaultClientHome,
 	))
 	rootCommand.AddCommand(flags.NewCompletionCmd(rootCommand, true))
 	rootCommand.AddCommand(initialize.ReplayTransactionsCommand())
-	rootCommand.AddCommand(debug.Cmd(Codec))
-
+	rootCommand.AddCommand(debug.Cmd(application.Codec))
+	rootCommand.AddCommand(version.Cmd)
 	rootCommand.PersistentFlags().UintVar(
 		&invalidCheckPeriod,
 		flagInvalidCheckPeriod,
@@ -117,7 +116,11 @@ func main() {
 		for _, h := range viper.GetIntSlice(server.FlagUnsafeSkipUpgrades) {
 			skipUpgradeHeights[int64(h)] = true
 		}
-		return application.NewPersistenceHubApplication(
+		pruningOpts, err := server.GetPruningOptionsFromFlags()
+		if err != nil {
+			panic(err)
+		}
+		return application.NewApplication(
 			logger,
 			db,
 			traceStore,
@@ -125,7 +128,7 @@ func main() {
 			invalidCheckPeriod,
 			skipUpgradeHeights,
 			viper.GetString(flags.FlagHome),
-			baseapp.SetPruning(store.NewPruningOptionsFromString(viper.GetString("pruning"))),
+			baseapp.SetPruning(pruningOpts),
 			baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)),
 			baseapp.SetHaltHeight(viper.GetUint64(server.FlagHaltHeight)),
 			baseapp.SetHaltTime(viper.GetUint64(server.FlagHaltTime)),
@@ -140,10 +143,10 @@ func main() {
 		height int64,
 		forZeroHeight bool,
 		jailWhiteList []string,
-	) (json.RawMessage, []tendermintTypes.GenesisValidator, *tendermintABCITypes.ConsensusParams, error) {
+	) (json.RawMessage, []tendermintTypes.GenesisValidator, error) {
 
 		if height != -1 {
-			genesisApplication := application.NewPersistenceHubApplication(
+			genesisApplication := application.NewApplication(
 				logger,
 				db,
 				traceStore,
@@ -154,12 +157,12 @@ func main() {
 			)
 			err := genesisApplication.LoadHeight(height)
 			if err != nil {
-				return nil, nil, nil, err
+				return nil, nil, err
 			}
 			return genesisApplication.ExportApplicationStateAndValidators(forZeroHeight, jailWhiteList)
 		}
 		//else
-		genesisApplication := application.NewPersistenceHubApplication(
+		genesisApplication := application.NewApplication(
 			logger,
 			db,
 			traceStore,
@@ -174,7 +177,7 @@ func main() {
 
 	server.AddCommands(
 		serverContext,
-		Codec,
+		application.Codec,
 		rootCommand,
 		appCreator,
 		appExporter,

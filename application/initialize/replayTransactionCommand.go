@@ -1,8 +1,15 @@
+/*
+ Copyright [2019] - [2021], PERSISTENCE TECHNOLOGIES PTE. LTD. and the persistenceCore contributors
+ SPDX-License-Identifier: Apache-2.0
+*/
+
 package initialize
 
 import (
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/persistenceOne/persistenceCore/application"
+	"github.com/spf13/viper"
 	"io"
 	"os"
 	"path/filepath"
@@ -36,8 +43,6 @@ func ReplayTransactionsCommand() *cobra.Command {
 func replayTransactions(rootDir string) error {
 
 	if false {
-		// Copy the rootDir to a new directory, to preserve the old one.
-		fmt.Fprintln(os.Stderr, "Copying rootdir over")
 		oldRootDir := rootDir
 		rootDir = oldRootDir + "_replay"
 		if tendermintOS.FileExists(rootDir) {
@@ -52,24 +57,16 @@ func replayTransactions(rootDir string) error {
 	dataDir := filepath.Join(rootDir, "data")
 	ctx := server.NewDefaultContext()
 
-	// App DB
-	// appDB := dbm.NewMemDB()
-	fmt.Fprintln(os.Stderr, "Opening app database")
 	appDB, err := sdk.NewLevelDB("application", dataDir)
 	if err != nil {
 		return err
 	}
 
-	// TM DB
-	// tmDB := dbm.NewMemDB()
-	fmt.Fprintln(os.Stderr, "Opening tendermint state database")
 	tmDB, err := sdk.NewLevelDB("state", dataDir)
 	if err != nil {
 		return err
 	}
 
-	// Blockchain DB
-	fmt.Fprintln(os.Stderr, "Opening blockstore database")
 	bcDB, err := sdk.NewLevelDB("blockstore", dataDir)
 	if err != nil {
 		return err
@@ -87,16 +84,14 @@ func replayTransactions(rootDir string) error {
 		return err
 	}
 
-	// Application
-	fmt.Fprintln(os.Stderr, "Creating application")
-	myapp := application.NewPersistenceHubApplication(
+	myapp := application.NewApplication(
 		ctx.Logger,
 		appDB,
 		traceStoreWriter,
 		true,
 		uint(1),
 		map[int64]bool{},
-		"",
+		viper.GetString(flags.FlagHome),
 	)
 
 	// Genesis
@@ -123,8 +118,6 @@ func replayTransactions(rootDir string) error {
 
 	state := tmsm.LoadState(tmDB)
 	if state.LastBlockHeight == 0 {
-		// Send InitChain msg
-		fmt.Fprintln(os.Stderr, "Sending InitChain msg")
 		validators := tm.TM2PB.ValidatorUpdates(genState.Validators)
 		csParams := tm.TM2PB.ConsensusParams(genDoc.ConsensusParams)
 		req := abci.RequestInitChain{
@@ -150,24 +143,16 @@ func replayTransactions(rootDir string) error {
 		state.NextValidators = newValidators
 	}
 
-	// Create executor
-	fmt.Fprintln(os.Stderr, "Creating block executor")
 	blockExec := tmsm.NewBlockExecutor(tmDB, ctx.Logger, proxyApp.Consensus(), nil, tmsm.MockEvidencePool{})
 
-	// Create block store
-	fmt.Fprintln(os.Stderr, "Creating block store")
 	blockStore := tmstore.NewBlockStore(bcDB)
 
 	tz := []time.Duration{0, 0, 0}
 	for i := int(state.LastBlockHeight) + 1; ; i++ {
-		fmt.Fprintln(os.Stderr, "Running block ", i)
 		t1 := time.Now()
 
-		// Apply block
-		fmt.Printf("loading and applying block %d\n", i)
 		blockmeta := blockStore.LoadBlockMeta(int64(i))
 		if blockmeta == nil {
-			fmt.Printf("Couldn't find block meta %d... done?\n", i)
 			return nil
 		}
 		block := blockStore.LoadBlock(int64(i))
@@ -186,7 +171,5 @@ func replayTransactions(rootDir string) error {
 		tz[0] += t2.Sub(t1)
 		tz[1] += t3.Sub(t2)
 
-		fmt.Fprintf(os.Stderr, "new app hash: %X\n", state.AppHash)
-		fmt.Fprintln(os.Stderr, tz)
 	}
 }

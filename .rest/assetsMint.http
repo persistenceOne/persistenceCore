@@ -1,0 +1,41 @@
+POST http://{{PERSISTENCE_CORE_CLIENT_HOST}}:{{PERSISTENCE_CORE_CLIENT_PORT}}/assets/mint
+Content-Type: application/json
+
+{
+ "type": "/xprt/assets/github.com/persistenceOne/persistenceSDK/modules/assets/internal/transactions/mint/transactionRequest",
+ "value": {
+    "baseReq": {
+      "from": "{{ACCOUNT_1_ADDRESS}}",
+      "chain_id": "{{CHAIN_ID}}"
+    },
+    "fromID":"test.MgVN53MovlOXmVrFOb6Rk8efEho=|Hi4ALDaDs923R0w64cr02MffbNA=",
+    "toID":"test.MgVN53MovlOXmVrFOb6Rk8efEho=|Hi4ALDaDs923R0w64cr02MffbNA=",
+    "classificationID":"test.zZN_aVdLtKcK4556f5i6IwFEm7k=",
+    "immutableMetaProperties":"ImmutableMetaPropertyName1:S|ImmutableMetaPropertyValue1,ImmutableMetaPropertyName2:I|ImmutableMetaPropertyValue2",
+    "immutableProperties":"ImmutablePropertyName3:H|100,ImmutablePropertyName4:D|0.1010",
+    "mutableMetaProperties":"MutableMetaPropertyName5:S|MutableMetaPropertyValue5,MutableMetaPropertyName6:S|MutableMetaPropertyValue6,burn:H|10,lock:H|20",
+    "mutableProperties":"MutablePropertyName7:S|MutablePropertyValue7,MutablePropertyName8:S|MutablePropertyValue8"
+  }
+}
+
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+   client.global.set("assetsMintTxHash", JSON.parse(JSON.stringify(response.body)).txhash)
+%}
+
+###
+GET http://{{PERSISTENCE_CORE_CLIENT_HOST}}:{{PERSISTENCE_CORE_CLIENT_PORT}}/txs/{{assetsMintTxHash}}
+Accept: application/json
+
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+client.test("Response Code Check", function() {
+     client.assert(!JSON.parse(JSON.stringify(response.body)).hasOwnProperty("code") , "Response Code is not 0");
+ });
+%}
+
+###

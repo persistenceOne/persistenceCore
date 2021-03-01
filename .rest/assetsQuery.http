@@ -1,0 +1,11 @@
+GET http://{{PERSISTENCE_CORE_CLIENT_HOST}}:{{PERSISTENCE_CORE_CLIENT_PORT}}/assets/assets/test.zZN_aVdLtKcK4556f5i6IwFEm7k=|9mK1kvuzV4pXiEvhC6Iy3oDPn-M=
+
+Content-Type: application/json
+
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###

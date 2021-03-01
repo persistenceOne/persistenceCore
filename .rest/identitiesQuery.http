@@ -1,0 +1,9 @@
+GET http://{{PERSISTENCE_CORE_CLIENT_HOST}}:{{PERSISTENCE_CORE_CLIENT_PORT}}/identities/identities/test.XTJ0wkxGAeMlEqfw3Dx9oR6ZlIE=|IWlaJpSQCEHboqlKYYyzLK_Sq2k=
+Accept: application/json
+
+> {%
+   client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+###
