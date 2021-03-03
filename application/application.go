@@ -72,11 +72,3 @@ var ModuleBasics = module.NewBasicManager(
 	orders.Prototype(),
 	splits.Prototype(),
 )
-
-//var NewApplication = base.NewApplication().Initialize(
-//	Name,
-//	Codec,
-//	wasm.EnableAllProposals,
-//	ModuleAccountPermissions,
-//	TokenReceiveAllowedModules,
-//)
