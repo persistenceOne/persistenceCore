@@ -7,6 +7,7 @@ package initialize
 
 import (
 	"fmt"
+	"github.com/CosmWasm/wasmd/x/wasm"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/persistenceOne/persistenceCore/application"
 	"github.com/spf13/viper"
@@ -84,7 +85,12 @@ func replayTransactions(rootDir string) error {
 		return err
 	}
 
-	myapp := application.NewApplication(
+	myapp := application.NewApplication().Initialize(
+		application.Name,
+		application.Codec,
+		wasm.EnableAllProposals,
+		application.ModuleAccountPermissions,
+		application.TokenReceiveAllowedModules,
 		ctx.Logger,
 		appDB,
 		traceStoreWriter,

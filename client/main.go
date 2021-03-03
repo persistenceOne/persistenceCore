@@ -14,7 +14,7 @@ import (
 	keysAdd "github.com/persistenceOne/persistenceSDK/utilities/rest/keys/add"
 	"github.com/persistenceOne/persistenceSDK/utilities/rest/queuing"
 	"github.com/persistenceOne/persistenceSDK/utilities/rest/queuing/rest"
-	"github.com/persistenceOne/persistenceSDK/utilities/rest/signTx"
+	"github.com/persistenceOne/persistenceSDK/utilities/rest/sign"
 	"os"
 	"path"
 	"strings"
@@ -42,11 +42,13 @@ import (
 func main() {
 	cobra.EnableCommandSorting = false
 
-	config := sdkTypes.GetConfig()
-	config.SetBech32PrefixForAccount(sdkTypes.Bech32PrefixAccAddr, sdkTypes.Bech32PrefixAccPub)
-	config.SetBech32PrefixForValidator(sdkTypes.Bech32PrefixValAddr, sdkTypes.Bech32PrefixValPub)
-	config.SetBech32PrefixForConsensusNode(sdkTypes.Bech32PrefixConsAddr, sdkTypes.Bech32PrefixConsPub)
-	config.Seal()
+	configuration := sdkTypes.GetConfig()
+	configuration.SetBech32PrefixForAccount(application.Bech32PrefixAccAddr, application.Bech32PrefixAccPub)
+	configuration.SetBech32PrefixForValidator(application.Bech32PrefixValAddr, application.Bech32PrefixValPub)
+	configuration.SetBech32PrefixForConsensusNode(application.Bech32PrefixConsAddr, application.Bech32PrefixConsPub)
+	configuration.SetCoinType(application.CoinType)
+	configuration.SetFullFundraiserPath(application.FullFundraiserPath)
+	configuration.Seal()
 
 	rootCommand := &cobra.Command{
 		Use:   "client",
@@ -86,7 +88,7 @@ func registerRoutes(restServer *lcd.RestServer) {
 	authREST.RegisterTxRoutes(restServer.CliCtx, restServer.Mux)
 	application.ModuleBasics.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
 	keysAdd.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
-	signTx.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
+	sign.RegisterRESTRoutes(restServer.CliCtx, restServer.Mux)
 }
 
 func queryCommand(codec *amino.Codec) *cobra.Command {
