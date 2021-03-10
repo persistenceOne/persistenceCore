@@ -7,6 +7,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/CosmWasm/wasmd/x/wasm"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/version"
@@ -41,9 +42,11 @@ func main() {
 	serverContext := server.NewDefaultContext()
 
 	configuration := sdkTypes.GetConfig()
-	configuration.SetBech32PrefixForAccount(sdkTypes.Bech32PrefixAccAddr, sdkTypes.Bech32PrefixAccPub)
-	configuration.SetBech32PrefixForValidator(sdkTypes.Bech32PrefixValAddr, sdkTypes.Bech32PrefixValPub)
-	configuration.SetBech32PrefixForConsensusNode(sdkTypes.Bech32PrefixConsAddr, sdkTypes.Bech32PrefixConsPub)
+	configuration.SetBech32PrefixForAccount(application.Bech32PrefixAccAddr, application.Bech32PrefixAccPub)
+	configuration.SetBech32PrefixForValidator(application.Bech32PrefixValAddr, application.Bech32PrefixValPub)
+	configuration.SetBech32PrefixForConsensusNode(application.Bech32PrefixConsAddr, application.Bech32PrefixConsPub)
+	configuration.SetCoinType(application.CoinType)
+	configuration.SetFullFundraiserPath(application.FullFundraiserPath)
 	configuration.Seal()
 
 	cobra.EnableCommandSorting = false
@@ -120,7 +123,12 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		return application.NewApplication(
+		return application.NewApplication().Initialize(
+			application.Name,
+			application.Codec,
+			wasm.EnableAllProposals,
+			application.ModuleAccountPermissions,
+			application.TokenReceiveAllowedModules,
 			logger,
 			db,
 			traceStore,
@@ -146,7 +154,12 @@ func main() {
 	) (json.RawMessage, []tendermintTypes.GenesisValidator, error) {
 
 		if height != -1 {
-			genesisApplication := application.NewApplication(
+			genesisApplication := application.NewApplication().Initialize(
+				application.Name,
+				application.Codec,
+				wasm.EnableAllProposals,
+				application.ModuleAccountPermissions,
+				application.TokenReceiveAllowedModules,
 				logger,
 				db,
 				traceStore,
@@ -162,7 +175,12 @@ func main() {
 			return genesisApplication.ExportApplicationStateAndValidators(forZeroHeight, jailWhiteList)
 		}
 		//else
-		genesisApplication := application.NewApplication(
+		genesisApplication := application.NewApplication().Initialize(
+			application.Name,
+			application.Codec,
+			wasm.EnableAllProposals,
+			application.ModuleAccountPermissions,
+			application.TokenReceiveAllowedModules,
 			logger,
 			db,
 			traceStore,
