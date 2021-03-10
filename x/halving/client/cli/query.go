@@ -14,11 +14,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/persistenceOne/persistenceCore/x/halving/internal/types"
+	"github.com/persistenceOne/persistenceCore/x/halving/types"
 )
 
 // GetQueryCmd returns the cli query commands for the minting module.
-func GetQueryCmd(cdc *codec.Codec) *cobra.Command {
+func GetQueryCmd() *cobra.Command {
 	mintingQueryCmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      "Querying commands for the minting module",
@@ -29,7 +29,7 @@ func GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 
 	mintingQueryCmd.AddCommand(
 		flags.GetCommands(
-			GetCmdQueryParams(cdc),
+			GetCmdQueryParams(),
 		)...,
 	)
 
@@ -38,7 +38,7 @@ func GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 
 // GetCmdQueryParams implements a command to return the current minting
 // parameters.
-func GetCmdQueryParams(cdc *codec.Codec) *cobra.Command {
+func GetCmdQueryParams() *cobra.Command {
 	return &cobra.Command{
 		Use:   "params",
 		Short: "Query the current minting parameters",

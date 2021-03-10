@@ -6,69 +6,65 @@
 package application
 
 import (
-	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmClient "github.com/CosmWasm/wasmd/x/wasm/client"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	authTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/cosmos/cosmos-sdk/x/capability"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	"github.com/cosmos/cosmos-sdk/x/distribution"
+	distributionClient "github.com/cosmos/cosmos-sdk/x/distribution/client"
+	distributionTypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/cosmos/cosmos-sdk/x/evidence"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/gov"
+	govTypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	"github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer"
+	ibc "github.com/cosmos/cosmos-sdk/x/ibc/core"
 	"github.com/cosmos/cosmos-sdk/x/mint"
+	mintTypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	paramsClient "github.com/cosmos/cosmos-sdk/x/params/client"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	"github.com/cosmos/cosmos-sdk/x/staking"
-	"github.com/cosmos/cosmos-sdk/x/supply"
+	stakingTypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradeClient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 	"github.com/persistenceOne/persistenceCore/x/halving"
-	"github.com/persistenceOne/persistenceSDK/modules/assets"
-	"github.com/persistenceOne/persistenceSDK/modules/classifications"
-	"github.com/persistenceOne/persistenceSDK/modules/identities"
-	"github.com/persistenceOne/persistenceSDK/modules/maintainers"
-	"github.com/persistenceOne/persistenceSDK/modules/metas"
-	"github.com/persistenceOne/persistenceSDK/modules/orders"
-	"github.com/persistenceOne/persistenceSDK/modules/splits"
 )
 
 var ModuleAccountPermissions = map[string][]string{
-	auth.FeeCollectorName:     nil,
-	distribution.ModuleName:   nil,
-	mint.ModuleName:           {supply.Minter},
-	staking.BondedPoolName:    {supply.Burner, supply.Staking},
-	staking.NotBondedPoolName: {supply.Burner, supply.Staking},
-	gov.ModuleName:            {supply.Burner},
-	splits.Prototype().Name(): nil,
+	authTypes.FeeCollectorName:     nil,
+	distributionTypes.ModuleName:   nil,
+	mintTypes.ModuleName:           {authTypes.Minter},
+	stakingTypes.BondedPoolName:    {authTypes.Burner, authTypes.Staking},
+	stakingTypes.NotBondedPoolName: {authTypes.Burner, authTypes.Staking},
+	govTypes.ModuleName:            {authTypes.Burner},
 }
 var TokenReceiveAllowedModules = map[string]bool{
-	distribution.ModuleName: true,
+	distributionTypes.ModuleName: true,
 }
 var ModuleBasics = module.NewBasicManager(
-	genutil.AppModuleBasic{},
 	auth.AppModuleBasic{},
+	genutil.AppModuleBasic{},
 	bank.AppModuleBasic{},
+	capability.AppModuleBasic{},
 	staking.AppModuleBasic{},
 	mint.AppModuleBasic{},
 	distribution.AppModuleBasic{},
-	gov.NewAppModuleBasic(append(wasmClient.ProposalHandlers, paramsClient.ProposalHandler, distribution.ProposalHandler, upgradeClient.ProposalHandler)...),
+	gov.NewAppModuleBasic(
+		append(wasmClient.ProposalHandlers, paramsClient.ProposalHandler, distributionClient.ProposalHandler, upgradeClient.ProposalHandler, upgradeClient.CancelProposalHandler)...,
+	),
 	params.AppModuleBasic{},
 	crisis.AppModuleBasic{},
-	wasm.AppModuleBasic{},
 	slashing.AppModuleBasic{},
-	supply.AppModuleBasic{},
+	ibc.AppModuleBasic{},
 	upgrade.AppModuleBasic{},
 	evidence.AppModuleBasic{},
+	transfer.AppModuleBasic{},
+	vesting.AppModuleBasic{},
 
 	halving.AppModuleBasic{},
-
-	assets.Prototype(),
-	classifications.Prototype(),
-	identities.Prototype(),
-	maintainers.Prototype(),
-	metas.Prototype(),
-	orders.Prototype(),
-	splits.Prototype(),
 )

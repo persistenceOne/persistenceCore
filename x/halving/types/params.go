@@ -8,7 +8,7 @@ package types
 import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/params"
+	paramsTypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
 // Parameter store keys
@@ -17,14 +17,9 @@ var (
 	Factor         = sdk.NewInt(2)
 )
 
-// halving parameters
-type Params struct {
-	BlockHeight uint64 `json:"blockHeight" yaml:"blockHeight"` // at what block inflation is changed
-}
-
 // ParamTable for minting module.
-func ParamKeyTable() params.KeyTable {
-	return params.NewKeyTable().RegisterParamSet(&Params{})
+func ParamKeyTable() paramsTypes.KeyTable {
+	return paramsTypes.NewKeyTable().RegisterParamSet(&Params{})
 }
 
 func NewParams(blockHeight uint64) Params {
@@ -34,8 +29,8 @@ func NewParams(blockHeight uint64) Params {
 }
 
 // default halving module parameters
-func DefaultParams() Params {
-	return Params{
+func DefaultParams() *Params {
+	return &Params{
 		BlockHeight: uint64(2 * 60 * 60 * 8766 / 5), // 2 * blocksPerYear assuming 5s per block
 	}
 }
@@ -48,16 +43,10 @@ func (p Params) Validate() error {
 	return nil
 }
 
-func (p Params) String() string {
-	return fmt.Sprintf(`Halving Params:
-  BlockHeight:	%d
-`, p.BlockHeight)
-}
-
 // Implements params.ParamSet
-func (p *Params) ParamSetPairs() params.ParamSetPairs {
-	return params.ParamSetPairs{
-		params.NewParamSetPair(KeyBlockHeight, &p.BlockHeight, validateBlockHeight),
+func (p *Params) ParamSetPairs() paramsTypes.ParamSetPairs {
+	return paramsTypes.ParamSetPairs{
+		paramsTypes.NewParamSetPair(KeyBlockHeight, &p.BlockHeight, validateBlockHeight),
 	}
 }
 

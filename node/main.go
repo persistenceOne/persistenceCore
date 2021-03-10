@@ -8,12 +8,17 @@ package main
 import (
 	"encoding/json"
 	"github.com/CosmWasm/wasmd/x/wasm"
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	authTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	bankTypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/persistenceOne/persistenceCore/application"
+	applicationParams "github.com/persistenceOne/persistenceCore/application/params"
 	"io"
+	"os"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/spf13/cobra"
@@ -39,8 +44,6 @@ var invalidCheckPeriod uint
 
 func main() {
 
-	serverContext := server.NewDefaultContext()
-
 	configuration := sdkTypes.GetConfig()
 	configuration.SetBech32PrefixForAccount(application.Bech32PrefixAccAddr, application.Bech32PrefixAccPub)
 	configuration.SetBech32PrefixForValidator(application.Bech32PrefixValAddr, application.Bech32PrefixValPub)
@@ -49,54 +52,56 @@ func main() {
 	configuration.SetFullFundraiserPath(application.FullFundraiserPath)
 	configuration.Seal()
 
+	encodingConfig := applicationParams.MakeEncodingConfig()
+	initClientCtx := client.Context{}.
+		WithJSONMarshaler(encodingConfig.Marshaler).
+		WithInterfaceRegistry(encodingConfig.InterfaceRegistry).
+		WithTxConfig(encodingConfig.TransactionConfig).
+		WithLegacyAmino(encodingConfig.Amino).
+		WithInput(os.Stdin).
+		WithAccountRetriever(authTypes.AccountRetriever{}).
+		WithBroadcastMode(flags.BroadcastBlock).
+		WithHomeDir(application.DefaultNodeHome)
+
 	cobra.EnableCommandSorting = false
 
 	rootCommand := &cobra.Command{
-		Use:               "persistenceNode",
-		Short:             "Persistence Hub Node Daemon (server)",
-		PersistentPreRunE: server.PersistentPreRunEFn(serverContext),
+		Use:   "persistenceNode",
+		Short: "Persistence Hub Node Daemon (server)",
+		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
+			if err := client.SetCmdClientContextHandler(initClientCtx, cmd); err != nil {
+				return err
+			}
+
+			return server.InterceptConfigsPreRunHandler(cmd)
+		},
 	}
 
 	rootCommand.AddCommand(initialize.Command(
-		serverContext,
-		application.Codec,
 		application.ModuleBasics,
 		application.DefaultNodeHome,
 	))
 	rootCommand.AddCommand(initialize.CollectGenesisTransactionsCommand(
-		serverContext,
-		application.Codec,
-		auth.GenesisAccountIterator{},
+		bankTypes.GenesisBalancesIterator{},
 		application.DefaultNodeHome,
 	))
-	rootCommand.AddCommand(initialize.MigrateGenesisCommand(
-		serverContext,
-		application.Codec,
-	))
+	rootCommand.AddCommand(initialize.MigrateGenesisCommand())
 	rootCommand.AddCommand(initialize.GenesisTransactionCommand(
-		serverContext,
-		application.Codec,
 		application.ModuleBasics,
-		staking.AppModuleBasic{},
-		auth.GenesisAccountIterator{},
+		encodingConfig.TransactionConfig,
+		bankTypes.GenesisBalancesIterator{},
 		application.DefaultNodeHome,
-		application.DefaultClientHome,
 	))
 	rootCommand.AddCommand(initialize.ValidateGenesisCommand(
-		serverContext,
-		application.Codec,
 		application.ModuleBasics,
 	))
 	rootCommand.AddCommand(initialize.AddGenesisAccountCommand(
-		serverContext,
-		application.Codec,
+		encodingConfig.Marshaler,
 		application.DefaultNodeHome,
-		application.DefaultClientHome,
 	))
 	rootCommand.AddCommand(flags.NewCompletionCmd(rootCommand, true))
-	rootCommand.AddCommand(initialize.ReplayTransactionsCommand())
-	rootCommand.AddCommand(debug.Cmd(application.Codec))
-	rootCommand.AddCommand(version.Cmd)
+	rootCommand.AddCommand(debug.Cmd())
+	rootCommand.AddCommand(version.NewVersionCommand())
 	rootCommand.PersistentFlags().UintVar(
 		&invalidCheckPeriod,
 		flagInvalidCheckPeriod,
