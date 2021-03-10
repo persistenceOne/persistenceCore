@@ -17,31 +17,31 @@ import (
 	"github.com/persistenceOne/persistenceCore/x/halving/internal/types"
 )
 
-// GetQueryCmd returns the cli query commands for the minting module.
+// GetQueryCmd returns the cli query commands for the halving module.
 func GetQueryCmd(cdc *codec.Codec) *cobra.Command {
-	mintingQueryCmd := &cobra.Command{
+	halvingQueryCmd := &cobra.Command{
 		Use:                        types.ModuleName,
-		Short:                      "Querying commands for the minting module",
+		Short:                      "Querying commands for the halving module",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
 
-	mintingQueryCmd.AddCommand(
+	halvingQueryCmd.AddCommand(
 		flags.GetCommands(
 			GetCmdQueryParams(cdc),
 		)...,
 	)
 
-	return mintingQueryCmd
+	return halvingQueryCmd
 }
 
-// GetCmdQueryParams implements a command to return the current minting
+// GetCmdQueryParams implements a command to return the current halving
 // parameters.
 func GetCmdQueryParams(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "params",
-		Short: "Query the current minting parameters",
+		Short: "Query the current halving parameters",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
