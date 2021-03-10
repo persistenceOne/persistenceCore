@@ -37,6 +37,6 @@ func RandomizedGenState(simState *module.SimulationState) {
 
 	halvingGenesis := types.NewGenesisState(types.NewParams(blockHeight))
 
-	fmt.Printf("Selected randomly generated minting parameters:\n%s\n", codec.MustMarshalJSONIndent(simState.Cdc, halvingGenesis))
+	fmt.Printf("Selected randomly generated halving parameters:\n%s\n", codec.MustMarshalJSONIndent(simState.Cdc, halvingGenesis))
 	simState.GenState[types.ModuleName] = simState.Cdc.MustMarshalJSON(halvingGenesis)
 }

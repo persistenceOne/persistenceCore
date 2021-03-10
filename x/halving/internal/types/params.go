@@ -22,7 +22,7 @@ type Params struct {
 	BlockHeight uint64 `json:"blockHeight" yaml:"blockHeight"` // at what block inflation is changed
 }
 
-// ParamTable for minting module.
+// ParamTable for halving module.
 func ParamKeyTable() params.KeyTable {
 	return params.NewKeyTable().RegisterParamSet(&Params{})
 }
