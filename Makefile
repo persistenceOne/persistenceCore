@@ -20,19 +20,19 @@ all: verify build
 
 install:
 ifeq (${OS},Windows_NT)
-	go build -mod=readonly ${BUILD_FLAGS} -o ${GOBIN}/persistenceNode.exe ./node
+	go build -mod=readonly ${BUILD_FLAGS} -o ${GOBIN}/persistenceCore.exe ./node
 
 else
-	go build -mod=readonly ${BUILD_FLAGS} -o ${GOBIN}/persistenceNode ./node
+	go build -mod=readonly ${BUILD_FLAGS} -o ${GOBIN}/persistenceCore ./node
 
 endif
 
 build:
 ifeq (${OS},Windows_NT)
-	go build  ${BUILD_FLAGS} -o ${GOBIN}/persistenceNode.exe ./node
+	go build  ${BUILD_FLAGS} -o ${GOBIN}/persistenceCore.exe ./node
 
 else
-	go build  ${BUILD_FLAGS} -o ${GOBIN}/persistenceNode ./node
+	go build  ${BUILD_FLAGS} -o ${GOBIN}/persistenceCore ./node
 
 endif
 
@@ -47,4 +47,4 @@ DOCKER := $(shell which docker)
 
 proto-gen:
 	@echo "Generating Protobuf files"
-	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace persistence/sdk-proto-gen sh ./.script/protocgen.sh
+	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen sh ./protocgen.sh
