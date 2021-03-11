@@ -47,4 +47,8 @@ DOCKER := $(shell which docker)
 
 proto-gen:
 	@echo "Generating Protobuf files"
-	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen sh ./protocgen.sh
+	$(DOCKER) run --rm -v $(shell go list -f "{{ .Dir }}" \
+	-m github.com/cosmos/cosmos-sdk):/workspace/cosmos_sdk_dir\
+	 --env COSMOS_SDK_DIR=/workspace/cosmos_sdk_dir \
+	 -v $(CURDIR):/workspace --workdir /workspace \
+	 tendermintdev/sdk-proto-gen sh ./.script/protocgen.sh
