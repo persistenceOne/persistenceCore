@@ -12,14 +12,12 @@ import (
 
 	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/persistenceOne/persistenceCore/x/halving/types"
 )
 
 // Keeper of the halving store
 type Keeper struct {
-	cdc        *codec.LegacyAmino
 	storeKey   sdk.StoreKey
 	paramSpace paramsTypes.Subspace
 	mintKeeper types.MintKeeper
@@ -27,12 +25,11 @@ type Keeper struct {
 
 // NewKeeper creates a new halving Keeper instance
 func NewKeeper(
-	cdc *codec.LegacyAmino, key sdk.StoreKey, paramSpace paramsTypes.Subspace,
+	key sdk.StoreKey, paramSpace paramsTypes.Subspace,
 	mintKeeper types.MintKeeper,
 ) Keeper {
 
 	return Keeper{
-		cdc:        cdc,
 		storeKey:   key,
 		paramSpace: paramSpace.WithKeyTable(types.ParamKeyTable()),
 		mintKeeper: mintKeeper,

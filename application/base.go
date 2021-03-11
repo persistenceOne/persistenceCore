@@ -507,7 +507,7 @@ func (application application) Initialize(applicationName string, encodingConfig
 		applicationCodec,
 		home,
 	)
-	halvingKeeper := halving.NewKeeper(legacyAmino, keys[halving.StoreKey], paramsKeeper.Subspace(halving.DefaultParamspace), mintKeeper)
+	halvingKeeper := halving.NewKeeper(keys[halving.StoreKey], paramsKeeper.Subspace(halving.DefaultParamspace), mintKeeper)
 
 	application.stakingKeeper = *stakingKeeper.SetHooks(
 		stakingTypes.NewMultiStakingHooks(application.distributionKeeper.Hooks(), application.slashingKeeper.Hooks()),
@@ -613,7 +613,7 @@ func (application application) Initialize(applicationName string, encodingConfig
 		params.NewAppModule(paramsKeeper),
 		transferModule,
 		wasm.NewAppModule(&wasmKeeper, stakingKeeper),
-		halving.NewAppModule(halvingKeeper),
+		halving.NewAppModule(applicationCodec, halvingKeeper),
 	)
 
 	application.moduleManager.SetOrderBeginBlockers(
@@ -647,7 +647,7 @@ func (application application) Initialize(applicationName string, encodingConfig
 		distribution.NewAppModule(applicationCodec, application.distributionKeeper, accountKeeper, bankKeeper, application.stakingKeeper),
 		slashing.NewAppModule(applicationCodec, application.slashingKeeper, accountKeeper, bankKeeper, application.stakingKeeper),
 		params.NewAppModule(paramsKeeper),
-		halving.NewAppModule(halvingKeeper),
+		halving.NewAppModule(applicationCodec, halvingKeeper),
 	)
 
 	simulationManager.RegisterStoreDecoders()
