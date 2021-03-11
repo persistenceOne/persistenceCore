@@ -6,8 +6,8 @@
 package types
 
 // NewGenesisState creates a new GenesisState object
-func NewGenesisState(params *Params) GenesisState {
-	return GenesisState{
+func NewGenesisState(params Params) *GenesisState {
+	return &GenesisState{
 		Params: params,
 	}
 }

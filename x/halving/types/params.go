@@ -9,6 +9,7 @@ import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramsTypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	"gopkg.in/yaml.v2"
 )
 
 // Parameter store keys
@@ -29,8 +30,8 @@ func NewParams(blockHeight uint64) Params {
 }
 
 // default halving module parameters
-func DefaultParams() *Params {
-	return &Params{
+func DefaultParams() Params {
+	return Params{
 		BlockHeight: uint64(2 * 60 * 60 * 8766 / 5), // 2 * blocksPerYear assuming 5s per block
 	}
 }
@@ -41,6 +42,12 @@ func (p Params) Validate() error {
 		return err
 	}
 	return nil
+}
+
+//stringer function
+func (p Params) String() string {
+	out, _ := yaml.Marshal(p)
+	return string(out)
 }
 
 // Implements params.ParamSet

@@ -676,6 +676,6 @@ func (application application) Initialize(applicationName string, encodingConfig
 	return application
 }
 
-func NewApplication() serverTypes.Application {
+func NewApplication() *application {
 	return &application{}
 }

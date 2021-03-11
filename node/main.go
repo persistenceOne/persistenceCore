@@ -6,36 +6,30 @@
 package main
 
 import (
-	"encoding/json"
 	"github.com/CosmWasm/wasmd/x/wasm"
+	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/version"
-	"github.com/cosmos/cosmos-sdk/x/auth"
-	authTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	bankTypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/persistenceOne/persistenceCore/application"
-	applicationParams "github.com/persistenceOne/persistenceCore/application/params"
-	"io"
-	"os"
-
-	"github.com/cosmos/cosmos-sdk/baseapp"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-
-	tendermintABCITypes "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/cli"
-	"github.com/tendermint/tendermint/libs/log"
-	tendermintTypes "github.com/tendermint/tendermint/types"
-	tendermintDB "github.com/tendermint/tm-db"
-
 	"github.com/cosmos/cosmos-sdk/server"
+	serverTypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/store"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/staking"
-
+	"github.com/cosmos/cosmos-sdk/version"
+	authTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	bankTypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	"github.com/cosmos/cosmos-sdk/x/crisis"
+	"github.com/persistenceOne/persistenceCore/application"
 	"github.com/persistenceOne/persistenceCore/application/initialize"
+	applicationParams "github.com/persistenceOne/persistenceCore/application/params"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"github.com/tendermint/tendermint/libs/cli"
+	tendermintClient "github.com/tendermint/tendermint/libs/cli"
+	"github.com/tendermint/tendermint/libs/log"
+	tendermintDB "github.com/tendermint/tm-db"
+	"io"
+	"os"
 )
 
 const flagInvalidCheckPeriod = "invalid-check-period"
@@ -99,7 +93,7 @@ func main() {
 		encodingConfig.Marshaler,
 		application.DefaultNodeHome,
 	))
-	rootCommand.AddCommand(flags.NewCompletionCmd(rootCommand, true))
+	rootCommand.AddCommand(tendermintClient.NewCompletionCmd(rootCommand, true))
 	rootCommand.AddCommand(debug.Cmd())
 	rootCommand.AddCommand(version.NewVersionCommand())
 	rootCommand.PersistentFlags().UintVar(
@@ -113,7 +107,8 @@ func main() {
 		logger log.Logger,
 		db tendermintDB.DB,
 		traceStore io.Writer,
-	) tendermintABCITypes.Application {
+		applicationOptions serverTypes.AppOptions,
+	) serverTypes.Application {
 		var cache sdkTypes.MultiStorePersistentCache
 
 		if viper.GetBool(server.FlagInterBlockCache) {
@@ -124,13 +119,13 @@ func main() {
 		for _, h := range viper.GetIntSlice(server.FlagUnsafeSkipUpgrades) {
 			skipUpgradeHeights[int64(h)] = true
 		}
-		pruningOpts, err := server.GetPruningOptionsFromFlags()
+		pruningOpts, err := server.GetPruningOptionsFromFlags(applicationOptions)
 		if err != nil {
 			panic(err)
 		}
 		return application.NewApplication().Initialize(
 			application.Name,
-			application.Codec,
+			encodingConfig,
 			wasm.EnableAllProposals,
 			application.ModuleAccountPermissions,
 			application.TokenReceiveAllowedModules,
@@ -141,6 +136,7 @@ func main() {
 			invalidCheckPeriod,
 			skipUpgradeHeights,
 			viper.GetString(flags.FlagHome),
+			applicationOptions,
 			baseapp.SetPruning(pruningOpts),
 			baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)),
 			baseapp.SetHaltHeight(viper.GetUint64(server.FlagHaltHeight)),
@@ -156,12 +152,13 @@ func main() {
 		height int64,
 		forZeroHeight bool,
 		jailWhiteList []string,
-	) (json.RawMessage, []tendermintTypes.GenesisValidator, error) {
+		applicationOptions serverTypes.AppOptions,
+	) (serverTypes.ExportedApp, error) {
 
 		if height != -1 {
 			genesisApplication := application.NewApplication().Initialize(
 				application.Name,
-				application.Codec,
+				encodingConfig,
 				wasm.EnableAllProposals,
 				application.ModuleAccountPermissions,
 				application.TokenReceiveAllowedModules,
@@ -172,17 +169,18 @@ func main() {
 				uint(1),
 				map[int64]bool{},
 				"",
+				applicationOptions,
 			)
 			err := genesisApplication.LoadHeight(height)
 			if err != nil {
-				return nil, nil, err
+				return serverTypes.ExportedApp{}, err
 			}
-			return genesisApplication.ExportApplicationStateAndValidators(forZeroHeight, jailWhiteList)
+			return genesisApplication.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 		}
 		//else
 		genesisApplication := application.NewApplication().Initialize(
 			application.Name,
-			application.Codec,
+			encodingConfig,
 			wasm.EnableAllProposals,
 			application.ModuleAccountPermissions,
 			application.TokenReceiveAllowedModules,
@@ -193,17 +191,22 @@ func main() {
 			uint(1),
 			map[int64]bool{},
 			"",
+			applicationOptions,
 		)
-		return genesisApplication.ExportApplicationStateAndValidators(forZeroHeight, jailWhiteList)
+		return genesisApplication.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 
 	}
 
+	initFlags := func(startCmd *cobra.Command) {
+		crisis.AddModuleInitFlags(startCmd)
+	}
+
 	server.AddCommands(
-		serverContext,
-		application.Codec,
 		rootCommand,
+		application.DefaultNodeHome,
 		appCreator,
 		appExporter,
+		initFlags,
 	)
 
 	executor := cli.PrepareBaseCmd(rootCommand, "CA", application.DefaultNodeHome)
