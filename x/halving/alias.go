@@ -28,8 +28,7 @@ var (
 
 	// variable aliases
 
-	ModuleCdc = types.ModuleCdc
-	Factor    = types.Factor
+	Factor = types.Factor
 )
 
 type (

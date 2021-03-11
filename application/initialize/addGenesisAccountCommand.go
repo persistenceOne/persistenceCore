@@ -47,12 +47,15 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 `,
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			config := ctx.Config
-			config.SetRoot(viper.GetString(cli.HomeFlag))
-			clientCtx := client.GetClientContextFromCmd(cmd)
-			depCdc := clientCtx.JSONMarshaler
+
+			clientContext := client.GetClientContextFromCmd(cmd)
+			depCdc := clientContext.JSONMarshaler
 			cdc := depCdc.(codec.Marshaler)
 
+			serverContext := server.GetServerContextFromCmd(cmd)
+			config := serverContext.Config
+
+			config.SetRoot(clientContext.HomeDir)
 			addr, err := sdk.AccAddressFromBech32(args[0])
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			if err != nil {
