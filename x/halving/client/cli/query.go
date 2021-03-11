@@ -8,13 +8,9 @@ package cli
 import (
 	"fmt"
 
-	"github.com/spf13/cobra"
-
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/persistenceOne/persistenceCore/x/halving/types"
+	"github.com/spf13/cobra"
 )
 
 // GetQueryCmd returns the cli query commands for the minting module.
@@ -28,9 +24,7 @@ func GetQueryCmd() *cobra.Command {
 	}
 
 	mintingQueryCmd.AddCommand(
-		flags.GetCommands(
-			GetCmdQueryParams(),
-		)...,
+		GetCmdQueryParams(),
 	)
 
 	return mintingQueryCmd
@@ -44,7 +38,7 @@ func GetCmdQueryParams() *cobra.Command {
 		Short: "Query the current minting parameters",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			cliCtx, err := client.GetClientQueryContext(cmd)
 
 			route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryParameters)
 			res, _, err := cliCtx.QueryWithData(route, nil)
@@ -53,11 +47,11 @@ func GetCmdQueryParams() *cobra.Command {
 			}
 
 			var params types.Params
-			if err := cdc.UnmarshalJSON(res, &params); err != nil {
+			if err := cliCtx.JSONMarshaler.UnmarshalJSON(res, &params); err != nil {
 				return err
 			}
 
-			return cliCtx.PrintOutput(params)
+			return cliCtx.PrintProto(params)
 		},
 	}
 }
