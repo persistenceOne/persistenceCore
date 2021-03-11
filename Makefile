@@ -47,4 +47,4 @@ DOCKER := $(shell which docker)
 
 proto-gen:
 	@echo "Generating Protobuf files"
-	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace persistence/sdk-proto-gen sh ./.script/protocgen.sh
+	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen sh ./protocgen.sh
