@@ -10,7 +10,6 @@ package types
 
 import (
 	"context"
-	"github.com/persistenceOne/persistenceCore/github.com/persistenceOne/persistenceCore/x/halving/types"
 	"io"
 	"net/http"
 
@@ -32,8 +31,8 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = descriptor.ForMessage
 
-func request_Query_Params_0(ctx context.Context, marshaler runtime.Marshaler, client types.QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq types.QueryParamsRequest
+func request_Query_Params_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq QueryParamsRequest
 	var metadata runtime.ServerMetadata
 
 	msg, err := client.Params(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -41,8 +40,8 @@ func request_Query_Params_0(ctx context.Context, marshaler runtime.Marshaler, cl
 
 }
 
-func local_request_Query_Params_0(ctx context.Context, marshaler runtime.Marshaler, server types.QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq types.QueryParamsRequest
+func local_request_Query_Params_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq QueryParamsRequest
 	var metadata runtime.ServerMetadata
 
 	msg, err := server.Params(ctx, &protoReq)
@@ -54,7 +53,7 @@ func local_request_Query_Params_0(ctx context.Context, marshaler runtime.Marshal
 // UnaryRPC     :call QueryServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
 // Note that using this registration option will cause many gRPC library features (such as grpc.SendHeader, etc) to stop working. Consider using RegisterQueryHandlerFromEndpoint instead.
-func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, server types.QueryServer) error {
+func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, server QueryServer) error {
 
 	mux.Handle("GET", pattern_Query_Params_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
@@ -107,7 +106,7 @@ func RegisterQueryHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux
 // RegisterQueryHandler registers the http handlers for service Query to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
 func RegisterQueryHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterQueryHandlerClient(ctx, mux, types.NewQueryClient(conn))
+	return RegisterQueryHandlerClient(ctx, mux, NewQueryClient(conn))
 }
 
 // RegisterQueryHandlerClient registers the http handlers for service Query
@@ -115,7 +114,7 @@ func RegisterQueryHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc
 // Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "QueryClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
 // "QueryClient" to call the correct interceptors.
-func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, client types.QueryClient) error {
+func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, client QueryClient) error {
 
 	mux.Handle("GET", pattern_Query_Params_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
