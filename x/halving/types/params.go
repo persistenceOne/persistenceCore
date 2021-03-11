@@ -18,7 +18,7 @@ var (
 	Factor         = sdk.NewInt(2)
 )
 
-// ParamTable for minting module.
+// ParamTable for halving module.
 func ParamKeyTable() paramsTypes.KeyTable {
 	return paramsTypes.NewKeyTable().RegisterParamSet(&Params{})
 }

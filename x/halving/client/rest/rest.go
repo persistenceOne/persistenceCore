@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// RegisterRoutes registers minting module REST handlers on the provided router.
+// RegisterRoutes registers halving module REST handlers on the provided router.
 func RegisterRoutes(cliCtx client.Context, r *mux.Router) {
 	registerQueryRoutes(cliCtx, r)
 }

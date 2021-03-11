@@ -20,19 +20,19 @@ all: verify build
 
 install:
 ifeq (${OS},Windows_NT)
-	go build -mod=readonly ${BUILD_FLAGS} -o ${GOBIN}/persistenceNode.exe ./node
+	go build -mod=readonly ${BUILD_FLAGS} -o ${GOBIN}/persistenceCore.exe ./node
 
 else
-	go build -mod=readonly ${BUILD_FLAGS} -o ${GOBIN}/persistenceNode ./node
+	go build -mod=readonly ${BUILD_FLAGS} -o ${GOBIN}/persistenceCore ./node
 
 endif
 
 build:
 ifeq (${OS},Windows_NT)
-	go build  ${BUILD_FLAGS} -o ${GOBIN}/persistenceNode.exe ./node
+	go build  ${BUILD_FLAGS} -o ${GOBIN}/persistenceCore.exe ./node
 
 else
-	go build  ${BUILD_FLAGS} -o ${GOBIN}/persistenceNode ./node
+	go build  ${BUILD_FLAGS} -o ${GOBIN}/persistenceCore ./node
 
 endif
 
