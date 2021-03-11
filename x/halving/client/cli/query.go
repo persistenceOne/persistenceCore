@@ -51,7 +51,7 @@ func GetCmdQueryParams() *cobra.Command {
 				return err
 			}
 
-			return cliCtx.PrintProto(params)
+			return cliCtx.PrintProto(&params)
 		},
 	}
 }
