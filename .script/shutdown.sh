@@ -1,4 +1,3 @@
-killall persistenceNode
-killall persistenceClient
+killall persistenceCore
 echo "
-Node and Client Shutdown."
+Node Shutdown."

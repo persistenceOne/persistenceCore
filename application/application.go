@@ -6,6 +6,7 @@
 package application
 
 import (
+	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmClient "github.com/CosmWasm/wasmd/x/wasm/client"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -22,6 +23,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govTypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer"
+	ibcTransferTypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	ibc "github.com/cosmos/cosmos-sdk/x/ibc/core"
 	"github.com/cosmos/cosmos-sdk/x/mint"
 	mintTypes "github.com/cosmos/cosmos-sdk/x/mint/types"
@@ -42,6 +44,7 @@ var ModuleAccountPermissions = map[string][]string{
 	stakingTypes.BondedPoolName:    {authTypes.Burner, authTypes.Staking},
 	stakingTypes.NotBondedPoolName: {authTypes.Burner, authTypes.Staking},
 	govTypes.ModuleName:            {authTypes.Burner},
+	ibcTransferTypes.ModuleName:    {authTypes.Minter, authTypes.Burner},
 }
 var TokenReceiveAllowedModules = map[string]bool{
 	distributionTypes.ModuleName: true,
@@ -58,6 +61,7 @@ var ModuleBasics = module.NewBasicManager(
 		append(wasmClient.ProposalHandlers, paramsClient.ProposalHandler, distributionClient.ProposalHandler, upgradeClient.ProposalHandler, upgradeClient.CancelProposalHandler)...,
 	),
 	params.AppModuleBasic{},
+	wasm.AppModuleBasic{},
 	crisis.AppModuleBasic{},
 	slashing.AppModuleBasic{},
 	ibc.AppModuleBasic{},

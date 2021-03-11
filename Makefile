@@ -1,13 +1,13 @@
 export GO111MODULE=on
 
-VERSION := $(shell echo $(shell git describe --tags) | sed 's/^v//')
+VERSION := $(shell echo $(shell git describe --always) | sed 's/^v//')
 COMMIT := $(shell git rev-parse --short HEAD)
 
 build_tags = netgo
 build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=persistenceCore \
-		  -X github.com/cosmos/cosmos-sdk/version.ServerName=persistenceNode \
+		  -X github.com/cosmos/cosmos-sdk/version.AppName=persistenceCore \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
 		  -X github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)
@@ -47,4 +47,4 @@ DOCKER := $(shell which docker)
 
 proto-gen:
 	@echo "Generating Protobuf files"
-	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen sh protocgen.sh
+	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace persistence/sdk-proto-gen sh ./.script/protocgen.sh

@@ -26,7 +26,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	"github.com/persistenceOne/persistenceCore/application"
 	"github.com/persistenceOne/persistenceCore/application/initialize"
-	applicationParams "github.com/persistenceOne/persistenceCore/application/params"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	tendermintClient "github.com/tendermint/tendermint/libs/cli"
@@ -50,7 +49,7 @@ func main() {
 	configuration.SetFullFundraiserPath(application.FullFundraiserPath)
 	configuration.Seal()
 
-	encodingConfig := applicationParams.MakeEncodingConfig()
+	encodingConfig := application.MakeEncodingConfig()
 	initClientCtx := client.Context{}.
 		WithJSONMarshaler(encodingConfig.Marshaler).
 		WithInterfaceRegistry(encodingConfig.InterfaceRegistry).
@@ -64,7 +63,7 @@ func main() {
 	cobra.EnableCommandSorting = false
 
 	rootCommand := &cobra.Command{
-		Use:   "persistenceNode",
+		Use:   "persistenceCore",
 		Short: "Persistence Hub Node Daemon (server)",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			if err := client.SetCmdClientContextHandler(initClientCtx, cmd); err != nil {
@@ -94,7 +93,6 @@ func main() {
 		application.ModuleBasics,
 	))
 	rootCommand.AddCommand(initialize.AddGenesisAccountCommand(
-		encodingConfig.Marshaler,
 		application.DefaultNodeHome,
 	))
 	rootCommand.AddCommand(tendermintClient.NewCompletionCmd(rootCommand, true))

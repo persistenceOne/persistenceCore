@@ -27,6 +27,5 @@ const (
 )
 
 var (
-	DefaultClientHome = os.ExpandEnv("$HOME/.persistenceClient")
-	DefaultNodeHome   = os.ExpandEnv("$HOME/.persistenceCore")
+	DefaultNodeHome = os.ExpandEnv("$HOME/.persistenceCore")
 )
