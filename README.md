@@ -2,8 +2,7 @@
 
 [![LoC](https://tokei.rs/b1/github/persistenceOne/persistenceCore)](https://github.com/persistenceOne/persistenceCore)
 
-
-Application implementing the minimum clique of PersistenceSDK modules enabling interNFT definition, issuance, ownership transfer and decentralized exchange.
+This project implements an application for the Persistence ecosystem core chain that all the other chains in the ecosystem connect to as a raised and open moderator for interoperability, shared security, and as a gateway to other ecosystems as well.
 
 ## Talk to us!
 *   [Telegram](https://t.me/PersistenceOneChat)
