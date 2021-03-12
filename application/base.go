@@ -1,5 +1,5 @@
 /*
- Copyright [2019] - [2021], PERSISTENCE TECHNOLOGIES PTE. LTD. and the persistenceSDK contributors
+ Copyright [2019] - [2021], PERSISTENCE TECHNOLOGIES PTE. LTD. and the persistenceCore contributors
  SPDX-License-Identifier: Apache-2.0
 */
 
@@ -108,6 +108,14 @@ var (
 	_ simapp.App              = (*application)(nil)
 	_ serverTypes.Application = (*application)(nil)
 )
+
+func (application application) BaseApp() *baseapp.BaseApp {
+	return application.baseApp
+}
+
+func (application application) ApplicationCodec() codec.Marshaler {
+	return application.applicationCodec
+}
 
 func (application application) Name() string {
 	return application.baseApp.Name()
