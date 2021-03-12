@@ -85,9 +85,9 @@ func interBlockCacheOpt() func(*baseapp.BaseApp) {
 //// TODO: Make another test for the fuzzer itself, which just has noOp txs
 //// and doesn't depend on the application.
 func TestAppStateDeterminism(t *testing.T) {
-	//if !simapp.FlagEnabledValue {
-	//	t.Skip("skipping application simulation")
-	//}
+	if !simapp.FlagEnabledValue {
+		t.Skip("skipping application simulation")
+	}
 
 	config := simapp.NewConfigFromFlags()
 	config.InitialBlockHeight = 1
