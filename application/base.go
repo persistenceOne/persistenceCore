@@ -7,7 +7,6 @@ package application
 
 import (
 	"encoding/json"
-	"github.com/CosmWasm/wasmd/x/wasm"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
@@ -86,7 +85,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"path/filepath"
 )
 
 type application struct {
@@ -390,7 +388,7 @@ func (application application) Commit() abciTypes.ResponseCommit {
 func (application application) LoadHeight(height int64) error {
 	return application.baseApp.LoadVersion(height)
 }
-func (application application) Initialize(applicationName string, encodingConfiguration applicationParams.EncodingConfiguration, enabledProposals []wasm.ProposalType, moduleAccountPermissions map[string][]string, tokenReceiveAllowedModules map[string]bool, logger tendermintLog.Logger, db tendermintDB.DB, traceStore io.Writer, loadLatest bool, invCheckPeriod uint, skipUpgradeHeights map[int64]bool, home string, applicationOptions serverTypes.AppOptions, baseAppOptions ...func(*baseapp.BaseApp)) application {
+func (application application) Initialize(applicationName string, encodingConfiguration applicationParams.EncodingConfiguration, moduleAccountPermissions map[string][]string, tokenReceiveAllowedModules map[string]bool, logger tendermintLog.Logger, db tendermintDB.DB, traceStore io.Writer, loadLatest bool, invCheckPeriod uint, skipUpgradeHeights map[int64]bool, home string, applicationOptions serverTypes.AppOptions, baseAppOptions ...func(*baseapp.BaseApp)) application {
 	applicationCodec := encodingConfiguration.Marshaler
 	legacyAmino := encodingConfiguration.Amino
 	interfaceRegistry := encodingConfiguration.InterfaceRegistry
@@ -411,7 +409,7 @@ func (application application) Initialize(applicationName string, encodingConfig
 		sdkMintTypes.StoreKey, sdkDistributionTypes.StoreKey, slashingTypes.StoreKey,
 		sdkGovTypes.StoreKey, paramsTypes.StoreKey, ibchost.StoreKey, sdkUpgradeTypes.StoreKey,
 		sdkEvidenceTypes.StoreKey, ibcTransferTypes.StoreKey, sdkCapabilityTypes.StoreKey,
-		wasm.StoreKey, halving.StoreKey,
+		halving.StoreKey,
 	)
 
 	transientStoreKeys := sdkTypes.NewTransientStoreKeys(paramsTypes.TStoreKey)
@@ -550,32 +548,6 @@ func (application application) Initialize(applicationName string, encodingConfig
 		application.slashingKeeper,
 	)
 
-	var wasmRouter = baseApp.Router()
-	wasmDir := filepath.Join(home, wasm.ModuleName)
-
-	wasmConfig, err := wasm.ReadWasmConfig(applicationOptions)
-	if err != nil {
-		panic("error while reading wasm config: " + err.Error())
-	}
-
-	wasmKeeper := wasm.NewKeeper(
-		applicationCodec,
-		keys[wasm.StoreKey],
-		paramsKeeper.Subspace(wasm.DefaultParamspace),
-		accountKeeper,
-		bankKeeper,
-		application.stakingKeeper,
-		application.distributionKeeper,
-		wasmRouter,
-		wasmDir,
-		wasmConfig,
-		sdkStakingTypes.ModuleName,
-		nil,
-		nil)
-
-	if len(enabledProposals) != 0 {
-		govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(wasmKeeper, enabledProposals))
-	}
 	ibcKeeper.SetRouter(ibcRouter)
 	govKeeper := sdkGovKeeper.NewKeeper(
 		applicationCodec,
@@ -612,7 +584,6 @@ func (application application) Initialize(applicationName string, encodingConfig
 		ibc.NewAppModule(ibcKeeper),
 		params.NewAppModule(paramsKeeper),
 		transferModule,
-		wasm.NewAppModule(&wasmKeeper, stakingKeeper),
 		halving.NewAppModule(applicationCodec, halvingKeeper),
 	)
 
@@ -631,7 +602,6 @@ func (application application) Initialize(applicationName string, encodingConfig
 		sdkCapabilityTypes.ModuleName, authTypes.ModuleName, sdkBankTypes.ModuleName, sdkDistributionTypes.ModuleName, sdkStakingTypes.ModuleName,
 		slashingTypes.ModuleName, sdkGovTypes.ModuleName, sdkMintTypes.ModuleName, sdkCrisisTypes.ModuleName,
 		ibchost.ModuleName, genutilTypes.ModuleName, sdkEvidenceTypes.ModuleName, ibcTransferTypes.ModuleName, halving.ModuleName,
-		wasm.ModuleName,
 	)
 
 	application.moduleManager.RegisterInvariants(&application.crisisKeeper)

@@ -6,8 +6,6 @@
 package application
 
 import (
-	"github.com/CosmWasm/wasmd/x/wasm"
-	wasmClient "github.com/CosmWasm/wasmd/x/wasm/client"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -58,10 +56,9 @@ var ModuleBasics = module.NewBasicManager(
 	mint.AppModuleBasic{},
 	distribution.AppModuleBasic{},
 	gov.NewAppModuleBasic(
-		append(wasmClient.ProposalHandlers, paramsClient.ProposalHandler, distributionClient.ProposalHandler, upgradeClient.ProposalHandler, upgradeClient.CancelProposalHandler)...,
+		paramsClient.ProposalHandler, distributionClient.ProposalHandler, upgradeClient.ProposalHandler, upgradeClient.CancelProposalHandler,
 	),
 	params.AppModuleBasic{},
-	wasm.AppModuleBasic{},
 	crisis.AppModuleBasic{},
 	slashing.AppModuleBasic{},
 	ibc.AppModuleBasic{},
