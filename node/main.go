@@ -6,31 +6,32 @@
 package main
 
 import (
-	"encoding/json"
 	"github.com/CosmWasm/wasmd/x/wasm"
+	"github.com/cosmos/cosmos-sdk/baseapp"
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/version"
-	"github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/persistenceOne/persistenceCore/application"
-	"io"
-
-	"github.com/cosmos/cosmos-sdk/baseapp"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-
-	tendermintABCITypes "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/cli"
-	"github.com/tendermint/tendermint/libs/log"
-	tendermintTypes "github.com/tendermint/tendermint/types"
-	tendermintDB "github.com/tendermint/tm-db"
-
+	"github.com/cosmos/cosmos-sdk/client/keys"
+	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/server"
+	serverCmd "github.com/cosmos/cosmos-sdk/server/cmd"
+	serverTypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/store"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/staking"
-
+	"github.com/cosmos/cosmos-sdk/version"
+	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
+	authTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	bankTypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	"github.com/cosmos/cosmos-sdk/x/crisis"
+	"github.com/persistenceOne/persistenceCore/application"
 	"github.com/persistenceOne/persistenceCore/application/initialize"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	tendermintClient "github.com/tendermint/tendermint/libs/cli"
+	"github.com/tendermint/tendermint/libs/log"
+	tendermintDB "github.com/tendermint/tm-db"
+	"io"
+	"os"
 )
 
 const flagInvalidCheckPeriod = "invalid-check-period"
@@ -38,8 +39,6 @@ const flagInvalidCheckPeriod = "invalid-check-period"
 var invalidCheckPeriod uint
 
 func main() {
-
-	serverContext := server.NewDefaultContext()
 
 	configuration := sdkTypes.GetConfig()
 	configuration.SetBech32PrefixForAccount(application.Bech32PrefixAccAddr, application.Bech32PrefixAccPub)
@@ -49,54 +48,61 @@ func main() {
 	configuration.SetFullFundraiserPath(application.FullFundraiserPath)
 	configuration.Seal()
 
+	encodingConfig := application.MakeEncodingConfig()
+	initClientCtx := client.Context{}.
+		WithJSONMarshaler(encodingConfig.Marshaler).
+		WithInterfaceRegistry(encodingConfig.InterfaceRegistry).
+		WithTxConfig(encodingConfig.TransactionConfig).
+		WithLegacyAmino(encodingConfig.Amino).
+		WithInput(os.Stdin).
+		WithAccountRetriever(authTypes.AccountRetriever{}).
+		WithBroadcastMode(flags.BroadcastBlock).
+		WithHomeDir(application.DefaultNodeHome)
+
 	cobra.EnableCommandSorting = false
 
 	rootCommand := &cobra.Command{
-		Use:               "persistenceNode",
-		Short:             "Persistence Hub Node Daemon (server)",
-		PersistentPreRunE: server.PersistentPreRunEFn(serverContext),
+		Use:   "persistenceCore",
+		Short: "Persistence Hub Node Daemon (server)",
+		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
+			if err := client.SetCmdClientContextHandler(initClientCtx, cmd); err != nil {
+				return err
+			}
+
+			return server.InterceptConfigsPreRunHandler(cmd)
+		},
 	}
 
 	rootCommand.AddCommand(initialize.Command(
-		serverContext,
-		application.Codec,
 		application.ModuleBasics,
 		application.DefaultNodeHome,
 	))
 	rootCommand.AddCommand(initialize.CollectGenesisTransactionsCommand(
-		serverContext,
-		application.Codec,
-		auth.GenesisAccountIterator{},
+		bankTypes.GenesisBalancesIterator{},
 		application.DefaultNodeHome,
 	))
-	rootCommand.AddCommand(initialize.MigrateGenesisCommand(
-		serverContext,
-		application.Codec,
-	))
+	rootCommand.AddCommand(initialize.MigrateGenesisCommand())
 	rootCommand.AddCommand(initialize.GenesisTransactionCommand(
-		serverContext,
-		application.Codec,
 		application.ModuleBasics,
-		staking.AppModuleBasic{},
-		auth.GenesisAccountIterator{},
+		encodingConfig.TransactionConfig,
+		bankTypes.GenesisBalancesIterator{},
 		application.DefaultNodeHome,
-		application.DefaultClientHome,
 	))
 	rootCommand.AddCommand(initialize.ValidateGenesisCommand(
-		serverContext,
-		application.Codec,
 		application.ModuleBasics,
 	))
 	rootCommand.AddCommand(initialize.AddGenesisAccountCommand(
-		serverContext,
-		application.Codec,
 		application.DefaultNodeHome,
-		application.DefaultClientHome,
 	))
-	rootCommand.AddCommand(flags.NewCompletionCmd(rootCommand, true))
-	rootCommand.AddCommand(initialize.ReplayTransactionsCommand())
-	rootCommand.AddCommand(debug.Cmd(application.Codec))
-	rootCommand.AddCommand(version.Cmd)
+	rootCommand.AddCommand(tendermintClient.NewCompletionCmd(rootCommand, true))
+	rootCommand.AddCommand(debug.Cmd())
+	rootCommand.AddCommand(version.NewVersionCommand())
+	rootCommand.AddCommand(
+		rpc.StatusCommand(),
+		queryCommand(),
+		txCommand(),
+		keys.Commands(application.DefaultNodeHome),
+	)
 	rootCommand.PersistentFlags().UintVar(
 		&invalidCheckPeriod,
 		flagInvalidCheckPeriod,
@@ -108,7 +114,8 @@ func main() {
 		logger log.Logger,
 		db tendermintDB.DB,
 		traceStore io.Writer,
-	) tendermintABCITypes.Application {
+		applicationOptions serverTypes.AppOptions,
+	) serverTypes.Application {
 		var cache sdkTypes.MultiStorePersistentCache
 
 		if viper.GetBool(server.FlagInterBlockCache) {
@@ -119,13 +126,13 @@ func main() {
 		for _, h := range viper.GetIntSlice(server.FlagUnsafeSkipUpgrades) {
 			skipUpgradeHeights[int64(h)] = true
 		}
-		pruningOpts, err := server.GetPruningOptionsFromFlags()
+		pruningOpts, err := server.GetPruningOptionsFromFlags(applicationOptions)
 		if err != nil {
 			panic(err)
 		}
 		return application.NewApplication().Initialize(
 			application.Name,
-			application.Codec,
+			encodingConfig,
 			wasm.EnableAllProposals,
 			application.ModuleAccountPermissions,
 			application.TokenReceiveAllowedModules,
@@ -136,6 +143,7 @@ func main() {
 			invalidCheckPeriod,
 			skipUpgradeHeights,
 			viper.GetString(flags.FlagHome),
+			applicationOptions,
 			baseapp.SetPruning(pruningOpts),
 			baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)),
 			baseapp.SetHaltHeight(viper.GetUint64(server.FlagHaltHeight)),
@@ -151,12 +159,13 @@ func main() {
 		height int64,
 		forZeroHeight bool,
 		jailWhiteList []string,
-	) (json.RawMessage, []tendermintTypes.GenesisValidator, error) {
+		applicationOptions serverTypes.AppOptions,
+	) (serverTypes.ExportedApp, error) {
 
 		if height != -1 {
 			genesisApplication := application.NewApplication().Initialize(
 				application.Name,
-				application.Codec,
+				encodingConfig,
 				wasm.EnableAllProposals,
 				application.ModuleAccountPermissions,
 				application.TokenReceiveAllowedModules,
@@ -167,17 +176,18 @@ func main() {
 				uint(1),
 				map[int64]bool{},
 				"",
+				applicationOptions,
 			)
 			err := genesisApplication.LoadHeight(height)
 			if err != nil {
-				return nil, nil, err
+				return serverTypes.ExportedApp{}, err
 			}
-			return genesisApplication.ExportApplicationStateAndValidators(forZeroHeight, jailWhiteList)
+			return genesisApplication.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 		}
 		//else
 		genesisApplication := application.NewApplication().Initialize(
 			application.Name,
-			application.Codec,
+			encodingConfig,
 			wasm.EnableAllProposals,
 			application.ModuleAccountPermissions,
 			application.TokenReceiveAllowedModules,
@@ -188,22 +198,82 @@ func main() {
 			uint(1),
 			map[int64]bool{},
 			"",
+			applicationOptions,
 		)
-		return genesisApplication.ExportApplicationStateAndValidators(forZeroHeight, jailWhiteList)
+		return genesisApplication.ExportAppStateAndValidators(forZeroHeight, jailWhiteList)
 
+	}
+
+	initFlags := func(startCmd *cobra.Command) {
+		crisis.AddModuleInitFlags(startCmd)
 	}
 
 	server.AddCommands(
-		serverContext,
-		application.Codec,
 		rootCommand,
+		application.DefaultNodeHome,
 		appCreator,
 		appExporter,
+		initFlags,
 	)
 
-	executor := cli.PrepareBaseCmd(rootCommand, "CA", application.DefaultNodeHome)
-	err := executor.Execute()
-	if err != nil {
-		panic(err)
+	if err := serverCmd.Execute(rootCommand, application.DefaultNodeHome); err != nil {
+		switch e := err.(type) {
+		case server.ErrorCode:
+			os.Exit(e.Code)
+
+		default:
+			os.Exit(1)
+		}
 	}
+}
+
+func queryCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:                        "query",
+		Aliases:                    []string{"q"},
+		Short:                      "Querying subcommands",
+		DisableFlagParsing:         true,
+		SuggestionsMinimumDistance: 2,
+		RunE:                       client.ValidateCmd,
+	}
+
+	cmd.AddCommand(
+		authcmd.GetAccountCmd(),
+		rpc.ValidatorCommand(),
+		rpc.BlockCommand(),
+		authcmd.QueryTxsByEventsCmd(),
+		authcmd.QueryTxCmd(),
+	)
+
+	application.ModuleBasics.AddQueryCommands(cmd)
+	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
+
+	return cmd
+}
+
+func txCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:                        "tx",
+		Short:                      "Transactions subcommands",
+		DisableFlagParsing:         true,
+		SuggestionsMinimumDistance: 2,
+		RunE:                       client.ValidateCmd,
+	}
+
+	cmd.AddCommand(
+		authcmd.GetSignCommand(),
+		authcmd.GetSignBatchCommand(),
+		authcmd.GetMultiSignCommand(),
+		authcmd.GetValidateSignaturesCommand(),
+		flags.LineBreak,
+		authcmd.GetBroadcastCommand(),
+		authcmd.GetEncodeCommand(),
+		authcmd.GetDecodeCommand(),
+		flags.LineBreak,
+	)
+
+	application.ModuleBasics.AddTxCommands(cmd)
+	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
+
+	return cmd
 }

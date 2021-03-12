@@ -6,8 +6,8 @@
 package halving
 
 import (
-	"github.com/persistenceOne/persistenceCore/x/halving/internal/keeper"
-	"github.com/persistenceOne/persistenceCore/x/halving/internal/types"
+	"github.com/persistenceOne/persistenceCore/x/halving/keeper"
+	"github.com/persistenceOne/persistenceCore/x/halving/types"
 )
 
 const (
@@ -28,8 +28,7 @@ var (
 
 	// variable aliases
 
-	ModuleCdc = types.ModuleCdc
-	Factor    = types.Factor
+	Factor = types.Factor
 )
 
 type (

@@ -8,22 +8,21 @@ package simulation
 import (
 	"bytes"
 	"fmt"
-
-	tmkv "github.com/tendermint/tendermint/libs/kv"
-
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/persistenceOne/persistenceCore/x/halving/internal/types"
+
+	"github.com/cosmos/cosmos-sdk/types/kv"
+
+	"github.com/persistenceOne/persistenceCore/x/halving/types"
 )
 
 // DecodeStore unmarshals the KVPair's Value to the corresponding halving type
-func DecodeStore(cdc *codec.Codec, kvA, kvB tmkv.Pair) string {
-	switch {
-	case bytes.Equal(kvA.Key, types.HalvingKey):
-		var paramA, paramB types.Params
-		cdc.MustUnmarshalBinaryLengthPrefixed(kvA.Value, &paramA)
-		cdc.MustUnmarshalBinaryLengthPrefixed(kvB.Value, &paramB)
-		return fmt.Sprintf("%v\n%v", paramA, paramB)
-	default:
-		panic(fmt.Sprintf("invalid halving key %X", kvA.Key))
+func DecodeStore(cdc codec.Marshaler) func(kvA, kvB kv.Pair) string {
+	return func(kvA, kvB kv.Pair) string {
+		switch {
+		case bytes.Equal(kvA.Key, types.HalvingKey):
+			return fmt.Sprintf("%v\n%v", kvA, kvB)
+		default:
+			panic(fmt.Sprintf("invalid halving key %X", kvA.Key))
+		}
 	}
 }

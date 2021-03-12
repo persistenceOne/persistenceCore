@@ -1,8 +1,7 @@
-persistenceNode start >~/.persistenceNode/log &
-sleep 10
-persistenceClient rest-server --chain-id test $1 $2>~/.persistenceClient/log &
+persistenceCore start >~/.persistenceCore/log &
 echo "
-Node and Client started up. For logs:
-tail -f ~/.persistenceNode/log
-tail -f ~/.persistenceClient/log
+Node started up. For logs:
+tail -f ~/.persistenceCore/log
+
+For lcd server, change [api] enable to 'true' in ~/.persistenceCore/config/app.toml
 "

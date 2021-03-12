@@ -6,9 +6,8 @@
 package initialize
 
 import (
-	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/server"
-	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/client"
+	bankTypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	"github.com/spf13/cobra"
 
@@ -16,21 +15,15 @@ import (
 )
 
 func GenesisTransactionCommand(
-	serverContext *server.Context,
-	codec *codec.Codec,
 	moduleBasicManager module.BasicManager,
-	stakingMessageBuildingHelpers cli.StakingMsgBuildingHelpers,
-	genesisBalancesIterator auth.GenesisAccountIterator,
+	stakingMessageBuildingHelpers client.TxEncodingConfig,
+	genesisBalancesIterator bankTypes.GenesisBalancesIterator,
 	defaultNodeHome string,
-	defaultClientHome string,
 ) *cobra.Command {
 	return cli.GenTxCmd(
-		serverContext,
-		codec,
 		moduleBasicManager,
 		stakingMessageBuildingHelpers,
 		genesisBalancesIterator,
 		defaultNodeHome,
-		defaultClientHome,
 	)
 }

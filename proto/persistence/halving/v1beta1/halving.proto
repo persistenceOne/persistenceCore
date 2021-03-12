@@ -1,0 +1,19 @@
+/*
+ Copyright [2019] - [2021], PERSISTENCE TECHNOLOGIES PTE. LTD. and the persistenceCore contributors
+ SPDX-License-Identifier: Apache-2.0
+*/
+
+syntax = "proto3";
+package persistence.halving.v1beta1;
+
+option go_package = "github.com/persistenceOne/persistenceCore/x/halving/types";
+
+import "gogoproto/gogo.proto";
+
+// Params holds parameters for the halving module.
+message Params {
+  option (gogoproto.goproto_stringer) = false;
+
+  // periodic height at which inflation decreases
+  uint64 blockHeight = 1 [(gogoproto.moretags) = "yaml:\"blockHeight\""];
+}

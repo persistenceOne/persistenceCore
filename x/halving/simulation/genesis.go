@@ -6,13 +6,12 @@
 package simulation
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 
-	"github.com/cosmos/cosmos-sdk/codec"
-
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/persistenceOne/persistenceCore/x/halving/internal/types"
+	"github.com/persistenceOne/persistenceCore/x/halving/types"
 )
 
 // Simulation parameter constants
@@ -37,6 +36,10 @@ func RandomizedGenState(simState *module.SimulationState) {
 
 	halvingGenesis := types.NewGenesisState(types.NewParams(blockHeight))
 
-	fmt.Printf("Selected randomly generated halving parameters:\n%s\n", codec.MustMarshalJSONIndent(simState.Cdc, halvingGenesis))
+	bz, err := json.MarshalIndent(&halvingGenesis, "", " ")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Selected randomly generated halving parameters:\n%s\n", bz)
 	simState.GenState[types.ModuleName] = simState.Cdc.MustMarshalJSON(halvingGenesis)
 }

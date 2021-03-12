@@ -1,0 +1,19 @@
+/*
+ Copyright [2019] - [2021], PERSISTENCE TECHNOLOGIES PTE. LTD. and the persistenceCore contributors
+ SPDX-License-Identifier: Apache-2.0
+*/
+
+syntax = "proto3";
+package persistence.halving.v1beta1;
+
+import "gogoproto/gogo.proto";
+import "persistence/halving/v1beta1/halving.proto";
+
+option go_package = "github.com/persistenceOne/persistenceCore/x/halving/types";
+
+// GenesisState defines the halving module's genesis state.
+message GenesisState {
+
+  // params defines all the paramaters of the module.
+  Params params = 1 [(gogoproto.nullable) = false];
+}

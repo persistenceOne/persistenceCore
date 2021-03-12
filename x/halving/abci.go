@@ -8,8 +8,8 @@ package halving
 import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/mint"
-	"github.com/persistenceOne/persistenceCore/x/halving/internal/types"
+	mintTypes "github.com/cosmos/cosmos-sdk/x/mint/types"
+	"github.com/persistenceOne/persistenceCore/x/halving/types"
 	"strconv"
 )
 
@@ -25,7 +25,7 @@ func EndBlocker(ctx sdk.Context, k Keeper) {
 		if newMaxInflation.Sub(newMinInflation).LT(sdk.ZeroDec()) {
 			panic(fmt.Sprintf("max inflation (%s) must be greater than or equal to min inflation (%s)", newMaxInflation.String(), newMinInflation.String()))
 		}
-		updatedParams := mint.NewParams(mintParams.MintDenom, newMaxInflation.Sub(newMinInflation), newMaxInflation, newMinInflation, mintParams.GoalBonded, mintParams.BlocksPerYear)
+		updatedParams := mintTypes.NewParams(mintParams.MintDenom, newMaxInflation.Sub(newMinInflation), newMaxInflation, newMinInflation, mintParams.GoalBonded, mintParams.BlocksPerYear)
 
 		k.SetMintingParams(ctx, updatedParams)
 

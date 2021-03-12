@@ -7,23 +7,21 @@ package rest
 
 import (
 	"fmt"
-	"net/http"
-
-	"github.com/gorilla/mux"
-
-	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/types/rest"
-	"github.com/persistenceOne/persistenceCore/x/halving/internal/types"
+	"github.com/gorilla/mux"
+	"github.com/persistenceOne/persistenceCore/x/halving/types"
+	"net/http"
 )
 
-func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
+func registerQueryRoutes(cliCtx client.Context, r *mux.Router) {
 	r.HandleFunc(
 		"/halving/parameters",
 		queryParamsHandlerFn(cliCtx),
 	).Methods("GET")
 }
 
-func queryParamsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
+func queryParamsHandlerFn(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryParameters)
 

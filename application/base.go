@@ -1,5 +1,5 @@
 /*
- Copyright [2019] - [2021], PERSISTENCE TECHNOLOGIES PTE. LTD. and the persistenceCore contributors
+ Copyright [2019] - [2021], PERSISTENCE TECHNOLOGIES PTE. LTD. and the persistenceSDK contributors
  SPDX-License-Identifier: Apache-2.0
 */
 
@@ -7,77 +7,349 @@ package application
 
 import (
 	"encoding/json"
-	"github.com/persistenceOne/persistenceCore/x/halving"
-	"io"
-	"path/filepath"
-
-	"github.com/persistenceOne/persistenceSDK/modules/maintainers/auxiliaries/deputize"
-	"github.com/persistenceOne/persistenceSDK/modules/maintainers/auxiliaries/revoke"
-
-	"github.com/tendermint/tendermint/libs/log"
-
 	"github.com/CosmWasm/wasmd/x/wasm"
 	"github.com/cosmos/cosmos-sdk/baseapp"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
+	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/server/api"
+	"github.com/cosmos/cosmos-sdk/server/config"
+	serverTypes "github.com/cosmos/cosmos-sdk/server/types"
+	"github.com/cosmos/cosmos-sdk/simapp"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	sdkTypesModule "github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
+	authRest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
+	authKeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	authTx "github.com/cosmos/cosmos-sdk/x/auth/tx"
+	authTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/cosmos/cosmos-sdk/x/bank"
+	sdkBankKeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	sdkBankTypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	"github.com/cosmos/cosmos-sdk/x/capability"
+	sdkCapabilityKeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
+	sdkCapabilityTypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
+	sdkCrisisKeeper "github.com/cosmos/cosmos-sdk/x/crisis/keeper"
+	sdkCrisisTypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	"github.com/cosmos/cosmos-sdk/x/distribution"
+	sdkDistributionKeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
+	sdkDistributionTypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/cosmos/cosmos-sdk/x/evidence"
+	sdkEvidenceKeeper "github.com/cosmos/cosmos-sdk/x/evidence/keeper"
+	sdkEvidenceTypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
+	genutilTypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/cosmos/cosmos-sdk/x/gov"
+	sdkGovKeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
+	sdkGovTypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	"github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer"
+	ibcTransferKeeper "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/keeper"
+	ibcTransferTypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
+	ibc "github.com/cosmos/cosmos-sdk/x/ibc/core"
+	ibcClient "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client"
+	portTypes "github.com/cosmos/cosmos-sdk/x/ibc/core/05-port/types"
+	ibchost "github.com/cosmos/cosmos-sdk/x/ibc/core/24-host"
+	sdkIBCKeeper "github.com/cosmos/cosmos-sdk/x/ibc/core/keeper"
 	"github.com/cosmos/cosmos-sdk/x/mint"
+	sdkMintKeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
+	sdkMintTypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
+	sdkParamsKeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
+	paramsTypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	paramsProposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
+	slashingKeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
+	slashingTypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
-	"github.com/cosmos/cosmos-sdk/x/supply"
+	sdkStakingKeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+	sdkStakingTypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
-	"github.com/persistenceOne/persistenceSDK/modules/assets"
-	"github.com/persistenceOne/persistenceSDK/modules/classifications"
-	"github.com/persistenceOne/persistenceSDK/modules/classifications/auxiliaries/conform"
-	"github.com/persistenceOne/persistenceSDK/modules/classifications/auxiliaries/define"
-	"github.com/persistenceOne/persistenceSDK/modules/identities"
-	"github.com/persistenceOne/persistenceSDK/modules/identities/auxiliaries/verify"
-	"github.com/persistenceOne/persistenceSDK/modules/maintainers"
-	"github.com/persistenceOne/persistenceSDK/modules/maintainers/auxiliaries/maintain"
-	"github.com/persistenceOne/persistenceSDK/modules/maintainers/auxiliaries/super"
-	"github.com/persistenceOne/persistenceSDK/modules/metas"
-	"github.com/persistenceOne/persistenceSDK/modules/metas/auxiliaries/scrub"
-	"github.com/persistenceOne/persistenceSDK/modules/metas/auxiliaries/supplement"
-	"github.com/persistenceOne/persistenceSDK/modules/orders"
-	"github.com/persistenceOne/persistenceSDK/modules/splits"
-	"github.com/persistenceOne/persistenceSDK/modules/splits/auxiliaries/burn"
-	splitsMint "github.com/persistenceOne/persistenceSDK/modules/splits/auxiliaries/mint"
-	"github.com/persistenceOne/persistenceSDK/modules/splits/auxiliaries/renumerate"
-	"github.com/persistenceOne/persistenceSDK/modules/splits/auxiliaries/transfer"
-	"github.com/persistenceOne/persistenceSDK/schema/applications"
-	wasmUtilities "github.com/persistenceOne/persistenceSDK/utilities/wasm"
-	"github.com/spf13/viper"
+	sdkUpgradeKeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
+	sdkUpgradeTypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	"github.com/gogo/protobuf/grpc"
+	"github.com/gorilla/mux"
+	applicationParams "github.com/persistenceOne/persistenceCore/application/params"
+	"github.com/persistenceOne/persistenceCore/x/halving"
+	"github.com/rakyll/statik/fs"
 	abciTypes "github.com/tendermint/tendermint/abci/types"
+	tendermintJSON "github.com/tendermint/tendermint/libs/json"
+	tendermintLog "github.com/tendermint/tendermint/libs/log"
 	tendermintOS "github.com/tendermint/tendermint/libs/os"
-	tendermintTypes "github.com/tendermint/tendermint/types"
+	tendermintProto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tendermintDB "github.com/tendermint/tm-db"
 	"honnef.co/go/tools/version"
+	"io"
+	"log"
+	"net/http"
+	"path/filepath"
 )
 
 type application struct {
-	baseApp *baseapp.BaseApp
-	codec   *codec.Codec
+	baseApp           *baseapp.BaseApp
+	legacyAmino       *codec.LegacyAmino
+	applicationCodec  codec.Marshaler
+	interfaceRegistry types.InterfaceRegistry
 
 	keys map[string]*sdkTypes.KVStoreKey
 
-	stakingKeeper      staking.Keeper
-	slashingKeeper     slashing.Keeper
-	distributionKeeper distribution.Keeper
-	crisisKeeper       crisis.Keeper
+	stakingKeeper      sdkStakingKeeper.Keeper
+	slashingKeeper     slashingKeeper.Keeper
+	distributionKeeper sdkDistributionKeeper.Keeper
+	crisisKeeper       sdkCrisisKeeper.Keeper
 
-	moduleManager *sdkTypesModule.Manager
+	moduleManager     *sdkTypesModule.Manager
+	simulationManager *sdkTypesModule.SimulationManager
 }
 
-var _ applications.Application = (*application)(nil)
+var (
+	_ simapp.App              = (*application)(nil)
+	_ serverTypes.Application = (*application)(nil)
+)
+
+func (application application) Name() string {
+	return application.baseApp.Name()
+}
+
+func (application application) LegacyAmino() *codec.LegacyAmino {
+	return application.legacyAmino
+}
+
+func (application application) BeginBlocker(ctx sdkTypes.Context, req abciTypes.RequestBeginBlock) abciTypes.ResponseBeginBlock {
+	return application.moduleManager.BeginBlock(ctx, req)
+}
+
+func (application application) EndBlocker(ctx sdkTypes.Context, req abciTypes.RequestEndBlock) abciTypes.ResponseEndBlock {
+	return application.moduleManager.EndBlock(ctx, req)
+}
+
+func (application application) InitChainer(ctx sdkTypes.Context, req abciTypes.RequestInitChain) abciTypes.ResponseInitChain {
+	var genesisState GenesisState
+	if err := tendermintJSON.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
+		panic(err)
+	}
+	return application.moduleManager.InitGenesis(ctx, application.applicationCodec, genesisState)
+}
+func (application application) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string) (serverTypes.ExportedApp, error) {
+	context := application.baseApp.NewContext(true, tendermintProto.Header{Height: application.baseApp.LastBlockHeight()})
+
+	height := application.baseApp.LastBlockHeight() + 1
+	if forZeroHeight {
+		height = 0
+		applyWhiteList := false
+
+		if len(jailWhiteList) > 0 {
+			applyWhiteList = true
+		}
+
+		whiteListMap := make(map[string]bool)
+
+		for _, address := range jailWhiteList {
+			if _, Error := sdkTypes.ValAddressFromBech32(address); Error != nil {
+				panic(Error)
+			}
+
+			whiteListMap[address] = true
+		}
+
+		application.crisisKeeper.AssertInvariants(context)
+
+		application.stakingKeeper.IterateValidators(context, func(_ int64, val sdkStakingTypes.ValidatorI) (stop bool) {
+			_, _ = application.distributionKeeper.WithdrawValidatorCommission(context, val.GetOperator())
+			return false
+		})
+
+		delegations := application.stakingKeeper.GetAllDelegations(context)
+		for _, delegation := range delegations {
+			validatorAddress, Error := sdkTypes.ValAddressFromBech32(delegation.ValidatorAddress)
+			if Error != nil {
+				panic(Error)
+			}
+			delegatorAddress, Error := sdkTypes.AccAddressFromBech32(delegation.DelegatorAddress)
+			if Error != nil {
+				panic(Error)
+			}
+			_, _ = application.distributionKeeper.WithdrawDelegationRewards(context, delegatorAddress, validatorAddress)
+		}
+
+		application.distributionKeeper.DeleteAllValidatorSlashEvents(context)
+
+		application.distributionKeeper.DeleteAllValidatorHistoricalRewards(context)
+
+		height := context.BlockHeight()
+		context = context.WithBlockHeight(0)
+
+		application.stakingKeeper.IterateValidators(context, func(_ int64, val sdkStakingTypes.ValidatorI) (stop bool) {
+
+			scraps := application.distributionKeeper.GetValidatorOutstandingRewardsCoins(context, val.GetOperator())
+			feePool := application.distributionKeeper.GetFeePool(context)
+			feePool.CommunityPool = feePool.CommunityPool.Add(scraps...)
+			application.distributionKeeper.SetFeePool(context, feePool)
+
+			application.distributionKeeper.Hooks().AfterValidatorCreated(context, val.GetOperator())
+			return false
+		})
+
+		for _, delegation := range delegations {
+			validatorAddress, Error := sdkTypes.ValAddressFromBech32(delegation.ValidatorAddress)
+			if Error != nil {
+				panic(Error)
+			}
+			delegatorAddress, Error := sdkTypes.AccAddressFromBech32(delegation.DelegatorAddress)
+			if Error != nil {
+				panic(Error)
+			}
+			application.distributionKeeper.Hooks().BeforeDelegationCreated(context, delegatorAddress, validatorAddress)
+			application.distributionKeeper.Hooks().AfterDelegationModified(context, delegatorAddress, validatorAddress)
+		}
+
+		context = context.WithBlockHeight(height)
+
+		application.stakingKeeper.IterateRedelegations(context, func(_ int64, redelegation sdkStakingTypes.Redelegation) (stop bool) {
+			for i := range redelegation.Entries {
+				redelegation.Entries[i].CreationHeight = 0
+			}
+			application.stakingKeeper.SetRedelegation(context, redelegation)
+			return false
+		})
+
+		application.stakingKeeper.IterateUnbondingDelegations(context, func(_ int64, unbondingDelegation sdkStakingTypes.UnbondingDelegation) (stop bool) {
+			for i := range unbondingDelegation.Entries {
+				unbondingDelegation.Entries[i].CreationHeight = 0
+			}
+			application.stakingKeeper.SetUnbondingDelegation(context, unbondingDelegation)
+			return false
+		})
+
+		store := context.KVStore(application.keys[sdkStakingTypes.StoreKey])
+		kvStoreReversePrefixIterator := sdkTypes.KVStoreReversePrefixIterator(store, sdkStakingTypes.ValidatorsKey)
+		counter := int16(0)
+
+		for ; kvStoreReversePrefixIterator.Valid(); kvStoreReversePrefixIterator.Next() {
+			addr := sdkTypes.ValAddress(kvStoreReversePrefixIterator.Key()[1:])
+			validator, found := application.stakingKeeper.GetValidator(context, addr)
+
+			if !found {
+				panic("Validator not found!")
+			}
+
+			validator.UnbondingHeight = 0
+
+			if applyWhiteList && !whiteListMap[addr.String()] {
+				validator.Jailed = true
+			}
+
+			application.stakingKeeper.SetValidator(context, validator)
+			counter++
+		}
+
+		_ = kvStoreReversePrefixIterator.Close()
+
+		_, Error := application.stakingKeeper.ApplyAndReturnValidatorSetUpdates(context)
+		if Error != nil {
+			log.Fatal(Error)
+		}
+
+		application.slashingKeeper.IterateValidatorSigningInfos(
+			context,
+			func(validatorConsAddress sdkTypes.ConsAddress, validatorSigningInfo slashingTypes.ValidatorSigningInfo) (stop bool) {
+				validatorSigningInfo.StartHeight = 0
+				application.slashingKeeper.SetValidatorSigningInfo(context, validatorConsAddress, validatorSigningInfo)
+				return false
+			},
+		)
+	}
+
+	genesisState := application.moduleManager.ExportGenesis(context, application.applicationCodec)
+	applicationState, Error := codec.MarshalJSONIndent(application.legacyAmino, genesisState)
+
+	if Error != nil {
+		return serverTypes.ExportedApp{}, Error
+	}
+	validators, err := staking.WriteValidators(context, application.stakingKeeper)
+
+	return serverTypes.ExportedApp{
+		AppState:        applicationState,
+		Validators:      validators,
+		Height:          height,
+		ConsensusParams: application.baseApp.GetConsensusParams(context),
+	}, err
+}
+
+func (application application) ModuleAccountAddrs() map[string]bool {
+	modAccAddrs := make(map[string]bool)
+	for acc := range ModuleAccountPermissions {
+		modAccAddrs[authTypes.NewModuleAddress(acc).String()] = true
+	}
+
+	return modAccAddrs
+}
+
+func (application application) SimulationManager() *sdkTypesModule.SimulationManager {
+	return application.simulationManager
+}
+
+func (application application) ListSnapshots(snapshots abciTypes.RequestListSnapshots) abciTypes.ResponseListSnapshots {
+	return application.baseApp.ListSnapshots(snapshots)
+}
+
+func (application application) OfferSnapshot(snapshot abciTypes.RequestOfferSnapshot) abciTypes.ResponseOfferSnapshot {
+	return application.baseApp.OfferSnapshot(snapshot)
+}
+
+func (application application) LoadSnapshotChunk(chunk abciTypes.RequestLoadSnapshotChunk) abciTypes.ResponseLoadSnapshotChunk {
+	return application.baseApp.LoadSnapshotChunk(chunk)
+}
+
+func (application application) ApplySnapshotChunk(chunk abciTypes.RequestApplySnapshotChunk) abciTypes.ResponseApplySnapshotChunk {
+	return application.baseApp.ApplySnapshotChunk(chunk)
+}
+
+func (application application) RegisterGRPCServer(context client.Context, server grpc.Server) {
+	application.baseApp.RegisterGRPCServer(context, server)
+}
+
+func (application application) RegisterAPIRoutes(apiServer *api.Server, apiConfig config.APIConfig) {
+	clientCtx := apiServer.ClientCtx
+	rpc.RegisterRoutes(clientCtx, apiServer.Router)
+	// Register legacy tx routes.
+	authRest.RegisterTxRoutes(clientCtx, apiServer.Router)
+	// Register new tx routes from grpc-gateway.
+	authTx.RegisterGRPCGatewayRoutes(clientCtx, apiServer.GRPCGatewayRouter)
+	// Register new tendermint queries routes from grpc-gateway.
+	tmservice.RegisterGRPCGatewayRoutes(clientCtx, apiServer.GRPCGatewayRouter)
+
+	// Register legacy and grpc-gateway routes for all modules.
+	ModuleBasics.RegisterRESTRoutes(clientCtx, apiServer.Router)
+	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiServer.GRPCGatewayRouter)
+
+	// register swagger API from root so that other applications can override easily
+	if apiConfig.Swagger {
+		RegisterSwaggerAPI(apiServer.Router)
+	}
+}
+
+func RegisterSwaggerAPI(rtr *mux.Router) {
+	statikFS, err := fs.New()
+	if err != nil {
+		panic(err)
+	}
+
+	staticServer := http.FileServer(statikFS)
+	rtr.PathPrefix("/swagger/").Handler(http.StripPrefix("/swagger/", staticServer))
+}
+
+func (application application) RegisterTxService(clientContect client.Context) {
+	authTx.RegisterTxService(application.baseApp.GRPCQueryRouter(), clientContect, application.baseApp.Simulate, application.interfaceRegistry)
+}
+
+func (application application) RegisterTendermintService(clientCtx client.Context) {
+	tmservice.RegisterTendermintService(application.baseApp.GRPCQueryRouter(), clientCtx, application.interfaceRegistry)
+}
 
 func (application application) Info(requestInfo abciTypes.RequestInfo) abciTypes.ResponseInfo {
 	return application.baseApp.Info(requestInfo)
@@ -116,493 +388,294 @@ func (application application) Commit() abciTypes.ResponseCommit {
 }
 
 func (application application) LoadHeight(height int64) error {
-	return application.baseApp.LoadVersion(height, application.keys[baseapp.MainStoreKey])
+	return application.baseApp.LoadVersion(height)
 }
-func (application application) ExportApplicationStateAndValidators(forZeroHeight bool, jailWhiteList []string) (json.RawMessage, []tendermintTypes.GenesisValidator, error) {
-	context := application.baseApp.NewContext(true, abciTypes.Header{Height: application.baseApp.LastBlockHeight()})
+func (application application) Initialize(applicationName string, encodingConfiguration applicationParams.EncodingConfiguration, enabledProposals []wasm.ProposalType, moduleAccountPermissions map[string][]string, tokenReceiveAllowedModules map[string]bool, logger tendermintLog.Logger, db tendermintDB.DB, traceStore io.Writer, loadLatest bool, invCheckPeriod uint, skipUpgradeHeights map[int64]bool, home string, applicationOptions serverTypes.AppOptions, baseAppOptions ...func(*baseapp.BaseApp)) application {
+	applicationCodec := encodingConfiguration.Marshaler
+	legacyAmino := encodingConfiguration.Amino
+	interfaceRegistry := encodingConfiguration.InterfaceRegistry
 
-	if forZeroHeight {
-		applyWhiteList := false
-
-		if len(jailWhiteList) > 0 {
-			applyWhiteList = true
-		}
-
-		whiteListMap := make(map[string]bool)
-
-		for _, address := range jailWhiteList {
-			if _, Error := sdkTypes.ValAddressFromBech32(address); Error != nil {
-				panic(Error)
-			}
-
-			whiteListMap[address] = true
-		}
-
-		application.crisisKeeper.AssertInvariants(context)
-
-		application.stakingKeeper.IterateValidators(context, func(_ int64, val staking.ValidatorI) (stop bool) {
-			_, _ = application.distributionKeeper.WithdrawValidatorCommission(context, val.GetOperator())
-			return false
-		})
-
-		delegations := application.stakingKeeper.GetAllDelegations(context)
-		for _, delegation := range delegations {
-			_, _ = application.distributionKeeper.WithdrawDelegationRewards(context, delegation.DelegatorAddress, delegation.ValidatorAddress)
-		}
-
-		application.distributionKeeper.DeleteAllValidatorSlashEvents(context)
-
-		application.distributionKeeper.DeleteAllValidatorHistoricalRewards(context)
-
-		height := context.BlockHeight()
-		context = context.WithBlockHeight(0)
-
-		application.stakingKeeper.IterateValidators(context, func(_ int64, val staking.ValidatorI) (stop bool) {
-
-			scraps := application.distributionKeeper.GetValidatorOutstandingRewards(context, val.GetOperator())
-			feePool := application.distributionKeeper.GetFeePool(context)
-			feePool.CommunityPool = feePool.CommunityPool.Add(scraps...)
-			application.distributionKeeper.SetFeePool(context, feePool)
-
-			application.distributionKeeper.Hooks().AfterValidatorCreated(context, val.GetOperator())
-			return false
-		})
-
-		for _, delegation := range delegations {
-			application.distributionKeeper.Hooks().BeforeDelegationCreated(context, delegation.DelegatorAddress, delegation.ValidatorAddress)
-			application.distributionKeeper.Hooks().AfterDelegationModified(context, delegation.DelegatorAddress, delegation.ValidatorAddress)
-		}
-
-		context = context.WithBlockHeight(height)
-
-		application.stakingKeeper.IterateRedelegations(context, func(_ int64, redelegation staking.Redelegation) (stop bool) {
-			for i := range redelegation.Entries {
-				redelegation.Entries[i].CreationHeight = 0
-			}
-			application.stakingKeeper.SetRedelegation(context, redelegation)
-			return false
-		})
-
-		application.stakingKeeper.IterateUnbondingDelegations(context, func(_ int64, unbondingDelegation staking.UnbondingDelegation) (stop bool) {
-			for i := range unbondingDelegation.Entries {
-				unbondingDelegation.Entries[i].CreationHeight = 0
-			}
-			application.stakingKeeper.SetUnbondingDelegation(context, unbondingDelegation)
-			return false
-		})
-
-		store := context.KVStore(application.keys[staking.StoreKey])
-		kvStoreReversePrefixIterator := sdkTypes.KVStoreReversePrefixIterator(store, staking.ValidatorsKey)
-		counter := int16(0)
-
-		for ; kvStoreReversePrefixIterator.Valid(); kvStoreReversePrefixIterator.Next() {
-			addr := sdkTypes.ValAddress(kvStoreReversePrefixIterator.Key()[1:])
-			validator, found := application.stakingKeeper.GetValidator(context, addr)
-
-			if !found {
-				panic("Validator not found!")
-			}
-
-			validator.UnbondingHeight = 0
-
-			if applyWhiteList && !whiteListMap[addr.String()] {
-				validator.Jailed = true
-			}
-
-			application.stakingKeeper.SetValidator(context, validator)
-			counter++
-		}
-
-		kvStoreReversePrefixIterator.Close()
-
-		_ = application.stakingKeeper.ApplyAndReturnValidatorSetUpdates(context)
-
-		application.slashingKeeper.IterateValidatorSigningInfos(
-			context,
-			func(validatorConsAddress sdkTypes.ConsAddress, validatorSigningInfo slashing.ValidatorSigningInfo) (stop bool) {
-				validatorSigningInfo.StartHeight = 0
-				application.slashingKeeper.SetValidatorSigningInfo(context, validatorConsAddress, validatorSigningInfo)
-				return false
-			},
-		)
-	}
-
-	genesisState := application.moduleManager.ExportGenesis(context)
-	applicationState, Error := codec.MarshalJSONIndent(application.codec, genesisState)
-
-	if Error != nil {
-		return nil, nil, Error
-	}
-
-	return applicationState, staking.WriteValidators(context, application.stakingKeeper), nil
-}
-
-func (application application) Initialize(applicationName string, codec *codec.Codec, enabledProposals []wasm.ProposalType, moduleAccountPermissions map[string][]string, tokenReceiveAllowedModules map[string]bool, logger log.Logger, db tendermintDB.DB, traceStore io.Writer, loadLatest bool, invCheckPeriod uint, skipUpgradeHeights map[int64]bool, home string, baseAppOptions ...func(*baseapp.BaseApp)) applications.Application {
 	baseApp := baseapp.NewBaseApp(
 		applicationName,
 		logger,
 		db,
-		auth.DefaultTxDecoder(codec),
+		encodingConfiguration.TransactionConfig.TxDecoder(),
 		baseAppOptions...,
 	)
 	baseApp.SetCommitMultiStoreTracer(traceStore)
 	baseApp.SetAppVersion(version.Version)
+	baseApp.SetInterfaceRegistry(interfaceRegistry)
 
 	keys := sdkTypes.NewKVStoreKeys(
-		baseapp.MainStoreKey,
-		auth.StoreKey,
-		supply.StoreKey,
-		staking.StoreKey,
-		mint.StoreKey,
-		distribution.StoreKey,
-		slashing.StoreKey,
-		gov.StoreKey,
-		params.StoreKey,
-		upgrade.StoreKey,
-		evidence.StoreKey,
-		wasm.StoreKey,
-		halving.StoreKey,
-		assets.Prototype().Name(),
-		classifications.Prototype().Name(),
-		identities.Prototype().Name(),
-		maintainers.Prototype().Name(),
-		metas.Prototype().Name(),
-		orders.Prototype().Name(),
-		splits.Prototype().Name(),
+		authTypes.StoreKey, sdkBankTypes.StoreKey, sdkStakingTypes.StoreKey,
+		sdkMintTypes.StoreKey, sdkDistributionTypes.StoreKey, slashingTypes.StoreKey,
+		sdkGovTypes.StoreKey, paramsTypes.StoreKey, ibchost.StoreKey, sdkUpgradeTypes.StoreKey,
+		sdkEvidenceTypes.StoreKey, ibcTransferTypes.StoreKey, sdkCapabilityTypes.StoreKey,
+		wasm.StoreKey, halving.StoreKey,
 	)
 
-	transientStoreKeys := sdkTypes.NewTransientStoreKeys(params.TStoreKey)
+	transientStoreKeys := sdkTypes.NewTransientStoreKeys(paramsTypes.TStoreKey)
+	memoryKeys := sdkTypes.NewMemoryStoreKeys(sdkCapabilityTypes.MemStoreKey)
 
 	application.baseApp = baseApp
-	application.codec = codec
+	application.legacyAmino = legacyAmino
+	application.applicationCodec = applicationCodec
+	application.interfaceRegistry = interfaceRegistry
 	application.keys = keys
 
-	paramsKeeper := params.NewKeeper(
-		codec,
-		keys[params.StoreKey],
-		transientStoreKeys[params.TStoreKey],
+	paramsKeeper := sdkParamsKeeper.NewKeeper(
+		applicationCodec,
+		legacyAmino,
+		keys[paramsTypes.StoreKey],
+		transientStoreKeys[paramsTypes.TStoreKey],
 	)
+	application.baseApp.SetParamStore(paramsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(sdkParamsKeeper.ConsensusParamsKeyTable()))
 
-	accountKeeper := auth.NewAccountKeeper(
-		codec,
-		keys[auth.StoreKey],
-		paramsKeeper.Subspace(auth.DefaultParamspace),
-		auth.ProtoBaseAccount,
+	capabilityKeeper := sdkCapabilityKeeper.NewKeeper(applicationCodec, keys[sdkCapabilityTypes.StoreKey], memoryKeys[sdkCapabilityTypes.MemStoreKey])
+	scopedIBCKeeper := capabilityKeeper.ScopeToModule(ibchost.ModuleName)
+	scopedTransferKeeper := capabilityKeeper.ScopeToModule(ibcTransferTypes.ModuleName)
+
+	accountKeeper := authKeeper.NewAccountKeeper(
+		applicationCodec,
+		keys[authTypes.StoreKey],
+		paramsKeeper.Subspace(authTypes.ModuleName),
+		authTypes.ProtoBaseAccount,
+		moduleAccountPermissions,
 	)
 
 	blacklistedAddresses := make(map[string]bool)
 	for account := range moduleAccountPermissions {
-		blacklistedAddresses[supply.NewModuleAddress(account).String()] = !tokenReceiveAllowedModules[account]
+		blacklistedAddresses[authTypes.NewModuleAddress(account).String()] = !tokenReceiveAllowedModules[account]
 	}
 
-	bankKeeper := bank.NewBaseKeeper(
+	bankKeeper := sdkBankKeeper.NewBaseKeeper(
+		applicationCodec,
+		keys[sdkBankTypes.StoreKey],
 		accountKeeper,
-		paramsKeeper.Subspace(bank.DefaultParamspace),
+		paramsKeeper.Subspace(sdkBankTypes.ModuleName),
 		blacklistedAddresses,
 	)
 
-	supplyKeeper := supply.NewKeeper(
-		codec,
-		keys[supply.StoreKey],
+	stakingKeeper := sdkStakingKeeper.NewKeeper(
+		applicationCodec,
+		keys[sdkStakingTypes.StoreKey],
 		accountKeeper,
 		bankKeeper,
-		moduleAccountPermissions,
+		paramsKeeper.Subspace(sdkStakingTypes.ModuleName),
 	)
 
-	stakingKeeper := staking.NewKeeper(
-		codec,
-		keys[staking.StoreKey],
-		supplyKeeper,
-		paramsKeeper.Subspace(staking.DefaultParamspace),
-	)
-
-	mintKeeper := mint.NewKeeper(
-		codec,
-		keys[mint.StoreKey],
-		paramsKeeper.Subspace(mint.DefaultParamspace),
+	mintKeeper := sdkMintKeeper.NewKeeper(
+		applicationCodec,
+		keys[sdkMintTypes.StoreKey],
+		paramsKeeper.Subspace(sdkMintTypes.ModuleName),
 		&stakingKeeper,
-		supplyKeeper,
-		auth.FeeCollectorName,
+		accountKeeper,
+		bankKeeper,
+		authTypes.FeeCollectorName,
 	)
 
 	blackListedModuleAddresses := make(map[string]bool)
 	for moduleAccount := range moduleAccountPermissions {
-		blackListedModuleAddresses[supply.NewModuleAddress(moduleAccount).String()] = true
+		blackListedModuleAddresses[authTypes.NewModuleAddress(moduleAccount).String()] = true
 	}
 
-	application.distributionKeeper = distribution.NewKeeper(
-		codec,
-		keys[distribution.StoreKey],
-		paramsKeeper.Subspace(distribution.DefaultParamspace),
+	application.distributionKeeper = sdkDistributionKeeper.NewKeeper(
+		applicationCodec,
+		keys[sdkDistributionTypes.StoreKey],
+		paramsKeeper.Subspace(sdkDistributionTypes.ModuleName),
+		accountKeeper,
+		bankKeeper,
 		&stakingKeeper,
-		supplyKeeper,
-		auth.FeeCollectorName,
+		authTypes.FeeCollectorName,
 		blackListedModuleAddresses,
 	)
-	application.slashingKeeper = slashing.NewKeeper(
-		codec,
-		keys[slashing.StoreKey],
+	application.slashingKeeper = slashingKeeper.NewKeeper(
+		applicationCodec,
+		keys[slashingTypes.StoreKey],
 		&stakingKeeper,
-		paramsKeeper.Subspace(slashing.DefaultParamspace),
+		paramsKeeper.Subspace(slashingTypes.ModuleName),
 	)
-	application.crisisKeeper = crisis.NewKeeper(
-		paramsKeeper.Subspace(crisis.DefaultParamspace),
+	application.crisisKeeper = sdkCrisisKeeper.NewKeeper(
+		paramsKeeper.Subspace(sdkCrisisTypes.ModuleName),
 		invCheckPeriod,
-		supplyKeeper,
-		auth.FeeCollectorName,
+		bankKeeper,
+		authTypes.FeeCollectorName,
 	)
-	upgradeKeeper := upgrade.NewKeeper(
+	upgradeKeeper := sdkUpgradeKeeper.NewKeeper(
 		skipUpgradeHeights,
-		keys[upgrade.StoreKey],
-		codec,
+		keys[sdkUpgradeTypes.StoreKey],
+		applicationCodec,
+		home,
+	)
+	halvingKeeper := halving.NewKeeper(keys[halving.StoreKey], paramsKeeper.Subspace(halving.DefaultParamspace), mintKeeper)
+
+	application.stakingKeeper = *stakingKeeper.SetHooks(
+		sdkStakingTypes.NewMultiStakingHooks(application.distributionKeeper.Hooks(), application.slashingKeeper.Hooks()),
 	)
 
-	evidenceKeeper := evidence.NewKeeper(
-		codec,
-		keys[evidence.StoreKey],
-		paramsKeeper.Subspace(evidence.DefaultParamspace),
+	ibcKeeper := sdkIBCKeeper.NewKeeper(
+		applicationCodec, keys[ibchost.StoreKey], paramsKeeper.Subspace(ibchost.ModuleName), application.stakingKeeper, scopedIBCKeeper,
+	)
+
+	govRouter := sdkGovTypes.NewRouter()
+	govRouter.AddRoute(
+		sdkGovTypes.RouterKey,
+		sdkGovTypes.ProposalHandler,
+	).AddRoute(
+		paramsProposal.RouterKey,
+		params.NewParamChangeProposalHandler(paramsKeeper),
+	).AddRoute(
+		sdkDistributionTypes.RouterKey,
+		distribution.NewCommunityPoolSpendProposalHandler(application.distributionKeeper),
+	).AddRoute(
+		sdkUpgradeTypes.RouterKey,
+		upgrade.NewSoftwareUpgradeProposalHandler(upgradeKeeper),
+	).AddRoute(ibchost.RouterKey, ibcClient.NewClientUpdateProposalHandler(ibcKeeper.ClientKeeper))
+
+	transferKeeper := ibcTransferKeeper.NewKeeper(
+		applicationCodec, keys[ibcTransferTypes.StoreKey], paramsKeeper.Subspace(ibcTransferTypes.ModuleName),
+		ibcKeeper.ChannelKeeper, &ibcKeeper.PortKeeper,
+		accountKeeper, bankKeeper, scopedTransferKeeper,
+	)
+	transferModule := transfer.NewAppModule(transferKeeper)
+
+	// Create static IBC router, add transfer route, then set and seal it
+	ibcRouter := portTypes.NewRouter()
+	ibcRouter.AddRoute(ibcTransferTypes.ModuleName, transferModule)
+
+	evidenceKeeper := sdkEvidenceKeeper.NewKeeper(
+		applicationCodec,
+		keys[sdkEvidenceTypes.StoreKey],
 		&stakingKeeper,
 		application.slashingKeeper,
 	)
-	evidenceRouter := evidence.NewRouter()
-	evidenceKeeper.SetRouter(evidenceRouter)
-
-	govRouter := gov.NewRouter()
-	govRouter.AddRoute(
-		gov.RouterKey,
-		gov.ProposalHandler,
-	).AddRoute(
-		params.RouterKey,
-		params.NewParamChangeProposalHandler(paramsKeeper),
-	).AddRoute(
-		distribution.RouterKey,
-		distribution.NewCommunityPoolSpendProposalHandler(application.distributionKeeper),
-	).AddRoute(
-		upgrade.RouterKey,
-		upgrade.NewSoftwareUpgradeProposalHandler(upgradeKeeper),
-	)
-
-	application.stakingKeeper = *stakingKeeper.SetHooks(
-		staking.NewMultiStakingHooks(application.distributionKeeper.Hooks(), application.slashingKeeper.Hooks()),
-	)
-
-	halvingKeeper := halving.NewKeeper(
-		codec,
-		keys[halving.StoreKey],
-		paramsKeeper.Subspace(halving.DefaultParamspace),
-		mintKeeper,
-	)
-
-	metasModule := metas.Prototype().Initialize(
-		keys[metas.Prototype().Name()],
-		paramsKeeper.Subspace(metas.Prototype().Name()),
-	)
-	classificationsModule := classifications.Prototype().Initialize(
-		keys[classifications.Prototype().Name()],
-		paramsKeeper.Subspace(classifications.Prototype().Name()),
-		metasModule.GetAuxiliary(scrub.Auxiliary.GetName()),
-	)
-	maintainersModule := maintainers.Prototype().Initialize(
-		keys[metas.Prototype().Name()],
-		paramsKeeper.Subspace(maintainers.Prototype().Name()),
-		classificationsModule.GetAuxiliary(conform.Auxiliary.GetName()),
-	)
-	identitiesModule := identities.Prototype().Initialize(
-		keys[identities.Prototype().Name()],
-		paramsKeeper.Subspace(identities.Prototype().Name()),
-		classificationsModule.GetAuxiliary(conform.Auxiliary.GetName()),
-		classificationsModule.GetAuxiliary(define.Auxiliary.GetName()),
-		maintainersModule.GetAuxiliary(super.Auxiliary.GetName()),
-		maintainersModule.GetAuxiliary(maintain.Auxiliary.GetName()),
-		metasModule.GetAuxiliary(scrub.Auxiliary.GetName()),
-	)
-	splitsModule := splits.Prototype().Initialize(
-		keys[splits.Prototype().Name()],
-		paramsKeeper.Subspace(splits.Prototype().Name()),
-		supplyKeeper,
-		identitiesModule.GetAuxiliary(verify.Auxiliary.GetName()),
-	)
-	assetsModule := assets.Prototype().Initialize(
-		keys[assets.Prototype().Name()],
-		paramsKeeper.Subspace(assets.Prototype().Name()),
-		classificationsModule.GetAuxiliary(conform.Auxiliary.GetName()),
-		classificationsModule.GetAuxiliary(define.Auxiliary.GetName()),
-		identitiesModule.GetAuxiliary(verify.Auxiliary.GetName()),
-		maintainersModule.GetAuxiliary(deputize.Auxiliary.GetName()),
-		maintainersModule.GetAuxiliary(maintain.Auxiliary.GetName()),
-		maintainersModule.GetAuxiliary(revoke.Auxiliary.GetName()),
-		maintainersModule.GetAuxiliary(super.Auxiliary.GetName()),
-		metasModule.GetAuxiliary(scrub.Auxiliary.GetName()),
-		metasModule.GetAuxiliary(supplement.Auxiliary.GetName()),
-		splitsModule.GetAuxiliary(splitsMint.Auxiliary.GetName()),
-		splitsModule.GetAuxiliary(burn.Auxiliary.GetName()),
-		splitsModule.GetAuxiliary(renumerate.Auxiliary.GetName()),
-	)
-	ordersModule := orders.Prototype().Initialize(
-		keys[orders.Prototype().Name()],
-		paramsKeeper.Subspace(orders.Prototype().Name()),
-		classificationsModule.GetAuxiliary(conform.Auxiliary.GetName()),
-		classificationsModule.GetAuxiliary(define.Auxiliary.GetName()),
-		identitiesModule.GetAuxiliary(verify.Auxiliary.GetName()),
-		maintainersModule.GetAuxiliary(super.Auxiliary.GetName()),
-		maintainersModule.GetAuxiliary(maintain.Auxiliary.GetName()),
-		metasModule.GetAuxiliary(scrub.Auxiliary.GetName()),
-		metasModule.GetAuxiliary(supplement.Auxiliary.GetName()),
-		splitsModule.GetAuxiliary(transfer.Auxiliary.GetName()),
-	)
 
 	var wasmRouter = baseApp.Router()
-
 	wasmDir := filepath.Join(home, wasm.ModuleName)
 
-	wasmWrap := struct {
-		Wasm wasm.WasmConfig `mapstructure:"wasm"`
-	}{
-		Wasm: wasm.DefaultWasmConfig(),
-	}
-
-	err := viper.Unmarshal(&wasmWrap)
+	wasmConfig, err := wasm.ReadWasmConfig(applicationOptions)
 	if err != nil {
 		panic("error while reading wasm config: " + err.Error())
 	}
 
-	wasmConfig := wasmWrap.Wasm
-
 	wasmKeeper := wasm.NewKeeper(
-		codec,
+		applicationCodec,
 		keys[wasm.StoreKey],
 		paramsKeeper.Subspace(wasm.DefaultParamspace),
 		accountKeeper,
 		bankKeeper,
 		application.stakingKeeper,
+		application.distributionKeeper,
 		wasmRouter,
 		wasmDir,
 		wasmConfig,
-		staking.ModuleName,
-		&wasm.MessageEncoders{Custom: wasmUtilities.CustomEncoder(assets.Prototype(), classifications.Prototype(), identities.Prototype(), maintainers.Prototype(), metas.Prototype(), orders.Prototype(), splits.Prototype())},
+		sdkStakingTypes.ModuleName,
+		nil,
 		nil)
 
 	if len(enabledProposals) != 0 {
 		govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(wasmKeeper, enabledProposals))
 	}
-
-	govKeeper := gov.NewKeeper(
-		codec,
-		keys[gov.StoreKey],
-		paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable()),
-		supplyKeeper,
+	ibcKeeper.SetRouter(ibcRouter)
+	govKeeper := sdkGovKeeper.NewKeeper(
+		applicationCodec,
+		keys[sdkGovTypes.StoreKey],
+		paramsKeeper.Subspace(sdkGovTypes.ModuleName).WithKeyTable(sdkGovTypes.ParamKeyTable()),
+		accountKeeper,
+		bankKeeper,
 		&stakingKeeper,
 		govRouter,
 	)
-
+	/****  Module Options ****/
+	var skipGenesisInvariants = false
+	opt := applicationOptions.Get(crisis.FlagSkipGenesisInvariants)
+	if opt, ok := opt.(bool); ok {
+		skipGenesisInvariants = opt
+	}
 	application.moduleManager = sdkTypesModule.NewManager(
-		genutil.NewAppModule(accountKeeper, application.stakingKeeper, application.baseApp.DeliverTx),
-		auth.NewAppModule(accountKeeper),
-		bank.NewAppModule(bankKeeper, accountKeeper),
-		crisis.NewAppModule(&application.crisisKeeper),
-		supply.NewAppModule(supplyKeeper, accountKeeper),
-		gov.NewAppModule(govKeeper, accountKeeper, supplyKeeper),
-		mint.NewAppModule(mintKeeper),
-		slashing.NewAppModule(application.slashingKeeper, accountKeeper, application.stakingKeeper),
-		distribution.NewAppModule(application.distributionKeeper, accountKeeper, supplyKeeper, application.stakingKeeper),
-		staking.NewAppModule(application.stakingKeeper, accountKeeper, supplyKeeper),
+		genutil.NewAppModule(
+			accountKeeper, stakingKeeper, application.baseApp.DeliverTx,
+			encodingConfiguration.TransactionConfig,
+		),
+		auth.NewAppModule(applicationCodec, accountKeeper, nil),
+		vesting.NewAppModule(accountKeeper, bankKeeper),
+		bank.NewAppModule(applicationCodec, bankKeeper, accountKeeper),
+		capability.NewAppModule(applicationCodec, *capabilityKeeper),
+		crisis.NewAppModule(&application.crisisKeeper, skipGenesisInvariants),
+		gov.NewAppModule(applicationCodec, govKeeper, accountKeeper, bankKeeper),
+		mint.NewAppModule(applicationCodec, mintKeeper, accountKeeper),
+		slashing.NewAppModule(applicationCodec, application.slashingKeeper, accountKeeper, bankKeeper, application.stakingKeeper),
+		distribution.NewAppModule(applicationCodec, application.distributionKeeper, accountKeeper, bankKeeper, application.stakingKeeper),
+		staking.NewAppModule(applicationCodec, application.stakingKeeper, accountKeeper, bankKeeper),
 		upgrade.NewAppModule(upgradeKeeper),
-		wasm.NewAppModule(wasmKeeper),
 		evidence.NewAppModule(*evidenceKeeper),
-
-		halving.NewAppModule(halvingKeeper),
-
-		assetsModule,
-		classificationsModule,
-		identitiesModule,
-		maintainersModule,
-		metasModule,
-		ordersModule,
-		splitsModule,
+		ibc.NewAppModule(ibcKeeper),
+		params.NewAppModule(paramsKeeper),
+		transferModule,
+		wasm.NewAppModule(&wasmKeeper, stakingKeeper),
+		halving.NewAppModule(applicationCodec, halvingKeeper),
 	)
 
 	application.moduleManager.SetOrderBeginBlockers(
-		upgrade.ModuleName,
-		mint.ModuleName,
-		distribution.ModuleName,
-		slashing.ModuleName,
+		sdkUpgradeTypes.ModuleName, sdkMintTypes.ModuleName, sdkDistributionTypes.ModuleName, slashingTypes.ModuleName,
+		sdkEvidenceTypes.ModuleName, sdkStakingTypes.ModuleName, ibchost.ModuleName,
 	)
-	application.moduleManager.SetOrderEndBlockers(
-		crisis.ModuleName,
-		gov.ModuleName,
-		staking.ModuleName,
-		halving.ModuleName,
-		ordersModule.Name(),
-	)
+	application.moduleManager.SetOrderEndBlockers(sdkCrisisTypes.ModuleName, sdkGovTypes.ModuleName, sdkStakingTypes.ModuleName, halving.ModuleName)
+
+	// NOTE: The genutils module must occur after staking so that pools are
+	// properly initialized with tokens from genesis accounts.
+	// NOTE: Capability module must occur first so that it can initialize any capabilities
+	// so that other modules that want to create or claim capabilities afterwards in InitChain
+	// can do so safely.
 	application.moduleManager.SetOrderInitGenesis(
-		auth.ModuleName,
-		distribution.ModuleName,
-		staking.ModuleName,
-		bank.ModuleName,
-		slashing.ModuleName,
-		gov.ModuleName,
-		mint.ModuleName,
-		supply.ModuleName,
-		crisis.ModuleName,
-		genutil.ModuleName,
-		evidence.ModuleName,
+		sdkCapabilityTypes.ModuleName, authTypes.ModuleName, sdkBankTypes.ModuleName, sdkDistributionTypes.ModuleName, sdkStakingTypes.ModuleName,
+		slashingTypes.ModuleName, sdkGovTypes.ModuleName, sdkMintTypes.ModuleName, sdkCrisisTypes.ModuleName,
+		ibchost.ModuleName, genutilTypes.ModuleName, sdkEvidenceTypes.ModuleName, ibcTransferTypes.ModuleName, halving.ModuleName,
 		wasm.ModuleName,
-		halving.ModuleName,
-		assets.Prototype().Name(),
-		classifications.Prototype().Name(),
-		identities.Prototype().Name(),
-		maintainers.Prototype().Name(),
-		metas.Prototype().Name(),
-		orders.Prototype().Name(),
-		splits.Prototype().Name(),
 	)
+
 	application.moduleManager.RegisterInvariants(&application.crisisKeeper)
-	application.moduleManager.RegisterRoutes(application.baseApp.Router(), application.baseApp.QueryRouter())
+	application.moduleManager.RegisterRoutes(application.baseApp.Router(), application.baseApp.QueryRouter(), encodingConfiguration.Amino)
+	application.moduleManager.RegisterServices(sdkTypesModule.NewConfigurator(application.baseApp.MsgServiceRouter(), application.baseApp.GRPCQueryRouter()))
 
 	simulationManager := sdkTypesModule.NewSimulationManager(
-		auth.NewAppModule(accountKeeper),
-		bank.NewAppModule(bankKeeper, accountKeeper),
-		supply.NewAppModule(supplyKeeper, accountKeeper),
-		gov.NewAppModule(govKeeper, accountKeeper, supplyKeeper),
-		mint.NewAppModule(mintKeeper),
-		staking.NewAppModule(application.stakingKeeper, accountKeeper, supplyKeeper),
-		distribution.NewAppModule(application.distributionKeeper, accountKeeper, supplyKeeper, application.stakingKeeper),
-		slashing.NewAppModule(application.slashingKeeper, accountKeeper, application.stakingKeeper),
-		params.NewAppModule(),
-		halving.NewAppModule(halvingKeeper),
-		assets.Prototype(),
-		classifications.Prototype(),
-		identities.Prototype(),
-		maintainers.Prototype(),
-		metas.Prototype(),
-		orders.Prototype(),
-		splits.Prototype(),
+		auth.NewAppModule(applicationCodec, accountKeeper, nil),
+		bank.NewAppModule(applicationCodec, bankKeeper, accountKeeper),
+		gov.NewAppModule(applicationCodec, govKeeper, accountKeeper, bankKeeper),
+		mint.NewAppModule(applicationCodec, mintKeeper, accountKeeper),
+		staking.NewAppModule(applicationCodec, application.stakingKeeper, accountKeeper, bankKeeper),
+		distribution.NewAppModule(applicationCodec, application.distributionKeeper, accountKeeper, bankKeeper, application.stakingKeeper),
+		slashing.NewAppModule(applicationCodec, application.slashingKeeper, accountKeeper, bankKeeper, application.stakingKeeper),
+		params.NewAppModule(paramsKeeper),
+		halving.NewAppModule(applicationCodec, halvingKeeper),
 	)
 
 	simulationManager.RegisterStoreDecoders()
 
 	application.baseApp.MountKVStores(keys)
 	application.baseApp.MountTransientStores(transientStoreKeys)
+	application.baseApp.MountMemoryStores(memoryKeys)
 
 	application.baseApp.SetBeginBlocker(application.moduleManager.BeginBlock)
 	application.baseApp.SetEndBlocker(application.moduleManager.EndBlock)
 	application.baseApp.SetInitChainer(func(context sdkTypes.Context, requestInitChain abciTypes.RequestInitChain) abciTypes.ResponseInitChain {
 		var genesisState map[string]json.RawMessage
-		codec.MustUnmarshalJSON(requestInitChain.AppStateBytes, &genesisState)
-		return application.moduleManager.InitGenesis(context, genesisState)
+		legacyAmino.MustUnmarshalJSON(requestInitChain.AppStateBytes, &genesisState)
+		return application.moduleManager.InitGenesis(context, applicationCodec, genesisState)
 	})
-	application.baseApp.SetAnteHandler(auth.NewAnteHandler(accountKeeper, supplyKeeper, ante.DefaultSigVerificationGasConsumer))
+	application.baseApp.SetAnteHandler(ante.NewAnteHandler(accountKeeper, bankKeeper, ante.DefaultSigVerificationGasConsumer, encodingConfiguration.TransactionConfig.SignModeHandler()))
 
 	if loadLatest {
-		err := application.baseApp.LoadLatestVersion(application.keys[baseapp.MainStoreKey])
-		if err != nil {
+		if err := application.baseApp.LoadLatestVersion(); err != nil {
 			tendermintOS.Exit(err.Error())
 		}
+		ctx := application.baseApp.NewUncachedContext(true, tendermintProto.Header{})
+		capabilityKeeper.InitializeAndSeal(ctx)
 	}
 
 	return application
 }
 
-func NewApplication() applications.Application {
+func NewApplication() *application {
 	return &application{}
 }
