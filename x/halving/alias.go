@@ -14,17 +14,13 @@ const (
 	ModuleName        = types.ModuleName
 	DefaultParamspace = types.DefaultParamspace
 	StoreKey          = types.StoreKey
-	QuerierRoute      = types.QuerierRoute
 )
 
 var (
 	// functions aliases
 
-	NewKeeper           = keeper.NewKeeper
-	NewQuerier          = keeper.NewQuerier
-	NewGenesisState     = types.NewGenesisState
-	DefaultGenesisState = types.DefaultGenesisState
-	ValidateGenesis     = types.ValidateGenesis
+	NewKeeper       = keeper.NewKeeper
+	NewGenesisState = types.NewGenesisState
 
 	// variable aliases
 

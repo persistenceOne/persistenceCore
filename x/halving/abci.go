@@ -33,9 +33,9 @@ func EndBlocker(ctx sdk.Context, k Keeper) {
 			sdk.NewEvent(
 				types.EventTypeHalving,
 				sdk.NewAttribute(types.AttributeKeyBlockHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
-				sdk.NewAttribute(types.AttributeKeyInflationMax, updatedParams.InflationMax.String()),
-				sdk.NewAttribute(types.AttributeKeyInflationMin, updatedParams.InflationMin.String()),
-				sdk.NewAttribute(types.AttributeKeyInflationRateChange, updatedParams.InflationRateChange.String()),
+				sdk.NewAttribute(types.AttributeKeyNewInflationMax, updatedParams.InflationMax.String()),
+				sdk.NewAttribute(types.AttributeKeyNewInflationMin, updatedParams.InflationMin.String()),
+				sdk.NewAttribute(types.AttributeKeyNewInflationRateChange, updatedParams.InflationRateChange.String()),
 			),
 		)
 	}

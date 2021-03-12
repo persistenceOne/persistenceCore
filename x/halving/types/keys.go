@@ -5,10 +5,6 @@
 
 package types
 
-// HalvingKey is used for the keeper store
-var HalvingKey = []byte{0x00}
-
-// nolint
 const (
 	// ModuleName
 	ModuleName = "halving"
