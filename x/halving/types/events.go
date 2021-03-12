@@ -9,8 +9,8 @@ package types
 const (
 	EventTypeHalving = ModuleName
 
-	AttributeKeyBlockHeight         = "block_height"
-	AttributeKeyInflationMax        = "new_inflation_max"
-	AttributeKeyInflationMin        = "new_inflation_min"
-	AttributeKeyInflationRateChange = "new_inflation_rate_change"
+	AttributeKeyBlockHeight            = "blockHeight"
+	AttributeKeyNewInflationMax        = "newInflationMax"
+	AttributeKeyNewInflationMin        = "newInflationMin"
+	AttributeKeyNewInflationRateChange = "newInflationRateChange"
 )
