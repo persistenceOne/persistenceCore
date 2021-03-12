@@ -6,7 +6,6 @@
 package main
 
 import (
-	"github.com/CosmWasm/wasmd/x/wasm"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/debug"
@@ -133,7 +132,6 @@ func main() {
 		return application.NewApplication().Initialize(
 			application.Name,
 			encodingConfig,
-			wasm.EnableAllProposals,
 			application.ModuleAccountPermissions,
 			application.TokenReceiveAllowedModules,
 			logger,
@@ -166,7 +164,6 @@ func main() {
 			genesisApplication := application.NewApplication().Initialize(
 				application.Name,
 				encodingConfig,
-				wasm.EnableAllProposals,
 				application.ModuleAccountPermissions,
 				application.TokenReceiveAllowedModules,
 				logger,
@@ -188,7 +185,6 @@ func main() {
 		genesisApplication := application.NewApplication().Initialize(
 			application.Name,
 			encodingConfig,
-			wasm.EnableAllProposals,
 			application.ModuleAccountPermissions,
 			application.TokenReceiveAllowedModules,
 			logger,

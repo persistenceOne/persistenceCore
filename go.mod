@@ -3,14 +3,12 @@ module github.com/persistenceOne/persistenceCore
 go 1.14
 
 require (
-	github.com/CosmWasm/wasmd v0.15.1
 	github.com/cosmos/cosmos-sdk v0.42.0
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.4.3
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/rakyll/statik v0.1.7
-	github.com/regen-network/cosmos-proto v0.3.1 // indirect
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.1
 	github.com/tendermint/tendermint v0.34.8
