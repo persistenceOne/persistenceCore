@@ -23,6 +23,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authRest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	authKeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	authSimulation "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 	authTx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
@@ -617,7 +618,7 @@ func (application application) Initialize(applicationName string, encodingConfig
 	application.moduleManager.RegisterServices(sdkTypesModule.NewConfigurator(application.baseApp.MsgServiceRouter(), application.baseApp.GRPCQueryRouter()))
 
 	simulationManager := sdkTypesModule.NewSimulationManager(
-		auth.NewAppModule(applicationCodec, accountKeeper, nil),
+		auth.NewAppModule(applicationCodec, accountKeeper, authSimulation.RandomGenesisAccounts),
 		bank.NewAppModule(applicationCodec, bankKeeper, accountKeeper),
 		gov.NewAppModule(applicationCodec, govKeeper, accountKeeper, bankKeeper),
 		mint.NewAppModule(applicationCodec, mintKeeper, accountKeeper),
@@ -629,6 +630,7 @@ func (application application) Initialize(applicationName string, encodingConfig
 	)
 
 	simulationManager.RegisterStoreDecoders()
+	application.simulationManager = simulationManager
 
 	application.baseApp.MountKVStores(keys)
 	application.baseApp.MountTransientStores(transientStoreKeys)

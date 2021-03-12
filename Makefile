@@ -2,6 +2,7 @@ export GO111MODULE=on
 
 VERSION := $(shell echo $(shell git describe --always) | sed 's/^v//')
 COMMIT := $(shell git rev-parse --short HEAD)
+include sims.mk
 
 build_tags = netgo
 build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
