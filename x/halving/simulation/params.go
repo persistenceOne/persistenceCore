@@ -21,11 +21,9 @@ const (
 // ParamChanges defines the parameters that can be modified by param change proposals
 // on the simulation
 func ParamChanges(_ *rand.Rand) []simulationTypes.ParamChange {
-	fmt.Println("asdasdasdasd")
 	return []simulationTypes.ParamChange{
 		simulation.NewSimParamChange(types.ModuleName, keyBlockHeight,
 			func(r *rand.Rand) string {
-				fmt.Println("123123123123123", fmt.Sprintf("\"%d\"", GetBlockHeight(r)))
 				return fmt.Sprintf("\"%d\"", GetBlockHeight(r))
 			},
 		),
