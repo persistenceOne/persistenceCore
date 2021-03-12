@@ -6,7 +6,6 @@
 package main
 
 import (
-	"github.com/CosmWasm/wasmd/app"
 	"github.com/CosmWasm/wasmd/x/wasm"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -217,7 +216,7 @@ func main() {
 		initFlags,
 	)
 
-	if err := serverCmd.Execute(rootCommand, app.DefaultNodeHome); err != nil {
+	if err := serverCmd.Execute(rootCommand, application.DefaultNodeHome); err != nil {
 		switch e := err.(type) {
 		case server.ErrorCode:
 			os.Exit(e.Code)
