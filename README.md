@@ -5,8 +5,9 @@
 This project implements an application for the Persistence Core chain that all the other chains in the ecosystem connect to as a raised and open moderator for interoperability, shared security, and as a gateway to other ecosystems and chains.
 
 ## Talk to us!
-*   [Telegram](https://t.me/PersistenceOneChat)
 *   [Twitter](https://twitter.com/PersistenceOne)
+*   [Telegram](https://t.me/PersistenceOneChat)
+*   [Discord](https://discord.com/channels/796174129077813248)
 
 ## SetUp:
 
