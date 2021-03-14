@@ -7,6 +7,10 @@ package application
 
 import (
 	"encoding/json"
+	"io"
+	"log"
+	"net/http"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
@@ -50,10 +54,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer"
 	ibcTransferKeeper "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/keeper"
 	ibcTransferTypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
-	ibc "github.com/cosmos/cosmos-sdk/x/ibc/core"
+	ibcCore "github.com/cosmos/cosmos-sdk/x/ibc/core"
 	ibcClient "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client"
-	portTypes "github.com/cosmos/cosmos-sdk/x/ibc/core/05-port/types"
-	ibchost "github.com/cosmos/cosmos-sdk/x/ibc/core/24-host"
+	ibcTypes "github.com/cosmos/cosmos-sdk/x/ibc/core/05-port/types"
+	ibcHost "github.com/cosmos/cosmos-sdk/x/ibc/core/24-host"
 	sdkIBCKeeper "github.com/cosmos/cosmos-sdk/x/ibc/core/keeper"
 	"github.com/cosmos/cosmos-sdk/x/mint"
 	sdkMintKeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
@@ -83,9 +87,6 @@ import (
 	tendermintProto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tendermintDB "github.com/tendermint/tm-db"
 	"honnef.co/go/tools/version"
-	"io"
-	"log"
-	"net/http"
 )
 
 type application struct {
@@ -139,6 +140,7 @@ func (application application) InitChainer(ctx sdkTypes.Context, req abciTypes.R
 	if err := tendermintJSON.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
 	}
+
 	return application.moduleManager.InitGenesis(ctx, application.applicationCodec, genesisState)
 }
 func (application application) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string) (serverTypes.ExportedApp, error) {
@@ -176,10 +178,12 @@ func (application application) ExportAppStateAndValidators(forZeroHeight bool, j
 			if Error != nil {
 				panic(Error)
 			}
+
 			delegatorAddress, Error := sdkTypes.AccAddressFromBech32(delegation.DelegatorAddress)
 			if Error != nil {
 				panic(Error)
 			}
+
 			_, _ = application.distributionKeeper.WithdrawDelegationRewards(context, delegatorAddress, validatorAddress)
 		}
 
@@ -206,10 +210,12 @@ func (application application) ExportAppStateAndValidators(forZeroHeight bool, j
 			if Error != nil {
 				panic(Error)
 			}
+
 			delegatorAddress, Error := sdkTypes.AccAddressFromBech32(delegation.DelegatorAddress)
 			if Error != nil {
 				panic(Error)
 			}
+
 			application.distributionKeeper.Hooks().BeforeDelegationCreated(context, delegatorAddress, validatorAddress)
 			application.distributionKeeper.Hooks().AfterDelegationModified(context, delegatorAddress, validatorAddress)
 		}
@@ -277,6 +283,7 @@ func (application application) ExportAppStateAndValidators(forZeroHeight bool, j
 	if Error != nil {
 		return serverTypes.ExportedApp{}, Error
 	}
+
 	validators, err := staking.WriteValidators(context, application.stakingKeeper)
 
 	return serverTypes.ExportedApp{
@@ -416,7 +423,7 @@ func (application application) Initialize(applicationName string, encodingConfig
 	keys := sdkTypes.NewKVStoreKeys(
 		authTypes.StoreKey, sdkBankTypes.StoreKey, sdkStakingTypes.StoreKey,
 		sdkMintTypes.StoreKey, sdkDistributionTypes.StoreKey, slashingTypes.StoreKey,
-		sdkGovTypes.StoreKey, paramsTypes.StoreKey, ibchost.StoreKey, sdkUpgradeTypes.StoreKey,
+		sdkGovTypes.StoreKey, paramsTypes.StoreKey, ibcHost.StoreKey, sdkUpgradeTypes.StoreKey,
 		sdkEvidenceTypes.StoreKey, ibcTransferTypes.StoreKey, sdkCapabilityTypes.StoreKey,
 		halving.StoreKey,
 	)
@@ -439,7 +446,7 @@ func (application application) Initialize(applicationName string, encodingConfig
 	application.baseApp.SetParamStore(paramsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(sdkParamsKeeper.ConsensusParamsKeyTable()))
 
 	capabilityKeeper := sdkCapabilityKeeper.NewKeeper(applicationCodec, keys[sdkCapabilityTypes.StoreKey], memoryKeys[sdkCapabilityTypes.MemStoreKey])
-	scopedIBCKeeper := capabilityKeeper.ScopeToModule(ibchost.ModuleName)
+	scopedIBCKeeper := capabilityKeeper.ScopeToModule(ibcHost.ModuleName)
 	scopedTransferKeeper := capabilityKeeper.ScopeToModule(ibcTransferTypes.ModuleName)
 
 	accountKeeper := authKeeper.NewAccountKeeper(
@@ -521,7 +528,7 @@ func (application application) Initialize(applicationName string, encodingConfig
 	)
 
 	ibcKeeper := sdkIBCKeeper.NewKeeper(
-		applicationCodec, keys[ibchost.StoreKey], paramsKeeper.Subspace(ibchost.ModuleName), application.stakingKeeper, scopedIBCKeeper,
+		applicationCodec, keys[ibcHost.StoreKey], paramsKeeper.Subspace(ibcHost.ModuleName), application.stakingKeeper, scopedIBCKeeper,
 	)
 
 	govRouter := sdkGovTypes.NewRouter()
@@ -537,7 +544,7 @@ func (application application) Initialize(applicationName string, encodingConfig
 	).AddRoute(
 		sdkUpgradeTypes.RouterKey,
 		upgrade.NewSoftwareUpgradeProposalHandler(upgradeKeeper),
-	).AddRoute(ibchost.RouterKey, ibcClient.NewClientUpdateProposalHandler(ibcKeeper.ClientKeeper))
+	).AddRoute(ibcHost.RouterKey, ibcClient.NewClientUpdateProposalHandler(ibcKeeper.ClientKeeper))
 
 	transferKeeper := ibcTransferKeeper.NewKeeper(
 		applicationCodec, keys[ibcTransferTypes.StoreKey], paramsKeeper.Subspace(ibcTransferTypes.ModuleName),
@@ -547,7 +554,7 @@ func (application application) Initialize(applicationName string, encodingConfig
 	transferModule := transfer.NewAppModule(transferKeeper)
 
 	// Create static IBC router, add transfer route, then set and seal it
-	ibcRouter := portTypes.NewRouter()
+	ibcRouter := ibcTypes.NewRouter()
 	ibcRouter.AddRoute(ibcTransferTypes.ModuleName, transferModule)
 
 	evidenceKeeper := sdkEvidenceKeeper.NewKeeper(
@@ -558,6 +565,7 @@ func (application application) Initialize(applicationName string, encodingConfig
 	)
 
 	ibcKeeper.SetRouter(ibcRouter)
+
 	govKeeper := sdkGovKeeper.NewKeeper(
 		applicationCodec,
 		keys[sdkGovTypes.StoreKey],
@@ -569,10 +577,12 @@ func (application application) Initialize(applicationName string, encodingConfig
 	)
 	/****  Module Options ****/
 	var skipGenesisInvariants = false
+
 	opt := applicationOptions.Get(crisis.FlagSkipGenesisInvariants)
 	if opt, ok := opt.(bool); ok {
 		skipGenesisInvariants = opt
 	}
+
 	application.moduleManager = sdkTypesModule.NewManager(
 		genutil.NewAppModule(
 			accountKeeper, stakingKeeper, application.baseApp.DeliverTx,
@@ -590,7 +600,7 @@ func (application application) Initialize(applicationName string, encodingConfig
 		staking.NewAppModule(applicationCodec, application.stakingKeeper, accountKeeper, bankKeeper),
 		upgrade.NewAppModule(upgradeKeeper),
 		evidence.NewAppModule(*evidenceKeeper),
-		ibc.NewAppModule(ibcKeeper),
+		ibcCore.NewAppModule(ibcKeeper),
 		params.NewAppModule(paramsKeeper),
 		transferModule,
 		halving.NewAppModule(applicationCodec, halvingKeeper),
@@ -598,7 +608,7 @@ func (application application) Initialize(applicationName string, encodingConfig
 
 	application.moduleManager.SetOrderBeginBlockers(
 		sdkUpgradeTypes.ModuleName, sdkMintTypes.ModuleName, sdkDistributionTypes.ModuleName, slashingTypes.ModuleName,
-		sdkEvidenceTypes.ModuleName, sdkStakingTypes.ModuleName, ibchost.ModuleName,
+		sdkEvidenceTypes.ModuleName, sdkStakingTypes.ModuleName, ibcHost.ModuleName,
 	)
 	application.moduleManager.SetOrderEndBlockers(sdkCrisisTypes.ModuleName, sdkGovTypes.ModuleName, sdkStakingTypes.ModuleName, halving.ModuleName)
 
@@ -610,7 +620,7 @@ func (application application) Initialize(applicationName string, encodingConfig
 	application.moduleManager.SetOrderInitGenesis(
 		sdkCapabilityTypes.ModuleName, authTypes.ModuleName, sdkBankTypes.ModuleName, sdkDistributionTypes.ModuleName, sdkStakingTypes.ModuleName,
 		slashingTypes.ModuleName, sdkGovTypes.ModuleName, sdkMintTypes.ModuleName, sdkCrisisTypes.ModuleName,
-		ibchost.ModuleName, genutilTypes.ModuleName, sdkEvidenceTypes.ModuleName, ibcTransferTypes.ModuleName, halving.ModuleName,
+		ibcHost.ModuleName, genutilTypes.ModuleName, sdkEvidenceTypes.ModuleName, ibcTransferTypes.ModuleName, halving.ModuleName,
 	)
 
 	application.moduleManager.RegisterInvariants(&application.crisisKeeper)
@@ -649,6 +659,7 @@ func (application application) Initialize(applicationName string, encodingConfig
 		if err := application.baseApp.LoadLatestVersion(); err != nil {
 			tendermintOS.Exit(err.Error())
 		}
+
 		ctx := application.baseApp.NewUncachedContext(true, tendermintProto.Header{})
 		capabilityKeeper.InitializeAndSeal(ctx)
 	}
