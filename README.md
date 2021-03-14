@@ -9,32 +9,91 @@ This project implements an application for the Persistence Core chain that all t
 *   [Telegram](https://t.me/PersistenceOneChat)
 *   [Discord](https://discord.com/channels/796174129077813248)
 
-## SetUp:
+## Hardware Requirements 
+* **Minimal**
+    * 1 GB RAM
+    * 25 GB HDD
+    * 1.4 GHz CPU
+* **Recommended**
+    * 2 GB RAM
+    * 100 GB HDD
+    * 2.0 GHz x2 CPU
 
-### Prerequisite
+## Operating System
+* Linux/Windows/MacOS(x86)
+* **Recommended**
+    * Linux(x86_64)
 
-Install goLang 1.15+
+## Installation Steps
+>Prerequisite: go1.15+ required. [ref](https://golang.org/doc/install)
 
-### To connect to a chain:
+>Prerequisite: git. [ref](https://github.com/git/git)
 
-1. `persistenceCore init [node_name]`
-2. Replace `${HOME}/.persistenceCore/config/genesis.json` with the genesis file of the chain.
-3. Add `persistent_peers` or `seeds` in `${HOME}/.persistenceCore/config/config.toml`
-4. Start the chain: `persistenceCore start`
+>Optional requirement: GNU make. [ref](https://www.gnu.org/software/make/manual/html_node/index.html)
 
-### To add keys
+
+* Clone git repository
+```shell
+git clone https://github.com/persistenceOne/persistenceCore.git
+```
+* Checkout release tag
+```shell
+git fetch --tags
+git checkout {{vX.X.X}}
+```
+* Install
+```shell
+cd persistenceCore
+make all
+```
+
+### Generate keys
 
 `persistenceCore keys add [key_name]`
 
 or
 
-`persistenceCore keys add [key_name] --recover` (to give your own mnemonics)
+`persistenceCore keys add [key_name] --recover` to regenerate keys with your 24 word BIP44 mnemonic
 
-### To start a new chain
-1. Initialize: `persistenceCore init [node_name] --chain-id [chain_name]`
-2. Add key for genesis account `persistenceCore keys add [genesis_key_name]`
-3. Add genesis account `persistenceCore add-genesis-account [genesis_key_name] 10000000000000000000stake`
-4. Create a validator at genesis `persistenceCore gentx [genesis_key_name] 10000000stake --chain-id [chain_name]`
-5. Collect gentxs `persistenceCore collect-gentxs`
-6. Start the chain `persistenceCore start`
-7. To start rest server set `enable=true` in `config/app.toml` under `[api]` and restart the chain
+### Connect to a chain and start node
+* [Install](#installation-steps) persistenceCore application
+* Initialize node
+```shell
+persistenceCore init {{NODE_NAME}}
+```
+* Replace `${HOME}/.persistenceCore/config/genesis.json` with the genesis file of the chain.
+* Add `persistent_peers` or `seeds` in `${HOME}/.persistenceCore/config/config.toml`
+* Start node
+```shell
+persistenceCore start
+```
+
+### Initialize a new chain and start node 
+* Initialize: `persistenceCore init [node_name] --chain-id [chain_name]`
+* Add key for genesis account `persistenceCore keys add [genesis_key_name]`
+* Add genesis account `persistenceCore add-genesis-account [genesis_key_name] 10000000000000000000stake`
+* Create a validator at genesis `persistenceCore gentx [genesis_key_name] 10000000stake --chain-id [chain_name]`
+* Collect genesis transactions `persistenceCore collect-gentxs`
+* Start node `persistenceCore start`
+* To start rest server set `enable=true` in `config/app.toml` under `[api]` and restart the chain
+
+### Reset chain
+```shell
+rm -rf ~/.persistenceCore
+```
+
+### Shutdown node
+```shell
+killall persistenceCore
+```
+
+### Check version
+```shell
+persistenceCore version
+```
+
+## Test-nets
+* [test-core-1](https://github.com/persistenceOne/genesisTransactions/tree/master/test-core-1)
+
+## Main-net
+Coming soon
