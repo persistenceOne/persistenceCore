@@ -53,7 +53,7 @@ make all
 
 or
 
-`persistenceCore keys add [key_name] --recover` to regenerate keys with your 24 word BIP44 mnemonic
+`persistenceCore keys add [key_name] --recover` to regenerate keys with your [BIP39](https://github.com/bitcoin/bips/tree/master/bip-0039) mnemonic
 
 ### Connect to a chain and start node
 * [Install](#installation-steps) persistenceCore application
