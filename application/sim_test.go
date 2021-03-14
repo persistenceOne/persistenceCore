@@ -8,6 +8,9 @@ package application_test
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"testing"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/simapp"
 	"github.com/cosmos/cosmos-sdk/store"
@@ -18,8 +21,6 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/libs/rand"
 	dbm "github.com/tendermint/tm-db"
-	"os"
-	"testing"
 )
 
 // SimAppChainID hardcoded chainID for simulation
@@ -40,6 +41,7 @@ func BenchmarkFullAppSimulation(b *testing.B) {
 	}
 
 	defer func() {
+
 		db.Close()
 		err = os.RemoveAll(dir)
 		if err != nil {
@@ -82,8 +84,6 @@ func interBlockCacheOpt() func(*baseapp.BaseApp) {
 	return baseapp.SetInterBlockCache(store.NewCommitKVStoreCacheManager())
 }
 
-//// TODO: Make another test for the fuzzer itself, which just has noOp txs
-//// and doesn't depend on the application.
 func TestAppStateDeterminism(t *testing.T) {
 	if !simapp.FlagEnabledValue {
 		t.Skip("skipping application simulation")

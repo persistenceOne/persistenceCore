@@ -1,8 +1,4 @@
-make all
-
-rm -rf ~/.persistenceCore
-
-mkdir ~/.persistenceCore
+./.setup.sh
 
 persistenceCore init test --chain-id test
 persistenceCore keys add test --recover<<<"y
