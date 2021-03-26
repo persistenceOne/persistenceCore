@@ -58,9 +58,4 @@ jobs:
         run: ls -R
         working-directory: releases
 
-      - name: attach binaries
-        uses: softprops/action-gh-release@v1
-        with:
-          files: releases/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+ 
