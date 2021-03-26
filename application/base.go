@@ -404,7 +404,7 @@ func (application application) Commit() abciTypes.ResponseCommit {
 func (application application) LoadHeight(height int64) error {
 	return application.baseApp.LoadVersion(height)
 }
-func (application application) Initialize(applicationName string, encodingConfiguration applicationParams.EncodingConfiguration, moduleAccountPermissions map[string][]string, tokenReceiveAllowedModules map[string]bool, logger tendermintLog.Logger, db tendermintDB.DB, traceStore io.Writer, loadLatest bool, invCheckPeriod uint, skipUpgradeHeights map[int64]bool, home string, applicationOptions serverTypes.AppOptions, baseAppOptions ...func(*baseapp.BaseApp)) application {
+func (application application) Initialize(applicationName string, encodingConfiguration applicationParams.EncodingConfiguration, moduleAccountPermissions map[string][]string, logger tendermintLog.Logger, db tendermintDB.DB, traceStore io.Writer, loadLatest bool, invCheckPeriod uint, skipUpgradeHeights map[int64]bool, home string, applicationOptions serverTypes.AppOptions, baseAppOptions ...func(*baseapp.BaseApp)) application {
 	applicationCodec := encodingConfiguration.Marshaler
 	legacyAmino := encodingConfiguration.Amino
 	interfaceRegistry := encodingConfiguration.InterfaceRegistry
@@ -459,7 +459,11 @@ func (application application) Initialize(applicationName string, encodingConfig
 
 	blacklistedAddresses := make(map[string]bool)
 	for account := range moduleAccountPermissions {
-		blacklistedAddresses[authTypes.NewModuleAddress(account).String()] = !tokenReceiveAllowedModules[account]
+		blacklistedAddresses[authTypes.NewModuleAddress(account).String()] = true
+	}
+	blackListedModuleAddresses := make(map[string]bool)
+	for moduleAccount := range moduleAccountPermissions {
+		blackListedModuleAddresses[authTypes.NewModuleAddress(moduleAccount).String()] = true
 	}
 
 	bankKeeper := sdkBankKeeper.NewBaseKeeper(
@@ -487,11 +491,6 @@ func (application application) Initialize(applicationName string, encodingConfig
 		bankKeeper,
 		authTypes.FeeCollectorName,
 	)
-
-	blackListedModuleAddresses := make(map[string]bool)
-	for moduleAccount := range moduleAccountPermissions {
-		blackListedModuleAddresses[authTypes.NewModuleAddress(moduleAccount).String()] = true
-	}
 
 	application.distributionKeeper = sdkDistributionKeeper.NewKeeper(
 		applicationCodec,

@@ -49,7 +49,7 @@ func BenchmarkFullAppSimulation(b *testing.B) {
 		}
 	}()
 
-	app := application.NewApplication().Initialize(application.Name, application.MakeEncodingConfig(), application.ModuleAccountPermissions, application.TokenReceiveAllowedModules, logger, db, nil, true, simapp.FlagPeriodValue, map[int64]bool{}, application.DefaultNodeHome, simapp.EmptyAppOptions{}, interBlockCacheOpt())
+	app := application.NewApplication().Initialize(application.Name, application.MakeEncodingConfig(), application.ModuleAccountPermissions, logger, db, nil, true, simapp.FlagPeriodValue, map[int64]bool{}, application.DefaultNodeHome, simapp.EmptyAppOptions{}, interBlockCacheOpt())
 
 	// Run randomized simulation:w
 	_, simParams, simErr := simulation.SimulateFromSeed(
@@ -112,7 +112,7 @@ func TestAppStateDeterminism(t *testing.T) {
 			}
 
 			db := dbm.NewMemDB()
-			app := application.NewApplication().Initialize(application.Name, application.MakeEncodingConfig(), application.ModuleAccountPermissions, application.TokenReceiveAllowedModules, logger, db, nil, true, simapp.FlagPeriodValue, map[int64]bool{}, application.DefaultNodeHome, simapp.EmptyAppOptions{}, interBlockCacheOpt())
+			app := application.NewApplication().Initialize(application.Name, application.MakeEncodingConfig(), application.ModuleAccountPermissions, logger, db, nil, true, simapp.FlagPeriodValue, map[int64]bool{}, application.DefaultNodeHome, simapp.EmptyAppOptions{}, interBlockCacheOpt())
 
 			fmt.Printf(
 				"running non-determinism simulation; seed %d: %d/%d, attempt: %d/%d\n",
