@@ -9,7 +9,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build_release:
+  build:
     name: Build
     runs-on: ${{ matrix.config.os }} # we run many different builds
     strategy:
@@ -35,7 +35,7 @@ jobs:
       - name: Verify
         run: make verify
 
-      - name: Build
+      - name: Build Release
         run: make release
 
       - name: Upload artifact
@@ -43,3 +43,24 @@ jobs:
         with:
           name: binaries
           path: release/*
+    publish:
+      name: Release
+      runs-on: ubuntu-latest
+      steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: binaries
+          path: releases
+          
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: releases
+
+      - name: attach binaries
+        uses: softprops/action-gh-release@v1
+        with:
+          files: releases/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
