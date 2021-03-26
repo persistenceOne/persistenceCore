@@ -45,6 +45,7 @@ jobs:
           path: release/*
 
   publish:
+    needs: build
     name: Release
     runs-on: ubuntu-latest
     steps:
