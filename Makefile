@@ -1,7 +1,9 @@
 export GO111MODULE=on
 
 VERSION := $(shell echo $(shell git describe --always) | sed 's/^v//')
+TM_VERSION := $(shell go list -m github.com/tendermint/tendermint | sed 's:.* ::')
 COMMIT := $(shell git rev-parse --short HEAD)
+
 include sims.mk
 
 build_tags = netgo
@@ -11,11 +13,24 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=persistenceCore \
 		  -X github.com/cosmos/cosmos-sdk/version.AppName=persistenceCore \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
+		   -X github.com/tendermint/tendermint/version.TMCoreSemVer=$(TM_VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)
 
-BUILD_FLAGS += -ldflags "${ldflags}"
+ifeq (cleveldb,$(findstring cleveldb,$(build_tags)))
+  ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=cleveldb
+endif
+ifeq (badgerdb,$(findstring badgerdb,$(build_tags)))
+  ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=badgerdb
+endif
+ifeq (rocksdb,$(findstring rocksdb,$(build_tags)))
+  CGO_ENABLED=1
+endif
+
+BUILD_FLAGS += -ldflags "${ldflags}" -tags "${build_tags}"
 
 GOBIN = $(shell go env GOPATH)/bin
+GOARCH = $(shell go env GOARCH)
+GOOS = $(shell go env GOOS)
 
 all: verify build
 
