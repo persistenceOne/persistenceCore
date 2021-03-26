@@ -45,10 +45,10 @@ endif
 
 build:
 ifeq (${OS},Windows_NT)
-	go build  ${BUILD_FLAGS} -o ${GOBIN}/persistenceCore.exe ./node
+	go build  ${BUILD_FLAGS} -o build/${GOOS}/${GOARCH}/persistenceCore.exe ./node
 
 else
-	go build  ${BUILD_FLAGS} -o ${GOBIN}/persistenceCore ./node
+	go build  ${BUILD_FLAGS} -o build/${GOOS}/${GOARCH}/persistenceCore ./node
 
 endif
 
@@ -58,6 +58,17 @@ verify:
 
 .PHONY: all install build verify
 
+release: build
+	mkdir -p release
+ifeq (${OS},Windows_NT)
+	tar -czvf release/persistenceCore-${GOOS}-${GOARCH}.tar.gz --directory=build/${GOOS}/${GOARCH} persistenceCore.exe
+else
+	tar -czvf release/persistenceCore-${GOOS}-${GOARCH}.tar.gz --directory=build/${GOOS}/${GOARCH} persistenceCore
+endif
+	 
+
+clean:
+	rm -rf build release
 
 DOCKER := $(shell which docker)
 
