@@ -1,21 +1,36 @@
 export GO111MODULE=on
 
 VERSION := $(shell echo $(shell git describe --always) | sed 's/^v//')
+TM_VERSION := $(shell go list -m github.com/tendermint/tendermint | sed 's:.* ::')
 COMMIT := $(shell git rev-parse --short HEAD)
+
 include sims.mk
 
-build_tags = netgo
+build_tags = netgo,badgerdb
 build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=persistenceCore \
 		  -X github.com/cosmos/cosmos-sdk/version.AppName=persistenceCore \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
+		   -X github.com/tendermint/tendermint/version.TMCoreSemVer=$(TM_VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)
 
-BUILD_FLAGS += -ldflags "${ldflags}"
+ifeq (cleveldb,$(findstring cleveldb,$(build_tags)))
+  ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=cleveldb
+endif
+ifeq (badgerdb,$(findstring badgerdb,$(build_tags)))
+  ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=badgerdb
+endif
+ifeq (rocksdb,$(findstring rocksdb,$(build_tags)))
+  CGO_ENABLED=1
+endif
+
+BUILD_FLAGS += -ldflags "${ldflags}" -tags "${build_tags}"
 
 GOBIN = $(shell go env GOPATH)/bin
+GOARCH = $(shell go env GOARCH)
+GOOS = $(shell go env GOOS)
 
 all: verify build
 
@@ -30,10 +45,10 @@ endif
 
 build:
 ifeq (${OS},Windows_NT)
-	go build  ${BUILD_FLAGS} -o ${GOBIN}/persistenceCore.exe ./node
+	go build  ${BUILD_FLAGS} -o build/${GOOS}/${GOARCH}/persistenceCore.exe ./node
 
 else
-	go build  ${BUILD_FLAGS} -o ${GOBIN}/persistenceCore ./node
+	go build  ${BUILD_FLAGS} -o build/${GOOS}/${GOARCH}/persistenceCore ./node
 
 endif
 
@@ -43,6 +58,17 @@ verify:
 
 .PHONY: all install build verify
 
+release: build
+	mkdir -p release
+ifeq (${OS},Windows_NT)
+	tar -czvf release/persistenceCore-${GOOS}-${GOARCH}.tar.gz --directory=build/${GOOS}/${GOARCH} persistenceCore.exe
+else
+	tar -czvf release/persistenceCore-${GOOS}-${GOARCH}.tar.gz --directory=build/${GOOS}/${GOARCH} persistenceCore
+endif
+	 
+
+clean:
+	rm -rf build release
 
 DOCKER := $(shell which docker)
 
