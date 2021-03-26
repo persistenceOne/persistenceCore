@@ -43,19 +43,7 @@ jobs:
         with:
           name: binaries
           path: release/*
-  publish:
-    name: Release
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
 
-      - uses: actions/download-artifact@v2
-        with:
-          name: binaries
-          path: releases
-          
-      - name: Display structure of downloaded files
-        run: ls -R
-        working-directory: releases
+
 
  
