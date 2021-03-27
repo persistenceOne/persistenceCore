@@ -6,7 +6,7 @@ COMMIT := $(shell git rev-parse --short HEAD)
 
 include sims.mk
 
-build_tags = netgo,badgerdb
+build_tags = netgo
 build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=persistenceCore \
