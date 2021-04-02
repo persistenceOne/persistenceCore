@@ -37,5 +37,5 @@ WORKDIR /app
 # Copy over binaries from the build-env
 COPY --from=build-env /go/bin/persistenceCore /usr/bin/persistenceCore
 
-# Run gaiad by default, omit entrypoint to ease using container with gaiacli
+# Run persistenceCore by default, omit entrypoint to ease using container with cli
 CMD ["persistenceCore"]
