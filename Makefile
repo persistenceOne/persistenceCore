@@ -32,6 +32,16 @@ GOBIN = $(shell go env GOPATH)/bin
 GOARCH = $(shell go env GOARCH)
 GOOS = $(shell go env GOOS)
 
+# Docker variables
+DOCKER := $(shell which docker)
+
+DOCKER_IMAGE_NAME = persistenceone/persistencecore
+DOCKER_TAG_NAME = latest
+DOCKER_CONTAINER_NAME = persistence-core-container
+DOCKER_CMD ?= "/bin/sh"
+
+.PHONY: all install build verify
+
 all: verify build
 
 install:
@@ -56,8 +66,6 @@ verify:
 	@echo "verifying modules"
 	@go mod verify
 
-.PHONY: all install build verify
-
 release: build
 	mkdir -p release
 ifeq (${OS},Windows_NT)
@@ -65,12 +73,10 @@ ifeq (${OS},Windows_NT)
 else
 	tar -czvf release/persistenceCore-${GOOS}-${GOARCH}.tar.gz --directory=build/${GOOS}/${GOARCH} persistenceCore
 endif
-	 
+
 
 clean:
 	rm -rf build release
-
-DOCKER := $(shell which docker)
 
 proto-gen:
 	@echo "Generating Protobuf files"
@@ -79,3 +85,26 @@ proto-gen:
 	 --env COSMOS_SDK_DIR=/workspace/cosmos_sdk_dir \
 	 -v $(CURDIR):/workspace --workdir /workspace \
 	 tendermintdev/sdk-proto-gen sh ./.script/protocgen.sh
+
+
+# Commands for running docker
+docker-build:
+	${DOCKER} build -t ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME} .
+
+docker-build-push: docker-build
+	${DOCKER} push ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME}
+
+docker-run:
+	${DOCKER} run ${DOCKER_OPTS} --name=${DOCKER_CONTAINER_NAME} ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME} ${DOCKER_CMD}
+
+docker-interactive:
+	${MAKE} docker-run DOCKER_CMD=/bin/sh DOCKER_OPTS=--rm --it
+
+docker-clean-container:
+	-${DOCKER} stop ${DOCKER_CONTAINER_NAME}
+	-${DOCKER} rm ${DOCKER_CONTAINER_NAME}
+
+docker-clean-image:
+	-${DOCKER} rmi ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME}
+
+docker-clean: docker-clean-container docker-clean-image
