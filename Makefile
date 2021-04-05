@@ -32,6 +32,16 @@ GOBIN = $(shell go env GOPATH)/bin
 GOARCH = $(shell go env GOARCH)
 GOOS = $(shell go env GOOS)
 
+# Docker variables
+DOCKER := $(shell which docker)
+
+DOCKER_IMAGE_NAME = persistenceone/persistencecore
+DOCKER_TAG_NAME = latest
+DOCKER_CONTAINER_NAME = persistence-core-container
+DOCKER_CMD ?= "/bin/sh"
+
+.PHONY: all install build verify
+
 all: verify build
 
 install:
@@ -56,8 +66,6 @@ verify:
 	@echo "verifying modules"
 	@go mod verify
 
-.PHONY: all install build verify
-
 release: build
 	mkdir -p release
 ifeq (${OS},Windows_NT)
@@ -65,12 +73,10 @@ ifeq (${OS},Windows_NT)
 else
 	tar -czvf release/persistenceCore-${GOOS}-${GOARCH}.tar.gz --directory=build/${GOOS}/${GOARCH} persistenceCore
 endif
-	 
+
 
 clean:
 	rm -rf build release
-
-DOCKER := $(shell which docker)
 
 proto-gen:
 	@echo "Generating Protobuf files"
@@ -79,3 +85,38 @@ proto-gen:
 	 --env COSMOS_SDK_DIR=/workspace/cosmos_sdk_dir \
 	 -v $(CURDIR):/workspace --workdir /workspace \
 	 tendermintdev/sdk-proto-gen sh ./.script/protocgen.sh
+
+
+# Commands for running docker
+#
+# Run persistenceCore on docker
+# Example Usage:
+# 	make docker-build   ## Builds persistenceCore binary in 2 stages, 1st builder 2nd Runner
+# 						   Final image only has the compiled persistenceCore binary
+# 	make docker-interactive   ## Will start an shell session into the docker container
+# 								 Access to persistenceCore binary here
+# 		NOTE: To be used for testing only, since the container will be removed after stopping
+# 	make docker-run DOCKER_CMD=sleep 10000000 DOCKER_OPTS=-d   ## Will run the container in the background
+# 		NOTE: Recommeded to use docker commands directly for long running processes
+# 	make docker-clean  # Will clean up the running container, as well as delete the image
+# 						 after one is done testing
+docker-build:
+	${DOCKER} build -t ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME} .
+
+docker-build-push: docker-build
+	${DOCKER} push ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME}
+
+docker-run:
+	${DOCKER} run ${DOCKER_OPTS} --name=${DOCKER_CONTAINER_NAME} ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME} ${DOCKER_CMD}
+
+docker-interactive:
+	${MAKE} docker-run DOCKER_CMD=/bin/sh DOCKER_OPTS=--rm --it
+
+docker-clean-container:
+	-${DOCKER} stop ${DOCKER_CONTAINER_NAME}
+	-${DOCKER} rm ${DOCKER_CONTAINER_NAME}
+
+docker-clean-image:
+	-${DOCKER} rmi ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME}
+
+docker-clean: docker-clean-container docker-clean-image
