@@ -1,6 +1,6 @@
 export GO111MODULE=on
 
-VERSION := $(shell echo $(shell git describe --always) | sed 's/^v//')
+VERSION := $(shell echo $(shell git describe --tags) | sed 's/^v//')
 TM_VERSION := $(shell go list -m github.com/tendermint/tendermint | sed 's:.* ::')
 COMMIT := $(shell git rev-parse --short HEAD)
 
