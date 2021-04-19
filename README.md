@@ -16,7 +16,7 @@ This project implements an application for the Persistence Core chain that all t
     * 1.4 GHz CPU
 * **Recommended**
     * 2 GB RAM
-    * 100 GB HDD
+    * 100 GB SSD
     * 2.0 GHz x2 CPU
 
 ## Operating System
