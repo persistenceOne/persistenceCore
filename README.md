@@ -41,7 +41,7 @@ git clone https://github.com/persistenceOne/persistenceCore.git
 * Checkout release tag
 ```shell
 git fetch --tags
-git checkout {{vX.X.X}}
+git checkout [vX.X.X]
 ```
 * Install
 ```shell
@@ -61,7 +61,7 @@ or
 * [Install](#installation-steps) persistenceCore application
 * Initialize node
 ```shell
-persistenceCore init {{NODE_NAME}}
+persistenceCore init [NODE_NAME]
 ```
 * Replace `${HOME}/.persistenceCore/config/genesis.json` with the genesis file of the chain.
 * Add `persistent_peers` or `seeds` in `${HOME}/.persistenceCore/config/config.toml`
@@ -79,6 +79,21 @@ persistenceCore start
 * Start node `persistenceCore start`
 * To start rest server set `enable=true` in `config/app.toml` under `[api]` and restart the chain
 
+### Ledger Support( Experimental)
+
+> NOTE: This is an experimental feature. Persistence uses coin-type 750; generating keys through this method below will create keys with coin-type 118(cosmos) and will only be supported by CLI and not by current or future wallets. Ledger support for the Persistence application is coming soon.  
+
+* Install the Cosmos application on the Ledger device. [ref](https://hub.cosmos.network/main/resources/ledger.html#install-the-cosmos-ledger-application)
+* Connect the Ledger device to a system with persistenceCore binary and open the Cosmos application on it.
+* Add key
+```shell
+persistenceCore keys add [key_name] --ledger
+```
+* Sign transaction
+```shell
+persistenceCore tx [transaction parameters] --ledger
+```
+
 ### Reset chain
 ```shell
 rm -rf ~/.persistenceCore
@@ -93,18 +108,7 @@ killall persistenceCore
 ```shell
 persistenceCore version
 ```
-### Ledger usage via CLI
-Have cosmos app installed in your ledger device, you can refer to the cosmos hub docs [here](https://hub.cosmos.network/main/resources/ledger.html#install-the-cosmos-ledger-application)   
-Ledger support is only available for wallets with coin-type 118 since we are using cosmos ledger application for transactions.  
-Usage (make sure cosmos app is open in ledger):  
-Add key:
-```shell
-persistenceCore keys add <keyname> --ledger
-```
-Transactions:   
-```shell
-persistenceCore tx {transaction details}  --ledger
-```
+
 ## Test-nets
 * [test-core-1](https://github.com/persistenceOne/genesisTransactions/tree/master/test-core-1)
 
