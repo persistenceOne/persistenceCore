@@ -96,4 +96,4 @@ persistenceCore version
 * [test-core-1](https://github.com/persistenceOne/genesisTransactions/tree/master/test-core-1)
 
 ## Main-net
-Coming soon
+* [core-1](https://github.com/persistenceOne/genesisTransactions/tree/master/core-1)
