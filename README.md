@@ -93,7 +93,18 @@ killall persistenceCore
 ```shell
 persistenceCore version
 ```
-
+### Ledger usage via CLI
+Have cosmos app installed in your ledger device, you can refer to the cosmos hub docs [here](https://hub.cosmos.network/main/resources/ledger.html#install-the-cosmos-ledger-application)   
+Ledger support is only available for wallets with coin-type 118 since we are using cosmos ledger application for transactions.  
+Usage (make sure cosmos app is open in ledger):  
+Add key:
+```shell
+persistenceCore keys add <keyname> --ledger
+```
+Transactions:   
+```shell
+persistenceCore tx {transaction details}  --ledger
+```
 ## Test-nets
 * [test-core-1](https://github.com/persistenceOne/genesisTransactions/tree/master/test-core-1)
 
