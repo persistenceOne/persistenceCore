@@ -19,6 +19,8 @@ This project implements an application for the Persistence Core chain that all t
     * 100 GB HDD
     * 2.0 GHz x2 CPU
 
+> NOTE: SSDs have limited TBW before non-catastrophic data errors. Running a full node requires a TB+ writes per day, causing rapid deterioration of SSDs over HDDs of comparable quality.
+
 ## Operating System
 * Linux/Windows/MacOS(x86)
 * **Recommended**
