@@ -7,3 +7,4 @@ vendor/
 target/
 build/
 release/
+.script/kafka_*
