@@ -48,6 +48,11 @@ func run(initClientCtx client.Context) {
 		fmt.Println("Unable to parse tx")
 	}
 	fmt.Println(tx.GetMsgs()[0].Type())
-	//sendMsg := tx.GetMsgs()[0].(banktypes.MsgSend)
-	//fmt.Println(sendMsg.FromAddress)
+	for _, msg := range tx.GetMsgs() {
+		if msg.Type() == "send" {
+			fmt.Println(msg.String())
+			//sendMsg := msg.(banktypes.MsgSend)
+			//fmt.Println(sendMsg.FromAddress)
+		}
+	}
 }
