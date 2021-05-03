@@ -5,7 +5,16 @@ import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/x/auth/signing"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	"github.com/gorilla/websocket"
+	"github.com/persistenceOne/persistenceCore/pStake/constants"
+	"github.com/persistenceOne/persistenceCore/pStake/queries"
+	"github.com/persistenceOne/persistenceCore/pStake/responses"
 	"github.com/spf13/cobra"
+	"log"
+	"net/url"
+	"strconv"
+	"time"
 )
 
 func GetCmd(initClientCtx client.Context) *cobra.Command {
@@ -18,41 +27,141 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 			return nil
 		},
 	}
-
 	return pStakeCommand
 }
+
+var lastBlockHeight int64 = 1 //6048016
+
+func setAppLastBlockHeight(height int64) {
+	lastBlockHeight = height
+}
+
+func getAppLastBlockHeight() int64 {
+	return lastBlockHeight
+}
+
 func run(initClientCtx client.Context) {
 
-	//height := "15"
-	//response, err := queries.GetTxsByHeight(height)
-	//if err != nil {
-	//	fmt.Println(err.Error())
-	//}
+	if constants.HttpMethod {
+		httpMethod(initClientCtx)
+	} else {
+		webSocketMethod(initClientCtx)
+	}
 
-	Tx := "CpABCo0BChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEm0KLWNvc21vczFkMjBnMGdjd2hyd3Y4ZjI2MjZkeDBua2hhdXUwcnNxazhwZm4wbRItY29zbW9zMTcyN2ZxNng3NmVzcXowM3F0MHZleHM2ajhzZG01NHF4N2txNjNwGg0KBXN0YWtlEgQxMDAwElgKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQPvtx3smWdI9li0uGECYv8di+QrUI3yM/+4JGOPn1x/dhIECgIIARgBEgQQwJoMGkAimAko9tTisNOSSD5OJ5hDLgT614QmkVwI1LxIgo+y0mrVsGuR/58kQLonSDAOtTBkcnAnZwxsLQAbMQnABSXV"
+}
 
-	fmt.Println(Tx)
+func handleSendCoinMsg(msg *banktypes.MsgSend) {
+	fmt.Println(msg.String())
+}
 
-	decodedTx, err := base64.StdEncoding.DecodeString(Tx) //response.Result.Txs[0].Tx)
+func handleEncodeTx(initClientCtx client.Context, encodedTx string) {
+	decodedTx, err := base64.StdEncoding.DecodeString(encodedTx)
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Fatalln(err.Error())
 	}
 
 	txInterface, err := initClientCtx.TxConfig.TxDecoder()(decodedTx)
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Fatalln(err.Error())
 	}
 
 	tx, ok := txInterface.(signing.Tx)
 	if !ok {
-		fmt.Println("Unable to parse tx")
+		log.Fatalln("Unable to parse tx")
 	}
-	fmt.Println(tx.GetMsgs()[0].Type())
+
 	for _, msg := range tx.GetMsgs() {
-		if msg.Type() == "send" {
-			fmt.Println(msg.String())
-			//sendMsg := msg.(banktypes.MsgSend)
-			//fmt.Println(sendMsg.FromAddress)
+		switch msg := msg.(type) {
+		case *banktypes.MsgSend:
+			handleSendCoinMsg(msg)
+		default:
+
 		}
 	}
+}
+
+func httpMethod(initClientCtx client.Context) {
+	for {
+		abciResponse, err := queries.GetABCI()
+		if err != nil {
+			log.Println(err)
+			time.Sleep(2 * time.Second)
+			continue
+		}
+
+		lastBlockHeight, err := strconv.ParseInt(abciResponse.Result.Response.LastBlockHeight, 10, 64)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		if lastBlockHeight > getAppLastBlockHeight() {
+
+			checkHeight := getAppLastBlockHeight() + 1
+			response, err := queries.GetTxsByHeight(strconv.FormatInt(checkHeight, 10))
+			if err != nil {
+				log.Println(err)
+				time.Sleep(2 * time.Second)
+				continue
+			}
+
+			for _, txResponse := range response.Result.Txs {
+				fmt.Println(checkHeight)
+				fmt.Println(txResponse.TxResult.Code)
+				if txResponse.TxResult.Code == 0 {
+					handleEncodeTx(initClientCtx, txResponse.Tx)
+				}
+			}
+			setAppLastBlockHeight(checkHeight)
+		} else {
+			time.Sleep(3500 * time.Millisecond)
+		}
+	}
+}
+
+func webSocketMethod(initClientCtx client.Context) {
+	wsURL := url.URL{Scheme: "wss", Host: constants.WEBOSCKET_URL, Path: "/websocket"}
+	if !constants.TLS_ENABLED {
+		wsURL = url.URL{Scheme: "ws", Host: constants.WEBOSCKET_URL, Path: "/websocket"}
+	}
+	log.Printf("connecting to %s", wsURL.String())
+
+	connection, _, err := websocket.DefaultDialer.Dial(wsURL.String(), nil)
+	if err != nil {
+		log.Fatal("dial:", err)
+	}
+	err = connection.WriteMessage(websocket.TextMessage, []byte(`{"method":"subscribe", "id":"dontcare","jsonrpc":"2.0","params":["tm.event='Tx'"]}`))
+	if err != nil {
+		log.Println("write:", err)
+		return
+	}
+
+	go func() {
+		for {
+			var webSocketTx responses.WebSocketTx
+			err := connection.ReadJSON(&webSocketTx)
+			if err != nil {
+				log.Println("WebSocket Connection Error:", err)
+				return
+			}
+			if webSocketTx.Result.Data.Value.TxResult.Result.Code == 0 {
+				handleEncodeTx(initClientCtx, webSocketTx.Result.Data.Value.TxResult.Tx)
+			}
+		}
+	}()
+
+	connection.SetCloseHandler(func(code int, text string) error {
+		log.Printf("Close Handler: code - %d, message: %s", code, text)
+		connection.WriteMessage(websocket.TextMessage, []byte(`{"method":"subscribe", "id":"dontcare","jsonrpc":"2.0","params":["tm.event='Tx'"]}`))
+		return nil
+	})
+
+	defer func(connection *websocket.Conn) {
+		err := connection.Close()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}(connection)
+
+	select {}
+
 }
