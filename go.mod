@@ -3,11 +3,13 @@ module github.com/persistenceOne/persistenceCore
 go 1.14
 
 require (
+	github.com/Shopify/sarama v1.28.0
 	github.com/cosmos/cosmos-sdk v0.42.4
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.4.3
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
+	github.com/pkg/errors v0.9.1
 	github.com/rakyll/statik v0.1.7
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.1
