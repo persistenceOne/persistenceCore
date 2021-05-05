@@ -12,7 +12,7 @@ import (
 // KafkaAdmin : is admin to create topics
 func KafkaAdmin(kafkaPorts []string) sarama.ClusterAdmin {
 	config := sarama.NewConfig()
-	config.Version = sarama.V0_11_0_0 // hardcoded
+	config.Version = sarama.V2_7_0_0 // hardcoded
 
 	admin, Error := sarama.NewClusterAdmin(kafkaPorts, config)
 	if Error != nil {

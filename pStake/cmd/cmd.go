@@ -7,6 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/signing"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/gorilla/websocket"
+	"github.com/persistenceOne/persistenceCore/kafka"
 	"github.com/persistenceOne/persistenceCore/pStake/constants"
 	"github.com/persistenceOne/persistenceCore/pStake/queries"
 	"github.com/persistenceOne/persistenceCore/pStake/responses"
@@ -14,6 +15,7 @@ import (
 	"log"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -22,12 +24,43 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 		Use:   "pStake",
 		Short: "Persistence Hub Node Daemon (server)",
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			var ports, err = cmd.Flags().GetString("ports")
+			fmt.Println(ports, err)
+			if err != nil {
+				return err
+			}
+			go kafkaRoutine(ports)
 			run(initClientCtx)
 
 			return nil
 		},
 	}
+
+	pStakeCommand.Flags().String("ports", "PLAINTEXT://localhost:9092", "ports kafka brokers are running on, --ports https://192.100.10.10:443,https://192.100.10.11:443")
+
 	return pStakeCommand
+}
+
+// kafkaRoutine: starts kafka in a separate goRoutine, consumers will each start in different go routines
+// no need to store any db, producers and consumers are inside kafkaState struct.
+// use kafka.KafkaProducerDeliverMessage() -> to produce message
+// use kafka.KafkaTopicConsumer -> to consume messages.
+func kafkaRoutine(ports string) {
+	portsList := strings.Split(ports, ",")
+	_ = kafka.NewKafkaState(portsList)
+
+	time.Sleep(1000000000)
+
+	go consumeMsgSend()
+	// go consume other messages
+
+	fmt.Println("started consumers")
+}
+func consumeMsgSend() {
+	for {
+		//consume logic here.
+		time.Sleep(kafka.SleepRoutine)
+	}
 }
 
 var lastBlockHeight int64 = 1 //6048016

@@ -38,5 +38,5 @@ var topicDetail = sarama.TopicDetail{
 
 // Topics : is list of topics
 var Topics = []string{
-	"Topic",
+	"cosmos/msgSend",
 }
