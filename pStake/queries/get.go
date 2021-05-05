@@ -2,13 +2,12 @@ package queries
 
 import (
 	"encoding/json"
-	"github.com/persistenceOne/persistenceCore/pStake/constants"
 	"io"
 	"net/http"
 	"time"
 )
 
-var httpClient = &http.Client{Timeout: constants.Timeout * time.Second}
+var httpClient = &http.Client{Timeout: 10 * time.Second}
 
 func get(url string, target interface{}) error {
 	r, err := httpClient.Get(url)
