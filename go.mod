@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/cosmos/cosmos-sdk v0.42.4
+	github.com/cosmos/relayer v0.9.3 // indirect
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.4.3
 	github.com/gorilla/mux v1.8.0
@@ -17,6 +18,8 @@ require (
 	github.com/tendermint/tm-db v0.6.4
 	google.golang.org/genproto v0.0.0-20210114201628-6edceaf6022f
 	google.golang.org/grpc v1.35.0
+	gopkg.in/airbrake/gobrake.v2 v2.0.9 // indirect
+	gopkg.in/gemnasium/logrus-airbrake-hook.v2 v2.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 	honnef.co/go/tools v0.0.1-2019.2.3
 )
