@@ -53,8 +53,6 @@ func kafkaRoutine(ports string) {
 	portsList := strings.Split(ports, ",")
 	_ = kafka.NewKafkaState(portsList)
 
-	time.Sleep(1000000000)
-
 	go consumeMsgSend()
 	// go consume other messages
 
