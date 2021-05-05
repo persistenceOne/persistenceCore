@@ -40,7 +40,7 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 		},
 	}
 	pStakeCommand.Flags().String(constants.FlagTimeOut, "10s", "timeout time for connecting to rpc")
-	pStakeCommand.Flags().String("ports", "localhost:9092", "ports kafka brokers are running on, --ports https://192.100.10.10:443,https://192.100.10.11:443")
+	pStakeCommand.Flags().String("ports", "localhost:9092", "ports kafka brokers are running on, --ports 192.100.10.10:443,192.100.10.11:443")
 
 	return pStakeCommand
 }
