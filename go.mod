@@ -5,10 +5,10 @@ go 1.14
 require (
 	github.com/Shopify/sarama v1.28.0
 	github.com/cosmos/cosmos-sdk v0.42.4
+	github.com/cosmos/relayer v0.9.3
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.4.3
 	github.com/gorilla/mux v1.8.0
-	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/pkg/errors v0.9.1
 	github.com/rakyll/statik v0.1.7

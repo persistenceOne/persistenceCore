@@ -1,41 +1,45 @@
 package cmd
 
 import (
-	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/x/auth/signing"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/gorilla/websocket"
+	"github.com/cosmos/relayer/relayer"
 	"github.com/persistenceOne/persistenceCore/kafka"
 	"github.com/persistenceOne/persistenceCore/pStake/constants"
-	"github.com/persistenceOne/persistenceCore/pStake/queries"
-	"github.com/persistenceOne/persistenceCore/pStake/responses"
 	"github.com/spf13/cobra"
+	tmservice "github.com/tendermint/tendermint/libs/service"
+	tmTypes "github.com/tendermint/tendermint/types"
+	"io/ioutil"
 	"log"
-	"net/url"
-	"strconv"
+	"os"
 	"strings"
 	"time"
 )
 
 func GetCmd(initClientCtx client.Context) *cobra.Command {
 	pStakeCommand := &cobra.Command{
-		Use:   "pStake",
-		Short: "Persistence Hub Node Daemon (server)",
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			var ports, err = cmd.Flags().GetString("ports")
+		Use:   "pStake [path_to_chain_json]",
+		Short: "Start pStake",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			timeout, err := cmd.Flags().GetString(constants.FlagTimeOut)
+			if err != nil {
+				log.Fatalln(err)
+			}
+			ports, err := cmd.Flags().GetString("ports")
 			fmt.Println(ports, err)
 			if err != nil {
 				return err
 			}
 			go kafkaRoutine(ports)
-			run(initClientCtx)
-
+			run(initClientCtx, args[0], timeout)
 			return nil
 		},
 	}
-
+	pStakeCommand.Flags().String(constants.FlagTimeOut, "10s", "timeout time for connecting to rpc")
 	pStakeCommand.Flags().String("ports", "PLAINTEXT://localhost:9092", "ports kafka brokers are running on, --ports https://192.100.10.10:443,https://192.100.10.11:443")
 
 	return pStakeCommand
@@ -63,37 +67,61 @@ func consumeMsgSend() {
 	}
 }
 
-var lastBlockHeight int64 = 1 //6048016
-
-func setAppLastBlockHeight(height int64) {
-	lastBlockHeight = height
-}
-
-func getAppLastBlockHeight() int64 {
-	return lastBlockHeight
-}
-
-func run(initClientCtx client.Context) {
-
-	if constants.HttpMethod {
-		httpMethod(initClientCtx)
-	} else {
-		webSocketMethod(initClientCtx)
+func run(initClientCtx client.Context, chainConfigJsonPath, timeout string) {
+	chain, err := fileInputAdd(chainConfigJsonPath)
+	to, err := time.ParseDuration(timeout)
+	if err != nil {
+		log.Fatalf("Error while parsing timeout: %w", err)
 	}
-
-}
-
-func handleSendCoinMsg(msg *banktypes.MsgSend) {
-	fmt.Println(msg.String())
-}
-
-func handleEncodeTx(initClientCtx client.Context, encodedTx string) {
-	decodedTx, err := base64.StdEncoding.DecodeString(encodedTx)
+	homePath, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("Error while getting current directory: %w", err)
+	}
+	err = chain.Init(homePath, to, nil, true)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
+	if err = chain.Start(); err != nil {
+		if err != tmservice.ErrAlreadyStarted {
+			chain.Error(err)
+			return
+		}
+	}
 
-	txInterface, err := initClientCtx.TxConfig.TxDecoder()(decodedTx)
+	txxEvents, txCancel, err := chain.Subscribe(constants.TxEvents)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+	defer txCancel()
+
+	blockEvents, blockCancel, err := chain.Subscribe(constants.BlockEvents)
+	if err != nil {
+		chain.Error(err)
+		return
+	}
+	defer blockCancel()
+
+	for {
+		select {
+		case txEvent := <-txxEvents:
+			if txEvent.Data.(tmTypes.EventDataTx).Result.Code == 0 {
+				go handleEncodeTx(initClientCtx, txEvent.Data.(tmTypes.EventDataTx).Tx)
+			}
+		case blockEvent := <-blockEvents:
+			fmt.Println(blockEvent.Data.(tmTypes.EventDataNewBlock).Block.Height)
+		}
+	}
+
+}
+
+func handleEncodeTx(initClientCtx client.Context, encodedTx []byte) {
+	// Should be used if encodedTx is string
+	//decodedTx, err := base64.StdEncoding.DecodeString(encodedTx)
+	//if err != nil {
+	//	log.Fatalln(err.Error())
+	//}
+
+	txInterface, err := initClientCtx.TxConfig.TxDecoder()(encodedTx)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
@@ -103,98 +131,33 @@ func handleEncodeTx(initClientCtx client.Context, encodedTx string) {
 		log.Fatalln("Unable to parse tx")
 	}
 
+	fmt.Printf("Memo: %s", tx.GetMemo())
+
 	for _, msg := range tx.GetMsgs() {
 		switch msg := msg.(type) {
 		case *banktypes.MsgSend:
-			handleSendCoinMsg(msg)
+			fmt.Println(msg.String())
 		default:
 
 		}
 	}
 }
 
-func httpMethod(initClientCtx client.Context) {
-	for {
-		abciResponse, err := queries.GetABCI()
-		if err != nil {
-			log.Println(err)
-			time.Sleep(2 * time.Second)
-			continue
-		}
-
-		lastBlockHeight, err := strconv.ParseInt(abciResponse.Result.Response.LastBlockHeight, 10, 64)
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		if lastBlockHeight > getAppLastBlockHeight() {
-
-			checkHeight := getAppLastBlockHeight() + 1
-			response, err := queries.GetTxsByHeight(strconv.FormatInt(checkHeight, 10))
-			if err != nil {
-				log.Println(err)
-				time.Sleep(2 * time.Second)
-				continue
-			}
-
-			for _, txResponse := range response.Result.Txs {
-				fmt.Println(checkHeight)
-				fmt.Println(txResponse.TxResult.Code)
-				if txResponse.TxResult.Code == 0 {
-					handleEncodeTx(initClientCtx, txResponse.Tx)
-				}
-			}
-			setAppLastBlockHeight(checkHeight)
-		} else {
-			time.Sleep(3500 * time.Millisecond)
-		}
+func fileInputAdd(file string) (*relayer.Chain, error) {
+	// If the user passes in a file, attempt to read the chain config from that file
+	c := &relayer.Chain{}
+	if _, err := os.Stat(file); err != nil {
+		return c, err
 	}
-}
 
-func webSocketMethod(initClientCtx client.Context) {
-	wsURL := url.URL{Scheme: "wss", Host: constants.WEBOSCKET_URL, Path: "/websocket"}
-	if !constants.TLS_ENABLED {
-		wsURL = url.URL{Scheme: "ws", Host: constants.WEBOSCKET_URL, Path: "/websocket"}
-	}
-	log.Printf("connecting to %s", wsURL.String())
-
-	connection, _, err := websocket.DefaultDialer.Dial(wsURL.String(), nil)
+	byt, err := ioutil.ReadFile(file)
 	if err != nil {
-		log.Fatal("dial:", err)
-	}
-	err = connection.WriteMessage(websocket.TextMessage, []byte(`{"method":"subscribe", "id":"dontcare","jsonrpc":"2.0","params":["tm.event='Tx'"]}`))
-	if err != nil {
-		log.Println("write:", err)
-		return
+		return c, err
 	}
 
-	go func() {
-		for {
-			var webSocketTx responses.WebSocketTx
-			err := connection.ReadJSON(&webSocketTx)
-			if err != nil {
-				log.Println("WebSocket Connection Error:", err)
-				return
-			}
-			if webSocketTx.Result.Data.Value.TxResult.Result.Code == 0 {
-				handleEncodeTx(initClientCtx, webSocketTx.Result.Data.Value.TxResult.Tx)
-			}
-		}
-	}()
+	if err = json.Unmarshal(byt, c); err != nil {
+		return c, err
+	}
 
-	connection.SetCloseHandler(func(code int, text string) error {
-		log.Printf("Close Handler: code - %d, message: %s", code, text)
-		connection.WriteMessage(websocket.TextMessage, []byte(`{"method":"subscribe", "id":"dontcare","jsonrpc":"2.0","params":["tm.event='Tx'"]}`))
-		return nil
-	})
-
-	defer func(connection *websocket.Conn) {
-		err := connection.Close()
-		if err != nil {
-			log.Fatalln(err)
-		}
-	}(connection)
-
-	select {}
-
+	return c, nil
 }
