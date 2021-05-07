@@ -46,7 +46,7 @@ func main() {
 	configuration.SetBech32PrefixForConsensusNode(application.Bech32PrefixConsAddr, application.Bech32PrefixConsPub)
 	configuration.SetCoinType(application.CoinType)
 	configuration.SetFullFundraiserPath(application.FullFundraiserPath)
-	configuration.Seal()
+	//configuration.Seal()
 
 	encodingConfig := application.MakeEncodingConfig()
 	initClientCtx := client.Context{}.

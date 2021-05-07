@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/signing"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	"github.com/cosmos/relayer/helpers"
 	"github.com/cosmos/relayer/relayer"
 	"github.com/golang/protobuf/proto"
 	"github.com/persistenceOne/persistenceCore/kafka"
@@ -22,14 +24,29 @@ import (
 
 func GetCmd(initClientCtx client.Context) *cobra.Command {
 	pStakeCommand := &cobra.Command{
-		Use:   "pStake [path_to_chain_json]",
+		Use:   "pStake [path_to_chain_json] [mnemonics]",
 		Short: "Start pStake",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			timeout, err := cmd.Flags().GetString(constants.FlagTimeOut)
 			if err != nil {
 				log.Fatalln(err)
 			}
+
+			coinType, err := cmd.Flags().GetUint32(constants.FlagCoinType)
+			if err != nil {
+				log.Fatalln(err)
+			}
+
+			//account, err := cmd.Flags().GetInt(constants.FlagAccount)
+			//if err != nil {
+			//	log.Fatalln(err)
+			//}
+			//
+			//index, err := cmd.Flags().GetInt(constants.FlagIndex)
+			//if err != nil {
+			//	log.Fatalln(err)
+			//}
 			ports, err := cmd.Flags().GetString("ports")
 			fmt.Println(ports, err)
 			if err != nil {
@@ -38,11 +55,15 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 			portsList := strings.Split(ports, ",")
 			kafkaState := kafka.NewKafkaState(portsList)
 			go kafkaRoutine(kafkaState)
-			run(initClientCtx, args[0], timeout, kafkaState)
+
+			run(initClientCtx, args[0], timeout, coinType, args[1], kafkaState)
 			return nil
 		},
 	}
 	pStakeCommand.Flags().String(constants.FlagTimeOut, "10s", "timeout time for connecting to rpc")
+	pStakeCommand.Flags().Uint32(constants.FlagCoinType, 118, "coin type for wallet")
+	//pStakeCommand.Flags().Int(constants.FlagAccount, 0, "account no. for wallet")
+	//pStakeCommand.Flags().Int(constants.FlagIndex, 0, "index of wallet")
 	pStakeCommand.Flags().String("ports", "localhost:9092", "ports kafka brokers are running on, --ports 192.100.10.10:443,192.100.10.11:443")
 
 	return pStakeCommand
@@ -83,20 +104,39 @@ func consumeMsgSend(state kafka.KafkaState) {
 	}
 }
 
-func run(initClientCtx client.Context, chainConfigJsonPath, timeout string, kafkaState kafka.KafkaState) {
+func run(initClientCtx client.Context, chainConfigJsonPath, timeout string, coinType uint32, mnemonics string, kafkaState kafka.KafkaState) {
 	chain, err := fileInputAdd(chainConfigJsonPath)
 	to, err := time.ParseDuration(timeout)
 	if err != nil {
 		log.Fatalf("Error while parsing timeout: %w", err)
 	}
-	homePath, err := os.Getwd()
-	if err != nil {
-		log.Fatalf("Error while getting current directory: %w", err)
-	}
+	//homePath, err := os.Getwd()
+	//if err != nil {
+	//	log.Fatalf("Error while getting current directory: %w", err)
+	//}
+
+	homePath := "./pStake"
+
 	err = chain.Init(homePath, to, nil, true)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
+
+	if chain.KeyExists(chain.Key) {
+		log.Printf("deleting old key %s\n", chain.Key)
+		err = chain.Keybase.Delete(chain.Key)
+		if err != nil {
+			log.Fatalln("could not delete key %s", chain.Key)
+		}
+	}
+
+	ko, err := helpers.KeyAddOrRestore(chain, chain.Key, coinType, mnemonics)
+	if err != nil {
+		log.Fatalf("Error while adding keys: %w", err)
+	}
+
+	log.Printf("Keys added: %s", ko.Address)
+
 	if err = chain.Start(); err != nil {
 		if err != tmservice.ErrAlreadyStarted {
 			chain.Error(err)
@@ -117,6 +157,15 @@ func run(initClientCtx client.Context, chainConfigJsonPath, timeout string, kafk
 	}
 	defer blockCancel()
 
+	fromAccount, err := chain.GetAddress()
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+	toAccount, err := sdk.AccAddressFromBech32("cosmos120fgcs32s8wus7k80ysfszwl275x4v87wuuxd9")
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
 	for {
 		select {
 		case txEvent := <-txxEvents:
@@ -125,6 +174,16 @@ func run(initClientCtx client.Context, chainConfigJsonPath, timeout string, kafk
 			}
 		case blockEvent := <-blockEvents:
 			fmt.Println(blockEvent.Data.(tmTypes.EventDataNewBlock).Block.Height)
+
+			if blockEvent.Data.(tmTypes.EventDataNewBlock).Block.Height%10 == 0 {
+				response, ok, err := chain.SendMsg(banktypes.NewMsgSend(fromAccount, toAccount, sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(1)))))
+				if err != nil {
+					log.Println(err.Error())
+				}
+				if !ok {
+					fmt.Println("Transaction %s not ok", response.TxHash)
+				}
+			}
 		}
 	}
 
