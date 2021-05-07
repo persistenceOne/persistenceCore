@@ -1,5 +1,8 @@
 package constants
 
 const (
-	FlagTimeOut = "timeout"
+	FlagTimeOut  = "timeout"
+	FlagCoinType = "coinType"
+	FlagAccount  = "account"
+	FlagIndex    = "index"
 )
