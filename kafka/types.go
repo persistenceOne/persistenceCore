@@ -7,26 +7,25 @@ package kafka
 
 import (
 	"github.com/Shopify/sarama"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	dbm "github.com/tendermint/tm-db"
 )
 
 // Ticket : is a type that implements string
 type Ticket string
 
-// KafkaMsg : is a store that can be stored in kafka queues
-type KafkaMsg struct {
-	Msg      sdk.Msg `json:"msg"`
-	TicketID Ticket  `json:"ticketID"`
-}
-
-// NewKafkaMsgFromRest : makes a msg to send to kafka queue
-func NewKafkaMsgFromRest(msg sdk.Msg, ticketID Ticket) KafkaMsg {
-	return KafkaMsg{
-		Msg:      msg,
-		TicketID: ticketID,
-	}
-}
+//// KafkaMsg : is a store that can be stored in kafka queues
+//type KafkaMsg struct {
+//	Msg      sdk.Msg `json:"msg"`
+//	TicketID Ticket  `json:"ticketID"`
+//}
+//
+//// NewKafkaMsgFromRest : makes a msg to send to kafka queue
+//func NewKafkaMsgFromRest(msg sdk.Msg, ticketID Ticket) KafkaMsg {
+//	return KafkaMsg{
+//		Msg:      msg,
+//		TicketID: ticketID,
+//	}
+//}
 
 // TicketIDResponse : is a json structure to send TicketID to user
 type TicketIDResponse struct {
@@ -47,11 +46,19 @@ type KafkaState struct {
 func NewKafkaState(kafkaPorts []string) KafkaState {
 	kafkaDB, _ := dbm.NewGoLevelDB("KafkaDB", DefaultCLIHome)
 	admin := KafkaAdmin(kafkaPorts)
+	adminTopics, err := admin.ListTopics()
+	if err != nil {
+		panic(err)
+	}
+	//create topics if not present
+	for _, topic := range Topics {
+		if _, ok := adminTopics[topic]; !ok {
+			TopicsInit(admin, topic)
+		}
+	}
 	producer := NewProducer(kafkaPorts)
 	consumer := NewConsumer(kafkaPorts)
-
 	var consumers = make(map[string]sarama.PartitionConsumer)
-
 	for _, topic := range Topics {
 		partitionConsumer := PartitionConsumers(consumer, topic)
 		consumers[topic] = partitionConsumer

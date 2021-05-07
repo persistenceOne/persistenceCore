@@ -6,8 +6,9 @@
 package kafka
 
 import (
+	"errors"
+	"fmt"
 	"github.com/Shopify/sarama"
-	"github.com/cosmos/cosmos-sdk/codec"
 )
 
 // NewConsumer : is a consumer which is needed to create child consumers to consume topics
@@ -25,6 +26,7 @@ func NewConsumer(kafkaPorts []string) sarama.Consumer {
 // PartitionConsumers : is a child consumer
 func PartitionConsumers(consumer sarama.Consumer, topic string) sarama.PartitionConsumer {
 	// partition and offset defined in CONSTANTS.go
+	fmt.Println(consumer.Topics())
 	partitionConsumer, Error := consumer.ConsumePartition(topic, partition, offset)
 	if Error != nil {
 		panic(Error)
@@ -33,23 +35,14 @@ func PartitionConsumers(consumer sarama.Consumer, topic string) sarama.Partition
 	return partitionConsumer
 }
 
-// KafkaTopicConsumer : Takes a consumer and makes it consume a topic message at a time
-func KafkaTopicConsumer(topic string, consumers map[string]sarama.PartitionConsumer, cdc *codec.LegacyAmino) KafkaMsg {
+// TopicConsumer : Takes a consumer and makes it consume a topic message at a time
+func TopicConsumer(topic string, consumers map[string]sarama.PartitionConsumer) ([]byte, error) {
 	partitionConsumer := consumers[topic]
 
 	if len(partitionConsumer.Messages()) == 0 {
-		var kafkaStore = KafkaMsg{Msg: nil}
-		return kafkaStore
+		return nil, errors.New("No Msgs")
 	}
 
 	kafkaMsg := <-partitionConsumer.Messages()
-
-	var kafkaStore KafkaMsg
-	err := cdc.UnmarshalJSON(kafkaMsg.Value, &kafkaStore)
-
-	if err != nil {
-		panic(err)
-	}
-
-	return kafkaStore
+	return kafkaMsg.Value, nil
 }

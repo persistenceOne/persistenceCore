@@ -9,6 +9,8 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/relayer/helpers"
 	"github.com/cosmos/relayer/relayer"
+	"github.com/golang/protobuf/proto"
+	"github.com/persistenceOne/persistenceCore/kafka"
 	"github.com/persistenceOne/persistenceCore/pStake/constants"
 	"github.com/spf13/cobra"
 	tmservice "github.com/tendermint/tendermint/libs/service"
@@ -16,6 +18,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -44,8 +47,16 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 			//if err != nil {
 			//	log.Fatalln(err)
 			//}
+			ports, err := cmd.Flags().GetString("ports")
+			fmt.Println(ports, err)
+			if err != nil {
+				return err
+			}
+			portsList := strings.Split(ports, ",")
+			kafkaState := kafka.NewKafkaState(portsList)
+			go kafkaRoutine(kafkaState)
 
-			run(initClientCtx, args[0], timeout, coinType, args[1])
+			run(initClientCtx, args[0], timeout, coinType, args[1], kafkaState)
 			return nil
 		},
 	}
@@ -53,10 +64,47 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 	pStakeCommand.Flags().Uint32(constants.FlagCoinType, 118, "coin type for wallet")
 	//pStakeCommand.Flags().Int(constants.FlagAccount, 0, "account no. for wallet")
 	//pStakeCommand.Flags().Int(constants.FlagIndex, 0, "index of wallet")
+	pStakeCommand.Flags().String("ports", "localhost:9092", "ports kafka brokers are running on, --ports 192.100.10.10:443,192.100.10.11:443")
+
 	return pStakeCommand
 }
 
-func run(initClientCtx client.Context, chainConfigJsonPath, timeout string, coinType uint32, mnemonics string) {
+// kafkaRoutine: starts kafka in a separate goRoutine, consumers will each start in different go routines
+// no need to store any db, producers and consumers are inside kafkaState struct.
+// use kafka.ProducerDeliverMessage() -> to produce message
+// use kafka.TopicConsumer -> to consume messages.
+func kafkaRoutine(kafkaState kafka.KafkaState) {
+	go consumeMsgSend(kafkaState)
+	// go consume other messages
+
+	fmt.Println("started consumers")
+}
+func consumeMsgSend(state kafka.KafkaState) {
+	for {
+		//consume logic here.
+		var msgs []banktypes.MsgSend
+		for i := 0; i < kafka.BatchSize; {
+			bz, _ := kafka.TopicConsumer(kafka.MsgSendForward, state.Consumers)
+			fmt.Println("message received from kafka", bz)
+			if bz != nil {
+				var msg = banktypes.MsgSend{}
+				err := proto.Unmarshal(bz, &msg)
+				if err != nil {
+					panic(err)
+				}
+				msgs = append(msgs, msg)
+				i++
+			} else {
+				time.Sleep(kafka.SleepTimer)
+			}
+
+		}
+		fmt.Println("batch the messages: ", msgs)
+		time.Sleep(kafka.SleepRoutine)
+	}
+}
+
+func run(initClientCtx client.Context, chainConfigJsonPath, timeout string, coinType uint32, mnemonics string, kafkaState kafka.KafkaState) {
 	chain, err := fileInputAdd(chainConfigJsonPath)
 	to, err := time.ParseDuration(timeout)
 	if err != nil {
@@ -122,7 +170,7 @@ func run(initClientCtx client.Context, chainConfigJsonPath, timeout string, coin
 		select {
 		case txEvent := <-txxEvents:
 			if txEvent.Data.(tmTypes.EventDataTx).Result.Code == 0 {
-				go handleEncodeTx(initClientCtx, txEvent.Data.(tmTypes.EventDataTx).Tx)
+				go handleEncodeTx(initClientCtx, txEvent.Data.(tmTypes.EventDataTx).Tx, kafkaState)
 			}
 		case blockEvent := <-blockEvents:
 			fmt.Println(blockEvent.Data.(tmTypes.EventDataNewBlock).Block.Height)
@@ -141,7 +189,7 @@ func run(initClientCtx client.Context, chainConfigJsonPath, timeout string, coin
 
 }
 
-func handleEncodeTx(initClientCtx client.Context, encodedTx []byte) {
+func handleEncodeTx(initClientCtx client.Context, encodedTx []byte, kafkaState kafka.KafkaState) {
 	// Should be used if encodedTx is string
 	//decodedTx, err := base64.StdEncoding.DecodeString(encodedTx)
 	//if err != nil {
@@ -163,7 +211,21 @@ func handleEncodeTx(initClientCtx client.Context, encodedTx []byte) {
 	for _, msg := range tx.GetMsgs() {
 		switch msg := msg.(type) {
 		case *banktypes.MsgSend:
-			fmt.Println(msg.String())
+			if true {
+				// produce to send queue
+				msgBytes, err := proto.Marshal(msg)
+
+				if err != nil {
+					panic(err)
+				}
+				err = kafka.ProducerDeliverMessage(msgBytes, kafka.MsgSendForward, kafkaState.Producer)
+				if err != nil {
+					log.Print("Failed to add msg to kafka queue: ", err)
+				}
+				fmt.Println("Produced to kafka: ", msg.String())
+			} else {
+				// reversal queue
+			}
 		default:
 
 		}
