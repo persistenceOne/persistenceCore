@@ -9,8 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Shopify/sarama"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/golang/protobuf/proto"
 )
 
 // NewConsumer : is a consumer which is needed to create child consumers to consume topics
@@ -37,8 +35,8 @@ func PartitionConsumers(consumer sarama.Consumer, topic string) sarama.Partition
 	return partitionConsumer
 }
 
-// KafkaTopicConsumer : Takes a consumer and makes it consume a topic message at a time
-func KafkaTopicConsumer(topic string, consumers map[string]sarama.PartitionConsumer) (*banktypes.MsgSend, error) {
+// TopicConsumer : Takes a consumer and makes it consume a topic message at a time
+func TopicConsumer(topic string, consumers map[string]sarama.PartitionConsumer) ([]byte, error) {
 	partitionConsumer := consumers[topic]
 
 	if len(partitionConsumer.Messages()) == 0 {
@@ -46,12 +44,5 @@ func KafkaTopicConsumer(topic string, consumers map[string]sarama.PartitionConsu
 	}
 
 	kafkaMsg := <-partitionConsumer.Messages()
-	var msg = banktypes.MsgSend{}
-	err := proto.Unmarshal(kafkaMsg.Value, &msg)
-
-	if err != nil {
-		panic(err)
-	}
-
-	return &msg, nil
+	return kafkaMsg.Value, nil
 }

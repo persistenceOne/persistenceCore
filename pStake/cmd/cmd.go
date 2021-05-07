@@ -7,6 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/signing"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/relayer/relayer"
+	"github.com/golang/protobuf/proto"
 	"github.com/persistenceOne/persistenceCore/kafka"
 	"github.com/persistenceOne/persistenceCore/pStake/constants"
 	"github.com/spf13/cobra"
@@ -49,8 +50,8 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 
 // kafkaRoutine: starts kafka in a separate goRoutine, consumers will each start in different go routines
 // no need to store any db, producers and consumers are inside kafkaState struct.
-// use kafka.KafkaProducerDeliverMessage() -> to produce message
-// use kafka.KafkaTopicConsumer -> to consume messages.
+// use kafka.ProducerDeliverMessage() -> to produce message
+// use kafka.TopicConsumer -> to consume messages.
 func kafkaRoutine(kafkaState kafka.KafkaState) {
 	go consumeMsgSend(kafkaState)
 	// go consume other messages
@@ -60,11 +61,16 @@ func kafkaRoutine(kafkaState kafka.KafkaState) {
 func consumeMsgSend(state kafka.KafkaState) {
 	for {
 		//consume logic here.
-		var msgs []*banktypes.MsgSend
+		var msgs []banktypes.MsgSend
 		for i := 0; i < kafka.BatchSize; {
-			msg, _ := kafka.KafkaTopicConsumer(kafka.MsgSendForward, state.Consumers)
-			fmt.Println("message received from kafka", msg)
-			if msg != nil {
+			bz, _ := kafka.TopicConsumer(kafka.MsgSendForward, state.Consumers)
+			fmt.Println("message received from kafka", bz)
+			if bz != nil {
+				var msg = banktypes.MsgSend{}
+				err := proto.Unmarshal(bz, &msg)
+				if err != nil {
+					panic(err)
+				}
 				msgs = append(msgs, msg)
 				i++
 			} else {
@@ -148,7 +154,12 @@ func handleEncodeTx(initClientCtx client.Context, encodedTx []byte, kafkaState k
 		case *banktypes.MsgSend:
 			if true {
 				// produce to send queue
-				err := kafka.KafkaProducerDeliverMessage(msg, kafka.MsgSendForward, kafkaState.Producer)
+				msgBytes, err := proto.Marshal(msg)
+
+				if err != nil {
+					panic(err)
+				}
+				err = kafka.ProducerDeliverMessage(msgBytes, kafka.MsgSendForward, kafkaState.Producer)
 				if err != nil {
 					log.Print("Failed to add msg to kafka queue: ", err)
 				}

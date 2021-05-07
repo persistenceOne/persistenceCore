@@ -27,7 +27,7 @@ var configEntries = map[string]*string{}
 var DefaultCLIHome = os.ExpandEnv("$HOME/.kafka")
 
 const partition = int32(0)
-const offset = int64(2)
+const offset = int64(0)
 
 // topicDetail : configs
 var topicDetail = sarama.TopicDetail{
