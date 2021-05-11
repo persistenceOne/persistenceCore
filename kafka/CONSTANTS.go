@@ -17,7 +17,6 @@ const SleepTimer = time.Duration(1000000000)
 
 // SleepRoutine : the time the kafka messages are to be taken in
 const SleepRoutine = time.Duration(2500000000)
-const BatchSize = 2
 
 // These are the config parameters for running kafka admins and producers and consumers. Declared very minimal
 var replicaAssignment = map[int32][]int32{}
@@ -27,7 +26,7 @@ var configEntries = map[string]*string{}
 var DefaultCLIHome = os.ExpandEnv("$HOME/.kafka")
 
 const partition = int32(0)
-const offset = int64(0)
+const offset = sarama.OffsetOldest
 
 // topicDetail : configs
 var topicDetail = sarama.TopicDetail{

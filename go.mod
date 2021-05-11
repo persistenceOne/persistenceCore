@@ -3,6 +3,7 @@ module github.com/persistenceOne/persistenceCore
 go 1.14
 
 require (
+	github.com/BurntSushi/toml v0.3.1
 	github.com/Shopify/sarama v1.28.0
 	github.com/cosmos/cosmos-sdk v0.42.4
 	github.com/cosmos/relayer v0.9.3
