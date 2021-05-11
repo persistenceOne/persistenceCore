@@ -62,7 +62,7 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 		},
 	}
 	pStakeCommand.Flags().String(constants.FlagTimeOut, "10s", "timeout time for connecting to rpc")
-	pStakeCommand.Flags().Uint32(constants.FlagCoinType, 750, "coin type for wallet")
+	pStakeCommand.Flags().Uint32(constants.FlagCoinType, 118, "coin type for wallet")
 	//pStakeCommand.Flags().Int(constants.FlagAccount, 0, "account no. for wallet")
 	//pStakeCommand.Flags().Int(constants.FlagIndex, 0, "index of wallet")
 	pStakeCommand.Flags().String("ports", "localhost:9092", "ports kafka brokers are running on, --ports 192.100.10.10:443,192.100.10.11:443")
@@ -127,7 +127,7 @@ func run(initClientCtx client.Context, chainConfigJsonPath, timeout string, coin
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
-	toAccount, err := sdk.AccAddressFromBech32("persistence1aepmuldh8j05y57zh5tje3fuzk63mc2mmf63vv")
+	toAccount, err := sdk.AccAddressFromBech32("cosmos120fgcs32s8wus7k80ysfszwl275x4v87wuuxd9")
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
