@@ -10,8 +10,8 @@ import (
 )
 
 // NewProducer is a producer to send messages to kafka
-func NewProducer(kafkaPorts []string) sarama.SyncProducer {
-	producer, err := sarama.NewSyncProducer(kafkaPorts, nil)
+func NewProducer(kafkaPorts []string, config *sarama.Config) sarama.SyncProducer {
+	producer, err := sarama.NewSyncProducer(kafkaPorts, config)
 	if err != nil {
 		panic(err)
 	}

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/signing"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -55,53 +56,18 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 			portsList := strings.Split(ports, ",")
 			kafkaState := kafka.NewKafkaState(portsList)
 			go kafkaRoutine(kafkaState)
-
+			server.TrapSignal(kafkaClose(kafkaState))
 			run(initClientCtx, args[0], timeout, coinType, args[1], kafkaState)
 			return nil
 		},
 	}
 	pStakeCommand.Flags().String(constants.FlagTimeOut, "10s", "timeout time for connecting to rpc")
-	pStakeCommand.Flags().Uint32(constants.FlagCoinType, 118, "coin type for wallet")
+	pStakeCommand.Flags().Uint32(constants.FlagCoinType, 750, "coin type for wallet")
 	//pStakeCommand.Flags().Int(constants.FlagAccount, 0, "account no. for wallet")
 	//pStakeCommand.Flags().Int(constants.FlagIndex, 0, "index of wallet")
 	pStakeCommand.Flags().String("ports", "localhost:9092", "ports kafka brokers are running on, --ports 192.100.10.10:443,192.100.10.11:443")
 
 	return pStakeCommand
-}
-
-// kafkaRoutine: starts kafka in a separate goRoutine, consumers will each start in different go routines
-// no need to store any db, producers and consumers are inside kafkaState struct.
-// use kafka.ProducerDeliverMessage() -> to produce message
-// use kafka.TopicConsumer -> to consume messages.
-func kafkaRoutine(kafkaState kafka.KafkaState) {
-	go consumeMsgSend(kafkaState)
-	// go consume other messages
-
-	fmt.Println("started consumers")
-}
-func consumeMsgSend(state kafka.KafkaState) {
-	for {
-		//consume logic here.
-		var msgs []banktypes.MsgSend
-		for i := 0; i < kafka.BatchSize; {
-			bz, _ := kafka.TopicConsumer(kafka.MsgSendForward, state.Consumers)
-			fmt.Println("message received from kafka", bz)
-			if bz != nil {
-				var msg = banktypes.MsgSend{}
-				err := proto.Unmarshal(bz, &msg)
-				if err != nil {
-					panic(err)
-				}
-				msgs = append(msgs, msg)
-				i++
-			} else {
-				time.Sleep(kafka.SleepTimer)
-			}
-
-		}
-		fmt.Println("batch the messages: ", msgs)
-		time.Sleep(kafka.SleepRoutine)
-	}
 }
 
 func run(initClientCtx client.Context, chainConfigJsonPath, timeout string, coinType uint32, mnemonics string, kafkaState kafka.KafkaState) {
@@ -161,7 +127,7 @@ func run(initClientCtx client.Context, chainConfigJsonPath, timeout string, coin
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
-	toAccount, err := sdk.AccAddressFromBech32("cosmos120fgcs32s8wus7k80ysfszwl275x4v87wuuxd9")
+	toAccount, err := sdk.AccAddressFromBech32("persistence1aepmuldh8j05y57zh5tje3fuzk63mc2mmf63vv")
 	if err != nil {
 		log.Fatalln(err.Error())
 	}

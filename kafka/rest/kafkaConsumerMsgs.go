@@ -19,7 +19,7 @@ package rest
 //			case <-quit:
 //				return
 //			default:
-//				kafkaMsg := kafka.KafkaTopicConsumer("Topic", kafkaState.Consumers, codec)
+//				kafkaMsg := kafka.KafkaTopicConsumer("Topic", kafkaState.ConsumerGroup, codec)
 //				if kafkaMsg.Msg != nil {
 //					ticketIDList = append(ticketIDList, kafkaMsg.TicketID)
 //					msgList = append(msgList, kafkaMsg.Msg)

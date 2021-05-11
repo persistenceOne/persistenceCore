@@ -110,6 +110,7 @@ func main() {
 		"Assert registered invariants every N blocks",
 	)
 	rootCommand.AddCommand(pStakeCmd.GetCmd(initClientCtx))
+	rootCommand.AddCommand(pStakeCmd.KafkaCmd())
 
 	appCreator := func(
 		logger log.Logger,

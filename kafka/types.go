@@ -34,18 +34,18 @@ type TicketIDResponse struct {
 
 // KafkaState : is a struct showing the state of kafka
 type KafkaState struct {
-	KafkaDB   *dbm.GoLevelDB
-	Admin     sarama.ClusterAdmin
-	Consumer  sarama.Consumer
-	Consumers map[string]sarama.PartitionConsumer
-	Producer  sarama.SyncProducer
-	Topics    []string
+	KafkaDB       *dbm.GoLevelDB
+	Admin         sarama.ClusterAdmin
+	ConsumerGroup sarama.ConsumerGroup
+	Producer      sarama.SyncProducer
+	Topics        []string
 }
 
 // NewKafkaState : returns a kafka state
 func NewKafkaState(kafkaPorts []string) KafkaState {
 	kafkaDB, _ := dbm.NewGoLevelDB("KafkaDB", DefaultCLIHome)
-	admin := KafkaAdmin(kafkaPorts)
+	config := Config()
+	admin := KafkaAdmin(kafkaPorts, config)
 	adminTopics, err := admin.ListTopics()
 	if err != nil {
 		panic(err)
@@ -56,20 +56,14 @@ func NewKafkaState(kafkaPorts []string) KafkaState {
 			TopicsInit(admin, topic)
 		}
 	}
-	producer := NewProducer(kafkaPorts)
-	consumer := NewConsumer(kafkaPorts)
-	var consumers = make(map[string]sarama.PartitionConsumer)
-	for _, topic := range Topics {
-		partitionConsumer := PartitionConsumers(consumer, topic)
-		consumers[topic] = partitionConsumer
-	}
+	producer := NewProducer(kafkaPorts, config)
+	consumers := NewConsumerGroup(kafkaPorts, "ConsumerGroup", config)
 
 	return KafkaState{
-		KafkaDB:   kafkaDB,
-		Admin:     admin,
-		Consumer:  consumer,
-		Consumers: consumers,
-		Producer:  producer,
-		Topics:    Topics,
+		KafkaDB:       kafkaDB,
+		Admin:         admin,
+		ConsumerGroup: consumers,
+		Producer:      producer,
+		Topics:        Topics,
 	}
 }
