@@ -8,7 +8,7 @@ package kafka
 import (
 	"errors"
 	"github.com/Shopify/sarama"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/protobuf/proto"
 	"github.com/persistenceOne/persistenceCore/kafka/runConfig"
 	"log"
@@ -23,7 +23,7 @@ func NewConsumerGroup(kafkaPorts []string, groupID string, config *sarama.Config
 }
 
 type MsgHandler struct {
-	runConfig.KafkaConfig
+	KafkaConfig runConfig.KafkaConfig
 }
 
 var _ sarama.ConsumerGroupHandler = MsgHandler{}
@@ -38,8 +38,26 @@ func (m MsgHandler) Cleanup(session sarama.ConsumerGroupSession) error {
 
 func (m MsgHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 
-	msgSendForward := make([]sarama.ConsumerMessage, 0, m.MsgSendForward.BatchSize)
-	msgSendRevert := make([]sarama.ConsumerMessage, 0, m.MsgSendRevert.BatchSize)
+	switch claim.Topic() {
+	case ToEth:
+		err := HandleTopicMsgs(session, claim, m.KafkaConfig.ToEth.BatchSize, SendBatchToEth)
+		if err != nil {
+			log.Printf("failed batch and handle for topic: %v", ToEth)
+			return err
+		}
+	case ToTendermint:
+		err := HandleTopicMsgs(session, claim, m.KafkaConfig.ToTendermint.BatchSize, SendBatchToTendermint)
+		if err != nil {
+			log.Printf("failed batch and handle for topic: %v", ToTendermint)
+			return err
+		}
+	}
+	return nil
+}
+
+// Handlers of message types
+func HandleTopicMsgs(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim, batchSize int, handle func([]sarama.ConsumerMessage) error) error {
+	msgs := make([]sarama.ConsumerMessage, 0, batchSize)
 	for {
 		kafkaMsg := <-claim.Messages()
 		if kafkaMsg == nil {
@@ -47,44 +65,37 @@ func (m MsgHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sara
 		}
 		log.Printf("Message topic:%q partition:%d offset:%d\n", kafkaMsg.Topic, kafkaMsg.Partition, kafkaMsg.Offset)
 
-		switch topic := kafkaMsg.Topic; topic {
-		case MsgSendForward:
-			ok := BatchAndHandle(&msgSendForward, *kafkaMsg, HandleMsgSendForward)
-			if ok {
-				session.MarkMessage(kafkaMsg, "")
-			}
-		case MsgSendRevert:
-			ok := BatchAndHandle(&msgSendRevert, *kafkaMsg, HandleMsgSendRevert)
-			if ok {
-				session.MarkMessage(kafkaMsg, "")
-			}
+		ok, err := BatchAndHandle(&msgs, *kafkaMsg, handle)
+		if ok && err == nil {
+			session.MarkMessage(kafkaMsg, "")
+			return nil
+		}
+		if err != nil {
+			return err
 		}
 	}
 }
 
-// Handlers of message types
-
-// BatchMsgSendForward :
+// BatchAndHandle :
 func BatchAndHandle(kafkaMsgs *[]sarama.ConsumerMessage, kafkaMsg sarama.ConsumerMessage,
-	handle func([]sarama.ConsumerMessage) error) bool {
+	handle func([]sarama.ConsumerMessage) error) (bool, error) {
 	*kafkaMsgs = append(*kafkaMsgs, kafkaMsg)
 	if len(*kafkaMsgs) == cap(*kafkaMsgs) {
 		err := handle(*kafkaMsgs)
 		if err != nil {
-			log.Printf("error in handling msgsendForward: %v", err)
-			return false
+			return false, err
 		}
 		*kafkaMsgs = (*kafkaMsgs)[:0]
-		return true
+		return true, nil
 	}
-	return false
+	return false, nil
 }
 
-func ConvertKafkaMsgsToMsgSend(kafkaMsgs []sarama.ConsumerMessage) ([]banktypes.MsgSend, error) {
-	var msgs []banktypes.MsgSend
+func ConvertKafkaMsgsToSDKMsg(kafkaMsgs []sarama.ConsumerMessage) ([]sdk.Msg, error) {
+	var msgs []sdk.Msg
 	for _, kafkaMsg := range kafkaMsgs {
-		var msg = banktypes.MsgSend{}
-		err := proto.Unmarshal(kafkaMsg.Value, &msg)
+		var msg sdk.Msg
+		err := proto.Unmarshal(kafkaMsg.Value, msg)
 		if err != nil {
 			return nil, errors.New("error unmarshalling proto")
 		}
@@ -93,9 +104,9 @@ func ConvertKafkaMsgsToMsgSend(kafkaMsgs []sarama.ConsumerMessage) ([]banktypes.
 	return msgs, nil
 }
 
-// HandleMsgSendForward : Handling of msgSend
-func HandleMsgSendForward(kafkaMsgs []sarama.ConsumerMessage) error {
-	msgs, err := ConvertKafkaMsgsToMsgSend(kafkaMsgs)
+// SendBatchToEth : Handling of msgSend
+func SendBatchToEth(kafkaMsgs []sarama.ConsumerMessage) error {
+	msgs, err := ConvertKafkaMsgsToSDKMsg(kafkaMsgs)
 	if err != nil {
 		return err
 	}
@@ -104,12 +115,13 @@ func HandleMsgSendForward(kafkaMsgs []sarama.ConsumerMessage) error {
 	return nil
 }
 
-func HandleMsgSendRevert(kafkaMsgs []sarama.ConsumerMessage) error {
-	msgs, err := ConvertKafkaMsgsToMsgSend(kafkaMsgs)
+// SendBatchToTendermint :
+func SendBatchToTendermint(kafkaMsgs []sarama.ConsumerMessage) error {
+	msgs, err := ConvertKafkaMsgsToSDKMsg(kafkaMsgs)
 	if err != nil {
 		return err
 	}
 	log.Printf("batched messages: %v", msgs)
-
+	// do more with messages.
 	return nil
 }

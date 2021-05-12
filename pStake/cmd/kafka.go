@@ -6,15 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"github.com/BurntSushi/toml"
-	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/persistenceOne/persistenceCore/kafka"
 	"github.com/persistenceOne/persistenceCore/kafka/runConfig"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"io/ioutil"
 	"log"
 	"path/filepath"
-	"time"
 )
 
 func KafkaCmd() *cobra.Command {
@@ -26,7 +23,7 @@ func KafkaCmd() *cobra.Command {
 		RunE:                       func(cmd *cobra.Command, args []string) error { return errors.New("expect a subcommand") },
 	}
 	cmd.AddCommand(InitCmd())
-
+	cmd.PersistentFlags().String(kafka.FlagKafkaHome, kafka.DefaultKafkaHome, "The kafka config file directory")
 	return cmd
 }
 
@@ -44,11 +41,11 @@ func InitCmd() *cobra.Command {
 				panic(err)
 			}
 
-			homeDir, err := cmd.Flags().GetString(flags.FlagHome)
+			homeDir, err := cmd.Flags().GetString(kafka.FlagKafkaHome)
 			if err != nil {
 				panic(err)
 			}
-			if err := ioutil.WriteFile(filepath.Join(homeDir, "config", "kafkaConfig.toml"), buf.Bytes(), 0644); err != nil {
+			if err := ioutil.WriteFile(filepath.Join(homeDir, "kafkaConfig.toml"), buf.Bytes(), 0644); err != nil {
 				panic(err)
 			}
 
@@ -89,8 +86,7 @@ func kafkaRoutine(kafkaState kafka.KafkaState) {
 func consumeMsgs(state kafka.KafkaState) {
 	kafkaConfig := runConfig.KafkaConfig{}
 
-	homeDir := viper.GetString(flags.FlagHome)
-	_, err := toml.DecodeFile(filepath.Join(homeDir, "config", "kafkaConfig.toml"), &kafkaConfig)
+	_, err := toml.DecodeFile(filepath.Join(state.HomeDir, "kafkaConfig.toml"), &kafkaConfig)
 	if err != nil {
 		log.Printf("Error decoding kafkaConfig file: %v", err)
 	}
@@ -103,6 +99,5 @@ func consumeMsgs(state kafka.KafkaState) {
 		if err != nil {
 			log.Println("Error in consumer group.Consume", err)
 		}
-		time.Sleep(kafka.SleepRoutine)
 	}
 }

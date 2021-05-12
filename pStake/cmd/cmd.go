@@ -50,11 +50,13 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 			//}
 			ports, err := cmd.Flags().GetString("ports")
 			fmt.Println(ports, err)
+			kafkaHome, err := cmd.Flags().GetString(kafka.FlagKafkaHome)
+
 			if err != nil {
 				return err
 			}
 			portsList := strings.Split(ports, ",")
-			kafkaState := kafka.NewKafkaState(portsList)
+			kafkaState := kafka.NewKafkaState(portsList, kafkaHome)
 			go kafkaRoutine(kafkaState)
 			server.TrapSignal(kafkaClose(kafkaState))
 			run(initClientCtx, args[0], timeout, coinType, args[1], kafkaState)
@@ -66,6 +68,7 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 	//pStakeCommand.Flags().Int(constants.FlagAccount, 0, "account no. for wallet")
 	//pStakeCommand.Flags().Int(constants.FlagIndex, 0, "index of wallet")
 	pStakeCommand.Flags().String("ports", "localhost:9092", "ports kafka brokers are running on, --ports 192.100.10.10:443,192.100.10.11:443")
+	pStakeCommand.Flags().String(kafka.FlagKafkaHome, kafka.DefaultKafkaHome, "The kafka config file directory")
 
 	return pStakeCommand
 }
@@ -175,22 +178,25 @@ func handleEncodeTx(initClientCtx client.Context, encodedTx []byte, kafkaState k
 	fmt.Printf("Memo: %s", tx.GetMemo())
 
 	for _, msg := range tx.GetMsgs() {
-		switch msg := msg.(type) {
+		switch msg.(type) {
 		case *banktypes.MsgSend:
+			msgBytes, err := proto.Marshal(msg)
+			if err != nil {
+				panic(err)
+			}
 			if true {
-				// produce to send queue
-				msgBytes, err := proto.Marshal(msg)
-
-				if err != nil {
-					panic(err)
-				}
-				err = kafka.ProducerDeliverMessage(msgBytes, kafka.MsgSendForward, kafkaState.Producer)
+				err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToEth, kafkaState.Producer)
 				if err != nil {
 					log.Print("Failed to add msg to kafka queue: ", err)
 				}
-				fmt.Println("Produced to kafka: ", msg.String())
+				log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToEth)
 			} else {
 				// reversal queue
+				err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToTendermint, kafkaState.Producer)
+				if err != nil {
+					log.Print("Failed to add msg to kafka queue: ", err)
+				}
+				log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToTendermint)
 			}
 		default:
 
