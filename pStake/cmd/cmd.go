@@ -10,6 +10,7 @@ import (
 	"github.com/cosmos/relayer/helpers"
 	"github.com/cosmos/relayer/relayer"
 	"github.com/persistenceOne/persistenceCore/pStake/constants"
+	"github.com/persistenceOne/persistenceCore/pStake/eth"
 	"github.com/spf13/cobra"
 	tmservice "github.com/tendermint/tendermint/libs/service"
 	tmTypes "github.com/tendermint/tendermint/types"
@@ -25,15 +26,15 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 		Short: "Start pStake",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			timeout, err := cmd.Flags().GetString(constants.FlagTimeOut)
-			if err != nil {
-				log.Fatalln(err)
-			}
-
-			coinType, err := cmd.Flags().GetUint32(constants.FlagCoinType)
-			if err != nil {
-				log.Fatalln(err)
-			}
+			//timeout, err := cmd.Flags().GetString(constants.FlagTimeOut)
+			//if err != nil {
+			//	log.Fatalln(err)
+			//}
+			//
+			//coinType, err := cmd.Flags().GetUint32(constants.FlagCoinType)
+			//if err != nil {
+			//	log.Fatalln(err)
+			//}
 
 			//account, err := cmd.Flags().GetInt(constants.FlagAccount)
 			//if err != nil {
@@ -45,7 +46,8 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 			//	log.Fatalln(err)
 			//}
 
-			run(initClientCtx, args[0], timeout, coinType, args[1])
+			//run(initClientCtx, args[0], timeout, coinType, args[1])
+			eth.StartListening()
 			return nil
 		},
 	}
