@@ -7,7 +7,6 @@ package kafka
 
 import (
 	"github.com/Shopify/sarama"
-	dbm "github.com/tendermint/tm-db"
 )
 
 // Ticket : is a type that implements string
@@ -34,7 +33,7 @@ type TicketIDResponse struct {
 
 // KafkaState : is a struct showing the state of kafka
 type KafkaState struct {
-	KafkaDB       *dbm.GoLevelDB
+	HomeDir       string
 	Admin         sarama.ClusterAdmin
 	ConsumerGroup sarama.ConsumerGroup
 	Producer      sarama.SyncProducer
@@ -42,8 +41,7 @@ type KafkaState struct {
 }
 
 // NewKafkaState : returns a kafka state
-func NewKafkaState(kafkaPorts []string) KafkaState {
-	kafkaDB, _ := dbm.NewGoLevelDB("KafkaDB", DefaultCLIHome)
+func NewKafkaState(kafkaPorts []string, homeDir string) KafkaState {
 	config := Config()
 	admin := KafkaAdmin(kafkaPorts, config)
 	adminTopics, err := admin.ListTopics()
@@ -60,7 +58,7 @@ func NewKafkaState(kafkaPorts []string) KafkaState {
 	consumers := NewConsumerGroup(kafkaPorts, "ConsumerGroup", config)
 
 	return KafkaState{
-		KafkaDB:       kafkaDB,
+		HomeDir:       homeDir,
 		Admin:         admin,
 		ConsumerGroup: consumers,
 		Producer:      producer,

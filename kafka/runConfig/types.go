@@ -2,9 +2,9 @@ package runConfig
 
 type KafkaConfig struct {
 	// Brokers: List of brokers to run kafka cluster
-	Brokers        []string
-	MsgSendForward TopicConsumer
-	MsgSendRevert  TopicConsumer
+	Brokers      []string
+	ToEth        TopicConsumer
+	ToTendermint TopicConsumer
 }
 
 type TopicConsumer struct {
@@ -14,11 +14,11 @@ type TopicConsumer struct {
 func NewKafkaConfig() KafkaConfig {
 	return KafkaConfig{
 		Brokers: []string{"localhost:9092"},
-		MsgSendForward: TopicConsumer{
-			BatchSize: 2,
+		ToEth: TopicConsumer{
+			BatchSize: 4,
 		},
-		MsgSendRevert: TopicConsumer{
-			BatchSize: 1,
+		ToTendermint: TopicConsumer{
+			BatchSize: 2,
 		},
 	}
 }
