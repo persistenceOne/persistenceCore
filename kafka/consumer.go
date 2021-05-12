@@ -7,7 +7,6 @@ package kafka
 
 import (
 	"errors"
-	"fmt"
 	"github.com/Shopify/sarama"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/protobuf/proto"
@@ -72,6 +71,7 @@ func HandleTopicMsgs(session sarama.ConsumerGroupSession, claim sarama.ConsumerG
 			return nil
 		}
 		if err != nil {
+			return err
 		}
 	}
 }
@@ -81,7 +81,6 @@ func BatchAndHandle(kafkaMsgs *[]sarama.ConsumerMessage, kafkaMsg sarama.Consume
 	handle func([]sarama.ConsumerMessage) error) (bool, error) {
 	*kafkaMsgs = append(*kafkaMsgs, kafkaMsg)
 	if len(*kafkaMsgs) == cap(*kafkaMsgs) {
-		fmt.Println(len(*kafkaMsgs), cap(*kafkaMsgs))
 		err := handle(*kafkaMsgs)
 		if err != nil {
 			return false, err
