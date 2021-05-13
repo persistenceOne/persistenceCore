@@ -48,7 +48,17 @@ func InitCmd() *cobra.Command {
 			if err := ioutil.WriteFile(filepath.Join(homeDir, "kafkaConfig.toml"), buf.Bytes(), 0644); err != nil {
 				panic(err)
 			}
-
+			log.Println("generated config file at ", filepath.Join(homeDir, "kafkaConfig.toml"))
+			////clientContext.InterfaceRegistry.RegisterImplementations((*sdk.Msg)(nil), &testdata.TestMsg{})
+			//protoCdc := codec.NewProtoCodec(clientContext.InterfaceRegistry)
+			//
+			////testMsg := sdk.Msg(&testdata.TestMsg{Signers: []string{"addr"}})
+			//testMsg := sdk.Msg(nil)
+			//bz , err := protoCdc.MarshalInterface(testMsg)
+			//fmt.Println(err, bz, bytes.Equal(bz,[]byte{}))
+			//var msg sdk.Msg
+			//err = protoCdc.UnmarshalInterface([]byte{}, &msg)
+			//fmt.Println(err)
 			return nil
 		},
 	}
@@ -86,7 +96,7 @@ func kafkaRoutine(kafkaState kafka.KafkaState) {
 	ctx := context.Background()
 
 	go consumeMsgs(ctx, kafkaState, kafkaConfig)
-	go consumeUnbondings(ctx, kafkaState, kafkaConfig)
+	//go consumeUnbondings(ctx, kafkaState, kafkaConfig)
 	// go consume other messages
 
 	fmt.Println("started consumers")

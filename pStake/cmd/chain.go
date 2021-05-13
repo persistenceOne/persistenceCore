@@ -99,3 +99,10 @@ func run(initClientCtx client.Context, chainConfigJsonPath, timeout, homePath st
 	}
 
 }
+
+// TODO for Eth events =>
+func ethEvents() {
+	// msg delegate => convert to MsgDelegate and push to ToEth queue
+	// msg unbond =>convert to MsgSend and push to EthUnbond queue
+
+}
