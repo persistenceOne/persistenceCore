@@ -8,9 +8,9 @@ package kafka
 import (
 	"errors"
 	"github.com/Shopify/sarama"
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankTypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/golang/protobuf/proto"
 	"github.com/persistenceOne/persistenceCore/kafka/runConfig"
 	"log"
 )
@@ -25,6 +25,7 @@ func NewConsumerGroup(kafkaPorts []string, groupID string, config *sarama.Config
 
 type MsgHandler struct {
 	KafkaConfig runConfig.KafkaConfig
+	ProtoCodec  *codec.ProtoCodec
 }
 
 var _ sarama.ConsumerGroupHandler = MsgHandler{}
@@ -41,25 +42,25 @@ func (m MsgHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sara
 
 	switch claim.Topic() {
 	case ToEth:
-		err := HandleTopicMsgs(session, claim, m.KafkaConfig.ToEth.BatchSize, SendBatchToEth)
+		err := m.HandleTopicMsgs(session, claim, m.KafkaConfig.ToEth.BatchSize, SendBatchToEth)
 		if err != nil {
 			log.Printf("failed batch and handle for topic: %v", ToEth)
 			return err
 		}
 	case ToTendermint:
-		err := HandleTopicMsgs(session, claim, m.KafkaConfig.ToTendermint.BatchSize, SendBatchToTendermint)
+		err := m.HandleTopicMsgs(session, claim, m.KafkaConfig.ToTendermint.BatchSize, SendBatchToTendermint)
 		if err != nil {
 			log.Printf("failed batch and handle for topic: %v", ToTendermint)
 			return err
 		}
 	case EthUnbond:
-		err := HandleEthUnbond(session, claim, m.KafkaConfig.Brokers, m.KafkaConfig.Denom)
+		err := m.HandleEthUnbond(session, claim)
 		if err != nil {
 			log.Printf("failed to handle EthUnbonding for topic: %v", EthUnbond)
 			return err
 		}
 	case UnbondPool:
-		err := HandleUnbondPool(session, claim, m.KafkaConfig.Brokers)
+		err := m.HandleUnbondPool(session, claim)
 		if err != nil {
 			log.Printf("failed to handle unbond pool for topic: %v", UnbondPool)
 		}
@@ -67,9 +68,9 @@ func (m MsgHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sara
 	return nil
 }
 
-func HandleEthUnbond(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim, brokers []string, denom string) error {
+func (m MsgHandler) HandleEthUnbond(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 	config := Config()
-	producer := NewProducer(brokers, config)
+	producer := NewProducer(m.KafkaConfig.Brokers, config)
 	defer func() {
 		err := producer.Close()
 		if err != nil {
@@ -82,13 +83,13 @@ func HandleEthUnbond(session sarama.ConsumerGroupSession, claim sarama.ConsumerG
 			return errors.New("kafka returned nil message")
 		}
 		var msg sdk.Msg
-		err := proto.Unmarshal(kafkaMsg.Value, msg)
+		err := m.ProtoCodec.UnmarshalInterface(kafkaMsg.Value, msg)
 		if err != nil {
 			log.Printf("proto failed to unmarshal")
 		}
 		switch txMsg := msg.(type) {
 		case *bankTypes.MsgSend:
-			sum = sum.Add(txMsg.Amount.AmountOf(denom))
+			sum = sum.Add(txMsg.Amount.AmountOf(m.KafkaConfig.Denom))
 		default:
 			log.Printf("Unexpected type found in topic: %v", EthUnbond)
 		}
@@ -99,12 +100,7 @@ func HandleEthUnbond(session sarama.ConsumerGroupSession, claim sarama.ConsumerG
 		session.MarkMessage(kafkaMsg, "")
 	}
 	//Add a nil message to separate unbondings.
-	sdkMsg := sdk.Msg(nil)
-	msgBytes, err := proto.Marshal(sdkMsg)
-	if err != nil {
-		return nil
-	}
-	err = ProducerDeliverMessage(msgBytes, UnbondPool, producer)
+	err := ProducerDeliverMessage([]byte{}, UnbondPool, producer)
 	if err != nil {
 		log.Printf("failed to produce message from topic %v to %v", UnbondPool, UnbondPool)
 	}
@@ -115,11 +111,11 @@ func HandleEthUnbond(session sarama.ConsumerGroupSession, claim sarama.ConsumerG
 			DelegatorAddress: "",
 			ValidatorAddress: "",
 			Amount:           sdk.Coin{
-				Denom:  denom,
+				Denom:  m.KafkaConfig.Denom,
 				Amount: sum,
 			},
 		}
-		msgBytes, err := proto.Marshal(sdk.Msg(unbondMsg))
+		msgBytes, err := m.ProtoCodec.MarshalInterface(sdk.Msg(unbondMsg))
 		if err!= nil {
 			return err
 		}
@@ -133,9 +129,9 @@ func HandleEthUnbond(session sarama.ConsumerGroupSession, claim sarama.ConsumerG
 	return nil
 }
 
-func HandleUnbondPool(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim, brokers []string) error {
+func (m MsgHandler) HandleUnbondPool(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 	config := Config()
-	producer := NewProducer(brokers, config)
+	producer := NewProducer(m.KafkaConfig.Brokers, config)
 	defer func() {
 		err := producer.Close()
 		if err != nil {
@@ -147,12 +143,7 @@ func HandleUnbondPool(session sarama.ConsumerGroupSession, claim sarama.Consumer
 		// This is only for starting, it will get tricky if application has downtime of more than a cycle.(3days)
 		// think about starting a consumer to read the messages and quit.
 		for i := len(claim.Messages()); i < 8; i++ {
-			sdkMsg := sdk.Msg(nil)
-			msgBytes, err := proto.Marshal(sdkMsg)
-			if err != nil {
-				return nil
-			}
-			err = ProducerDeliverMessage(msgBytes, UnbondPool, producer)
+			err := ProducerDeliverMessage([]byte{}, UnbondPool, producer)
 			if err != nil {
 				log.Printf("failed to produce message from topic %v to %v", UnbondPool, UnbondPool)
 			}
@@ -165,7 +156,7 @@ func HandleUnbondPool(session sarama.ConsumerGroupSession, claim sarama.Consumer
 				return errors.New("kafka returned nil message in topic: " + UnbondPool)
 			}
 			var msg sdk.Msg
-			err := proto.Unmarshal(kafkaMsg.Value, msg)
+			err := m.ProtoCodec.UnmarshalInterface(kafkaMsg.Value, msg)
 			if err != nil {
 				return errors.New("error unmarshalling proto")
 			}
@@ -183,7 +174,8 @@ func HandleUnbondPool(session sarama.ConsumerGroupSession, claim sarama.Consumer
 }
 
 // Handlers of message types
-func HandleTopicMsgs(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim, batchSize int, handle func([]sarama.ConsumerMessage) error) error {
+func (m MsgHandler) HandleTopicMsgs(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim, batchSize int,
+	handle func([]sarama.ConsumerMessage, *codec.ProtoCodec) error) error {
 	msgs := make([]sarama.ConsumerMessage, 0, batchSize)
 	for {
 		kafkaMsg := <-claim.Messages()
@@ -192,7 +184,7 @@ func HandleTopicMsgs(session sarama.ConsumerGroupSession, claim sarama.ConsumerG
 		}
 		log.Printf("Message topic:%q partition:%d offset:%d\n", kafkaMsg.Topic, kafkaMsg.Partition, kafkaMsg.Offset)
 
-		ok, err := BatchAndHandle(&msgs, *kafkaMsg, handle)
+		ok, err := BatchAndHandle(&msgs, *kafkaMsg, m.ProtoCodec, handle)
 		if ok && err == nil {
 			session.MarkMessage(kafkaMsg, "")
 			return nil
@@ -205,10 +197,10 @@ func HandleTopicMsgs(session sarama.ConsumerGroupSession, claim sarama.ConsumerG
 
 // BatchAndHandle :
 func BatchAndHandle(kafkaMsgs *[]sarama.ConsumerMessage, kafkaMsg sarama.ConsumerMessage,
-	handle func([]sarama.ConsumerMessage) error) (bool, error) {
+	protoCodec *codec.ProtoCodec, handle func([]sarama.ConsumerMessage, *codec.ProtoCodec) error) (bool, error) {
 	*kafkaMsgs = append(*kafkaMsgs, kafkaMsg)
 	if len(*kafkaMsgs) == cap(*kafkaMsgs) {
-		err := handle(*kafkaMsgs)
+		err := handle(*kafkaMsgs, protoCodec)
 		if err != nil {
 			return false, err
 		}
@@ -218,11 +210,11 @@ func BatchAndHandle(kafkaMsgs *[]sarama.ConsumerMessage, kafkaMsg sarama.Consume
 	return false, nil
 }
 
-func ConvertKafkaMsgsToSDKMsg(kafkaMsgs []sarama.ConsumerMessage) ([]sdk.Msg, error) {
+func ConvertKafkaMsgsToSDKMsg(kafkaMsgs []sarama.ConsumerMessage, protoCodec *codec.ProtoCodec) ([]sdk.Msg, error) {
 	var msgs []sdk.Msg
 	for _, kafkaMsg := range kafkaMsgs {
 		var msg sdk.Msg
-		err := proto.Unmarshal(kafkaMsg.Value, msg)
+		err := protoCodec.UnmarshalInterface(kafkaMsg.Value, msg)
 		if err != nil {
 			return nil, errors.New("error unmarshalling proto")
 		}
@@ -232,8 +224,8 @@ func ConvertKafkaMsgsToSDKMsg(kafkaMsgs []sarama.ConsumerMessage) ([]sdk.Msg, er
 }
 
 // SendBatchToEth : Handling of msgSend
-func SendBatchToEth(kafkaMsgs []sarama.ConsumerMessage) error {
-	msgs, err := ConvertKafkaMsgsToSDKMsg(kafkaMsgs)
+func SendBatchToEth(kafkaMsgs []sarama.ConsumerMessage, protoCodec *codec.ProtoCodec) error {
+	msgs, err := ConvertKafkaMsgsToSDKMsg(kafkaMsgs, protoCodec)
 	if err != nil {
 		return err
 	}
@@ -243,8 +235,8 @@ func SendBatchToEth(kafkaMsgs []sarama.ConsumerMessage) error {
 }
 
 // SendBatchToTendermint :
-func SendBatchToTendermint(kafkaMsgs []sarama.ConsumerMessage) error {
-	msgs, err := ConvertKafkaMsgsToSDKMsg(kafkaMsgs)
+func SendBatchToTendermint(kafkaMsgs []sarama.ConsumerMessage, protoCodec *codec.ProtoCodec) error {
+	msgs, err := ConvertKafkaMsgsToSDKMsg(kafkaMsgs, protoCodec)
 	if err != nil {
 		return err
 	}

@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/persistenceOne/persistenceCore/kafka"
 	"github.com/persistenceOne/persistenceCore/pStake/constants"
@@ -44,12 +45,14 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 			fmt.Println(ports, err)
 			kafkaHome, err := cmd.Flags().GetString(kafka.FlagKafkaHome)
 
+			protoCodec := codec.NewProtoCodec(initClientCtx.InterfaceRegistry)
+
 			if err != nil {
 				return err
 			}
 			portsList := strings.Split(ports, ",")
 			kafkaState := kafka.NewKafkaState(portsList, kafkaHome)
-			go kafkaRoutine(kafkaState)
+			go kafkaRoutine(kafkaState, protoCodec)
 			server.TrapSignal(kafkaClose(kafkaState))
 
 			log.Println("Starting to listen ethereum....")
