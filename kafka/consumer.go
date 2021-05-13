@@ -88,7 +88,6 @@ func HandleEthUnbond(session sarama.ConsumerGroupSession, claim sarama.ConsumerG
 		}
 		switch txMsg := msg.(type) {
 		case *bankTypes.MsgSend:
-			// TODO is denom fixed?
 			sum = sum.Add(txMsg.Amount.AmountOf(denom))
 		default:
 			log.Printf("Unexpected type found in topic: %v", EthUnbond)
@@ -239,7 +238,7 @@ func SendBatchToEth(kafkaMsgs []sarama.ConsumerMessage) error {
 		return err
 	}
 	log.Printf("batched messages: %v", msgs)
-	// do more with msgs.
+	// TODO: do more with msgs.
 	return nil
 }
 
@@ -250,6 +249,6 @@ func SendBatchToTendermint(kafkaMsgs []sarama.ConsumerMessage) error {
 		return err
 	}
 	log.Printf("batched messages: %v", msgs)
-	// do more with messages.
+	//TODO: do more with messages.
 	return nil
 }

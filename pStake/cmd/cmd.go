@@ -180,7 +180,7 @@ func handleEncodeTx(initClientCtx client.Context, encodedTx []byte, kafkaState k
 	for _, msg := range tx.GetMsgs() {
 		switch txMsg := msg.(type) {
 		case *banktypes.MsgSend:
-			//Convert txMsg to the Msg we want to send forward
+			// TODO Convert txMsg to the Msg we want to send forward
 			msgBytes, err := proto.Marshal(sdk.Msg(txMsg))
 			if err != nil {
 				panic(err)
@@ -192,6 +192,7 @@ func handleEncodeTx(initClientCtx client.Context, encodedTx []byte, kafkaState k
 				}
 				log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToEth)
 			} else {
+				// TODO convert the messages to denote reversal
 				// reversal queue
 				err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToTendermint, kafkaState.Producer)
 				if err != nil {
@@ -224,7 +225,7 @@ func fileInputAdd(file string) (*relayer.Chain, error) {
 	return c, nil
 }
 
-// for Eth events =>
+// TODO for Eth events =>
 func ethEvents() {
 	// msg delegate => convert to MsgDelegate and push to ToEth queue
 	// msg unbond =>convert to MsgSend and push to EthUnbond queue
