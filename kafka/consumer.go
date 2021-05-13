@@ -9,6 +9,7 @@ import (
 	"errors"
 	"github.com/Shopify/sarama"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	bankTypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/golang/protobuf/proto"
 	"github.com/persistenceOne/persistenceCore/kafka/runConfig"
 	"log"
@@ -50,6 +51,122 @@ func (m MsgHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sara
 		if err != nil {
 			log.Printf("failed batch and handle for topic: %v", ToTendermint)
 			return err
+		}
+	case EthUnbond:
+		err := HandleEthUnbond(session, claim, m.KafkaConfig.Brokers, m.KafkaConfig.Denom)
+		if err != nil {
+			log.Printf("failed to handle EthUnbonding for topic: %v", EthUnbond)
+			return err
+		}
+	case UnbondPool:
+		err := HandleUnbondPool(session, claim, m.KafkaConfig.Brokers)
+		if err != nil {
+			log.Printf("failed to handle unbond pool for topic: %v", UnbondPool)
+		}
+	}
+	return nil
+}
+
+func HandleEthUnbond(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim, brokers []string, denom string) error {
+	config := Config()
+	producer := NewProducer(brokers, config)
+	defer func() {
+		err := producer.Close()
+		if err != nil {
+			log.Printf("failed to close producer in topic: %v", UnbondPool)
+		}
+	}()
+	var sum = sdk.NewInt(0)
+	for kafkaMsg := range claim.Messages() {
+		if kafkaMsg == nil {
+			return errors.New("kafka returned nil message")
+		}
+		var msg sdk.Msg
+		err := proto.Unmarshal(kafkaMsg.Value, msg)
+		if err != nil {
+			log.Printf("proto failed to unmarshal")
+		}
+		switch txMsg := msg.(type) {
+		case *bankTypes.MsgSend:
+			// TODO is denom fixed?
+			sum = sum.Add(txMsg.Amount.AmountOf(denom))
+		default:
+			log.Printf("Unexpected type found in topic: %v", EthUnbond)
+		}
+		err = ProducerDeliverMessage(kafkaMsg.Value, UnbondPool, producer)
+		if err != nil {
+			log.Printf("failed to produce message from topic %v to %v", EthUnbond, UnbondPool)
+		}
+		session.MarkMessage(kafkaMsg, "")
+	}
+	/*
+		// Make a unbond msg and send TODO pick delegator and validator addresses
+		unbondMsg := &stakingTypes.MsgUndelegate{
+			DelegatorAddress: "",
+			ValidatorAddress: "",
+			Amount:           sdk.Coin{
+				Denom:  denom,
+				Amount: sum,
+			},
+		}
+		msgBytes, err := proto.Marshal(sdk.Msg(unbondMsg))
+		if err!= nil {
+			return err
+		}
+		err = ProducerDeliverMessage(msgBytes, ToTendermint, producer)
+		if err != nil {
+			log.Printf("failed to produce message from topic %v to %v", EthUnbond, ToTendermint)
+			return err
+		}
+	*/
+
+	return nil
+}
+
+func HandleUnbondPool(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim, brokers []string) error {
+	config := Config()
+	producer := NewProducer(brokers, config)
+	defer func() {
+		err := producer.Close()
+		if err != nil {
+			log.Printf("failed to close producer in topic: %v", UnbondPool)
+		}
+	}()
+	if len(claim.Messages()) < 8 {
+		// fill in till there are 8 nil msgs,
+		// This is only for starting, it will get tricky if application has downtime of more than a cycle.(3days)
+		// think about starting a consumer to read the messages and quit.
+		for i := len(claim.Messages()); i < 8; i++ {
+			sdkMsg := sdk.Msg(nil)
+			msgBytes, err := proto.Marshal(sdkMsg)
+			if err != nil {
+				return nil
+			}
+			err = ProducerDeliverMessage(msgBytes, UnbondPool, producer)
+			if err != nil {
+				log.Printf("failed to produce message from topic %v to %v", UnbondPool, UnbondPool)
+			}
+		}
+	} else {
+		//consume
+
+		for kafkaMsg := range claim.Messages() {
+			if kafkaMsg == nil {
+				return errors.New("kafka returned nil message in topic: " + UnbondPool)
+			}
+			var msg sdk.Msg
+			err := proto.Unmarshal(kafkaMsg.Value, msg)
+			if err != nil {
+				return errors.New("error unmarshalling proto")
+			}
+			if msg == nil {
+				return nil
+			}
+			err = ProducerDeliverMessage(kafkaMsg.Value, ToTendermint, producer)
+			if err != nil {
+				log.Printf("failed to produce message from topic %v to %v", UnbondPool, ToTendermint)
+			}
+			session.MarkMessage(kafkaMsg, "")
 		}
 	}
 	return nil

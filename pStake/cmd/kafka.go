@@ -77,27 +77,42 @@ func kafkaClose(kafkaState kafka.KafkaState) func() {
 // use kafka.ProducerDeliverMessage() -> to produce message
 // use kafka.TopicConsumer -> to consume messages.
 func kafkaRoutine(kafkaState kafka.KafkaState) {
-	go consumeMsgs(kafkaState)
+	kafkaConfig := runConfig.KafkaConfig{}
+
+	_, err := toml.DecodeFile(filepath.Join(kafkaState.HomeDir, "kafkaConfig.toml"), &kafkaConfig)
+	if err != nil {
+		log.Printf("Error decoding kafkaConfig file: %v", err)
+	}
+	ctx := context.Background()
+
+	go consumeMsgs(ctx, kafkaState, kafkaConfig)
+	go consumeUnbondings(ctx, kafkaState, kafkaConfig)
 	// go consume other messages
 
 	fmt.Println("started consumers")
 }
 
-func consumeMsgs(state kafka.KafkaState) {
-	kafkaConfig := runConfig.KafkaConfig{}
-
-	_, err := toml.DecodeFile(filepath.Join(state.HomeDir, "kafkaConfig.toml"), &kafkaConfig)
-	if err != nil {
-		log.Printf("Error decoding kafkaConfig file: %v", err)
-	}
+func consumeMsgs(ctx context.Context, state kafka.KafkaState, kafkaConfig runConfig.KafkaConfig) {
 	consumerGroup := state.ConsumerGroup
-	ctx := context.Background()
-
 	for {
 		handler := kafka.MsgHandler{KafkaConfig: kafkaConfig}
-		err := consumerGroup.Consume(ctx, kafka.Topics, handler)
+		err := consumerGroup.Consume(ctx, []string{kafka.ToEth, kafka.ToTendermint}, handler)
 		if err != nil {
 			log.Println("Error in consumer group.Consume", err)
+		}
+	}
+}
+func consumeUnbondings(ctx context.Context, state kafka.KafkaState, kafkaConfig runConfig.KafkaConfig) {
+	consumerGroup := state.ConsumerGroup
+	for {
+		handler := kafka.MsgHandler{KafkaConfig: kafkaConfig}
+		err := consumerGroup.Consume(ctx, []string{kafka.EthUnbond}, handler)
+		if err != nil {
+			log.Println("Error in consumer group.Consume for EthUnbond ", err)
+		}
+		err = consumerGroup.Consume(ctx, []string{kafka.UnbondPool}, handler)
+		if err != nil {
+			log.Println("Error in consumer group.Consume for UnbondPool", err)
 		}
 	}
 }
