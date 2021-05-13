@@ -23,10 +23,6 @@ func HandleNewBlock(chain *relayer.Chain, clientCtx *client.Context, blockEvent 
 		log.Fatalln(err.Error())
 	}
 
-	for _, transaction := range blockEvent.Block.Txs {
-		handleEncodeTx(clientCtx, transaction, kafkaState)
-	}
-
 	if blockEvent.Block.Height%10 == 0 {
 		response, ok, err := chain.SendMsg(banktypes.NewMsgSend(fromAccount, toAccount, sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(1)))))
 		if err != nil {
