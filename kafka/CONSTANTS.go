@@ -27,6 +27,14 @@ var topicDetail = sarama.TopicDetail{
 	ConfigEntries:     configEntries,
 }
 
+// Consumer groups
+const GroupTxns = "group-txns"
+const GroupEthUnbond = "group-ethereum-unbond"
+const GroupUnbondPool = "group-unbond-pool"
+
+var Groups = []string{GroupTxns, GroupEthUnbond, GroupUnbondPool}
+
+//Topics
 const ToEth = "to-ethereum"
 const ToTendermint = "to-tendermint"
 const EthUnbond = "ethereum-unbond"

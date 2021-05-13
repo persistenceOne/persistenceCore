@@ -13,6 +13,7 @@ import (
 	"io/ioutil"
 	"log"
 	"path/filepath"
+	"time"
 )
 
 func KafkaCmd() *cobra.Command {
@@ -64,8 +65,10 @@ func kafkaClose(kafkaState kafka.KafkaState) func() {
 		if err := kafkaState.Producer.Close(); err != nil {
 			log.Print("Error in closing producer:", err)
 		}
-		if err := kafkaState.ConsumerGroup.Close(); err != nil {
-			log.Print("Error in closing partition:", err)
+		for _, consumerGroup := range kafkaState.ConsumerGroup {
+			if err := consumerGroup.Close(); err != nil {
+				log.Print("Error in closing partition:", err)
+			}
 		}
 		if err := kafkaState.Admin.Close(); err != nil {
 			log.Print("Error in closing admin:", err)
@@ -95,26 +98,29 @@ func kafkaRoutine(kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec) {
 }
 
 func consumeMsgs(ctx context.Context, state kafka.KafkaState, kafkaConfig runConfig.KafkaConfig, protoCodec *codec.ProtoCodec) {
-	consumerGroup := state.ConsumerGroup
+	consumerGroup := state.ConsumerGroup[kafka.GroupTxns]
 	for {
 		handler := kafka.MsgHandler{KafkaConfig: kafkaConfig, ProtoCodec: protoCodec}
 		err := consumerGroup.Consume(ctx, []string{kafka.ToEth, kafka.ToTendermint}, handler)
 		if err != nil {
 			log.Println("Error in consumer group.Consume", err)
 		}
+		time.Sleep(time.Duration(1000000000))
 	}
 }
 func consumeUnbondings(ctx context.Context, state kafka.KafkaState, kafkaConfig runConfig.KafkaConfig, protoCodec *codec.ProtoCodec) {
-	consumerGroup := state.ConsumerGroup
+	ethUnbondConsumerGroup := state.ConsumerGroup[kafka.GroupEthUnbond]
+	UnbondPoolConsumerGroup := state.ConsumerGroup[kafka.GroupUnbondPool]
 	for {
 		handler := kafka.MsgHandler{KafkaConfig: kafkaConfig, ProtoCodec: protoCodec}
-		err := consumerGroup.Consume(ctx, []string{kafka.EthUnbond}, handler)
+		err := ethUnbondConsumerGroup.Consume(ctx, []string{kafka.EthUnbond}, handler)
 		if err != nil {
 			log.Println("Error in consumer group.Consume for EthUnbond ", err)
 		}
-		err = consumerGroup.Consume(ctx, []string{kafka.UnbondPool}, handler)
+		err = UnbondPoolConsumerGroup.Consume(ctx, []string{kafka.UnbondPool}, handler)
 		if err != nil {
 			log.Println("Error in consumer group.Consume for UnbondPool", err)
 		}
+		time.Sleep(kafkaConfig.EthUnbondCycleTime)
 	}
 }
