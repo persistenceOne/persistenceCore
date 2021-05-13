@@ -99,6 +99,17 @@ func HandleEthUnbond(session sarama.ConsumerGroupSession, claim sarama.ConsumerG
 		}
 		session.MarkMessage(kafkaMsg, "")
 	}
+	//Add a nil message to separate unbondings.
+	sdkMsg := sdk.Msg(nil)
+	msgBytes, err := proto.Marshal(sdkMsg)
+	if err != nil {
+		return nil
+	}
+	err = ProducerDeliverMessage(msgBytes, UnbondPool, producer)
+	if err != nil {
+		log.Printf("failed to produce message from topic %v to %v", UnbondPool, UnbondPool)
+	}
+
 	/*
 		// Make a unbond msg and send TODO pick delegator and validator addresses
 		unbondMsg := &stakingTypes.MsgUndelegate{
