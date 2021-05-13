@@ -178,9 +178,10 @@ func handleEncodeTx(initClientCtx client.Context, encodedTx []byte, kafkaState k
 	fmt.Printf("Memo: %s", tx.GetMemo())
 
 	for _, msg := range tx.GetMsgs() {
-		switch msg.(type) {
+		switch txMsg := msg.(type) {
 		case *banktypes.MsgSend:
-			msgBytes, err := proto.Marshal(msg)
+			//Convert txMsg to the Msg we want to send forward
+			msgBytes, err := proto.Marshal(sdk.Msg(txMsg))
 			if err != nil {
 				panic(err)
 			}
@@ -221,4 +222,11 @@ func fileInputAdd(file string) (*relayer.Chain, error) {
 	}
 
 	return c, nil
+}
+
+// for Eth events =>
+func ethEvents() {
+	// msg delegate => convert to MsgDelegate and push to ToEth queue
+	// msg unbond =>convert to MsgSend and push to EthUnbond queue
+
 }
