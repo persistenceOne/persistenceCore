@@ -6,5 +6,3 @@ wage thunder live sense resemble foil apple course spin horse glass mansion midn
 persistenceCore add-genesis-account test 100000000000000stake
 persistenceCore gentx test 10000000stake --chain-id test
 persistenceCore collect-gentxs
-
-persistenceCore pStake chain.json "wage thunder live sense resemble foil apple course spin horse glass mansion midnight laundry acoustic rhythm loan scale talent push green direct brick please" --ports "localhost:9092"
