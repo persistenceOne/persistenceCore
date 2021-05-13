@@ -44,13 +44,13 @@ func (m MsgHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sara
 	case ToEth:
 		err := m.HandleTopicMsgs(session, claim, m.KafkaConfig.ToEth.BatchSize, SendBatchToEth)
 		if err != nil {
-			log.Printf("failed batch and handle for topic: %v", ToEth)
+			log.Printf("failed batch and handle for topic: %v with error %v", ToEth, err)
 			return err
 		}
 	case ToTendermint:
 		err := m.HandleTopicMsgs(session, claim, m.KafkaConfig.ToTendermint.BatchSize, SendBatchToTendermint)
 		if err != nil {
-			log.Printf("failed batch and handle for topic: %v", ToTendermint)
+			log.Printf("failed batch and handle for topic: %v with error %v", ToTendermint, err)
 			return err
 		}
 	case EthUnbond:
@@ -83,7 +83,7 @@ func (m MsgHandler) HandleEthUnbond(session sarama.ConsumerGroupSession, claim s
 			return errors.New("kafka returned nil message")
 		}
 		var msg sdk.Msg
-		err := m.ProtoCodec.UnmarshalInterface(kafkaMsg.Value, msg)
+		err := m.ProtoCodec.UnmarshalInterface(kafkaMsg.Value, &msg)
 		if err != nil {
 			log.Printf("proto failed to unmarshal")
 		}
@@ -156,7 +156,7 @@ func (m MsgHandler) HandleUnbondPool(session sarama.ConsumerGroupSession, claim 
 				return errors.New("kafka returned nil message in topic: " + UnbondPool)
 			}
 			var msg sdk.Msg
-			err := m.ProtoCodec.UnmarshalInterface(kafkaMsg.Value, msg)
+			err := m.ProtoCodec.UnmarshalInterface(kafkaMsg.Value, &msg)
 			if err != nil {
 				return errors.New("error unmarshalling proto")
 			}
@@ -214,9 +214,9 @@ func ConvertKafkaMsgsToSDKMsg(kafkaMsgs []sarama.ConsumerMessage, protoCodec *co
 	var msgs []sdk.Msg
 	for _, kafkaMsg := range kafkaMsgs {
 		var msg sdk.Msg
-		err := protoCodec.UnmarshalInterface(kafkaMsg.Value, msg)
+		err := protoCodec.UnmarshalInterface(kafkaMsg.Value, &msg)
 		if err != nil {
-			return nil, errors.New("error unmarshalling proto")
+			return nil, err
 		}
 		msgs = append(msgs, msg)
 	}
@@ -229,7 +229,7 @@ func SendBatchToEth(kafkaMsgs []sarama.ConsumerMessage, protoCodec *codec.ProtoC
 	if err != nil {
 		return err
 	}
-	log.Printf("batched messages: %v", msgs)
+	log.Printf("batched messages to send to ETH: %v", msgs)
 	// TODO: do more with msgs.
 	return nil
 }
@@ -240,7 +240,7 @@ func SendBatchToTendermint(kafkaMsgs []sarama.ConsumerMessage, protoCodec *codec
 	if err != nil {
 		return err
 	}
-	log.Printf("batched messages: %v", msgs)
+	log.Printf("batched messages to send to Tendermint: %v", msgs)
 	//TODO: do more with messages.
 	return nil
 }

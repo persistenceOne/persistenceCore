@@ -35,7 +35,7 @@ type TicketIDResponse struct {
 type KafkaState struct {
 	HomeDir       string
 	Admin         sarama.ClusterAdmin
-	ConsumerGroup sarama.ConsumerGroup
+	ConsumerGroup map[string]sarama.ConsumerGroup
 	Producer      sarama.SyncProducer
 	Topics        []string
 }
@@ -55,8 +55,11 @@ func NewKafkaState(kafkaPorts []string, homeDir string) KafkaState {
 		}
 	}
 	producer := NewProducer(kafkaPorts, config)
-	consumers := NewConsumerGroup(kafkaPorts, "ConsumerGroup", config)
 
+	consumers := map[string]sarama.ConsumerGroup{}
+	for _, group := range Groups {
+		consumers[group] = NewConsumerGroup(kafkaPorts, group, config)
+	}
 	return KafkaState{
 		HomeDir:       homeDir,
 		Admin:         admin,
