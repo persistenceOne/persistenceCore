@@ -2,14 +2,16 @@ package cosmos
 
 import (
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/relayer/relayer"
+	"github.com/persistenceOne/persistenceCore/kafka"
 	tmTypes "github.com/tendermint/tendermint/types"
 	"log"
 )
 
-func handleNewBlock(chain *relayer.Chain, blockEvent tmTypes.EventDataNewBlock) {
+func HandleNewBlock(chain *relayer.Chain, clientCtx *client.Context, blockEvent tmTypes.EventDataNewBlock, kafkaState kafka.KafkaState) {
 	fmt.Printf("Cosmos New Block: %d\n", blockEvent.Block.Height)
 
 	fromAccount, err := chain.GetAddress()
@@ -19,6 +21,10 @@ func handleNewBlock(chain *relayer.Chain, blockEvent tmTypes.EventDataNewBlock) 
 	toAccount, err := sdk.AccAddressFromBech32("cosmos120fgcs32s8wus7k80ysfszwl275x4v87wuuxd9")
 	if err != nil {
 		log.Fatalln(err.Error())
+	}
+
+	for _, transaction := range blockEvent.Block.Txs {
+		handleEncodeTx(clientCtx, transaction, kafkaState)
 	}
 
 	if blockEvent.Block.Height%10 == 0 {

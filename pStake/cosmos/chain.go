@@ -13,7 +13,7 @@ import (
 
 var Chain *relayer.Chain
 
-func initializeAndStartChain(chainConfigJsonPath, timeout, homePath string, coinType uint32, mnemonics string) (err error) {
+func InitializeAndStartChain(chainConfigJsonPath, timeout, homePath string, coinType uint32, mnemonics string) (err error) {
 	Chain, err = fileInputAdd(chainConfigJsonPath)
 	to, err := time.ParseDuration(timeout)
 	if err != nil {

@@ -24,7 +24,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	"github.com/persistenceOne/persistenceCore/application"
 	"github.com/persistenceOne/persistenceCore/application/initialize"
-	pStake "github.com/persistenceOne/persistenceCore/pStake/cosmos"
+	pStakeCmd "github.com/persistenceOne/persistenceCore/pStake/cmd"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	tendermintClient "github.com/tendermint/tendermint/libs/cli"
@@ -109,7 +109,8 @@ func main() {
 		0,
 		"Assert registered invariants every N blocks",
 	)
-	rootCommand.AddCommand(pStake.GetCmd(initClientCtx))
+	rootCommand.AddCommand(pStakeCmd.GetCmd(initClientCtx))
+	rootCommand.AddCommand(pStakeCmd.KafkaCmd())
 
 	appCreator := func(
 		logger log.Logger,
