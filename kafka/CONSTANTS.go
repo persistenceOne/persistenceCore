@@ -30,7 +30,7 @@ var topicDetail = sarama.TopicDetail{
 const ToEth = "to-ethereum"
 const ToTendermint = "to-tendermint"
 const EthUnbond = "ethereum-unbond"
-const UnbondPool = "unbond pool"
+const UnbondPool = "unbond-pool"
 
 // Topics : is list of topics
 var Topics = []string{

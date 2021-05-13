@@ -86,7 +86,7 @@ import (
 	tendermintOS "github.com/tendermint/tendermint/libs/os"
 	tendermintProto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tendermintDB "github.com/tendermint/tm-db"
-	"honnef.co/go/tools/version"
+	"honnef.co/go/tools/lintcmd/version"
 )
 
 type application struct {
