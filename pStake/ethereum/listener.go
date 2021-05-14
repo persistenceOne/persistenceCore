@@ -3,69 +3,56 @@ package ethereum
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/persistenceOne/persistenceCore/pStake/status"
 	"log"
 	"math/big"
+	"time"
 	//"strings"
 )
 
-func StartListening(ethereumEndPoint string) {
+func StartListening(ethereumEndPoint string, sleepDuration time.Duration) {
 	client, err := ethclient.Dial(ethereumEndPoint)
 	if err != nil {
 		log.Fatalf("Error while dialing to eth node %s: %s\n", ethereumEndPoint, err.Error())
 	}
 	ctx := context.Background()
 
-	block, err := client.BlockByNumber(ctx, big.NewInt(4784014))
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	handleBlock(client, &ctx, block)
-
-	//msg, err := block.Transactions()[0].AsMessage(types.NewEIP155Signer(block.Transactions()[0].ChainId()))
-	//fmt.Println(msg.From())
-
-	//height, err :=  client.BlockNumber(ctx)
-	//if err != nil {
-	//	log.Fatalln(err)
-	//}
-	//
-	//query := ethereum.FilterQuery{
-	//	FromBlock: nil,
-	//	ToBlock:   nil,
-	//	Topics: [][]common.Hash,
-	//	Addresses: []common.Address{address},
-	//}
-
-	var logs = make(chan types.Log)
-	headers := make(chan *types.Header)
-
-	//sub, err := client.SubscribeFilterLogs(ctx, query, logs)
-	sub, err := client.SubscribeNewHead(ctx, headers)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
 	for {
-		select {
-		case err := <-sub.Err():
-			log.Printf("Logs subscription error: %s\n", err.Error())
-			break
-		case l := <-logs:
-			fmt.Println("new log", l.Address)
-		case header := <-headers:
-			go getAndHandleBlock(client, &ctx, header)
+		latestEthHeight, err := client.BlockNumber(ctx)
+		if err != nil {
+			log.Printf("Error while fetching latest block height: %s\n", err.Error())
+			time.Sleep(sleepDuration)
+			continue
 		}
-	}
-}
+		fmt.Printf("ETH new block: %d\n", latestEthHeight)
 
-func getAndHandleBlock(client *ethclient.Client, ctx *context.Context, header *types.Header) {
-	block, err := client.BlockByHash(*ctx, header.Hash())
-	if err != nil {
-		log.Fatal(err)
+		ethStatus, err := status.GetEthereumStatus()
+		if err != nil {
+			panic(err)
+		}
+
+		if latestEthHeight > uint64(ethStatus.LastCheckHeight) {
+			processHeight := big.NewInt(ethStatus.LastCheckHeight + 1)
+			fmt.Printf("Processing ETH: %d\n", processHeight)
+
+			block, err := client.BlockByNumber(ctx, processHeight)
+			if err != nil {
+				log.Println(err)
+				time.Sleep(sleepDuration)
+				continue
+			}
+
+			err = handleBlock(client, &ctx, block)
+			if err != nil {
+				panic(err)
+			}
+
+			err = status.SetEthereumStatus(processHeight.Int64())
+			if err != nil {
+				panic(err)
+			}
+		}
+		time.Sleep(sleepDuration)
 	}
-	fmt.Printf("Eth new block: %s\n", header.Number.String())
-	handleBlock(client, ctx, block)
 }
