@@ -25,7 +25,6 @@ func StartListening(ethereumEndPoint string, sleepDuration time.Duration) {
 			time.Sleep(sleepDuration)
 			continue
 		}
-		fmt.Printf("ETH new block: %d\n", latestEthHeight)
 
 		ethStatus, err := status.GetEthereumStatus()
 		if err != nil {
@@ -34,7 +33,7 @@ func StartListening(ethereumEndPoint string, sleepDuration time.Duration) {
 
 		if latestEthHeight > uint64(ethStatus.LastCheckHeight) {
 			processHeight := big.NewInt(ethStatus.LastCheckHeight + 1)
-			fmt.Printf("Processing ETH: %d\n", processHeight)
+			fmt.Printf("ETH: %d\n", processHeight)
 
 			block, err := client.BlockByNumber(ctx, processHeight)
 			if err != nil {

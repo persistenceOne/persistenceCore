@@ -14,14 +14,18 @@ func InitializeDB(dbPath string, tendermintStart, ethereumStart int64) (*leveldb
 	}
 	db = dbTemp
 
-	err = SetCosmosStatus(tendermintStart)
-	if err != nil {
-		return db, err
+	if tendermintStart > 0 {
+		err = SetCosmosStatus(tendermintStart - 1)
+		if err != nil {
+			return db, err
+		}
 	}
 
-	err = SetEthereumStatus(ethereumStart)
-	if err != nil {
-		return db, err
+	if ethereumStart > 0 {
+		err = SetEthereumStatus(ethereumStart)
+		if err != nil {
+			return db, err
+		}
 	}
 
 	return db, nil

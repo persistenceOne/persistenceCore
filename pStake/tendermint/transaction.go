@@ -14,13 +14,13 @@ import (
 	tmTypes "github.com/tendermint/tendermint/types"
 )
 
-func HandleTxEvent(clientCtx client.Context, txEvent tmTypes.EventDataTx, kafkaState kafka.KafkaState) {
+func handleTxEvent(clientCtx client.Context, txEvent tmTypes.EventDataTx, kafkaState kafka.KafkaState) {
 	if txEvent.Result.Code == 0 {
 		_ = handleEncodeTx(clientCtx, txEvent.Tx, kafkaState)
 	}
 }
 
-func HandleTxSearchResult(clientCtx client.Context, txSearchResult *tmCoreTypes.ResultTxSearch, kafkaState kafka.KafkaState) error {
+func handleTxSearchResult(clientCtx client.Context, txSearchResult *tmCoreTypes.ResultTxSearch, kafkaState kafka.KafkaState) error {
 	for _, tx := range txSearchResult.Txs {
 		if tx.TxResult.Code == 0 {
 			err := handleEncodeTx(clientCtx, tx.Tx, kafkaState)

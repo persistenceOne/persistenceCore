@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"context"
-	"fmt"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server"
@@ -39,11 +37,11 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 				log.Fatalln(err)
 			}
 
-			cosmosSleepTime, err := cmd.Flags().GetInt(constants.FlagCosmosSleepTime)
+			tmSleepTime, err := cmd.Flags().GetInt(constants.FlagTendermintSleepTime)
 			if err != nil {
 				log.Fatalln(err)
 			}
-			cosmosSleepDuration := time.Duration(cosmosSleepTime) * time.Millisecond
+			tmSleepDuration := time.Duration(tmSleepTime) * time.Millisecond
 
 			ethereumEndPoint, err := cmd.Flags().GetString(constants.FlagEthereumEndPoint)
 			if err != nil {
@@ -66,7 +64,17 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 				log.Fatalln(err)
 			}
 
-			db, err := status.InitializeDB(homePath+"/db", 5732, 4789782)
+			tmStart, err := cmd.Flags().GetInt64(constants.FlagTendermintStartHeight)
+			if err != nil {
+				log.Fatalln(err)
+			}
+
+			ethStart, err := cmd.Flags().GetInt64(constants.FlagEthereumStartHeight)
+			if err != nil {
+				log.Fatalln(err)
+			}
+
+			db, err := status.InitializeDB(homePath+"/db", tmStart, ethStart)
 			if err != nil {
 				log.Fatalln(err)
 			}
@@ -80,8 +88,8 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 
 			log.Println("Starting to listen ethereum....")
 			go ethereum.StartListening(ethereumEndPoint, ethSleepDuration)
-
-			run(initClientCtx.WithHomeDir(homePath), args[0], timeout, homePath, coinType, args[1], kafkaState, cosmosSleepDuration)
+			log.Println("Starting to listen tendermint....")
+			tendermint.StartListening(initClientCtx.WithHomeDir(homePath), args[0], timeout, homePath, coinType, args[1], kafkaState, tmSleepDuration)
 
 			return nil
 		},
@@ -92,56 +100,11 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 	pStakeCommand.Flags().String(constants.FlagEthereumEndPoint, "wss://goerli.infura.io/ws/v3/e2549c9ec9764e46a7768cc7619a1939", "ethereum node to connect")
 	pStakeCommand.Flags().String("ports", "localhost:9092", "ports kafka brokers are running on, --ports 192.100.10.10:443,192.100.10.11:443")
 	pStakeCommand.Flags().String(kafka.FlagKafkaHome, kafka.DefaultKafkaHome, "The kafka config file directory")
-	pStakeCommand.Flags().Int(constants.FlagCosmosSleepTime, 3000, "sleep time between block checking for cosmos in ms (default 3000 ms)")
-	pStakeCommand.Flags().Int(constants.FlagEthereumSleepTime, 4000, "sleep time between block checking for cosmos in ms (default 4000 ms)")
+	pStakeCommand.Flags().Int(constants.FlagTendermintSleepTime, 3000, "sleep time between block checking for tendermint in ms (default 3000 ms)")
+	pStakeCommand.Flags().Int(constants.FlagEthereumSleepTime, 4000, "sleep time between block checking for ethereum in ms (default 4000 ms)")
+	pStakeCommand.Flags().Int64(constants.FlagTendermintStartHeight, 0, "Start checking height on tendermint chain from this height (default 1)")
+	pStakeCommand.Flags().Int64(constants.FlagEthereumStartHeight, 0, "Start checking height on ethereum chain from this height (default 1)")
 	return pStakeCommand
-}
-
-func run(initClientCtx client.Context, chainConfigJsonPath, timeout, homePath string, coinType uint32, mnemonics string, kafkaState kafka.KafkaState, sleepDuration time.Duration) {
-	err := tendermint.InitializeAndStartChain(chainConfigJsonPath, timeout, homePath, coinType, mnemonics)
-	if err != nil {
-		log.Fatalf("Error while intiializing and starting chain: %s\n", err.Error())
-	}
-
-	ctx := context.Background()
-
-	for {
-		abciInfo, err := tendermint.Chain.Client.ABCIInfo(ctx)
-		if err != nil {
-			log.Printf("Error while fetching tendermint abci info: %s\n", err.Error())
-			time.Sleep(sleepDuration)
-			continue
-		}
-		fmt.Printf("TM new block: %d\n", abciInfo.Response.LastBlockHeight)
-
-		cosmosStatus, err := status.GetCosmosStatus()
-		if err != nil {
-			panic(err)
-		}
-
-		if abciInfo.Response.LastBlockHeight > cosmosStatus.LastCheckHeight {
-			processHeight := cosmosStatus.LastCheckHeight + 1
-			fmt.Printf("Processing TM: %d\n", processHeight)
-
-			txSearchResult, err := tendermint.Chain.Client.TxSearch(ctx, fmt.Sprintf("tx.height=%d", processHeight), true, nil, nil, "asc")
-			if err != nil {
-				log.Println(err)
-				time.Sleep(sleepDuration)
-				continue
-			}
-
-			err = tendermint.HandleTxSearchResult(initClientCtx, txSearchResult, kafkaState)
-			if err != nil {
-				panic(err)
-			}
-
-			err = status.SetCosmosStatus(processHeight)
-			if err != nil {
-				panic(err)
-			}
-		}
-		time.Sleep(sleepDuration)
-	}
 }
 
 // TODO for Eth events =>
