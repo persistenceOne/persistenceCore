@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 	"time"
 )
@@ -45,6 +46,9 @@ func InitCmd() *cobra.Command {
 
 			homeDir, err := cmd.Flags().GetString(kafka.FlagKafkaHome)
 			if err != nil {
+				panic(err)
+			}
+			if err = os.MkdirAll(homeDir, os.ModePerm); err != nil {
 				panic(err)
 			}
 			if err := ioutil.WriteFile(filepath.Join(homeDir, "kafkaConfig.toml"), buf.Bytes(), 0644); err != nil {
@@ -110,16 +114,11 @@ func consumeMsgs(ctx context.Context, state kafka.KafkaState, kafkaConfig runCon
 }
 func consumeUnbondings(ctx context.Context, state kafka.KafkaState, kafkaConfig runConfig.KafkaConfig, protoCodec *codec.ProtoCodec) {
 	ethUnbondConsumerGroup := state.ConsumerGroup[kafka.GroupEthUnbond]
-	UnbondPoolConsumerGroup := state.ConsumerGroup[kafka.GroupUnbondPool]
 	for {
 		handler := kafka.MsgHandler{KafkaConfig: kafkaConfig, ProtoCodec: protoCodec}
 		err := ethUnbondConsumerGroup.Consume(ctx, []string{kafka.EthUnbond}, handler)
 		if err != nil {
 			log.Println("Error in consumer group.Consume for EthUnbond ", err)
-		}
-		err = UnbondPoolConsumerGroup.Consume(ctx, []string{kafka.UnbondPool}, handler)
-		if err != nil {
-			log.Println("Error in consumer group.Consume for UnbondPool", err)
 		}
 		time.Sleep(kafkaConfig.EthUnbondCycleTime)
 	}

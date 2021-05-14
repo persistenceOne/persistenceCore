@@ -9,8 +9,6 @@ type KafkaConfig struct {
 	Brokers      []string
 	ToEth        TopicConsumer
 	ToTendermint TopicConsumer
-	// unbond pools correct value will be 8 (7+1) => if 7 max tuple of delegator/validator
-	UnbondPools int
 	// Time for each unbonding transactions 3 days => input nano-seconds 259200000000000
 	EthUnbondCycleTime time.Duration
 }
@@ -29,7 +27,6 @@ func NewKafkaConfig() KafkaConfig {
 		ToTendermint: TopicConsumer{
 			BatchSize: 2,
 		},
-		UnbondPools:        8,
 		EthUnbondCycleTime: time.Duration(259200000000000),
 	}
 }
