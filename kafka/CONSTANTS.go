@@ -30,17 +30,15 @@ var topicDetail = sarama.TopicDetail{
 // Consumer groups
 const GroupTxns = "group-txns"
 const GroupEthUnbond = "group-ethereum-unbond"
-const GroupUnbondPool = "group-unbond-pool"
 
-var Groups = []string{GroupTxns, GroupEthUnbond, GroupUnbondPool}
+var Groups = []string{GroupTxns, GroupEthUnbond}
 
 //Topics
 const ToEth = "to-ethereum"
 const ToTendermint = "to-tendermint"
 const EthUnbond = "ethereum-unbond"
-const UnbondPool = "unbond-pool"
 
 // Topics : is list of topics
 var Topics = []string{
-	ToEth, ToTendermint, EthUnbond, UnbondPool,
+	ToEth, ToTendermint, EthUnbond,
 }

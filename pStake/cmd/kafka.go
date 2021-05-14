@@ -110,16 +110,11 @@ func consumeMsgs(ctx context.Context, state kafka.KafkaState, kafkaConfig runCon
 }
 func consumeUnbondings(ctx context.Context, state kafka.KafkaState, kafkaConfig runConfig.KafkaConfig, protoCodec *codec.ProtoCodec) {
 	ethUnbondConsumerGroup := state.ConsumerGroup[kafka.GroupEthUnbond]
-	UnbondPoolConsumerGroup := state.ConsumerGroup[kafka.GroupUnbondPool]
 	for {
 		handler := kafka.MsgHandler{KafkaConfig: kafkaConfig, ProtoCodec: protoCodec}
 		err := ethUnbondConsumerGroup.Consume(ctx, []string{kafka.EthUnbond}, handler)
 		if err != nil {
 			log.Println("Error in consumer group.Consume for EthUnbond ", err)
-		}
-		err = UnbondPoolConsumerGroup.Consume(ctx, []string{kafka.UnbondPool}, handler)
-		if err != nil {
-			log.Println("Error in consumer group.Consume for UnbondPool", err)
 		}
 		time.Sleep(kafkaConfig.EthUnbondCycleTime)
 	}
