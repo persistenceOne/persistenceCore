@@ -22,7 +22,7 @@ func InitializeDB(dbPath string, tendermintStart, ethereumStart int64) (*leveldb
 	}
 
 	if ethereumStart > 0 {
-		err = SetEthereumStatus(ethereumStart)
+		err = SetEthereumStatus(ethereumStart - 1)
 		if err != nil {
 			return db, err
 		}
