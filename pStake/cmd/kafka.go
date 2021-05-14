@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 	"time"
 )
@@ -45,6 +46,9 @@ func InitCmd() *cobra.Command {
 
 			homeDir, err := cmd.Flags().GetString(kafka.FlagKafkaHome)
 			if err != nil {
+				panic(err)
+			}
+			if err = os.MkdirAll(homeDir, os.ModePerm); err != nil {
 				panic(err)
 			}
 			if err := ioutil.WriteFile(filepath.Join(homeDir, "kafkaConfig.toml"), buf.Bytes(), 0644); err != nil {
