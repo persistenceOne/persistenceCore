@@ -1,9 +1,9 @@
 package tendermint
 
 import (
-	"fmt"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"log"
+	"strings"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -51,34 +51,43 @@ func handleEncodeTx(clientCtx client.Context, encodedTx []byte, kafkaState kafka
 		log.Fatalln("Unable to parse tx")
 	}
 
-	fmt.Printf("Memo: %s\n", tx.GetMemo())
+	memo := strings.TrimSpace(tx.GetMemo())
 
 	protoCodec := codec.NewProtoCodec(clientCtx.InterfaceRegistry)
-	for _, msg := range tx.GetMsgs() {
-		switch txMsg := msg.(type) {
-		case *banktypes.MsgSend:
-			//TODO Convert txMsg to the Msg we want to send forward
-			msgBytes, err := protoCodec.MarshalInterface(sdk.Msg(txMsg))
-			if err != nil {
-				panic(err)
-			}
-			if true {
-				err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToEth, kafkaState.Producer)
-				if err != nil {
-					log.Print("Failed to add msg to kafka queue: ", err)
-				}
-				log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToEth)
-			} else {
-				//TODO Convert txMsg to the Msg we want to sent to tendermint reversal queue
-				err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToTendermint, kafkaState.Producer)
-				if err != nil {
-					log.Print("Failed to add msg to kafka queue: ", err)
-				}
-				log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToTendermint)
-			}
-		default:
 
+	if validateMemo(memo) {
+		for _, msg := range tx.GetMsgs() {
+			switch txMsg := msg.(type) {
+			case *banktypes.MsgSend:
+				//TODO Convert txMsg to the Msg we want to send forward
+				msgBytes, err := protoCodec.MarshalInterface(sdk.Msg(txMsg))
+				if err != nil {
+					panic(err)
+				}
+				if true {
+					err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToEth, kafkaState.Producer)
+					if err != nil {
+						log.Print("Failed to add msg to kafka queue: ", err)
+					}
+					log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToEth)
+				} else {
+					//TODO Convert txMsg to the Msg we want to sent to tendermint reversal queue
+					err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToTendermint, kafkaState.Producer)
+					if err != nil {
+						log.Print("Failed to add msg to kafka queue: ", err)
+					}
+					log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToTendermint)
+				}
+			default:
+
+			}
 		}
+	} else {
+		// TODO Reverse the amount??
 	}
 	return nil
+}
+
+func validateMemo(memo string) bool {
+	return true
 }
