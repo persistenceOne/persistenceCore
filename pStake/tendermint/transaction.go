@@ -62,6 +62,10 @@ func handleEncodeTx(clientCtx client.Context, encodedTx []byte, kafkaState kafka
 			if err != nil {
 				panic(err)
 			}
+			// TODO
+			//if txMsg.ToAddress == Chain.MustGetAddress().String() {
+			//
+			//}
 			if validMemo {
 				err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToEth, kafkaState.Producer)
 				if err != nil {
