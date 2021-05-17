@@ -1,14 +1,15 @@
 package tendermint
 
 import (
-	"github.com/cosmos/cosmos-sdk/codec"
 	"log"
 	"strings"
 
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/signing"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	goEthCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/persistenceOne/persistenceCore/kafka"
 	tmCoreTypes "github.com/tendermint/tendermint/rpc/core/types"
 	tmTypes "github.com/tendermint/tendermint/types"
@@ -51,7 +52,7 @@ func handleEncodeTx(clientCtx client.Context, encodedTx []byte, kafkaState kafka
 		log.Fatalln("Unable to parse tx")
 	}
 
-	validMemo := validateMemo(strings.TrimSpace(tx.GetMemo()))
+	validMemo := goEthCommon.IsHexAddress(strings.TrimSpace(tx.GetMemo()))
 	protoCodec := codec.NewProtoCodec(clientCtx.InterfaceRegistry)
 
 	for _, msg := range tx.GetMsgs() {
@@ -86,8 +87,4 @@ func handleEncodeTx(clientCtx client.Context, encodedTx []byte, kafkaState kafka
 	}
 
 	return nil
-}
-
-func validateMemo(memo string) bool {
-	return true
 }

@@ -2,6 +2,7 @@ package contracts
 
 import (
 	"encoding/hex"
+	"github.com/persistenceOne/persistenceCore/kafka"
 	"log"
 	"strings"
 
@@ -13,7 +14,7 @@ type ContractI interface {
 	GetAddress() string
 	GetABI() abi.ABI
 	SetABI(contractABIString string)
-	GetMethods() map[string]func(arguments []interface{}) error
+	GetMethods() map[string]func(kafkaState kafka.KafkaState, arguments []interface{}) error
 	GetMethodAndArguments(inputData []byte) (*abi.Method, []interface{}, error)
 }
 
@@ -21,7 +22,7 @@ type Contract struct {
 	Name    string
 	Address string
 	ABI     abi.ABI
-	Methods map[string]func(arguments []interface{}) error
+	Methods map[string]func(kafkaState kafka.KafkaState, arguments []interface{}) error
 }
 
 var _ ContractI = &Contract{}
@@ -38,7 +39,7 @@ func (contract *Contract) GetABI() abi.ABI {
 	return contract.ABI
 }
 
-func (contract *Contract) GetMethods() map[string]func(arguments []interface{}) error {
+func (contract *Contract) GetMethods() map[string]func(kafkaState kafka.KafkaState, arguments []interface{}) error {
 	return contract.Methods
 }
 

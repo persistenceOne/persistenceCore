@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/persistenceOne/persistenceCore/kafka"
 	"github.com/persistenceOne/persistenceCore/pStake/status"
 	"log"
 	"math/big"
@@ -11,7 +12,7 @@ import (
 	//"strings"
 )
 
-func StartListening(ethereumEndPoint string, sleepDuration time.Duration) {
+func StartListening(ethereumEndPoint string, sleepDuration time.Duration, kafkaState kafka.KafkaState) {
 	client, err := ethclient.Dial(ethereumEndPoint)
 	if err != nil {
 		log.Fatalf("Error while dialing to eth node %s: %s\n", ethereumEndPoint, err.Error())
@@ -42,7 +43,7 @@ func StartListening(ethereumEndPoint string, sleepDuration time.Duration) {
 				continue
 			}
 
-			err = handleBlock(client, &ctx, block)
+			err = handleBlock(client, &ctx, block, kafkaState)
 			if err != nil {
 				panic(err)
 			}

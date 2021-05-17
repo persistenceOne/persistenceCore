@@ -87,7 +87,7 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 			server.TrapSignal(kafkaClose(kafkaState))
 
 			log.Println("Starting to listen ethereum....")
-			go ethereum.StartListening(ethereumEndPoint, ethSleepDuration)
+			go ethereum.StartListening(ethereumEndPoint, ethSleepDuration, kafkaState)
 			log.Println("Starting to listen tendermint....")
 			tendermint.StartListening(initClientCtx.WithHomeDir(homePath), args[0], timeout, homePath, coinType, args[1], kafkaState, tmSleepDuration)
 
