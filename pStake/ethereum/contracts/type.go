@@ -20,28 +20,28 @@ type ContractI interface {
 }
 
 type Contract struct {
-	Name    string
-	Address string
-	ABI     abi.ABI
-	Methods map[string]func(kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec, arguments []interface{}) error
+	name    string
+	address string
+	abi     abi.ABI
+	methods map[string]func(kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec, arguments []interface{}) error
 }
 
 var _ ContractI = &Contract{}
 
 func (contract *Contract) GetName() string {
-	return contract.Name
+	return contract.name
 }
 
 func (contract *Contract) GetAddress() string {
-	return contract.Address
+	return contract.address
 }
 
 func (contract *Contract) GetABI() abi.ABI {
-	return contract.ABI
+	return contract.abi
 }
 
 func (contract *Contract) GetMethods() map[string]func(kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec, arguments []interface{}) error {
-	return contract.Methods
+	return contract.methods
 }
 
 func (contract *Contract) SetABI(contractABIString string) {
@@ -49,7 +49,7 @@ func (contract *Contract) SetABI(contractABIString string) {
 	if err != nil {
 		log.Fatalln("Unable to decode abi:  " + err.Error())
 	}
-	contract.ABI = contractABI
+	contract.abi = contractABI
 }
 
 func (contract *Contract) GetMethodAndArguments(inputData []byte) (*abi.Method, []interface{}, error) {
@@ -60,17 +60,17 @@ func (contract *Contract) GetMethodAndArguments(inputData []byte) (*abi.Method, 
 
 	decodedSig, err := hex.DecodeString(txData[:8])
 	if err != nil {
-		log.Fatalf("Unable decode method ID (decodeSig) of %s: %s\n", contract.Name, err.Error())
+		log.Fatalf("Unable decode method ID (decodeSig) of %s: %s\n", contract.name, err.Error())
 	}
 
-	method, err := contract.ABI.MethodById(decodedSig)
+	method, err := contract.abi.MethodById(decodedSig)
 	if err != nil {
-		log.Fatalf("Unable to fetch method of %s: %s\n", contract.Name, err.Error())
+		log.Fatalf("Unable to fetch method of %s: %s\n", contract.name, err.Error())
 	}
 
 	decodedData, err := hex.DecodeString(txData[8:])
 	if err != nil {
-		log.Fatalf("Unable to decode input data of %s: %s\n", contract.Name, err.Error())
+		log.Fatalf("Unable to decode input data of %s: %s\n", contract.name, err.Error())
 	}
 
 	arguments, err := method.Inputs.Unpack(decodedData)

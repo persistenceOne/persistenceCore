@@ -10,10 +10,10 @@ import (
 )
 
 var STokens = Contract{
-	Name:    "S_TOKENS",
-	Address: constants.STokensAddress,
-	ABI:     abi.ABI{},
-	Methods: map[string]func(kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec, arguments []interface{}) error{
+	name:    "S_TOKENS",
+	address: constants.STokensAddress,
+	abi:     abi.ABI{},
+	methods: map[string]func(kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec, arguments []interface{}) error{
 		constants.STokensSetRewards:       onSetRewards,
 		constants.STokensCalculateRewards: onCalculateRewards,
 	},

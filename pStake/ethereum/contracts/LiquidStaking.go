@@ -14,10 +14,10 @@ import (
 )
 
 var LiquidStaking = Contract{
-	Name:    "LIQUID_STAKING",
-	Address: constants.LiquidStaking,
-	ABI:     abi.ABI{},
-	Methods: map[string]func(kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec, arguments []interface{}) error{
+	name:    "LIQUID_STAKING",
+	address: constants.LiquidStaking,
+	abi:     abi.ABI{},
+	methods: map[string]func(kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec, arguments []interface{}) error{
 		constants.LiquidStakingStake:   onStake,
 		constants.LiquidStakingUnStake: onUnStake,
 	},
