@@ -57,28 +57,35 @@ func handleEncodeTx(clientCtx client.Context, encodedTx []byte, kafkaState kafka
 	for _, msg := range tx.GetMsgs() {
 		switch txMsg := msg.(type) {
 		case *banktypes.MsgSend:
-			//TODO Convert txMsg to the Msg we want to send forward
-			msgBytes, err := protoCodec.MarshalInterface(sdk.Msg(txMsg))
-			if err != nil {
-				panic(err)
-			}
-			// TODO
-			//if txMsg.ToAddress == Chain.MustGetAddress().String() {
-			//
-			//}
-			if validMemo {
-				err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToEth, kafkaState.Producer)
-				if err != nil {
-					log.Print("Failed to add msg to kafka queue: ", err)
+
+			if txMsg.ToAddress == Chain.MustGetAddress().String() {
+				if validMemo {
+					//TODO Convert txMsg to the Msg we want to send forward
+					msgBytes, err := protoCodec.MarshalInterface(sdk.Msg(txMsg))
+					if err != nil {
+						panic(err)
+					}
+					err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToEth, kafkaState.Producer)
+					if err != nil {
+						log.Print("Failed to add msg to kafka queue: ", err)
+					}
+					log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToEth)
+				} else {
+					msg := banktypes.MsgSend{
+						FromAddress: txMsg.ToAddress,
+						ToAddress:   txMsg.FromAddress,
+						Amount:      txMsg.Amount,
+					}
+					msgBytes, err := protoCodec.MarshalInterface(sdk.Msg(txMsg))
+					if err != nil {
+						panic(err)
+					}
+					err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToTendermint, kafkaState.Producer)
+					if err != nil {
+						log.Print("Failed to add msg to kafka queue: ", err)
+					}
+					log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToTendermint)
 				}
-				log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToEth)
-			} else {
-				//TODO Convert txMsg to the Msg we want to sent to tendermint reversal queue
-				err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToTendermint, kafkaState.Producer)
-				if err != nil {
-					log.Print("Failed to add msg to kafka queue: ", err)
-				}
-				log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToTendermint)
 			}
 		default:
 

@@ -72,6 +72,12 @@ func (m MsgHandler) HandleEthUnbond(session sarama.ConsumerGroupSession, claim s
 			log.Printf("failed to close producer in topic: %v", EthUnbond)
 		}
 	}()
+	var kafkaMsg *sarama.ConsumerMessage
+	defer func() {
+		if kafkaMsg != nil {
+			session.MarkMessage(kafkaMsg, "")
+		}
+	}()
 	var sum = sdk.NewInt(0)
 	for kafkaMsg := range claim.Messages() {
 		if kafkaMsg == nil {
@@ -88,30 +94,26 @@ func (m MsgHandler) HandleEthUnbond(session sarama.ConsumerGroupSession, claim s
 		default:
 			log.Printf("Unexpected type found in topic: %v", EthUnbond)
 		}
-		// should we mark offset after summing all? more like a defer function, will be tricky if kafkaMsg is nil
-		session.MarkMessage(kafkaMsg, "")
 	}
+	// TODO import cycle error here
 
-	/*
-		// Make a unbond msg and send TODO pick delegator and validator addresses
-		unbondMsg := &stakingTypes.MsgUndelegate{
-			DelegatorAddress: "",
-			ValidatorAddress: "",
-			Amount:           sdk.Coin{
-				Denom:  m.KafkaConfig.Denom,
-				Amount: sum,
-			},
-		}
-		msgBytes, err := m.ProtoCodec.MarshalInterface(sdk.Msg(unbondMsg))
-		if err!= nil {
-			return err
-		}
-		err = ProducerDeliverMessage(msgBytes, ToTendermint, producer)
-		if err != nil {
-			log.Printf("failed to produce message from topic %v to %v", EthUnbond, ToTendermint)
-			return err
-		}
-	*/
+	//unbondMsg := &stakingTypes.MsgUndelegate{
+	//	DelegatorAddress: tendermint.Chain.MustGetAddress().String(),
+	//	ValidatorAddress: constants.Validator1.String(),
+	//	Amount: sdk.Coin{
+	//		Denom:  m.KafkaConfig.Denom,
+	//		Amount: sum,
+	//	},
+	//}
+	//msgBytes, err := m.ProtoCodec.MarshalInterface(sdk.Msg(unbondMsg))
+	//if err != nil {
+	//	return err
+	//}
+	//err = ProducerDeliverMessage(msgBytes, ToTendermint, producer)
+	//if err != nil {
+	//	log.Printf("failed to produce message from topic %v to %v", EthUnbond, ToTendermint)
+	//	return err
+	//}
 
 	return nil
 }
@@ -173,8 +175,9 @@ func SendBatchToEth(kafkaMsgs []sarama.ConsumerMessage, protoCodec *codec.ProtoC
 		return err
 	}
 	log.Printf("batched messages to send to ETH: %v", msgs)
-	// TODO: do more with msgs.
-	return nil
+
+	// TODO send msgs to ethereum.
+	return err
 }
 
 // SendBatchToTendermint :
@@ -184,6 +187,11 @@ func SendBatchToTendermint(kafkaMsgs []sarama.ConsumerMessage, protoCodec *codec
 		return err
 	}
 	log.Printf("batched messages to send to Tendermint: %v", msgs)
-	//TODO: do more with messages.
+	// TODO import cycle error here
+	//response, ok, err := tendermint.Chain.SendMsgs(msgs)
+	//if err != nil {
+	//	log.Printf("error occured while send to Tendermint:%v: ", err)
+	//}
+	//log.Printf("response: %v, ok: %v", response, ok)
 	return nil
 }
