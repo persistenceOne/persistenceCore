@@ -13,7 +13,7 @@ import (
 	"github.com/persistenceOne/persistenceCore/pStake/status"
 )
 
-func StartListening(initClientCtx client.Context, chain *relayer.Chain, toAddress string, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec, sleepDuration time.Duration) {
+func StartListening(initClientCtx client.Context, chain *relayer.Chain, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec, sleepDuration time.Duration) {
 	ctx := context.Background()
 
 	for {
@@ -40,7 +40,7 @@ func StartListening(initClientCtx client.Context, chain *relayer.Chain, toAddres
 				continue
 			}
 
-			err = handleTxSearchResult(initClientCtx, txSearchResult, kafkaState, protoCodec, toAddress)
+			err = handleTxSearchResult(initClientCtx, txSearchResult, kafkaState, protoCodec)
 			if err != nil {
 				panic(err)
 			}

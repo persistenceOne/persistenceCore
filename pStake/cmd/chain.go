@@ -102,7 +102,7 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 			log.Println("Starting to listen ethereum....")
 			go ethereum.StartListening(ethereumEndPoint, ethSleepDuration, kafkaState, protoCodec)
 			log.Println("Starting to listen tendermint....")
-			tendermint.StartListening(initClientCtx.WithHomeDir(homePath), chain, chain.MustGetAddress().String(), kafkaState, protoCodec, tmSleepDuration)
+			tendermint.StartListening(initClientCtx.WithHomeDir(homePath), chain, kafkaState, protoCodec, tmSleepDuration)
 
 			return nil
 		},
@@ -119,11 +119,4 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 	pStakeCommand.Flags().Int64(constants.FlagEthereumStartHeight, constants.DefaultEthereumStartHeight, fmt.Sprintf("Start checking height on ethereum chain from this height (default %d - starts from where last left)", constants.DefaultEthereumStartHeight))
 	pStakeCommand.Flags().String(constants.FlagDenom, constants.DefaultDenom, "denom name")
 	return pStakeCommand
-}
-
-// TODO for Eth events =>
-func ethEvents() {
-	// msg delegate => convert to MsgDelegate and push to ToEth queue
-	// msg unbond =>convert to MsgSend and push to EthUnbond queue
-
 }
