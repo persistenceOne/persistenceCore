@@ -11,42 +11,40 @@ import (
 	"time"
 )
 
-var Chain *relayer.Chain
-
-func InitializeAndStartChain(chainConfigJsonPath, timeout, homePath string, coinType uint32, mnemonics string) (err error) {
-	Chain, err = fileInputAdd(chainConfigJsonPath)
+func InitializeAndStartChain(chainConfigJsonPath, timeout, homePath string, coinType uint32, mnemonics string) (*relayer.Chain, error) {
+	chain, err := fileInputAdd(chainConfigJsonPath)
 	to, err := time.ParseDuration(timeout)
 	if err != nil {
-		return err
+		return chain, err
 	}
 
-	err = Chain.Init(homePath, to, nil, true)
+	err = chain.Init(homePath, to, nil, true)
 	if err != nil {
-		return err
+		return chain, err
 	}
 
-	if Chain.KeyExists(Chain.Key) {
-		log.Printf("deleting old key %s\n", Chain.Key)
-		err = Chain.Keybase.Delete(Chain.Key)
+	if chain.KeyExists(chain.Key) {
+		log.Printf("deleting old key %s\n", chain.Key)
+		err = chain.Keybase.Delete(chain.Key)
 		if err != nil {
-			return err
+			return chain, err
 		}
 	}
 
-	ko, err := helpers.KeyAddOrRestore(Chain, Chain.Key, coinType, mnemonics)
+	ko, err := helpers.KeyAddOrRestore(chain, chain.Key, coinType, mnemonics)
 	if err != nil {
-		return err
+		return chain, err
 	}
 
 	log.Printf("Keys added: %s\n", ko.Address)
 
-	if err = Chain.Start(); err != nil {
+	if err = chain.Start(); err != nil {
 		if err != tmservice.ErrAlreadyStarted {
-			Chain.Error(err)
-			return err
+			chain.Error(err)
+			return chain, err
 		}
 	}
-	return err
+	return chain, nil
 }
 
 func fileInputAdd(file string) (*relayer.Chain, error) {

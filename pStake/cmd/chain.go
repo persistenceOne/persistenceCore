@@ -87,6 +87,12 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 			}
 			defer db.Close()
 
+			chain, err := tendermint.InitializeAndStartChain(args[0], timeout, homePath, coinType, args[1])
+			if err != nil {
+				log.Fatalln(err)
+			}
+			constants.Address = chain.MustGetAddress()
+
 			protoCodec := codec.NewProtoCodec(initClientCtx.InterfaceRegistry)
 			portsList := strings.Split(ports, ",")
 			kafkaState := kafka.NewKafkaState(portsList, kafkaHome)
@@ -96,7 +102,7 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 			log.Println("Starting to listen ethereum....")
 			go ethereum.StartListening(ethereumEndPoint, ethSleepDuration, kafkaState, protoCodec)
 			log.Println("Starting to listen tendermint....")
-			tendermint.StartListening(initClientCtx.WithHomeDir(homePath), args[0], timeout, homePath, coinType, args[1], kafkaState, protoCodec, tmSleepDuration)
+			tendermint.StartListening(initClientCtx.WithHomeDir(homePath), chain, chain.MustGetAddress().String(), kafkaState, protoCodec, tmSleepDuration)
 
 			return nil
 		},

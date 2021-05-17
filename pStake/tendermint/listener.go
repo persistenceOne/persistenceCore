@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/relayer/relayer"
 	"log"
 	"time"
 
@@ -12,16 +13,11 @@ import (
 	"github.com/persistenceOne/persistenceCore/pStake/status"
 )
 
-func StartListening(initClientCtx client.Context, chainConfigJsonPath, timeout, homePath string, coinType uint32, mnemonics string, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec, sleepDuration time.Duration) {
-	err := InitializeAndStartChain(chainConfigJsonPath, timeout, homePath, coinType, mnemonics)
-	if err != nil {
-		log.Fatalf("Error while intiializing and starting chain: %s\n", err.Error())
-	}
-
+func StartListening(initClientCtx client.Context, chain *relayer.Chain, toAddress string, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec, sleepDuration time.Duration) {
 	ctx := context.Background()
 
 	for {
-		abciInfo, err := Chain.Client.ABCIInfo(ctx)
+		abciInfo, err := chain.Client.ABCIInfo(ctx)
 		if err != nil {
 			log.Printf("Error while fetching tendermint abci info: %s\n", err.Error())
 			time.Sleep(sleepDuration)
@@ -37,14 +33,14 @@ func StartListening(initClientCtx client.Context, chainConfigJsonPath, timeout, 
 			processHeight := cosmosStatus.LastCheckHeight + 1
 			fmt.Printf("TM: %d\n", processHeight)
 
-			txSearchResult, err := Chain.Client.TxSearch(ctx, fmt.Sprintf("tx.height=%d", processHeight), true, nil, nil, "asc")
+			txSearchResult, err := chain.Client.TxSearch(ctx, fmt.Sprintf("tx.height=%d", processHeight), true, nil, nil, "asc")
 			if err != nil {
 				log.Println(err)
 				time.Sleep(sleepDuration)
 				continue
 			}
 
-			err = handleTxSearchResult(initClientCtx, txSearchResult, kafkaState, protoCodec)
+			err = handleTxSearchResult(initClientCtx, txSearchResult, kafkaState, protoCodec, toAddress)
 			if err != nil {
 				panic(err)
 			}

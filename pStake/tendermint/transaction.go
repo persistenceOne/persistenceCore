@@ -15,16 +15,16 @@ import (
 	tmTypes "github.com/tendermint/tendermint/types"
 )
 
-func handleTxEvent(clientCtx client.Context, txEvent tmTypes.EventDataTx, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec) {
+func handleTxEvent(clientCtx client.Context, txEvent tmTypes.EventDataTx, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec, toAddress string) {
 	if txEvent.Result.Code == 0 {
-		_ = handleEncodeTx(clientCtx, txEvent.Tx, kafkaState, protoCodec)
+		_ = handleEncodeTx(clientCtx, txEvent.Tx, kafkaState, protoCodec, toAddress)
 	}
 }
 
-func handleTxSearchResult(clientCtx client.Context, txSearchResult *tmCoreTypes.ResultTxSearch, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec) error {
+func handleTxSearchResult(clientCtx client.Context, txSearchResult *tmCoreTypes.ResultTxSearch, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec, toAddress string) error {
 	for _, tx := range txSearchResult.Txs {
 		if tx.TxResult.Code == 0 {
-			err := handleEncodeTx(clientCtx, tx.Tx, kafkaState, protoCodec)
+			err := handleEncodeTx(clientCtx, tx.Tx, kafkaState, protoCodec, toAddress)
 			if err != nil {
 				log.Printf("Failed to process tendermint tx: %s\n", tx.Hash)
 				return err
@@ -35,7 +35,7 @@ func handleTxSearchResult(clientCtx client.Context, txSearchResult *tmCoreTypes.
 }
 
 // handleEncodeTx Should be called if tx is known to be successful
-func handleEncodeTx(clientCtx client.Context, encodedTx []byte, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec) error {
+func handleEncodeTx(clientCtx client.Context, encodedTx []byte, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec, toAddress string) error {
 	// Should be used if encodedTx is string
 	//decodedTx, err := base64.StdEncoding.DecodeString(encodedTx)
 	//if err != nil {
@@ -62,7 +62,7 @@ func handleEncodeTx(clientCtx client.Context, encodedTx []byte, kafkaState kafka
 			if err != nil {
 				panic(err)
 			}
-			if txMsg.ToAddress == Chain.MustGetAddress().String() {
+			if txMsg.ToAddress == toAddress {
 				if validMemo {
 					err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToEth, kafkaState.Producer)
 					if err != nil {
