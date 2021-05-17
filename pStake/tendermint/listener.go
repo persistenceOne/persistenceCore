@@ -3,6 +3,7 @@ package tendermint
 import (
 	"context"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/codec"
 	"log"
 	"time"
 
@@ -11,7 +12,7 @@ import (
 	"github.com/persistenceOne/persistenceCore/pStake/status"
 )
 
-func StartListening(initClientCtx client.Context, chainConfigJsonPath, timeout, homePath string, coinType uint32, mnemonics string, kafkaState kafka.KafkaState, sleepDuration time.Duration) {
+func StartListening(initClientCtx client.Context, chainConfigJsonPath, timeout, homePath string, coinType uint32, mnemonics string, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec, sleepDuration time.Duration) {
 	err := InitializeAndStartChain(chainConfigJsonPath, timeout, homePath, coinType, mnemonics)
 	if err != nil {
 		log.Fatalf("Error while intiializing and starting chain: %s\n", err.Error())
@@ -43,7 +44,7 @@ func StartListening(initClientCtx client.Context, chainConfigJsonPath, timeout, 
 				continue
 			}
 
-			err = handleTxSearchResult(initClientCtx, txSearchResult, kafkaState)
+			err = handleTxSearchResult(initClientCtx, txSearchResult, kafkaState, protoCodec)
 			if err != nil {
 				panic(err)
 			}

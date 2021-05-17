@@ -3,6 +3,7 @@ package ethereum
 import (
 	"context"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/persistenceOne/persistenceCore/kafka"
 	"github.com/persistenceOne/persistenceCore/pStake/status"
@@ -12,7 +13,7 @@ import (
 	//"strings"
 )
 
-func StartListening(ethereumEndPoint string, sleepDuration time.Duration, kafkaState kafka.KafkaState) {
+func StartListening(ethereumEndPoint string, sleepDuration time.Duration, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec) {
 	client, err := ethclient.Dial(ethereumEndPoint)
 	if err != nil {
 		log.Fatalf("Error while dialing to eth node %s: %s\n", ethereumEndPoint, err.Error())
@@ -43,7 +44,7 @@ func StartListening(ethereumEndPoint string, sleepDuration time.Duration, kafkaS
 				continue
 			}
 
-			err = handleBlock(client, &ctx, block, kafkaState)
+			err = handleBlock(client, &ctx, block, kafkaState, protoCodec)
 			if err != nil {
 				panic(err)
 			}

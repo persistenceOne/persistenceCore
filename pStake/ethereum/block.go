@@ -2,7 +2,7 @@ package ethereum
 
 import (
 	"context"
-	"fmt"
+	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/persistenceOne/persistenceCore/kafka"
 	"github.com/persistenceOne/persistenceCore/pStake/ethereum/contracts"
 	"log"
@@ -11,7 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-func handleBlock(client *ethclient.Client, ctx *context.Context, block *types.Block, kafkaState kafka.KafkaState) error {
+func handleBlock(client *ethclient.Client, ctx *context.Context, block *types.Block, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec) error {
 	for _, transaction := range block.Transactions() {
 		if transaction.To() != nil {
 			var contract contracts.ContractI
@@ -23,7 +23,7 @@ func handleBlock(client *ethclient.Client, ctx *context.Context, block *types.Bl
 			default:
 			}
 			if contract != nil {
-				err := handleTransaction(client, ctx, transaction, contract, kafkaState)
+				err := handleTransaction(client, ctx, transaction, contract, kafkaState, protoCodec)
 				if err != nil {
 					log.Printf("Failed to process ethereum tx: %s\n", transaction.Hash().String())
 					return err
@@ -34,7 +34,7 @@ func handleBlock(client *ethclient.Client, ctx *context.Context, block *types.Bl
 	return nil
 }
 
-func handleTransaction(client *ethclient.Client, ctx *context.Context, transaction *types.Transaction, contract contracts.ContractI, kafkaState kafka.KafkaState) error {
+func handleTransaction(client *ethclient.Client, ctx *context.Context, transaction *types.Transaction, contract contracts.ContractI, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec) error {
 	receipt, err := client.TransactionReceipt(*ctx, transaction.Hash())
 	if err != nil {
 		log.Fatalf("Error while fetching receipt of tx %s: %s", transaction.Hash().String(), err.Error())
@@ -48,10 +48,8 @@ func handleTransaction(client *ethclient.Client, ctx *context.Context, transacti
 			return err
 		}
 
-		fmt.Println(method.RawName)
-
 		if processFunc, ok := contract.GetMethods()[method.RawName]; ok {
-			err = processFunc(kafkaState, arguments)
+			err = processFunc(kafkaState, protoCodec, arguments)
 			if err != nil {
 				log.Fatalf("Error in processing arguments of contarct %s and method  %s,: %s\n", contract.GetName(), method.RawName, err.Error())
 				return err

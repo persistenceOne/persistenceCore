@@ -25,7 +25,7 @@ func NewKafkaConfig() KafkaConfig {
 			BatchSize: 3,
 		},
 		ToTendermint: TopicConsumer{
-			BatchSize: 2,
+			BatchSize: 1,
 		},
 		EthUnbondCycleTime: time.Duration(259200000000000),
 	}

@@ -32,6 +32,12 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 				log.Fatalln(err)
 			}
 
+			denom, err := cmd.Flags().GetString(constants.FlagDenom)
+			if err != nil {
+				log.Fatalln(err)
+			}
+			constants.Denom = denom
+
 			homePath, err := cmd.Flags().GetString(constants.FlagPStakeHome)
 			if err != nil {
 				log.Fatalln(err)
@@ -87,9 +93,9 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 			server.TrapSignal(kafkaClose(kafkaState))
 
 			log.Println("Starting to listen ethereum....")
-			go ethereum.StartListening(ethereumEndPoint, ethSleepDuration, kafkaState)
+			go ethereum.StartListening(ethereumEndPoint, ethSleepDuration, kafkaState, protoCodec)
 			log.Println("Starting to listen tendermint....")
-			tendermint.StartListening(initClientCtx.WithHomeDir(homePath), args[0], timeout, homePath, coinType, args[1], kafkaState, tmSleepDuration)
+			tendermint.StartListening(initClientCtx.WithHomeDir(homePath), args[0], timeout, homePath, coinType, args[1], kafkaState, protoCodec, tmSleepDuration)
 
 			return nil
 		},
@@ -104,6 +110,7 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 	pStakeCommand.Flags().Int(constants.FlagEthereumSleepTime, constants.DefaultEthereumSleepTime, "sleep time between block checking for ethereum in ms (default 4000 ms)")
 	pStakeCommand.Flags().Int64(constants.FlagTendermintStartHeight, constants.DefaultTendermintStartHeight, "Start checking height on tendermint chain from this height (default 1)")
 	pStakeCommand.Flags().Int64(constants.FlagEthereumStartHeight, constants.DefaultEthereumStartHeight, "Start checking height on ethereum chain from this height (default 1)")
+	pStakeCommand.Flags().String(constants.FlagDenom, constants.DefaultDenom, "denom name  (default "+constants.DefaultDenom+" )")
 	return pStakeCommand
 }
 

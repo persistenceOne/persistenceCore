@@ -15,16 +15,16 @@ import (
 	tmTypes "github.com/tendermint/tendermint/types"
 )
 
-func handleTxEvent(clientCtx client.Context, txEvent tmTypes.EventDataTx, kafkaState kafka.KafkaState) {
+func handleTxEvent(clientCtx client.Context, txEvent tmTypes.EventDataTx, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec) {
 	if txEvent.Result.Code == 0 {
-		_ = handleEncodeTx(clientCtx, txEvent.Tx, kafkaState)
+		_ = handleEncodeTx(clientCtx, txEvent.Tx, kafkaState, protoCodec)
 	}
 }
 
-func handleTxSearchResult(clientCtx client.Context, txSearchResult *tmCoreTypes.ResultTxSearch, kafkaState kafka.KafkaState) error {
+func handleTxSearchResult(clientCtx client.Context, txSearchResult *tmCoreTypes.ResultTxSearch, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec) error {
 	for _, tx := range txSearchResult.Txs {
 		if tx.TxResult.Code == 0 {
-			err := handleEncodeTx(clientCtx, tx.Tx, kafkaState)
+			err := handleEncodeTx(clientCtx, tx.Tx, kafkaState, protoCodec)
 			if err != nil {
 				log.Printf("Failed to process tendermint tx: %s\n", tx.Hash)
 				return err
@@ -35,7 +35,7 @@ func handleTxSearchResult(clientCtx client.Context, txSearchResult *tmCoreTypes.
 }
 
 // handleEncodeTx Should be called if tx is known to be successful
-func handleEncodeTx(clientCtx client.Context, encodedTx []byte, kafkaState kafka.KafkaState) error {
+func handleEncodeTx(clientCtx client.Context, encodedTx []byte, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec) error {
 	// Should be used if encodedTx is string
 	//decodedTx, err := base64.StdEncoding.DecodeString(encodedTx)
 	//if err != nil {
@@ -53,7 +53,6 @@ func handleEncodeTx(clientCtx client.Context, encodedTx []byte, kafkaState kafka
 	}
 
 	validMemo := goEthCommon.IsHexAddress(strings.TrimSpace(tx.GetMemo()))
-	protoCodec := codec.NewProtoCodec(clientCtx.InterfaceRegistry)
 
 	for _, msg := range tx.GetMsgs() {
 		switch txMsg := msg.(type) {

@@ -7,5 +7,6 @@ const (
 )
 
 var (
+	Denom         = "stake"
 	Validator1, _ = sdkTypes.ValAddressFromBech32(validator1)
 )
