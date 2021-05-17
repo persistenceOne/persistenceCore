@@ -26,33 +26,23 @@ var LiquidStaking = Contract{
 func onStake(kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec, arguments []interface{}) error {
 	amount := arguments[1].(*big.Int)
 	stakeMsg := stakingTypes.NewMsgDelegate(tendermint.Chain.MustGetAddress(), constants.Validator1, sdkTypes.NewCoin(constants.Denom, sdkTypes.NewInt(amount.Int64())))
-	msgBytes, err := protoCodec.MarshalInterface(stakeMsg)
+	msgBytes, err := protoCodec.MarshalInterface(sdkTypes.Msg(stakeMsg))
 	err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToTendermint, kafkaState.Producer)
 	if err != nil {
 		log.Print("Failed to add msg to kafka queue: ", err)
 		return err
 	}
-	//response, ok, err := tendermint.Chain.SendMsg(stakeMsg)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//log.Printf("Sending tx, ok: %v, code: %d, hash: %s\n", ok, response.Code, response.TxHash)
 	return nil
 }
 
 func onUnStake(kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec, arguments []interface{}) error {
 	amount := arguments[1].(*big.Int)
 	unStakeMsg := stakingTypes.NewMsgUndelegate(tendermint.Chain.MustGetAddress(), constants.Validator1, sdkTypes.NewCoin(constants.Denom, sdkTypes.NewInt(amount.Int64())))
-	msgBytes, err := protoCodec.MarshalInterface(unStakeMsg)
+	msgBytes, err := protoCodec.MarshalInterface(sdkTypes.Msg(unStakeMsg))
 	err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToTendermint, kafkaState.Producer)
 	if err != nil {
 		log.Print("Failed to add msg to kafka queue: ", err)
 		return err
 	}
-	//response, ok, err := tendermint.Chain.SendMsg(unstakeMsg)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//log.Printf("Sending tx, ok: %v, code: %d, hash: %s\n", ok, response.Code, response.TxHash)
 	return nil
 }
