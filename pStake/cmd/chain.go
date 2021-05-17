@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server"
@@ -102,14 +103,14 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 	}
 	pStakeCommand.Flags().String(constants.FlagTimeOut, constants.DefaultTimeout, "timeout time for connecting to rpc")
 	pStakeCommand.Flags().Uint32(constants.FlagCoinType, constants.DefaultCoinType, "coin type for wallet")
-	pStakeCommand.Flags().String(constants.FlagPStakeHome, constants.DefaultPStakeHome, "home for pStake (default "+constants.DefaultPStakeHome+")")
+	pStakeCommand.Flags().String(constants.FlagPStakeHome, constants.DefaultPStakeHome, "home for pStake")
 	pStakeCommand.Flags().String(constants.FlagEthereumEndPoint, constants.DefaultEthereumEndPoint, "ethereum node to connect")
 	pStakeCommand.Flags().String("ports", "localhost:9092", "ports kafka brokers are running on, --ports 192.100.10.10:443,192.100.10.11:443")
 	pStakeCommand.Flags().String(kafka.FlagKafkaHome, kafka.DefaultKafkaHome, "The kafka config file directory")
-	pStakeCommand.Flags().Int(constants.FlagTendermintSleepTime, constants.DefaultTendermintSleepTime, "sleep time between block checking for tendermint in ms (default 3000 ms)")
-	pStakeCommand.Flags().Int(constants.FlagEthereumSleepTime, constants.DefaultEthereumSleepTime, "sleep time between block checking for ethereum in ms (default 4000 ms)")
-	pStakeCommand.Flags().Int64(constants.FlagTendermintStartHeight, constants.DefaultTendermintStartHeight, "Start checking height on tendermint chain from this height (default 1)")
-	pStakeCommand.Flags().Int64(constants.FlagEthereumStartHeight, constants.DefaultEthereumStartHeight, "Start checking height on ethereum chain from this height (default 1)")
-	pStakeCommand.Flags().String(constants.FlagDenom, constants.DefaultDenom, "denom name  (default "+constants.DefaultDenom+" )")
+	pStakeCommand.Flags().Int(constants.FlagTendermintSleepTime, constants.DefaultTendermintSleepTime, "sleep time between block checking for tendermint in ms")
+	pStakeCommand.Flags().Int(constants.FlagEthereumSleepTime, constants.DefaultEthereumSleepTime, "sleep time between block checking for ethereum in ms")
+	pStakeCommand.Flags().Int64(constants.FlagTendermintStartHeight, constants.DefaultTendermintStartHeight, fmt.Sprintf("Start checking height on tendermint chain from this height (default %d - starts from where last left)", constants.DefaultTendermintStartHeight))
+	pStakeCommand.Flags().Int64(constants.FlagEthereumStartHeight, constants.DefaultEthereumStartHeight, fmt.Sprintf("Start checking height on ethereum chain from this height (default %d - starts from where last left)", constants.DefaultEthereumStartHeight))
+	pStakeCommand.Flags().String(constants.FlagDenom, constants.DefaultDenom, "denom name")
 	return pStakeCommand
 }
