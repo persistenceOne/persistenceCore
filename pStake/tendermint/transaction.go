@@ -63,22 +63,21 @@ func handleEncodeTx(clientCtx client.Context, encodedTx []byte, kafkaState kafka
 				panic(err)
 			}
 			// TODO
-			//if txMsg.ToAddress == Chain.MustGetAddress().String() {
-			//
-			//}
-			if validMemo {
-				err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToEth, kafkaState.Producer)
-				if err != nil {
-					log.Print("Failed to add msg to kafka queue: ", err)
+			if txMsg.ToAddress == Chain.MustGetAddress().String() {
+				if validMemo {
+					err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToEth, kafkaState.Producer)
+					if err != nil {
+						log.Print("Failed to add msg to kafka queue: ", err)
+					}
+					log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToEth)
+				} else {
+					//TODO Convert txMsg to the Msg we want to sent to tendermint reversal queue
+					err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToTendermint, kafkaState.Producer)
+					if err != nil {
+						log.Print("Failed to add msg to kafka queue: ", err)
+					}
+					log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToTendermint)
 				}
-				log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToEth)
-			} else {
-				//TODO Convert txMsg to the Msg we want to sent to tendermint reversal queue
-				err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToTendermint, kafkaState.Producer)
-				if err != nil {
-					log.Print("Failed to add msg to kafka queue: ", err)
-				}
-				log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToTendermint)
 			}
 		default:
 
