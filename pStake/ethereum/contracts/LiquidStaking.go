@@ -39,7 +39,7 @@ func onUnStake(kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec, argume
 	amount := arguments[1].(*big.Int)
 	unStakeMsg := stakingTypes.NewMsgUndelegate(tendermint.Chain.MustGetAddress(), constants.Validator1, sdkTypes.NewCoin(constants.Denom, sdkTypes.NewInt(amount.Int64())))
 	msgBytes, err := protoCodec.MarshalInterface(sdkTypes.Msg(unStakeMsg))
-	err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToTendermint, kafkaState.Producer)
+	err = kafka.ProducerDeliverMessage(msgBytes, kafka.EthUnbond, kafkaState.Producer)
 	if err != nil {
 		log.Print("Failed to add msg to kafka queue: ", err)
 		return err

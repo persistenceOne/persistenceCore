@@ -114,10 +114,3 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 	pStakeCommand.Flags().String(constants.FlagDenom, constants.DefaultDenom, "denom name")
 	return pStakeCommand
 }
-
-// TODO for Eth events =>
-func ethEvents() {
-	// msg delegate => convert to MsgDelegate and push to ToEth queue
-	// msg unbond =>convert to MsgSend and push to EthUnbond queue
-
-}

@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Shopify/sarama v1.28.0
-	github.com/btcsuite/goleveldb v1.0.0 // indirect
+	github.com/btcsuite/goleveldb v1.0.0
 	github.com/cosmos/cosmos-sdk v0.42.4
 	github.com/cosmos/relayer v0.9.3
 	github.com/deckarep/golang-set v1.7.1 // indirect
