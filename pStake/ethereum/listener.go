@@ -3,17 +3,17 @@ package ethereum
 import (
 	"context"
 	"fmt"
+	"github.com/persistenceOne/persistenceCore/kafka/utils"
 	"log"
 	"math/big"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/persistenceOne/persistenceCore/kafka"
 	"github.com/persistenceOne/persistenceCore/pStake/status"
 )
 
-func StartListening(client *ethclient.Client, sleepDuration time.Duration, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec) {
+func StartListening(client *ethclient.Client, sleepDuration time.Duration, kafkaState utils.KafkaState, protoCodec *codec.ProtoCodec) {
 	ctx := context.Background()
 
 	for {

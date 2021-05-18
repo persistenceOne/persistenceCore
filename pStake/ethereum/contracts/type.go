@@ -3,7 +3,7 @@ package contracts
 import (
 	"encoding/hex"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/persistenceOne/persistenceCore/kafka"
+	"github.com/persistenceOne/persistenceCore/kafka/utils"
 	"log"
 	"strings"
 
@@ -15,7 +15,7 @@ type ContractI interface {
 	GetAddress() string
 	GetABI() abi.ABI
 	SetABI(contractABIString string)
-	GetMethods() map[string]func(kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec, arguments []interface{}) error
+	GetMethods() map[string]func(kafkaState utils.KafkaState, protoCodec *codec.ProtoCodec, arguments []interface{}) error
 	GetMethodAndArguments(inputData []byte) (*abi.Method, []interface{}, error)
 }
 
@@ -23,7 +23,7 @@ type Contract struct {
 	name    string
 	address string
 	abi     abi.ABI
-	methods map[string]func(kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec, arguments []interface{}) error
+	methods map[string]func(kafkaState utils.KafkaState, protoCodec *codec.ProtoCodec, arguments []interface{}) error
 }
 
 var _ ContractI = &Contract{}
@@ -40,7 +40,7 @@ func (contract *Contract) GetABI() abi.ABI {
 	return contract.abi
 }
 
-func (contract *Contract) GetMethods() map[string]func(kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec, arguments []interface{}) error {
+func (contract *Contract) GetMethods() map[string]func(kafkaState utils.KafkaState, protoCodec *codec.ProtoCodec, arguments []interface{}) error {
 	return contract.methods
 }
 
