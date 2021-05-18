@@ -3,11 +3,11 @@ package constants
 import sdkTypes "github.com/cosmos/cosmos-sdk/types"
 
 const (
-	validator1 = "cosmosvaloper1d20g0gcwhrwv8f2626dx0nkhauu0rsqkz4axrg"
+	validator1 = "cosmosvaloper1pkkayn066msg6kn33wnl5srhdt3tnu2v8fyhft"
 )
 
 var (
-	Denom         = "stake"
+	Denom         = "uatom"
 	Validator1, _ = sdkTypes.ValAddressFromBech32(validator1)
 	Address       = sdkTypes.AccAddress{}
 )
