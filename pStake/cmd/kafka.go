@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/BurntSushi/toml"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/relayer/relayer"
 	"github.com/persistenceOne/persistenceCore/kafka"
 	"github.com/persistenceOne/persistenceCore/kafka/runConfig"
 	"github.com/spf13/cobra"
@@ -85,7 +86,7 @@ func kafkaClose(kafkaState kafka.KafkaState) func() {
 // no need to store any db, producers and consumers are inside kafkaState struct.
 // use kafka.ProducerDeliverMessage() -> to produce message
 // use kafka.TopicConsumer -> to consume messages.
-func kafkaRoutine(kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec) {
+func kafkaRoutine(kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec, chain *relayer.Chain) {
 	kafkaConfig := runConfig.KafkaConfig{}
 
 	_, err := toml.DecodeFile(filepath.Join(kafkaState.HomeDir, "kafkaConfig.toml"), &kafkaConfig)
@@ -94,17 +95,17 @@ func kafkaRoutine(kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec) {
 	}
 	ctx := context.Background()
 
-	go consumeMsgs(ctx, kafkaState, kafkaConfig, protoCodec)
-	go consumeUnbondings(ctx, kafkaState, kafkaConfig, protoCodec)
+	go consumeMsgs(ctx, kafkaState, kafkaConfig, protoCodec, chain)
+	go consumeUnbondings(ctx, kafkaState, kafkaConfig, protoCodec, chain)
 	// go consume other messages
 
 	fmt.Println("started consumers")
 }
 
-func consumeMsgs(ctx context.Context, state kafka.KafkaState, kafkaConfig runConfig.KafkaConfig, protoCodec *codec.ProtoCodec) {
+func consumeMsgs(ctx context.Context, state kafka.KafkaState, kafkaConfig runConfig.KafkaConfig, protoCodec *codec.ProtoCodec, chain *relayer.Chain) {
 	consumerGroup := state.ConsumerGroup[kafka.GroupTxns]
 	for {
-		handler := kafka.MsgHandler{KafkaConfig: kafkaConfig, ProtoCodec: protoCodec}
+		handler := kafka.MsgHandler{KafkaConfig: kafkaConfig, ProtoCodec: protoCodec, Chain: chain}
 		err := consumerGroup.Consume(ctx, []string{kafka.ToEth, kafka.ToTendermint}, handler)
 		if err != nil {
 			log.Println("Error in consumer group.Consume", err)
@@ -112,10 +113,10 @@ func consumeMsgs(ctx context.Context, state kafka.KafkaState, kafkaConfig runCon
 		time.Sleep(time.Duration(1000000000))
 	}
 }
-func consumeUnbondings(ctx context.Context, state kafka.KafkaState, kafkaConfig runConfig.KafkaConfig, protoCodec *codec.ProtoCodec) {
+func consumeUnbondings(ctx context.Context, state kafka.KafkaState, kafkaConfig runConfig.KafkaConfig, protoCodec *codec.ProtoCodec, chain *relayer.Chain) {
 	ethUnbondConsumerGroup := state.ConsumerGroup[kafka.GroupEthUnbond]
 	for {
-		handler := kafka.MsgHandler{KafkaConfig: kafkaConfig, ProtoCodec: protoCodec}
+		handler := kafka.MsgHandler{KafkaConfig: kafkaConfig, ProtoCodec: protoCodec, Chain: chain}
 		err := ethUnbondConsumerGroup.Consume(ctx, []string{kafka.EthUnbond}, handler)
 		if err != nil {
 			log.Println("Error in consumer group.Consume for EthUnbond ", err)
