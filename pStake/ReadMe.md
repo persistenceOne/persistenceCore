@@ -1,3 +1,5 @@
+If running go the latest version (tested on `1.16.3`), do ` export CGO_ENABLED="0"` before make install
+
 When starting for first time `--tmStart` `--ethStart ` needs to be always given.
 After that not adding it will start checking from last checked height + 1
 
