@@ -1,6 +1,8 @@
 package tendermint
 
 import (
+	"encoding/json"
+	"github.com/persistenceOne/persistenceCore/pStake/ethereum"
 	"log"
 	"math/big"
 	"strings"
@@ -56,56 +58,52 @@ func handleEncodeTx(clientCtx client.Context, encodedTx []byte, kafkaState kafka
 
 	memo := strings.TrimSpace(tx.GetMemo())
 	validMemo := goEthCommon.IsHexAddress(memo)
-	//var ethAddress goEthCommon.Address
-	//if validMemo {
-	//	ethAddress = goEthCommon.HexToAddress(memo)
-	//}
+	var ethAddress goEthCommon.Address
+	if validMemo {
+		ethAddress = goEthCommon.HexToAddress(memo)
+	}
 
 	for _, msg := range tx.GetMsgs() {
 		switch txMsg := msg.(type) {
 		case *banktypes.MsgSend:
-			if txMsg.ToAddress == constants.Address.String() {
-				if validMemo {
-					//TODO Convert txMsg to the Msg we want to send forward
-					// Send memo which is erc address
-					var amount *big.Int
-					for _, coin := range txMsg.Amount {
-						if coin.Denom == constants.Denom {
-							amount = coin.Amount.BigInt()
-						}
-					}
-					if amount != nil {
-						// TODO Use this
-						//ethTxMsg := ethereum.EthTxMsg{
-						//	Address: ethAddress,
-						//	Amount:  amount,
-						//}
-						msgBytes, err := protoCodec.MarshalInterface(sdk.Msg(txMsg))
-						if err != nil {
-							panic(err)
-						}
-						err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToEth, kafkaState.Producer)
-						if err != nil {
-							log.Print("Failed to add msg to kafka queue: ", err)
-						}
-						log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToEth)
-					}
-				} else {
-					msg := &banktypes.MsgSend{
-						FromAddress: txMsg.ToAddress,
-						ToAddress:   txMsg.FromAddress,
-						Amount:      txMsg.Amount,
-					}
-					msgBytes, err := protoCodec.MarshalInterface(sdk.Msg(msg))
-					if err != nil {
-						panic(err)
-					}
-					err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToTendermint, kafkaState.Producer)
-					if err != nil {
-						log.Print("Failed to add msg to kafka queue: ", err)
-					}
-					log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToTendermint)
+			var amount *big.Int
+			for _, coin := range txMsg.Amount {
+				if coin.Denom == constants.Denom {
+					amount = coin.Amount.BigInt()
+					break
 				}
+			}
+			sendToEth := txMsg.ToAddress == constants.Address.String() && amount != nil && validMemo
+			if sendToEth {
+				//TODO Convert txMsg to the Msg we want to send forward
+				ethTxMsg := ethereum.EthTxMsg{
+					Address: ethAddress,
+					Amount:  amount,
+				}
+				msgBytes, err := json.Marshal(ethTxMsg)
+				if err != nil {
+					panic(err)
+				}
+				err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToEth, kafkaState.Producer)
+				if err != nil {
+					log.Print("Failed to add msg to kafka queue: ", err)
+				}
+				log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToEth)
+			} else {
+				msg := &banktypes.MsgSend{
+					FromAddress: txMsg.ToAddress,
+					ToAddress:   txMsg.FromAddress,
+					Amount:      txMsg.Amount,
+				}
+				msgBytes, err := protoCodec.MarshalInterface(sdk.Msg(msg))
+				if err != nil {
+					panic(err)
+				}
+				err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToTendermint, kafkaState.Producer)
+				if err != nil {
+					log.Print("Failed to add msg to kafka queue: ", err)
+				}
+				log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToTendermint)
 			}
 		default:
 
