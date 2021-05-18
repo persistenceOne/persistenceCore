@@ -1,5 +1,4 @@
 export GO111MODULE=on
-export CGO_ENABLED="0"
 
 VERSION := $(shell echo $(shell git describe --tags) | sed 's/^v//')
 TM_VERSION := $(shell go list -m github.com/tendermint/tendermint | sed 's:.* ::')

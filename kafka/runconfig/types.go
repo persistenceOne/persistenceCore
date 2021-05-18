@@ -22,7 +22,7 @@ func NewKafkaConfig() KafkaConfig {
 		Denom:   "stake",
 		Brokers: []string{"localhost:9092"},
 		ToEth: TopicConsumer{
-			BatchSize: 1,
+			BatchSize: 3,
 		},
 		ToTendermint: TopicConsumer{
 			BatchSize: 2,

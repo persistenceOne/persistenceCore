@@ -185,17 +185,12 @@ func SendBatchToEth(kafkaMsgs []sarama.ConsumerMessage, _ *codec.ProtoCodec, _ *
 	}
 	log.Printf("batched messages to send to ETH: %v", msgs)
 
-	// TODO remove len(msgs) == 1  when contract takes sequence of messages
-	if len(msgs) == 1 {
-		hash, err := ethereum.SendTxToEth(ethClient, msgs[0], constants.DefaultEthGasLimit)
-		if err != nil {
-			log.Printf("error occuerd in eth transaction: %v", err)
-			return err
-		}
-		log.Printf("sent message to eth with hash: %v ", hash)
-	} else {
-		panic(errors.New("CAN ONLY SEND 1 TX TO ETH, SET BATCH TO 1"))
+	hash, err := ethereum.SendTxToEth(ethClient, msgs, constants.EthGasLimit)
+	if err != nil {
+		log.Printf("error occuerd in eth transaction: %v", err)
+		return err
 	}
+	log.Printf("sent message to eth with hash: %v ", hash)
 	return nil
 }
 

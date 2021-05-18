@@ -93,10 +93,11 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 				log.Fatal(err)
 			}
 
-			//ethGasLimit, err := cmd.Flags().GetUint64(constants.FlagEthGasLimit)
-			//if err != nil {
-			//	log.Fatalln(err)
-			//}
+			ethGasLimit, err := cmd.Flags().GetUint64(constants.FlagEthGasLimit)
+			if err != nil {
+				log.Fatalln(err)
+			}
+			constants.EthGasLimit = ethGasLimit
 
 			db, err := status.InitializeDB(homePath+"/db", tmStart, ethStart)
 			if err != nil {

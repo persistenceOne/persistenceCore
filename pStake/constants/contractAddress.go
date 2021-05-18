@@ -1,7 +1,6 @@
 package constants
 
 var (
-	STokensAddress       = "0xB1ab2F588Fe8198D1A8459d9C1d9457a47a811C7" //common.HexToAddress("0xB1ab2F588Fe8198D1A8459d9C1d9457a47a811C7")
-	LiquidStakingAddress = "0xac749a63F87Fe0A978Cb1002c2DFe9fdC5Bd52e4"
-	TokenWrapperAddress  = "0x67b824A14aE370b040F3c049750419B05Af71de0"
+	LiquidStakingAddress = "0x2Ee29F856Cdb867E79836118196Ea63c022e249e"
+	TokenWrapperAddress  = "0x2cC9EC1cA416c4F4e5789f1Ce12e50C9C7960cb5"
 )

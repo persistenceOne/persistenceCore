@@ -3,6 +3,7 @@ package ethereum
 import (
 	"context"
 	"crypto/ecdsa"
+	"fmt"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/persistenceOne/persistenceCore/pStake/abi"
 	"log"
@@ -19,12 +20,15 @@ type EthTxMsg struct {
 	Amount  *big.Int       `json:"amount"`
 }
 
-func SendTxToEth(client *ethclient.Client, ethTxMsg EthTxMsg, gasLimit uint64) (string, error) {
+func SendTxToEth(client *ethclient.Client, ethTxMsgs []EthTxMsg, gasLimit uint64) (string, error) {
+	if len(ethTxMsgs) == 0 {
+		return "", fmt.Errorf("number of txs to be send to ethereum is 0")
+	}
 	ctx := context.Background()
 	publicKey := constants.EthAccountPrivateKey.Public()
 	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
 	if !ok {
-		log.Fatal("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
+		log.Fatalln("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
 	}
 
 	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
@@ -57,7 +61,14 @@ func SendTxToEth(client *ethclient.Client, ethTxMsg EthTxMsg, gasLimit uint64) (
 		return "", err
 	}
 
-	tx, err := instance.GenerateUTokens(auth, ethTxMsg.Address, ethTxMsg.Amount)
+	addresses := make([]common.Address, len(ethTxMsgs))
+	amounts := make([]*big.Int, len(ethTxMsgs))
+	for i, ethTxMsg := range ethTxMsgs {
+		addresses[i] = ethTxMsg.Address
+		amounts[i] = ethTxMsg.Amount
+	}
+
+	tx, err := instance.GenerateUTokensInBatch(auth, addresses, amounts)
 	if err != nil {
 		return "", err
 	}
