@@ -97,7 +97,7 @@ func (m MsgHandler) HandleEthUnbond(session sarama.ConsumerGroupSession, claim s
 			DelegatorAddress: m.Chain.MustGetAddress().String(),
 			ValidatorAddress: constants.Validator1.String(),
 			Amount: sdk.Coin{
-				Denom:  m.KafkaConfig.Denom,
+				Denom:  constants.Denom,
 				Amount: sum,
 			},
 		}
