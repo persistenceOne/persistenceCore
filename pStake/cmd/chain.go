@@ -96,7 +96,7 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 			protoCodec := codec.NewProtoCodec(initClientCtx.InterfaceRegistry)
 			portsList := strings.Split(ports, ",")
 			kafkaState := kafka.NewKafkaState(portsList, kafkaHome)
-			go kafkaRoutine(kafkaState, protoCodec)
+			go kafkaRoutine(kafkaState, protoCodec, chain)
 			server.TrapSignal(kafkaClose(kafkaState))
 
 			log.Println("Starting to listen ethereum....")
