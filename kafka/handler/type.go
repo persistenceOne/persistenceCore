@@ -86,28 +86,30 @@ func (m MsgHandler) HandleEthUnbond(session sarama.ConsumerGroupSession, claim s
 		}
 		switch txMsg := msg.(type) {
 		case *bankTypes.MsgSend:
-			sum = sum.Add(txMsg.Amount.AmountOf(m.KafkaConfig.Denom))
+			sum = sum.Add(txMsg.Amount.AmountOf(constants.Denom))
 		default:
 			log.Printf("Unexpected type found in topic: %v", utils.EthUnbond)
 		}
 	}
 
-	unbondMsg := &stakingTypes.MsgUndelegate{
-		DelegatorAddress: m.Chain.MustGetAddress().String(),
-		ValidatorAddress: constants.Validator1.String(),
-		Amount: sdk.Coin{
-			Denom:  m.KafkaConfig.Denom,
-			Amount: sum,
-		},
-	}
-	msgBytes, err := m.ProtoCodec.MarshalInterface(sdk.Msg(unbondMsg))
-	if err != nil {
-		return err
-	}
-	err = utils.ProducerDeliverMessage(msgBytes, utils.ToTendermint, producer)
-	if err != nil {
-		log.Printf("failed to produce message from topic %v to %v", utils.EthUnbond, utils.ToTendermint)
-		return err
+	if sum != sdk.NewInt(0) {
+		unbondMsg := &stakingTypes.MsgUndelegate{
+			DelegatorAddress: m.Chain.MustGetAddress().String(),
+			ValidatorAddress: constants.Validator1.String(),
+			Amount: sdk.Coin{
+				Denom:  m.KafkaConfig.Denom,
+				Amount: sum,
+			},
+		}
+		msgBytes, err := m.ProtoCodec.MarshalInterface(sdk.Msg(unbondMsg))
+		if err != nil {
+			return err
+		}
+		err = utils.ProducerDeliverMessage(msgBytes, utils.ToTendermint, producer)
+		if err != nil {
+			log.Printf("failed to produce message from topic %v to %v", utils.EthUnbond, utils.ToTendermint)
+			return err
+		}
 	}
 
 	return nil
