@@ -3,7 +3,7 @@ package ethereum
 import (
 	"context"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/persistenceOne/persistenceCore/kafka"
+	"github.com/persistenceOne/persistenceCore/kafka/utils"
 	"github.com/persistenceOne/persistenceCore/pStake/ethereum/contracts"
 	"log"
 
@@ -11,7 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-func handleBlock(client *ethclient.Client, ctx *context.Context, block *types.Block, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec) error {
+func handleBlock(client *ethclient.Client, ctx *context.Context, block *types.Block, kafkaState utils.KafkaState, protoCodec *codec.ProtoCodec) error {
 	for _, transaction := range block.Transactions() {
 		if transaction.To() != nil {
 			var contract contracts.ContractI
@@ -34,7 +34,7 @@ func handleBlock(client *ethclient.Client, ctx *context.Context, block *types.Bl
 	return nil
 }
 
-func handleTransaction(client *ethclient.Client, ctx *context.Context, transaction *types.Transaction, contract contracts.ContractI, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec) error {
+func handleTransaction(client *ethclient.Client, ctx *context.Context, transaction *types.Transaction, contract contracts.ContractI, kafkaState utils.KafkaState, protoCodec *codec.ProtoCodec) error {
 	receipt, err := client.TransactionReceipt(*ctx, transaction.Hash())
 	if err != nil {
 		log.Fatalf("Error while fetching receipt of tx %s: %s", transaction.Hash().String(), err.Error())

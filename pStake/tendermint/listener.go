@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/relayer/relayer"
+	"github.com/persistenceOne/persistenceCore/kafka/utils"
 	"log"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/persistenceOne/persistenceCore/kafka"
 	"github.com/persistenceOne/persistenceCore/pStake/status"
 )
 
-func StartListening(initClientCtx client.Context, chain *relayer.Chain, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec, sleepDuration time.Duration) {
+func StartListening(initClientCtx client.Context, chain *relayer.Chain, kafkaState utils.KafkaState, protoCodec *codec.ProtoCodec, sleepDuration time.Duration) {
 	ctx := context.Background()
 
 	for {

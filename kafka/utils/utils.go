@@ -3,7 +3,7 @@
  SPDX-License-Identifier: Apache-2.0
 */
 
-package kafka
+package utils
 
 import (
 	"crypto/rand"

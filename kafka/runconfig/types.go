@@ -1,4 +1,4 @@
-package runConfig
+package runconfig
 
 import "time"
 

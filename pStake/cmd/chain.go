@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/persistenceOne/persistenceCore/kafka/utils"
 	"log"
 	"strings"
 	"time"
@@ -11,7 +12,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/persistenceOne/persistenceCore/kafka"
 	"github.com/persistenceOne/persistenceCore/pStake/constants"
 	"github.com/persistenceOne/persistenceCore/pStake/ethereum"
 	"github.com/persistenceOne/persistenceCore/pStake/status"
@@ -69,7 +69,7 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 				log.Fatalln(err)
 			}
 
-			kafkaHome, err := cmd.Flags().GetString(kafka.FlagKafkaHome)
+			kafkaHome, err := cmd.Flags().GetString(utils.FlagKafkaHome)
 			if err != nil {
 				log.Fatalln(err)
 			}
@@ -117,7 +117,7 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 
 			protoCodec := codec.NewProtoCodec(initClientCtx.InterfaceRegistry)
 			portsList := strings.Split(ports, ",")
-			kafkaState := kafka.NewKafkaState(portsList, kafkaHome)
+			kafkaState := utils.NewKafkaState(portsList, kafkaHome)
 			go kafkaRoutine(kafkaState, protoCodec, chain, ethereumClient)
 			server.TrapSignal(kafkaClose(kafkaState))
 
@@ -135,7 +135,7 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 	pStakeCommand.Flags().String(constants.FlagPStakeHome, constants.DefaultPStakeHome, "home for pStake")
 	pStakeCommand.Flags().String(constants.FlagEthereumEndPoint, constants.DefaultEthereumEndPoint, "ethereum node to connect")
 	pStakeCommand.Flags().String("ports", "localhost:9092", "ports kafka brokers are running on, --ports 192.100.10.10:443,192.100.10.11:443")
-	pStakeCommand.Flags().String(kafka.FlagKafkaHome, kafka.DefaultKafkaHome, "The kafka config file directory")
+	pStakeCommand.Flags().String(utils.FlagKafkaHome, utils.DefaultKafkaHome, "The kafka config file directory")
 	pStakeCommand.Flags().Int(constants.FlagTendermintSleepTime, constants.DefaultTendermintSleepTime, "sleep time between block checking for tendermint in ms")
 	pStakeCommand.Flags().Int(constants.FlagEthereumSleepTime, constants.DefaultEthereumSleepTime, "sleep time between block checking for ethereum in ms")
 	pStakeCommand.Flags().Int64(constants.FlagTendermintStartHeight, constants.DefaultTendermintStartHeight, fmt.Sprintf("Start checking height on tendermint chain from this height (default %d - starts from where last left)", constants.DefaultTendermintStartHeight))

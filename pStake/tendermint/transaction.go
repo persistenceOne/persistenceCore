@@ -2,6 +2,7 @@ package tendermint
 
 import (
 	"encoding/json"
+	"github.com/persistenceOne/persistenceCore/kafka/utils"
 	"github.com/persistenceOne/persistenceCore/pStake/ethereum"
 	"log"
 	"math/big"
@@ -13,19 +14,18 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/signing"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	goEthCommon "github.com/ethereum/go-ethereum/common"
-	"github.com/persistenceOne/persistenceCore/kafka"
 	"github.com/persistenceOne/persistenceCore/pStake/constants"
 	tmCoreTypes "github.com/tendermint/tendermint/rpc/core/types"
 	tmTypes "github.com/tendermint/tendermint/types"
 )
 
-func handleTxEvent(clientCtx client.Context, txEvent tmTypes.EventDataTx, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec) {
+func handleTxEvent(clientCtx client.Context, txEvent tmTypes.EventDataTx, kafkaState utils.KafkaState, protoCodec *codec.ProtoCodec) {
 	if txEvent.Result.Code == 0 {
 		_ = handleEncodeTx(clientCtx, txEvent.Tx, kafkaState, protoCodec)
 	}
 }
 
-func handleTxSearchResult(clientCtx client.Context, txSearchResult *tmCoreTypes.ResultTxSearch, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec) error {
+func handleTxSearchResult(clientCtx client.Context, txSearchResult *tmCoreTypes.ResultTxSearch, kafkaState utils.KafkaState, protoCodec *codec.ProtoCodec) error {
 	for _, tx := range txSearchResult.Txs {
 		if tx.TxResult.Code == 0 {
 			err := handleEncodeTx(clientCtx, tx.Tx, kafkaState, protoCodec)
@@ -39,7 +39,7 @@ func handleTxSearchResult(clientCtx client.Context, txSearchResult *tmCoreTypes.
 }
 
 // handleEncodeTx Should be called if tx is known to be successful
-func handleEncodeTx(clientCtx client.Context, encodedTx []byte, kafkaState kafka.KafkaState, protoCodec *codec.ProtoCodec) error {
+func handleEncodeTx(clientCtx client.Context, encodedTx []byte, kafkaState utils.KafkaState, protoCodec *codec.ProtoCodec) error {
 	// Should be used if encodedTx is string
 	//decodedTx, err := base64.StdEncoding.DecodeString(encodedTx)
 	//if err != nil {
@@ -83,11 +83,11 @@ func handleEncodeTx(clientCtx client.Context, encodedTx []byte, kafkaState kafka
 				if err != nil {
 					panic(err)
 				}
-				err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToEth, kafkaState.Producer)
+				err = utils.ProducerDeliverMessage(msgBytes, utils.ToEth, kafkaState.Producer)
 				if err != nil {
 					log.Print("Failed to add msg to kafka queue: ", err)
 				}
-				log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToEth)
+				log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), utils.ToEth)
 			} else {
 				msg := &banktypes.MsgSend{
 					FromAddress: txMsg.ToAddress,
@@ -98,11 +98,11 @@ func handleEncodeTx(clientCtx client.Context, encodedTx []byte, kafkaState kafka
 				if err != nil {
 					panic(err)
 				}
-				err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToTendermint, kafkaState.Producer)
+				err = utils.ProducerDeliverMessage(msgBytes, utils.ToTendermint, kafkaState.Producer)
 				if err != nil {
 					log.Print("Failed to add msg to kafka queue: ", err)
 				}
-				log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToTendermint)
+				log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), utils.ToTendermint)
 			}
 		default:
 
