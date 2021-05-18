@@ -91,12 +91,12 @@ func handleEncodeTx(clientCtx client.Context, encodedTx []byte, kafkaState kafka
 						log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToEth)
 					}
 				} else {
-					msg := banktypes.MsgSend{
+					msg := &banktypes.MsgSend{
 						FromAddress: txMsg.ToAddress,
 						ToAddress:   txMsg.FromAddress,
 						Amount:      txMsg.Amount,
 					}
-					msgBytes, err := protoCodec.MarshalInterface(sdk.Msg(txMsg))
+					msgBytes, err := protoCodec.MarshalInterface(sdk.Msg(msg))
 					if err != nil {
 						panic(err)
 					}
