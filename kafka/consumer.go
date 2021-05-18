@@ -6,6 +6,7 @@
 package kafka
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/Shopify/sarama"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -13,8 +14,10 @@ import (
 	bankTypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingTypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/relayer/relayer"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/persistenceOne/persistenceCore/kafka/runConfig"
 	"github.com/persistenceOne/persistenceCore/pStake/constants"
+	"github.com/persistenceOne/persistenceCore/pStake/ethereum"
 	"log"
 )
 
@@ -30,15 +33,16 @@ type MsgHandler struct {
 	KafkaConfig runConfig.KafkaConfig
 	ProtoCodec  *codec.ProtoCodec
 	Chain       *relayer.Chain
+	EthClient   *ethclient.Client
 }
 
 var _ sarama.ConsumerGroupHandler = MsgHandler{}
 
-func (m MsgHandler) Setup(session sarama.ConsumerGroupSession) error {
+func (m MsgHandler) Setup(_ sarama.ConsumerGroupSession) error {
 	return nil
 }
 
-func (m MsgHandler) Cleanup(session sarama.ConsumerGroupSession) error {
+func (m MsgHandler) Cleanup(_ sarama.ConsumerGroupSession) error {
 	return nil
 }
 
@@ -123,7 +127,7 @@ func (m MsgHandler) HandleEthUnbond(session sarama.ConsumerGroupSession, claim s
 
 // Handlers of message types
 func (m MsgHandler) HandleTopicMsgs(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim, batchSize int,
-	handle func([]sarama.ConsumerMessage, *codec.ProtoCodec, *relayer.Chain) error) error {
+	handle func([]sarama.ConsumerMessage, *codec.ProtoCodec, *relayer.Chain, *ethclient.Client) error) error {
 	msgs := make([]sarama.ConsumerMessage, 0, batchSize)
 	for {
 		kafkaMsg := <-claim.Messages()
@@ -132,7 +136,7 @@ func (m MsgHandler) HandleTopicMsgs(session sarama.ConsumerGroupSession, claim s
 		}
 		log.Printf("Message topic:%q partition:%d offset:%d\n", kafkaMsg.Topic, kafkaMsg.Partition, kafkaMsg.Offset)
 
-		ok, err := BatchAndHandle(&msgs, *kafkaMsg, m.ProtoCodec, m.Chain, handle)
+		ok, err := BatchAndHandle(&msgs, *kafkaMsg, m.ProtoCodec, m.Chain, m.EthClient, handle)
 		if ok && err == nil {
 			session.MarkMessage(kafkaMsg, "")
 			return nil
@@ -145,10 +149,11 @@ func (m MsgHandler) HandleTopicMsgs(session sarama.ConsumerGroupSession, claim s
 
 // BatchAndHandle :
 func BatchAndHandle(kafkaMsgs *[]sarama.ConsumerMessage, kafkaMsg sarama.ConsumerMessage,
-	protoCodec *codec.ProtoCodec, chain *relayer.Chain, handle func([]sarama.ConsumerMessage, *codec.ProtoCodec, *relayer.Chain) error) (bool, error) {
+	protoCodec *codec.ProtoCodec, chain *relayer.Chain, ethClient *ethclient.Client,
+	handle func([]sarama.ConsumerMessage, *codec.ProtoCodec, *relayer.Chain, *ethclient.Client) error) (bool, error) {
 	*kafkaMsgs = append(*kafkaMsgs, kafkaMsg)
 	if len(*kafkaMsgs) == cap(*kafkaMsgs) {
-		err := handle(*kafkaMsgs, protoCodec, chain)
+		err := handle(*kafkaMsgs, protoCodec, chain, ethClient)
 		if err != nil {
 			return false, err
 		}
@@ -171,20 +176,43 @@ func ConvertKafkaMsgsToSDKMsg(kafkaMsgs []sarama.ConsumerMessage, protoCodec *co
 	return msgs, nil
 }
 
+func ConvertKafkaMsgsToEthMsg(kafkaMsgs []sarama.ConsumerMessage) ([]ethereum.EthTxMsg, error) {
+	var msgs []ethereum.EthTxMsg
+	for _, kafkaMsg := range kafkaMsgs {
+		var msg ethereum.EthTxMsg
+		err := json.Unmarshal(kafkaMsg.Value, &msg)
+		if err != nil {
+			return nil, err
+		}
+		msgs = append(msgs, msg)
+	}
+	return msgs, nil
+}
+
 // SendBatchToEth : Handling of msgSend
-func SendBatchToEth(kafkaMsgs []sarama.ConsumerMessage, protoCodec *codec.ProtoCodec, chain *relayer.Chain) error {
-	msgs, err := ConvertKafkaMsgsToSDKMsg(kafkaMsgs, protoCodec)
+func SendBatchToEth(kafkaMsgs []sarama.ConsumerMessage, _ *codec.ProtoCodec, _ *relayer.Chain, ethClient *ethclient.Client) error {
+	msgs, err := ConvertKafkaMsgsToEthMsg(kafkaMsgs)
 	if err != nil {
 		return err
 	}
 	log.Printf("batched messages to send to ETH: %v", msgs)
 
-	// TODO send msgs to ethereum.
-	return err
+	// TODO remove len(msgs) == 1  when contract takes sequence of messages
+	if len(msgs) == 1 {
+		hash, err := ethereum.SendTxToEth(ethClient, msgs[0], constants.DefaultEthGasLimit)
+		if err != nil {
+			log.Printf("error occuerd in eth transaction: %v", err)
+			return err
+		}
+		log.Printf("sent message to eth with hash: %v ", hash)
+	} else {
+		panic(errors.New("CAN ONLY SEND 1 TX TO ETH, SET BATCH TO 1"))
+	}
+	return nil
 }
 
 // SendBatchToTendermint :
-func SendBatchToTendermint(kafkaMsgs []sarama.ConsumerMessage, protoCodec *codec.ProtoCodec, chain *relayer.Chain) error {
+func SendBatchToTendermint(kafkaMsgs []sarama.ConsumerMessage, protoCodec *codec.ProtoCodec, chain *relayer.Chain, _ *ethclient.Client) error {
 	msgs, err := ConvertKafkaMsgsToSDKMsg(kafkaMsgs, protoCodec)
 	if err != nil {
 		return err
@@ -194,6 +222,7 @@ func SendBatchToTendermint(kafkaMsgs []sarama.ConsumerMessage, protoCodec *codec
 	response, ok, err := chain.SendMsgs(msgs)
 	if err != nil {
 		log.Printf("error occured while send to Tendermint:%v: ", err)
+		return err
 	}
 	log.Printf("response: %v, ok: %v", response, ok)
 	return nil

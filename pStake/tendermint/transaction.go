@@ -75,7 +75,6 @@ func handleEncodeTx(clientCtx client.Context, encodedTx []byte, kafkaState kafka
 			}
 			sendToEth := txMsg.ToAddress == constants.Address.String() && amount != nil && validMemo
 			if sendToEth {
-				//TODO Convert txMsg to the Msg we want to send forward
 				ethTxMsg := ethereum.EthTxMsg{
 					Address: ethAddress,
 					Amount:  amount,
