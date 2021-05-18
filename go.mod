@@ -9,6 +9,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.42.4
 	github.com/cosmos/relayer v0.9.3
 	github.com/deckarep/golang-set v1.7.1 // indirect
+	github.com/dgraph-io/badger/v3 v3.2011.1 // indirect
 	github.com/ethereum/go-ethereum v1.10.3
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.4.3

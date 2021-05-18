@@ -1,6 +1,9 @@
 package status
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"github.com/dgraph-io/badger/v3"
+)
 
 const (
 	COSMOS   = "COSMOS"
@@ -14,11 +17,17 @@ type Status struct {
 
 func GetCosmosStatus() (Status, error) {
 	var status Status
-	data, err := db.Get([]byte(COSMOS), nil)
-	if err != nil {
-		return status, err
-	}
-	err = json.Unmarshal(data, &status)
+	err := db.Update(func(txn *badger.Txn) error {
+		item, err := txn.Get([]byte(COSMOS))
+		if err != nil {
+			return err
+		}
+		err = item.Value(func(val []byte) error {
+			err = json.Unmarshal(val, &status)
+			return err
+		})
+		return err
+	})
 	if err != nil {
 		return status, err
 	}
@@ -34,7 +43,9 @@ func SetCosmosStatus(height int64) error {
 	if err != nil {
 		return err
 	}
-	err = db.Put([]byte(status.Name), b, nil)
+	err = db.Update(func(txn *badger.Txn) error {
+		return txn.Set([]byte(status.Name), b)
+	})
 	if err != nil {
 		return err
 	}
@@ -43,11 +54,17 @@ func SetCosmosStatus(height int64) error {
 
 func GetEthereumStatus() (Status, error) {
 	var status Status
-	data, err := db.Get([]byte(ETHEREUM), nil)
-	if err != nil {
-		return status, err
-	}
-	err = json.Unmarshal(data, &status)
+	err := db.Update(func(txn *badger.Txn) error {
+		item, err := txn.Get([]byte(ETHEREUM))
+		if err != nil {
+			return err
+		}
+		err = item.Value(func(val []byte) error {
+			err = json.Unmarshal(val, &status)
+			return err
+		})
+		return err
+	})
 	if err != nil {
 		return status, err
 	}
@@ -63,7 +80,9 @@ func SetEthereumStatus(height int64) error {
 	if err != nil {
 		return err
 	}
-	err = db.Put([]byte(status.Name), b, nil)
+	err = db.Update(func(txn *badger.Txn) error {
+		return txn.Set([]byte(status.Name), b)
+	})
 	if err != nil {
 		return err
 	}

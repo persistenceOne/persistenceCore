@@ -1,14 +1,14 @@
 package status
 
 import (
-	"github.com/btcsuite/goleveldb/leveldb"
+	"github.com/dgraph-io/badger/v3"
 	"log"
 )
 
-var db *leveldb.DB
+var db *badger.DB
 
-func InitializeDB(dbPath string, tendermintStart, ethereumStart int64) (*leveldb.DB, error) {
-	dbTemp, err := leveldb.OpenFile(dbPath, nil)
+func InitializeDB(dbPath string, tendermintStart, ethereumStart int64) (*badger.DB, error) {
+	dbTemp, err := badger.Open(badger.DefaultOptions(dbPath))
 	if err != nil {
 		log.Fatalln(err)
 	}
