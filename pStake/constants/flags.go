@@ -12,6 +12,8 @@ const (
 	FlagTendermintStartHeight = "tmStart"
 	FlagEthereumStartHeight   = "ethStart"
 	FlagDenom                 = "denom"
+	FlagEthPrivateKey         = "ethPrivateKey"
+	FlagEthGasLimit           = "ethGasLimit"
 )
 
 var (
@@ -24,4 +26,5 @@ var (
 	DefaultEthereumStartHeight   = int64(0) // 0 will not change the db at start
 	DefaultPStakeHome            = os.ExpandEnv("$HOME/.pStake")
 	DefaultDenom                 = Denom
+	DefaultEthGasLimit           = uint64(300000)
 )

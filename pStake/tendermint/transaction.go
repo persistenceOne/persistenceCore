@@ -1,8 +1,8 @@
 package tendermint
 
 import (
-	"github.com/persistenceOne/persistenceCore/pStake/constants"
 	"log"
+	"math/big"
 	"strings"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -12,6 +12,7 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	goEthCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/persistenceOne/persistenceCore/kafka"
+	"github.com/persistenceOne/persistenceCore/pStake/constants"
 	tmCoreTypes "github.com/tendermint/tendermint/rpc/core/types"
 	tmTypes "github.com/tendermint/tendermint/types"
 )
@@ -53,7 +54,12 @@ func handleEncodeTx(clientCtx client.Context, encodedTx []byte, kafkaState kafka
 		log.Fatalln("Unable to parse tx")
 	}
 
-	validMemo := goEthCommon.IsHexAddress(strings.TrimSpace(tx.GetMemo()))
+	memo := strings.TrimSpace(tx.GetMemo())
+	validMemo := goEthCommon.IsHexAddress(memo)
+	//var ethAddress goEthCommon.Address
+	//if validMemo {
+	//	ethAddress = goEthCommon.HexToAddress(memo)
+	//}
 
 	for _, msg := range tx.GetMsgs() {
 		switch txMsg := msg.(type) {
@@ -61,15 +67,29 @@ func handleEncodeTx(clientCtx client.Context, encodedTx []byte, kafkaState kafka
 			if txMsg.ToAddress == constants.Address.String() {
 				if validMemo {
 					//TODO Convert txMsg to the Msg we want to send forward
-					msgBytes, err := protoCodec.MarshalInterface(sdk.Msg(txMsg))
-					if err != nil {
-						panic(err)
+					// Send memo which is erc address
+					var amount *big.Int
+					for _, coin := range txMsg.Amount {
+						if coin.Denom == constants.Denom {
+							amount = coin.Amount.BigInt()
+						}
 					}
-					err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToEth, kafkaState.Producer)
-					if err != nil {
-						log.Print("Failed to add msg to kafka queue: ", err)
+					if amount != nil {
+						// TODO Use this
+						//ethTxMsg := ethereum.EthTxMsg{
+						//	Address: ethAddress,
+						//	Amount:  amount,
+						//}
+						msgBytes, err := protoCodec.MarshalInterface(sdk.Msg(txMsg))
+						if err != nil {
+							panic(err)
+						}
+						err = kafka.ProducerDeliverMessage(msgBytes, kafka.ToEth, kafkaState.Producer)
+						if err != nil {
+							log.Print("Failed to add msg to kafka queue: ", err)
+						}
+						log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToEth)
 					}
-					log.Printf("Produced to kafka: %v, for topic %v ", msg.String(), kafka.ToEth)
 				} else {
 					msg := banktypes.MsgSend{
 						FromAddress: txMsg.ToAddress,
