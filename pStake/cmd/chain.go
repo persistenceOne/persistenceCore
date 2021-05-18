@@ -2,10 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	goEthCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"log"
-	"math/big"
 	"strings"
 	"time"
 
@@ -125,19 +123,6 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 
 			log.Println("Starting to listen ethereum....")
 			go ethereum.StartListening(ethereumClient, ethSleepDuration, kafkaState, protoCodec)
-
-			//TODO Example: Remove this later
-			ethAddress := goEthCommon.HexToAddress("0xac749a63F87Fe0A978Cb1002c2DFe9fdC5Bd52e4")
-			ethTxMsg := ethereum.EthTxMsg{
-				Address: ethAddress,
-				Amount:  big.NewInt(100),
-			}
-			txhash, err := ethereum.SendTxToEth(ethereumClient, ethTxMsg, ethGasLimit)
-			if err != nil {
-				log.Fatalf("Error while sending eth txs. %s\n", err.Error())
-			} else {
-				fmt.Println("ETH TX HASH " + txhash)
-			}
 
 			log.Println("Starting to listen tendermint....")
 			tendermint.StartListening(initClientCtx.WithHomeDir(homePath), chain, kafkaState, protoCodec, tmSleepDuration)
