@@ -86,7 +86,7 @@ func (m MsgHandler) HandleEthUnbond(session sarama.ConsumerGroupSession, claim s
 		}
 		switch txMsg := msg.(type) {
 		case *bankTypes.MsgSend:
-			sum = sum.Add(txMsg.Amount.AmountOf(constants.Denom))
+			sum = sum.Add(txMsg.Amount.AmountOf(constants.PSTakeDenom))
 		default:
 			log.Printf("Unexpected type found in topic: %v", utils.EthUnbond)
 		}
@@ -97,7 +97,7 @@ func (m MsgHandler) HandleEthUnbond(session sarama.ConsumerGroupSession, claim s
 			DelegatorAddress: m.Chain.MustGetAddress().String(),
 			ValidatorAddress: constants.Validator1.String(),
 			Amount: sdk.Coin{
-				Denom:  constants.Denom,
+				Denom:  constants.PSTakeDenom,
 				Amount: sum,
 			},
 		}
