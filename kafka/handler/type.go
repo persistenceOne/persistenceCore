@@ -7,6 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankTypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	distributionTypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	stakingTypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/relayer/relayer"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -224,8 +225,12 @@ func SendBatchToTendermint(kafkaMsgs []sarama.ConsumerMessage, protoCodec *codec
 	}
 	log.Printf("batched messages to send to Tendermint: %v", msgs)
 
-	// TODO add msg withdraw rewards.
-
+	// TODO add msg withdraw rewards from multiple validators.
+	withdrawRewardsMsg := &distributionTypes.MsgWithdrawDelegatorReward{
+		DelegatorAddress: chain.MustGetAddress().String(),
+		ValidatorAddress: constants.Validator1.String(),
+	}
+	msgs = append(msgs, sdk.Msg(withdrawRewardsMsg))
 	response, ok, err := chain.SendMsgs(msgs)
 	if err != nil {
 		log.Printf("error occured while send to Tendermint:%v: ", err)
