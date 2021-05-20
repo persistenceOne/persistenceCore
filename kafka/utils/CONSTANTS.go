@@ -28,17 +28,27 @@ var topicDetail = sarama.TopicDetail{
 }
 
 // Consumer groups
-const GroupTxns = "group-txns"
+const GroupToEth = "group-to-ethereum"
+const GroupToTendermint = "group-to-tendermint"
 const GroupEthUnbond = "group-ethereum-unbond"
+const GroupMsgSend = "group-msg-send"
+const GroupMsgDelegate = "group-msg-delegate"
+const GroupMsgUnbond = "group-msg-unbond"
 
-var Groups = []string{GroupTxns, GroupEthUnbond}
+var Groups = []string{GroupToEth, GroupToTendermint, GroupEthUnbond,
+	GroupMsgSend, GroupMsgDelegate, GroupMsgUnbond,
+}
 
 //Topics
 const ToEth = "to-ethereum"
 const ToTendermint = "to-tendermint"
-const EthUnbond = "ethereum-unbond"
+const MsgSend = "msg-send"          //priority3
+const MsgDelegate = "msg-delegate"  //priority2
+const MsgUnbond = "msg-unbond"      //priority1
+const EthUnbond = "ethereum-unbond" //flushes every 3 days
 
 // Topics : is list of topics
 var Topics = []string{
 	ToEth, ToTendermint, EthUnbond,
+	MsgSend, MsgDelegate, MsgUnbond,
 }

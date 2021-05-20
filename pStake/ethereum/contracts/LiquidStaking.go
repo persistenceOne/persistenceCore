@@ -26,7 +26,7 @@ func onStake(kafkaState utils.KafkaState, protoCodec *codec.ProtoCodec, argument
 	amount := arguments[1].(*big.Int)
 	stakeMsg := stakingTypes.NewMsgDelegate(constants.Address, constants.Validator1, sdkTypes.NewCoin(constants.Denom, sdkTypes.NewInt(amount.Int64())))
 	msgBytes, err := protoCodec.MarshalInterface(sdkTypes.Msg(stakeMsg))
-	err = utils.ProducerDeliverMessage(msgBytes, utils.ToTendermint, kafkaState.Producer)
+	err = utils.ProducerDeliverMessage(msgBytes, utils.MsgDelegate, kafkaState.Producer)
 	if err != nil {
 		log.Print("Failed to add msg to kafka queue: ", err)
 		return err

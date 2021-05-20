@@ -35,22 +35,22 @@ func ProducerDeliverMessage(msgBytes []byte, topic string, producer sarama.SyncP
 	return nil
 }
 
-//func ProducerDeliverMessages(msgBytes [][]byte, topic string, producer sarama.SyncProducer) error {
-//	var sendMsgs []*sarama.ProducerMessage
-//	for _, msgByte := range msgBytes {
-//		sendMsg := &sarama.ProducerMessage{
-//			Topic: topic,
-//			Value: sarama.ByteEncoder(msgByte),
-//		}
-//		sendMsgs = append(sendMsgs, sendMsg)
-//	}
-//	err := producer.SendMessages(sendMsgs)
-//	if err != nil {
-//		return err
-//	}
-//	return nil
-//
-//}
+func ProducerDeliverMessages(msgBytes [][]byte, topic string, producer sarama.SyncProducer) error {
+	var sendMsgs []*sarama.ProducerMessage
+	for _, msgByte := range msgBytes {
+		sendMsg := &sarama.ProducerMessage{
+			Topic: topic,
+			Value: sarama.ByteEncoder(msgByte),
+		}
+		sendMsgs = append(sendMsgs, sendMsg)
+	}
+	err := producer.SendMessages(sendMsgs)
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
 
 // SendToKafka : handles sending message to kafka
 //func SendToKafka(msg KafkaMsg, kafkaState KafkaState, cdc *codec.LegacyAmino) []byte {

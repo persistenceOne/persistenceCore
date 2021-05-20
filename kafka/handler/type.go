@@ -22,6 +22,7 @@ type MsgHandler struct {
 	ProtoCodec  *codec.ProtoCodec
 	Chain       *relayer.Chain
 	EthClient   *ethclient.Client
+	Count       int
 }
 
 var _ sarama.ConsumerGroupHandler = MsgHandler{}
@@ -53,6 +54,24 @@ func (m MsgHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sara
 		err := m.HandleEthUnbond(session, claim)
 		if err != nil {
 			log.Printf("failed to handle EthUnbonding for topic: %v", utils.EthUnbond)
+			return err
+		}
+	case utils.MsgSend:
+		err := m.HandleMsgSend(session, claim)
+		if err != nil {
+			log.Printf("failed to handle EthUnbonding for topic: %v", utils.MsgSend)
+			return err
+		}
+	case utils.MsgDelegate:
+		err := m.HandleMsgDelegate(session, claim)
+		if err != nil {
+			log.Printf("failed to handle EthUnbonding for topic: %v", utils.MsgDelegate)
+			return err
+		}
+	case utils.MsgUnbond:
+		err := m.HandleMsgUnbond(session, claim)
+		if err != nil {
+			log.Printf("failed to handle EthUnbonding for topic: %v", utils.MsgUnbond)
 			return err
 		}
 	}
@@ -93,11 +112,12 @@ func (m MsgHandler) HandleEthUnbond(session sarama.ConsumerGroupSession, claim s
 	}
 
 	if sum != sdk.NewInt(0) {
+		// TODO consider multiple validators
 		unbondMsg := &stakingTypes.MsgUndelegate{
 			DelegatorAddress: m.Chain.MustGetAddress().String(),
 			ValidatorAddress: constants.Validator1.String(),
 			Amount: sdk.Coin{
-				Denom:  m.KafkaConfig.Denom,
+				Denom:  constants.DefaultDenom,
 				Amount: sum,
 			},
 		}
@@ -105,7 +125,7 @@ func (m MsgHandler) HandleEthUnbond(session sarama.ConsumerGroupSession, claim s
 		if err != nil {
 			return err
 		}
-		err = utils.ProducerDeliverMessage(msgBytes, utils.ToTendermint, producer)
+		err = utils.ProducerDeliverMessage(msgBytes, utils.MsgUnbond, producer)
 		if err != nil {
 			log.Printf("failed to produce message from topic %v to %v", utils.EthUnbond, utils.ToTendermint)
 			return err
@@ -204,11 +224,99 @@ func SendBatchToTendermint(kafkaMsgs []sarama.ConsumerMessage, protoCodec *codec
 	}
 	log.Printf("batched messages to send to Tendermint: %v", msgs)
 
+	// TODO add msg withdraw rewards.
+
 	response, ok, err := chain.SendMsgs(msgs)
 	if err != nil {
 		log.Printf("error occured while send to Tendermint:%v: ", err)
 		return err
 	}
 	log.Printf("response: %v, ok: %v", response, ok)
+	return nil
+}
+
+func (m MsgHandler) HandleMsgSend(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+	config := utils.Config()
+	producer := utils.NewProducer(m.KafkaConfig.Brokers, config)
+	defer func() {
+		err := producer.Close()
+		if err != nil {
+			log.Printf("failed to close producer in topic: %v", utils.MsgSend)
+		}
+	}()
+	messagesLength := len(claim.Messages())
+	loop := messagesLength
+	if messagesLength > m.KafkaConfig.ToTendermint.BatchSize-m.Count {
+		loop = m.KafkaConfig.ToTendermint.BatchSize
+	}
+	if messagesLength > 0 {
+		var msgs [][]byte
+		var kafkaMsg *sarama.ConsumerMessage
+		for i := 0; i < loop; i++ {
+			kafkaMsg := <-claim.Messages()
+			msgs = append(msgs, kafkaMsg.Value)
+		}
+		err := utils.ProducerDeliverMessages(msgs, utils.ToTendermint, producer)
+		if err != nil {
+			log.Printf("error in handler for topic %v, failed to produce to queue", utils.MsgSend)
+		}
+		session.MarkMessage(kafkaMsg, "")
+		return err
+	}
+	m.Count += loop
+	return nil
+}
+func (m MsgHandler) HandleMsgDelegate(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+	config := utils.Config()
+	producer := utils.NewProducer(m.KafkaConfig.Brokers, config)
+	defer func() {
+		err := producer.Close()
+		if err != nil {
+			log.Printf("failed to close producer in topic: %v", utils.MsgDelegate)
+		}
+	}()
+	messagesLength := len(claim.Messages())
+	if messagesLength > 0 {
+		var msgs [][]byte
+		var kafkaMsg *sarama.ConsumerMessage
+		for i := 0; i < messagesLength; i++ {
+			kafkaMsg := <-claim.Messages()
+			msgs = append(msgs, kafkaMsg.Value)
+		}
+		err := utils.ProducerDeliverMessages(msgs, utils.ToTendermint, producer)
+		if err != nil {
+			log.Printf("error in handler for topic %v, failed to produce to queue", utils.MsgDelegate)
+		}
+		session.MarkMessage(kafkaMsg, "")
+		return err
+	}
+	m.Count += messagesLength
+	return nil
+}
+func (m MsgHandler) HandleMsgUnbond(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+	config := utils.Config()
+	producer := utils.NewProducer(m.KafkaConfig.Brokers, config)
+	defer func() {
+		err := producer.Close()
+		if err != nil {
+			log.Printf("failed to close producer in topic: %v", utils.MsgUnbond)
+		}
+	}()
+	messagesLength := len(claim.Messages())
+	if messagesLength > 0 {
+		var msgs [][]byte
+		var kafkaMsg *sarama.ConsumerMessage
+		for i := 0; i < messagesLength; i++ {
+			kafkaMsg := <-claim.Messages()
+			msgs = append(msgs, kafkaMsg.Value)
+		}
+		err := utils.ProducerDeliverMessages(msgs, utils.ToTendermint, producer)
+		if err != nil {
+			log.Printf("error in handler for topic %v, failed to produce to queue", utils.MsgUnbond)
+		}
+		session.MarkMessage(kafkaMsg, "")
+		return err
+	}
+	m.Count += messagesLength
 	return nil
 }
