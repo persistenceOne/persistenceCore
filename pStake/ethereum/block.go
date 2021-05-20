@@ -35,11 +35,12 @@ func handleBlock(client *ethclient.Client, ctx *context.Context, block *types.Bl
 func handleTransaction(client *ethclient.Client, ctx *context.Context, transaction *types.Transaction, contract contracts.ContractI, kafkaState utils.KafkaState, protoCodec *codec.ProtoCodec) error {
 	receipt, err := client.TransactionReceipt(*ctx, transaction.Hash())
 	if err != nil {
-		log.Fatalf("Error while fetching receipt of tx %s: %s", transaction.Hash().String(), err.Error())
+		log.Printf("Error while fetching receipt of tx %s: %s", transaction.Hash().String(), err.Error())
 		return err
 	}
 
 	if receipt.Status == 1 {
+		log.Printf("ETH Tx: %s\n", transaction.Hash().String())
 		method, arguments, err := contract.GetMethodAndArguments(transaction.Data())
 		if err != nil {
 			log.Fatalf("Error in getting method and arguments of %s,: %s\n", contract.GetName(), err.Error())

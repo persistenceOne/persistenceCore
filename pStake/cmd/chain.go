@@ -40,7 +40,7 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 			if err != nil {
 				log.Fatalln(err)
 			}
-			constants.Denom = denom
+			constants.PSTakeDenom = denom
 
 			homePath, err := cmd.Flags().GetString(constants.FlagPStakeHome)
 			if err != nil {
@@ -109,7 +109,7 @@ func GetCmd(initClientCtx client.Context) *cobra.Command {
 			if err != nil {
 				log.Fatalln(err)
 			}
-			constants.Address = chain.MustGetAddress()
+			constants.PSTakeAddress = chain.MustGetAddress()
 
 			ethereumClient, err := ethclient.Dial(ethereumEndPoint)
 			if err != nil {

@@ -7,7 +7,7 @@ const (
 )
 
 var (
-	Denom         = "uatom"
+	PSTakeDenom   = "uatom"
 	Validator1, _ = sdkTypes.ValAddressFromBech32(validator1)
-	Address       = sdkTypes.AccAddress{}
+	PSTakeAddress = sdkTypes.AccAddress{}
 )

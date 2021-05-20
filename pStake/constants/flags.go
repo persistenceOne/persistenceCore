@@ -25,6 +25,6 @@ var (
 	DefaultTendermintStartHeight = int64(0) // 0 will not change the db at start
 	DefaultEthereumStartHeight   = int64(0) // 0 will not change the db at start
 	DefaultPStakeHome            = os.ExpandEnv("$HOME/.pStake")
-	DefaultDenom                 = Denom
+	DefaultDenom                 = PSTakeDenom
 	DefaultEthGasLimit           = uint64(300000)
 )
