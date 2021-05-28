@@ -1,6 +1,6 @@
 # Ledger Nano Support
 
-Using a hardware wallet to store your keys greatly improves the security of your crypto assets. The Ledger device acts as an enclave of the seed and private keys, and the process of signing transaction takes place within it. No private information ever leaves the Ledger device. The following is a short tutorial on using the Cosmos Ledger app with the PersistenceCore CLI.
+Using a hardware wallet to store your keys greatly improves the security of your crypto assets. The Ledger device acts as an enclave of the seed and private keys, and the process of signing transaction takes place within it. No private information ever leaves the Ledger device. The following is a short tutorial on using the Persistence Ledger app with the PersistenceCore CLI.
 
 At the core of a Ledger device there is a mnemonic seed phrase that is used to generate private keys. This phrase is generated when you initialize you Ledger. The mnemonic is compatible with Persistence and can be used to seed new accounts.
 
@@ -10,7 +10,7 @@ Do not lose or share your 24 words with anyone. To prevent theft or loss of fund
 
 ## Install the Persistence Ledger application
 
-Installing the `Persistence` application on your ledger device is required before you can use [`persistenceCore`](#gaia-cli-+-ledger-nano). To do so, you need to:
+Installing the `Persistence` application on your ledger device is required before you can use [`persistenceCore`](#persistencecore-cli-+-ledger-nano). To do so, you need to:
 
 1. Install [Ledger Live](https://shop.ledger.com/pages/ledger-live) on your machine.
 2. Using Ledger Live, [update your Ledger Nano S with the latest firmware](https://support.ledger.com/hc/en-us/articles/360002731113-Update-device-firmware).
@@ -18,7 +18,7 @@ Installing the `Persistence` application on your ledger device is required befor
    ![manager](../images/ledger-tuto-manager.png)
 4. Connect your Ledger Nano device and allow Ledger Manager from it.
 5. On the Ledger Live application, Search for `Persistence`.
-6. Install the Cosmos application by clicking on `Install`.
+6. Install the Persistence application by clicking on `Install`.
 
 ::: tip
 To see the `Persistence` application when you search for it, you might need to activate the `Developer Mode`, located in the Experimental features tab of the Ledger Live application.
@@ -26,7 +26,7 @@ To see the `Persistence` application when you search for it, you might need to a
 
 ![Devmode](../images/ledger-tuto-dev-mode.png)
 
-## Gaia CLI + Ledger Nano
+## PersistenceCore CLI + Ledger Nano
 
 **Note: You need to [install the Persistence app](#install-the-persistence-ledger-application) on your Ledger Nano before using following this section**
 
@@ -100,7 +100,7 @@ To run your own full node locally [read more here.](https://github.com/persisten
 
 ### Sign a transaction
 
-You are now ready to start signing and sending transactions. Send a transaction with gaiad using the `tx send` command.
+You are now ready to start signing and sending transactions. Send a transaction with persistenceCore using the `tx send` command.
 
 ``` bash
 persistenceCore tx send --help # to see all available options.
@@ -110,7 +110,7 @@ persistenceCore tx send --help # to see all available options.
 Be sure to unlock your device with the PIN and open the Persistence app before trying to run these commands
 :::
 
-Use the `keyName` you set for your Ledger key and gaia will connect with the Cosmos Ledger app to then sign your transaction.
+Use the `keyName` you set for your Ledger key and persistenceCore will connect with the Persistence Ledger app to then sign your transaction.
 
 ```bash
 persistenceCore tx send <keyName> <destinationAddress> <amount><denomination> --node https://rpc.core.persistence.one:443 --chain-id core-1
@@ -124,10 +124,10 @@ Now, you are all set to start sending transactions on the network
 
 ### Receive funds
 
-To receive funds to the Cosmos account on your Ledger device, retrieve the address for your Ledger account (the ones with `TYPE ledger`) with this command:
+To receive funds to the Persistence account on your Ledger device, retrieve the address for your Ledger account (the ones with `TYPE ledger`) with this command:
 
 ```bash
-gaiad keys list
+persistenceCore keys list
 
 ➜ NAME:   TYPE:  ADDRESS:        PUBKEY:
 <keyName> ledger persistence1... persistencepub1...
