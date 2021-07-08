@@ -1,6 +1,6 @@
 # Ledger Nano Support
 
-Using a hardware wallet to store your keys greatly improves the security of your crypto assets. The Ledger device acts as an enclave of the seed and private keys, and the process of signing transaction takes place within it. No private information ever leaves the Ledger device. The following is a short tutorial on using the Persistence Ledger app with the PersistenceCore CLI.
+Using a hardware wallet to store your keys comes handy and improves the security of your crypto assets. The Ledger device acts as an enclave of the seed phrase (mnemonic) and private keys and thereby the process of signing transaction takes place within it. Your private information cannot leak from the Ledger device. Here is a short tutorial on using the Persistence Ledger app with the PersistenceCore CLI.    
 
 At the core of a Ledger device there is a mnemonic seed phrase that is used to generate private keys. This phrase is generated when you initialize you Ledger. The mnemonic is compatible with Persistence and can be used to seed new accounts.
 
@@ -25,6 +25,21 @@ To see the `Persistence` application when you search for it, you might need to a
 :::
 
 ![Devmode](../images/ledger-tuto-dev-mode.png)
+
+## Persistence Wallet + Ledger Nano
+    
+You can sign into your Persistence Wallet and do all transactions using the Ledger Nano device without having the need to use your private key or mnemonic.
+
+Prerequisites: [Install the Persistence app](#install-the-persistence-ledger-application) on your Ledger Nano before doing the following task.    
+- After connecting your Ledger device to the computer, unlock it with the PIN and open the Persistence Wallet app on your ledger.    
+- Open the [PersistenceWallet](https://wallet.persistence.one/) in your web browser.    
+- Select Sign in with Ledger Nano.     
+- Ensure that your Ledger device is unlocked and the Persistence Wallet app open.    
+- Click the Sign In button. 
+- You can now use Persistence Wallet with your Ledger Nano.   
+
+**Note**: When you transact on Persistence Wallet (Send or Stake), you need to confirm the transaction on your Ledger device. An indication is displayed on your Persistence Wallet app.
+
 
 ## PersistenceCore CLI + Ledger Nano
 
@@ -57,8 +72,8 @@ go version go1.14.5 darwin/amd64
 - Create an account in persistenceCore from your ledger key.
 
 ::: tip
-Be sure to change the _keyName_ parameter to be a meaningful name. The `ledger` flag tells `persistenceCore` to use your Ledger to seed the account.
-:::
+Ensure that you change the _keyName_ parameter to a meaningful name so that you can identify it better. The `ledger` flag tells `persistenceCore` to use your Ledger to seed the account
+   :::
 
 ```bash
 persistenceCore keys add <keyName> --ledger
@@ -166,5 +181,4 @@ Transactions in Persistence embed the [Standard Transaction type](https://godoc.
 
 ## Support
 
-
-Feel welcome to reach out in our [Telegram channel](https://t.me/PersistenceOneChat) to ask for help.
+For any questions or support, do reach us out on our [Telegram channel](https://t.me/PersistenceOneChat).
