@@ -34,7 +34,7 @@ This project implements an application for the Persistence Core chain that all t
 >Optional requirement: GNU make. [ref](https://www.gnu.org/software/make/manual/html_node/index.html)
 
 
-* Clone git repository
+* Clone git  here   repository
 ```shell
 git clone https://github.com/persistenceOne/persistenceCore.git
 ```
