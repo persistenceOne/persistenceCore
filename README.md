@@ -38,7 +38,7 @@ This project implements an application for the Persistence Core chain that all t
 ```shell
 git clone https://github.com/persistenceOne/persistenceCore.git
 ```
-* Checkout release tag
+* Checkout latest release tag
 ```shell
 git fetch --tags
 git checkout [vX.X.X]
