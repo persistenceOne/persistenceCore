@@ -31,14 +31,16 @@ You can sign into your Persistence Wallet and do all transactions using the Ledg
 
 Prerequisites: [Install the Persistence app](#install-the-persistence-ledger-application) on your Ledger Nano before doing the following task.    
 1. After connecting your Ledger device to the computer, unlock it with the PIN and open the Persistence Wallet app on your Ledger device.    
-2. Open the [PersistenceWallet](https://wallet.persistence.one/) in your web browser.    
-3. Select **Sign in** on the Ledger Nano device.     
-4. Ensure that your Ledger device is unlocked and the Persistence Wallet app is open.    
-5. Click the **Sign In** button. 
-6. You can now use Persistence Wallet with your Ledger Nano.   
+2. Open the [Persistence Wallet](https://wallet.persistence.one/) in your web browser.    
+3. Select **Sign in** on the web wallet.
+   ![wallet-signin](../images/ledger-tuto-wallet-signin.png)
+4. You can now use Persistence Wallet with your Ledger Nano.   
 
 **Note**: When you transact on Persistence Wallet (Send or Stake), you need to confirm the transaction on your Ledger device. An indication is displayed on your Persistence Wallet app to approve or reject the transaction.
 
+### Confirm Address on ledger
+Once logged in, you can verify the logged in address with the address on the ledger device by clicking the verify button.   
+   ![wallet-verify](../images/ledger-tuto-wallet-verify.png)
 
 ## PersistenceCore CLI + Ledger Nano
 

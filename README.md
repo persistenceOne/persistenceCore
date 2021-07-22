@@ -81,10 +81,10 @@ persistenceCore start
 
 ### Ledger Support( Experimental)
 
-> NOTE: This is an experimental feature. Persistence uses coin-type 750; generating keys through this method below will create keys with coin-type 118(cosmos) and will only be supported by CLI and not by current or future wallets. Ledger support for the Persistence application is coming soon.  
-
-* Install the Cosmos application on the Ledger device. [ref](https://hub.cosmos.network/main/resources/ledger.html#install-the-cosmos-ledger-application)
-* Connect the Ledger device to a system with persistenceCore binary and open the Cosmos application on it.
+> NOTE: If you are using Cosmos Ledger app: Persistence uses coin-type 750; generating keys through this method below will create keys with coin-type 118(cosmos) and will only be supported by CLI and not by current or future wallets.    
+> NOTE: Persistence Ledger app download requires using ledger live in experimental or developer mode.
+* Install the Persistence application on the Ledger device. [ref](https://github.com/persistenceOne/persistenceCore/blob/master/docs/resources/Ledger.md#install-the-persistence-ledger-application)
+* Connect the Ledger device to a system with persistenceCore binary and open the Persistence application on it.
 * Add key
 ```shell
 persistenceCore keys add [key_name] --ledger
