@@ -18,12 +18,7 @@ Installing the **Persistence** application on your ledger device is required bef
 4. Connect your **Ledger Nano** device and select the **Allow Ledger Manager on your device** check box.
 5. On the **Ledger Live** application, search for **Persistence**.
 6. Install the **Persistence** application by clicking **Install**.
-
-::: tip
-To view the **Persistence** application when you search for it, you might need to activate the **Developer Mode** option that is located in the **Experimental features** tab of the **Ledger Live** application.
-:::
-
-![Devmode](../images/ledger-tuto-dev-mode.png)
+   ![install](../images/ledger-tuto-install.png)
 
 ## Persistence Wallet + Ledger Nano
     

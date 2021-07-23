@@ -79,10 +79,9 @@ persistenceCore start
 * Start node `persistenceCore start`
 * To start rest server set `enable=true` in `config/app.toml` under `[api]` and restart the chain
 
-### Ledger Support( Experimental)
+### Ledger Support
 
-> NOTE: If you are using Cosmos Ledger app: Persistence uses coin-type 750; generating keys through this method below will create keys with coin-type 118(cosmos) and will only be supported by CLI and not by current or future wallets.    
-> NOTE: Persistence Ledger app download requires using ledger live in experimental or developer mode.
+> NOTE: *If you are using Cosmos Ledger app*: Persistence uses coin-type 750; generating keys through this method below will create keys with coin-type 118(cosmos) and will only be supported by CLI and not by current or future wallets.    
 * Install the Persistence application on the Ledger device. [ref](https://github.com/persistenceOne/persistenceCore/blob/master/docs/resources/Ledger.md#install-the-persistence-ledger-application)
 * Connect the Ledger device to a system with persistenceCore binary and open the Persistence application on it.
 * Add key
