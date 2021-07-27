@@ -13,7 +13,7 @@ Do not lose or share your 24 words seed phrase with anyone. To prevent theft or 
 Installing the **Persistence** application on your ledger device is required before you use [`persistenceCore`](#persistencecore-cli-+-ledger-nano). To do so, you need to:
 
 1. Install [Ledger Live](https://shop.ledger.com/pages/ledger-live) on your machine.
-2. Using Ledger Live, [update your Ledger Nano S with the latest firmware](https://support.ledger.com/hc/en-us/articles/360002731113-Update-device-firmware). On the Ledger Live application, navigate to the **Manager** menu .
+2. Using Ledger Live, [update your Ledger Device with the latest firmware](https://support.ledger.com/hc/en-us/articles/360002731113-Update-device-firmware). On the Ledger Live application, navigate to the **Manager** menu .
    ![manager](../images/ledger-tuto-manager.png)
 4. Connect your **Ledger Nano** device and select the **Allow Ledger Manager on your device** check box.
 5. On the **Ledger Live** application, search for **Persistence**.
