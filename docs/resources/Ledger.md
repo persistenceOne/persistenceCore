@@ -108,12 +108,12 @@ persistenceCore query staking validators --node https://rpc.core.persistence.one
 To run your own full node locally [read more here.](https://github.com/persistenceOne/persistenceCore#initialize-a-new-chain-and-start-node).
 :::
 
-### Sign a transaction
+### Send a transaction
 
 You are now ready to start signing in and sending transactions. Send a transaction with persistenceCore using the the **tx send** command.
 
 ``` bash
-persistenceCore tx send --help # to see all available options.
+persistenceCore tx bank send --help # to see all available options.
 ```
 
 ::: tip
@@ -123,7 +123,7 @@ Ensure that you unlock your device with the PIN and then open the **Persistence*
 Use the **keyName** you set for your Ledger key and persistenceCore will connect with the Persistence Ledger app to then sign your transaction.
 
 ```bash
-persistenceCore tx send <keyName> <destinationAddress> <amount><denomination> --node https://rpc.core.persistence.one:443 --chain-id core-1
+persistenceCore tx bank send <keyName> <destinationAddress> <amount><denomination> --node https://rpc.core.persistence.one:443 --chain-id core-1
 ```
 
 When prompted with `confirm transaction before signing`, Answer `Y`.
