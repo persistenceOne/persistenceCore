@@ -66,7 +66,7 @@ go version go1.14.5 darwin/amd64
 ### Add your Ledger key
 
 1. Connect and unlock your **Ledger** device.
-2. Open the Persistence **Wallet** app on your Ledger.
+2. Open the Persistence app on your Ledger device.
 3. Create an account in persistenceCore from your ledger key.
 
 ::: **Tip**
