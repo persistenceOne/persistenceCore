@@ -6,7 +6,6 @@
 package application
 
 import (
-	"encoding/json"
 	"io"
 	"log"
 	"net/http"
@@ -645,14 +644,10 @@ func (application application) Initialize(applicationName string, encodingConfig
 	application.baseApp.MountTransientStores(transientStoreKeys)
 	application.baseApp.MountMemoryStores(memoryKeys)
 
+	application.baseApp.SetInitChainer(application.InitChainer)
 	application.baseApp.SetBeginBlocker(application.moduleManager.BeginBlock)
-	application.baseApp.SetEndBlocker(application.moduleManager.EndBlock)
-	application.baseApp.SetInitChainer(func(context sdkTypes.Context, requestInitChain abciTypes.RequestInitChain) abciTypes.ResponseInitChain {
-		var genesisState map[string]json.RawMessage
-		legacyAmino.MustUnmarshalJSON(requestInitChain.AppStateBytes, &genesisState)
-		return application.moduleManager.InitGenesis(context, applicationCodec, genesisState)
-	})
 	application.baseApp.SetAnteHandler(ante.NewAnteHandler(accountKeeper, bankKeeper, ante.DefaultSigVerificationGasConsumer, encodingConfiguration.TransactionConfig.SignModeHandler()))
+	application.baseApp.SetEndBlocker(application.moduleManager.EndBlock)
 
 	if loadLatest {
 		if err := application.baseApp.LoadLatestVersion(); err != nil {
