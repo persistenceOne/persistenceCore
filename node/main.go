@@ -15,6 +15,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	serverCmd "github.com/cosmos/cosmos-sdk/server/cmd"
 	serverTypes "github.com/cosmos/cosmos-sdk/server/types"
+	"github.com/cosmos/cosmos-sdk/snapshots"
 	"github.com/cosmos/cosmos-sdk/store"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
@@ -24,13 +25,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	"github.com/persistenceOne/persistenceCore/application"
 	"github.com/persistenceOne/persistenceCore/application/initialize"
+	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	tendermintClient "github.com/tendermint/tendermint/libs/cli"
 	"github.com/tendermint/tendermint/libs/log"
 	tendermintDB "github.com/tendermint/tm-db"
 	"io"
 	"os"
+	"path/filepath"
 )
 
 const flagInvalidCheckPeriod = "invalid-check-period"
@@ -109,46 +111,6 @@ func main() {
 		"Assert registered invariants every N blocks",
 	)
 
-	appCreator := func(
-		logger log.Logger,
-		db tendermintDB.DB,
-		traceStore io.Writer,
-		applicationOptions serverTypes.AppOptions,
-	) serverTypes.Application {
-		var cache sdkTypes.MultiStorePersistentCache
-
-		if viper.GetBool(server.FlagInterBlockCache) {
-			cache = store.NewCommitKVStoreCacheManager()
-		}
-
-		skipUpgradeHeights := make(map[int64]bool)
-		for _, h := range viper.GetIntSlice(server.FlagUnsafeSkipUpgrades) {
-			skipUpgradeHeights[int64(h)] = true
-		}
-		pruningOpts, err := server.GetPruningOptionsFromFlags(applicationOptions)
-		if err != nil {
-			panic(err)
-		}
-		return application.NewApplication().Initialize(
-			application.Name,
-			encodingConfig,
-			application.ModuleAccountPermissions,
-			logger,
-			db,
-			traceStore,
-			true,
-			invalidCheckPeriod,
-			skipUpgradeHeights,
-			viper.GetString(flags.FlagHome),
-			applicationOptions,
-			baseapp.SetPruning(pruningOpts),
-			baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)),
-			baseapp.SetHaltHeight(viper.GetUint64(server.FlagHaltHeight)),
-			baseapp.SetHaltTime(viper.GetUint64(server.FlagHaltTime)),
-			baseapp.SetInterBlockCache(cache),
-		)
-	}
-
 	appExporter := func(
 		logger log.Logger,
 		db tendermintDB.DB,
@@ -204,7 +166,7 @@ func main() {
 	server.AddCommands(
 		rootCommand,
 		application.DefaultNodeHome,
-		appCreator,
+		newApp,
 		appExporter,
 		initFlags,
 	)
@@ -269,4 +231,56 @@ func txCommand() *cobra.Command {
 	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
 
 	return cmd
+}
+
+func newApp(logger log.Logger, db tendermintDB.DB, traceStore io.Writer, appOpts serverTypes.AppOptions) serverTypes.Application {
+	var cache sdkTypes.MultiStorePersistentCache
+
+	if cast.ToBool(appOpts.Get(server.FlagInterBlockCache)) {
+		cache = store.NewCommitKVStoreCacheManager()
+	}
+
+	skipUpgradeHeights := make(map[int64]bool)
+	for _, h := range cast.ToIntSlice(appOpts.Get(server.FlagUnsafeSkipUpgrades)) {
+		skipUpgradeHeights[int64(h)] = true
+	}
+
+	pruningOpts, err := server.GetPruningOptionsFromFlags(appOpts)
+	if err != nil {
+		panic(err)
+	}
+
+	snapshotDir := filepath.Join(cast.ToString(appOpts.Get(flags.FlagHome)), "data", "snapshots")
+	snapshotDB, err := sdkTypes.NewLevelDB("metadata", snapshotDir)
+	if err != nil {
+		panic(err)
+	}
+	snapshotStore, err := snapshots.NewStore(snapshotDB, snapshotDir)
+	if err != nil {
+		panic(err)
+	}
+
+	return application.NewApplication().Initialize(
+		application.Name,
+		application.MakeEncodingConfig(),
+		application.ModuleAccountPermissions,
+		logger,
+		db,
+		traceStore,
+		true, cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod)),
+		skipUpgradeHeights,
+		cast.ToString(appOpts.Get(flags.FlagHome)),
+		appOpts,
+		baseapp.SetPruning(pruningOpts),
+		baseapp.SetMinGasPrices(cast.ToString(appOpts.Get(server.FlagMinGasPrices))),
+		baseapp.SetHaltHeight(cast.ToUint64(appOpts.Get(server.FlagHaltHeight))),
+		baseapp.SetHaltTime(cast.ToUint64(appOpts.Get(server.FlagHaltTime))),
+		baseapp.SetMinRetainBlocks(cast.ToUint64(appOpts.Get(server.FlagMinRetainBlocks))),
+		baseapp.SetInterBlockCache(cache),
+		baseapp.SetTrace(cast.ToBool(appOpts.Get(server.FlagTrace))),
+		baseapp.SetIndexEvents(cast.ToStringSlice(appOpts.Get(server.FlagIndexEvents))),
+		baseapp.SetSnapshotStore(snapshotStore),
+		baseapp.SetSnapshotInterval(cast.ToUint64(appOpts.Get(server.FlagStateSyncSnapshotInterval))),
+		baseapp.SetSnapshotKeepRecent(cast.ToUint32(appOpts.Get(server.FlagStateSyncSnapshotKeepRecent))),
+	)
 }
