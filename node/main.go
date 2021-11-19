@@ -27,6 +27,7 @@ import (
 	"github.com/persistenceOne/persistenceCore/application/initialize"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/spf13/cast"
 	tendermintClient "github.com/tendermint/tendermint/libs/cli"
 	"github.com/tendermint/tendermint/libs/log"
 	tendermintDB "github.com/tendermint/tm-db"
@@ -132,7 +133,7 @@ func main() {
 			panic(err)
 		}
 		
-		snapshotDir := filepath.Join(viper.GetString(applicationOptions.Get(flags.FlagHome)), "data", "snapshots")
+		snapshotDir := filepath.Join(cast.ToString(applicationOptions.Get(flags.FlagHome)), "data", "snapshots")
 		snapshotDB, err := sdkTypes.NewLevelDB("metadata", snapshotDir)
 		if err != nil {
    			panic(err)
@@ -152,7 +153,7 @@ func main() {
 			true,
 			invalidCheckPeriod,
 			skipUpgradeHeights,
-			viper.GetString(flags.FlagHome),
+			cast.ToString(applicationOptions.Get(flags.FlagHome)),
 			applicationOptions,
 			baseapp.SetPruning(pruningOpts),
 			baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)),
@@ -160,8 +161,8 @@ func main() {
 			baseapp.SetHaltTime(viper.GetUint64(server.FlagHaltTime)),
 			baseapp.SetInterBlockCache(cache),
 			baseapp.SetSnapshotStore(snapshotStore),
-			baseapp.SetSnapshotInterval(viper.GetUint64(applicationOptions.Get(server.FlagStateSyncSnapshotInterval))),
-			baseapp.SetSnapshotKeepRecent(viper.GetUint32(applicationOptions.Get(server.FlagStateSyncSnapshotKeepRecent))),
+			baseapp.SetSnapshotInterval(cast.ToUint64(applicationOptions.Get(server.FlagStateSyncSnapshotInterval))),
+			baseapp.SetSnapshotKeepRecent(cast.ToUint32(applicationOptions.Get(server.FlagStateSyncSnapshotKeepRecent))),
 		)
 	}
 
