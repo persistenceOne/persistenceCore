@@ -121,7 +121,7 @@ func (AppModule) QuerierRoute() string {
 
 // ConsensusVersion returns the halving module's consensus version number.
 func (am AppModule) ConsensusVersion() uint64 {
-	return am.ConsensusVersion()
+	return 1
 }
 
 // LegacyQuerierHandler returns the halving module sdk.Querier.

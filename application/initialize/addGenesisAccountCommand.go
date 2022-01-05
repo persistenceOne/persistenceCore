@@ -15,7 +15,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -46,7 +45,6 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 			depCdc := clientCtx.Codec
-			cdc := depCdc.(codec.Codec)
 
 			serverCtx := server.GetServerContextFromCmd(cmd)
 			config := serverCtx.Config
@@ -136,7 +134,7 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 				return fmt.Errorf("failed to unmarshal genesis state: %w", err)
 			}
 
-			authGenState := authtypes.GetGenesisStateFromAppState(cdc, appState)
+			authGenState := authtypes.GetGenesisStateFromAppState(depCdc, appState)
 
 			accs, err := authtypes.UnpackAccounts(authGenState.Accounts)
 			if err != nil {
@@ -158,7 +156,7 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 			}
 			authGenState.Accounts = genAccs
 
-			authGenStateBz, err := cdc.MarshalJSON(&authGenState)
+			authGenStateBz, err := depCdc.MarshalJSON(&authGenState)
 			if err != nil {
 				return fmt.Errorf("failed to marshal auth genesis state: %w", err)
 			}
@@ -170,7 +168,7 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 			bankGenState.Balances = banktypes.SanitizeGenesisBalances(bankGenState.Balances)
 			bankGenState.Supply = bankGenState.Supply.Add(balances.Coins...)
 
-			bankGenStateBz, err := cdc.MarshalJSON(bankGenState)
+			bankGenStateBz, err := depCdc.MarshalJSON(bankGenState)
 			if err != nil {
 				return fmt.Errorf("failed to marshal bank genesis state: %w", err)
 			}

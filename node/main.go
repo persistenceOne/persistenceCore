@@ -49,7 +49,7 @@ func main() {
 
 	encodingConfig := application.MakeEncodingConfig()
 	initClientCtx := client.Context{}.
-		WithJSONCodec(encodingConfig.Marshaler).
+		WithCodec(encodingConfig.Marshaler).
 		WithInterfaceRegistry(encodingConfig.InterfaceRegistry).
 		WithTxConfig(encodingConfig.TransactionConfig).
 		WithLegacyAmino(encodingConfig.Amino).
