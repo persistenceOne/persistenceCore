@@ -131,7 +131,7 @@ func (application application) BaseApp() *baseapp.BaseApp {
 	return application.baseApp
 }
 
-func (application application) ApplicationCodec() codec.BinaryCodec {
+func (application application) ApplicationCodec() codec.Codec {
 	return application.applicationCodec
 }
 
