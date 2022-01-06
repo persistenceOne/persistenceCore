@@ -6,7 +6,6 @@
 package application
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -22,6 +21,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/config"
 	serverTypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/simapp"
+	storeTypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	sdkTypesModule "github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -79,6 +79,7 @@ import (
 	ibcTransferTypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
 	ibcCore "github.com/cosmos/ibc-go/v2/modules/core"
 	ibcClient "github.com/cosmos/ibc-go/v2/modules/core/02-client"
+	ibcConnectionTypes "github.com/cosmos/ibc-go/v2/modules/core/03-connection/types"
 	ibcTypes "github.com/cosmos/ibc-go/v2/modules/core/05-port/types"
 	ibcHost "github.com/cosmos/ibc-go/v2/modules/core/24-host"
 	sdkIBCKeeper "github.com/cosmos/ibc-go/v2/modules/core/keeper"
@@ -117,8 +118,10 @@ type application struct {
 	slashingKeeper     slashingKeeper.Keeper
 	distributionKeeper sdkDistributionKeeper.Keeper
 	crisisKeeper       sdkCrisisKeeper.Keeper
+	upgradeKeeper      sdkUpgradeKeeper.Keeper
 
 	moduleManager     *sdkTypesModule.Manager
+	configurator      sdkTypesModule.Configurator
 	simulationManager *sdkTypesModule.SimulationManager
 }
 
@@ -156,6 +159,8 @@ func (application application) InitChainer(ctx sdkTypes.Context, req abciTypes.R
 	if err := tendermintJSON.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
 	}
+
+	application.upgradeKeeper.SetModuleVersionMap(ctx, application.moduleManager.GetVersionMap())
 
 	return application.moduleManager.InitGenesis(ctx, application.applicationCodec, genesisState)
 }
@@ -543,7 +548,7 @@ func (application application) Initialize(applicationName string, encodingConfig
 		application.bankKeeper,
 		authTypes.FeeCollectorName,
 	)
-	upgradeKeeper := sdkUpgradeKeeper.NewKeeper(
+	application.upgradeKeeper = sdkUpgradeKeeper.NewKeeper(
 		skipUpgradeHeights,
 		keys[sdkUpgradeTypes.StoreKey],
 		applicationCodec,
@@ -557,7 +562,7 @@ func (application application) Initialize(applicationName string, encodingConfig
 	)
 
 	application.ibcKeeper = sdkIBCKeeper.NewKeeper(
-		applicationCodec, keys[ibcHost.StoreKey], application.paramsKeeper.Subspace(ibcHost.ModuleName), application.stakingKeeper, upgradeKeeper, scopedIBCKeeper,
+		applicationCodec, keys[ibcHost.StoreKey], application.paramsKeeper.Subspace(ibcHost.ModuleName), application.stakingKeeper, application.upgradeKeeper, scopedIBCKeeper,
 	)
 
 	govRouter := sdkGovTypes.NewRouter()
@@ -572,7 +577,7 @@ func (application application) Initialize(applicationName string, encodingConfig
 		distribution.NewCommunityPoolSpendProposalHandler(application.distributionKeeper),
 	).AddRoute(
 		sdkUpgradeTypes.RouterKey,
-		upgrade.NewSoftwareUpgradeProposalHandler(upgradeKeeper),
+		upgrade.NewSoftwareUpgradeProposalHandler(application.upgradeKeeper),
 	).AddRoute(ibcHost.RouterKey, ibcClient.NewClientProposalHandler(application.ibcKeeper.ClientKeeper))
 
 	transferKeeper := ibcTransferKeeper.NewKeeper(
@@ -629,7 +634,7 @@ func (application application) Initialize(applicationName string, encodingConfig
 		slashing.NewAppModule(applicationCodec, application.slashingKeeper, application.accountKeeper, application.bankKeeper, application.stakingKeeper),
 		distribution.NewAppModule(applicationCodec, application.distributionKeeper, application.accountKeeper, application.bankKeeper, application.stakingKeeper),
 		staking.NewAppModule(applicationCodec, application.stakingKeeper, application.accountKeeper, application.bankKeeper),
-		upgrade.NewAppModule(upgradeKeeper),
+		upgrade.NewAppModule(application.upgradeKeeper),
 		evidence.NewAppModule(*evidenceKeeper),
 		sdkFeeGrantModule.NewAppModule(applicationCodec, application.accountKeeper, application.bankKeeper, application.feegrantKeeper, application.interfaceRegistry),
 		sdkAuthzModule.NewAppModule(applicationCodec, application.authzKeeper, application.accountKeeper, application.bankKeeper, application.interfaceRegistry),
@@ -660,7 +665,8 @@ func (application application) Initialize(applicationName string, encodingConfig
 
 	application.moduleManager.RegisterInvariants(&application.crisisKeeper)
 	application.moduleManager.RegisterRoutes(application.baseApp.Router(), application.baseApp.QueryRouter(), encodingConfiguration.Amino)
-	application.moduleManager.RegisterServices(sdkTypesModule.NewConfigurator(application.applicationCodec, application.baseApp.MsgServiceRouter(), application.baseApp.GRPCQueryRouter()))
+	application.configurator = sdkTypesModule.NewConfigurator(application.applicationCodec, application.baseApp.MsgServiceRouter(), application.baseApp.GRPCQueryRouter())
+	application.moduleManager.RegisterServices(application.configurator)
 
 	simulationManager := sdkTypesModule.NewSimulationManager(
 		auth.NewAppModule(applicationCodec, application.accountKeeper, authSimulation.RandomGenesisAccounts),
@@ -699,13 +705,53 @@ func (application application) Initialize(applicationName string, encodingConfig
 	}
 
 	application.baseApp.SetAnteHandler(anteHandler)
-	application.baseApp.SetInitChainer(func(context sdkTypes.Context, requestInitChain abciTypes.RequestInitChain) abciTypes.ResponseInitChain {
-		var genesisState map[string]json.RawMessage
-		legacyAmino.MustUnmarshalJSON(requestInitChain.AppStateBytes, &genesisState)
-		return application.moduleManager.InitGenesis(context, applicationCodec, genesisState)
-	})
+	application.baseApp.SetInitChainer(application.InitChainer)
 	application.baseApp.SetBeginBlocker(application.moduleManager.BeginBlock)
 	application.baseApp.SetEndBlocker(application.moduleManager.EndBlock)
+
+	application.upgradeKeeper.SetUpgradeHandler(
+		UpgradeName,
+		func(ctx sdkTypes.Context, _ sdkUpgradeTypes.Plan, _ sdkTypesModule.VersionMap) (sdkTypesModule.VersionMap, error) {
+			application.ibcKeeper.ConnectionKeeper.SetParams(ctx, ibcConnectionTypes.DefaultParams())
+			fromVM := make(map[string]uint64)
+			for moduleName := range application.moduleManager.Modules {
+				fromVM[moduleName] = 1
+			}
+			// delete new modules from the map, for _new_ modules as to not skip InitGenesis
+			delete(fromVM, authz.ModuleName)
+			delete(fromVM, feegrant.ModuleName)
+			delete(fromVM, strangeLoveRouterTypes.ModuleName)
+
+			// make fromVM[authtypes.ModuleName] = 2 to skip the first RunMigrations for auth (because from version 2 to migration version 2 will not migrate)
+			fromVM[authTypes.ModuleName] = 2
+
+			// the first RunMigrations, which will migrate all the old modules except auth module
+			newVM, err := application.moduleManager.RunMigrations(ctx, application.configurator, fromVM)
+			if err != nil {
+				return nil, err
+			}
+			// now update auth version back to 1, to make the second RunMigrations includes only auth
+			newVM[authTypes.ModuleName] = 1
+
+			// RunMigrations twice is just a way to make auth module's migrates after staking
+			return application.moduleManager.RunMigrations(ctx, application.configurator, newVM)
+
+		},
+	)
+
+	upgradeInfo, err := application.upgradeKeeper.ReadUpgradeInfoFromDisk()
+	if err != nil {
+		panic(fmt.Sprintf("failed to read upgrade info from disk %s", err))
+	}
+
+	if upgradeInfo.Name == UpgradeName && !application.upgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		storeUpgrades := storeTypes.StoreUpgrades{
+			Added: []string{authz.ModuleName, feegrant.ModuleName, strangeLoveRouterTypes.ModuleName},
+		}
+
+		// configure store loader that checks if version == upgradeHeight and applies store upgrades
+		application.baseApp.SetStoreLoader(sdkUpgradeTypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+	}
 
 	if loadLatest {
 		if err := application.baseApp.LoadLatestVersion(); err != nil {

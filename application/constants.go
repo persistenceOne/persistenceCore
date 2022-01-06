@@ -13,8 +13,8 @@ import (
 const (
 	Name             = "PersistenceCore"
 	Bech32MainPrefix = "persistence"
-
-	CoinType = 750
+	UpgradeName      = "Vega"
+	CoinType         = 750
 
 	FullFundraiserPath = "44'/750'/0'/0/0"
 

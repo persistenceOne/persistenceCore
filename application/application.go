@@ -34,6 +34,7 @@ import (
 	"github.com/cosmos/ibc-go/v2/modules/apps/transfer"
 	ibcTransferTypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v2/modules/core"
+	ibcClient "github.com/cosmos/ibc-go/v2/modules/core/02-client/client"
 	"github.com/persistenceOne/persistenceCore/x/halving"
 )
 
@@ -56,7 +57,12 @@ var ModuleBasics = module.NewBasicManager(
 	mint.AppModuleBasic{},
 	distribution.AppModuleBasic{},
 	gov.NewAppModuleBasic(
-		paramsClient.ProposalHandler, distributionClient.ProposalHandler, upgradeClient.ProposalHandler, upgradeClient.CancelProposalHandler,
+		paramsClient.ProposalHandler,
+		distributionClient.ProposalHandler,
+		upgradeClient.ProposalHandler,
+		upgradeClient.CancelProposalHandler,
+		ibcClient.UpdateClientProposalHandler,
+		ibcClient.UpgradeProposalHandler,
 	),
 	params.AppModuleBasic{},
 	crisis.AppModuleBasic{},
