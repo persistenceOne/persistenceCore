@@ -562,14 +562,22 @@ func (application application) Initialize(applicationName string, encodingConfig
 		home,
 		application.baseApp,
 	)
-	halvingKeeper := halving.NewKeeper(keys[halving.StoreKey], application.paramsKeeper.Subspace(halving.DefaultParamspace), application.mintKeeper)
+	halvingKeeper := halving.NewKeeper(
+		keys[halving.StoreKey],
+		application.paramsKeeper.Subspace(halving.DefaultParamspace),
+		application.mintKeeper,
+	)
 
 	application.stakingKeeper = *stakingKeeper.SetHooks(
 		sdkStakingTypes.NewMultiStakingHooks(application.distributionKeeper.Hooks(), application.slashingKeeper.Hooks()),
 	)
 
 	application.ibcKeeper = sdkIBCKeeper.NewKeeper(
-		applicationCodec, keys[ibcHost.StoreKey], application.paramsKeeper.Subspace(ibcHost.ModuleName), application.stakingKeeper, application.upgradeKeeper, scopedIBCKeeper,
+		applicationCodec, keys[ibcHost.StoreKey],
+		application.paramsKeeper.Subspace(ibcHost.ModuleName),
+		application.stakingKeeper,
+		application.upgradeKeeper,
+		scopedIBCKeeper,
 	)
 
 	govRouter := sdkGovTypes.NewRouter()
@@ -598,13 +606,24 @@ func (application application) Initialize(applicationName string, encodingConfig
 	)
 
 	application.transferKeeper = ibcTransferKeeper.NewKeeper(
-		applicationCodec, keys[ibcTransferTypes.StoreKey], application.paramsKeeper.Subspace(ibcTransferTypes.ModuleName),
-		application.ibcKeeper.ChannelKeeper, &application.ibcKeeper.PortKeeper,
-		application.accountKeeper, application.bankKeeper, scopedTransferKeeper,
+		applicationCodec,
+		keys[ibcTransferTypes.StoreKey],
+		application.paramsKeeper.Subspace(ibcTransferTypes.ModuleName),
+		application.ibcKeeper.ChannelKeeper,
+		&application.ibcKeeper.PortKeeper,
+		application.accountKeeper,
+		application.bankKeeper,
+		scopedTransferKeeper,
 	)
 	transferModule := transfer.NewAppModule(application.transferKeeper)
 
-	application.routerKeeper = strangeLoveRouterKeeper.NewKeeper(applicationCodec, keys[strangeLoveRouterTypes.StoreKey], application.paramsKeeper.Subspace(strangeLoveRouterTypes.ModuleName).WithKeyTable(strangeLoveRouterTypes.ParamKeyTable()), application.transferKeeper, application.distributionKeeper)
+	application.routerKeeper = strangeLoveRouterKeeper.NewKeeper(
+		applicationCodec,
+		keys[strangeLoveRouterTypes.StoreKey],
+		application.paramsKeeper.Subspace(strangeLoveRouterTypes.ModuleName).WithKeyTable(strangeLoveRouterTypes.ParamKeyTable()),
+		application.transferKeeper,
+		application.distributionKeeper,
+	)
 
 	routerModule := strangeLoveRouter.NewAppModule(application.routerKeeper, transferModule)
 	// Create static IBC router, add transfer route, then set and seal it

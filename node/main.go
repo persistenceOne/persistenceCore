@@ -15,6 +15,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	serverCmd "github.com/cosmos/cosmos-sdk/server/cmd"
 	serverTypes "github.com/cosmos/cosmos-sdk/server/types"
+	"github.com/cosmos/cosmos-sdk/snapshots"
 	"github.com/cosmos/cosmos-sdk/store"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
@@ -24,6 +25,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	"github.com/persistenceOne/persistenceCore/application"
 	"github.com/persistenceOne/persistenceCore/application/initialize"
+	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	tendermintClient "github.com/tendermint/tendermint/libs/cli"
@@ -31,6 +33,7 @@ import (
 	tendermintDB "github.com/tendermint/tm-db"
 	"io"
 	"os"
+	"path/filepath"
 )
 
 const flagInvalidCheckPeriod = "invalid-check-period"
@@ -129,6 +132,15 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+		snapshotDir := filepath.Join(viper.GetString(flags.FlagHome), "data", "snapshots")
+		snapshotDB, err := sdkTypes.NewLevelDB("metadata", snapshotDir)
+		if err != nil {
+			panic(err)
+		}
+		snapshotStore, err := snapshots.NewStore(snapshotDB, snapshotDir)
+		if err != nil {
+			panic(err)
+		}
 		return application.NewApplication().Initialize(
 			application.Name,
 			encodingConfig,
@@ -145,7 +157,12 @@ func main() {
 			baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)),
 			baseapp.SetHaltHeight(viper.GetUint64(server.FlagHaltHeight)),
 			baseapp.SetHaltTime(viper.GetUint64(server.FlagHaltTime)),
+			baseapp.SetTrace(cast.ToBool(applicationOptions.Get(server.FlagTrace))),
+			baseapp.SetIndexEvents(cast.ToStringSlice(applicationOptions.Get(server.FlagIndexEvents))),
 			baseapp.SetInterBlockCache(cache),
+			baseapp.SetSnapshotStore(snapshotStore),
+			baseapp.SetSnapshotInterval(cast.ToUint64(applicationOptions.Get(server.FlagStateSyncSnapshotInterval))),
+			baseapp.SetSnapshotKeepRecent(cast.ToUint32(applicationOptions.Get(server.FlagStateSyncSnapshotKeepRecent))),
 		)
 	}
 
