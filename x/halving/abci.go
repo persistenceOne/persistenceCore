@@ -17,7 +17,7 @@ func EndBlocker(ctx sdk.Context, k Keeper) {
 
 	params := k.GetParams(ctx)
 
-	if uint64(ctx.BlockHeight())%params.BlockHeight == 0 {
+	if params.BlockHeight != 0 && uint64(ctx.BlockHeight())%params.BlockHeight == 0 {
 		mintParams := k.GetMintingParams(ctx)
 		newMaxInflation := mintParams.InflationMax.QuoTruncate(sdk.NewDecFromInt(Factor))
 		newMinInflation := mintParams.InflationMin.QuoTruncate(sdk.NewDecFromInt(Factor))

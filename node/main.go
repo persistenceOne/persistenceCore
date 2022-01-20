@@ -15,6 +15,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	serverCmd "github.com/cosmos/cosmos-sdk/server/cmd"
 	serverTypes "github.com/cosmos/cosmos-sdk/server/types"
+	"github.com/cosmos/cosmos-sdk/snapshots"
 	"github.com/cosmos/cosmos-sdk/store"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
@@ -24,13 +25,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	"github.com/persistenceOne/persistenceCore/application"
 	"github.com/persistenceOne/persistenceCore/application/initialize"
+	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	tendermintClient "github.com/tendermint/tendermint/libs/cli"
 	"github.com/tendermint/tendermint/libs/log"
 	tendermintDB "github.com/tendermint/tm-db"
 	"io"
 	"os"
+	"path/filepath"
 )
 
 const flagInvalidCheckPeriod = "invalid-check-period"
@@ -49,14 +51,15 @@ func main() {
 
 	encodingConfig := application.MakeEncodingConfig()
 	initClientCtx := client.Context{}.
-		WithJSONMarshaler(encodingConfig.Marshaler).
+		WithCodec(encodingConfig.Marshaler).
 		WithInterfaceRegistry(encodingConfig.InterfaceRegistry).
 		WithTxConfig(encodingConfig.TransactionConfig).
 		WithLegacyAmino(encodingConfig.Amino).
 		WithInput(os.Stdin).
 		WithAccountRetriever(authTypes.AccountRetriever{}).
 		WithBroadcastMode(flags.BroadcastBlock).
-		WithHomeDir(application.DefaultNodeHome)
+		WithHomeDir(application.DefaultNodeHome).
+		WithViper("")
 
 	cobra.EnableCommandSorting = false
 
@@ -68,7 +71,7 @@ func main() {
 				return err
 			}
 
-			return server.InterceptConfigsPreRunHandler(cmd)
+			return server.InterceptConfigsPreRunHandler(cmd, "", nil)
 		},
 	}
 
@@ -117,15 +120,24 @@ func main() {
 	) serverTypes.Application {
 		var cache sdkTypes.MultiStorePersistentCache
 
-		if viper.GetBool(server.FlagInterBlockCache) {
+		if cast.ToBool(server.FlagInterBlockCache) {
 			cache = store.NewCommitKVStoreCacheManager()
 		}
 
 		skipUpgradeHeights := make(map[int64]bool)
-		for _, h := range viper.GetIntSlice(server.FlagUnsafeSkipUpgrades) {
+		for _, h := range cast.ToIntSlice(applicationOptions.Get(server.FlagUnsafeSkipUpgrades)) {
 			skipUpgradeHeights[int64(h)] = true
 		}
 		pruningOpts, err := server.GetPruningOptionsFromFlags(applicationOptions)
+		if err != nil {
+			panic(err)
+		}
+		snapshotDir := filepath.Join(cast.ToString(applicationOptions.Get(flags.FlagHome)), "data", "snapshots")
+		snapshotDB, err := sdkTypes.NewLevelDB("metadata", snapshotDir)
+		if err != nil {
+			panic(err)
+		}
+		snapshotStore, err := snapshots.NewStore(snapshotDB, snapshotDir)
 		if err != nil {
 			panic(err)
 		}
@@ -139,13 +151,19 @@ func main() {
 			true,
 			invalidCheckPeriod,
 			skipUpgradeHeights,
-			viper.GetString(flags.FlagHome),
+			cast.ToString(applicationOptions.Get(flags.FlagHome)),
 			applicationOptions,
 			baseapp.SetPruning(pruningOpts),
-			baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)),
-			baseapp.SetHaltHeight(viper.GetUint64(server.FlagHaltHeight)),
-			baseapp.SetHaltTime(viper.GetUint64(server.FlagHaltTime)),
+			baseapp.SetMinGasPrices(cast.ToString(applicationOptions.Get(server.FlagMinGasPrices))),
+			baseapp.SetHaltHeight(cast.ToUint64(applicationOptions.Get(server.FlagHaltHeight))),
+			baseapp.SetHaltTime(cast.ToUint64(applicationOptions.Get(server.FlagHaltTime))),
+			baseapp.SetMinRetainBlocks(cast.ToUint64(applicationOptions.Get(server.FlagMinRetainBlocks))),
 			baseapp.SetInterBlockCache(cache),
+			baseapp.SetTrace(cast.ToBool(applicationOptions.Get(server.FlagTrace))),
+			baseapp.SetIndexEvents(cast.ToStringSlice(applicationOptions.Get(server.FlagIndexEvents))),
+			baseapp.SetSnapshotStore(snapshotStore),
+			baseapp.SetSnapshotInterval(cast.ToUint64(applicationOptions.Get(server.FlagStateSyncSnapshotInterval))),
+			baseapp.SetSnapshotKeepRecent(cast.ToUint32(applicationOptions.Get(server.FlagStateSyncSnapshotKeepRecent))),
 		)
 	}
 
