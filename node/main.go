@@ -58,8 +58,7 @@ func main() {
 		WithInput(os.Stdin).
 		WithAccountRetriever(authTypes.AccountRetriever{}).
 		WithBroadcastMode(flags.BroadcastBlock).
-		WithHomeDir(application.DefaultNodeHome).
-		WithViper("")
+		WithHomeDir(application.DefaultNodeHome)
 
 	cobra.EnableCommandSorting = false
 
@@ -125,14 +124,14 @@ func main() {
 		}
 
 		skipUpgradeHeights := make(map[int64]bool)
-		for _, h := range cast.ToIntSlice(applicationOptions.Get(server.FlagUnsafeSkipUpgrades)) {
+		for _, h := range cast.ToIntSlice(server.FlagUnsafeSkipUpgrades) {
 			skipUpgradeHeights[int64(h)] = true
 		}
 		pruningOpts, err := server.GetPruningOptionsFromFlags(applicationOptions)
 		if err != nil {
 			panic(err)
 		}
-		snapshotDir := filepath.Join(cast.ToString(applicationOptions.Get(flags.FlagHome)), "data", "snapshots")
+		snapshotDir := filepath.Join(cast.ToString(flags.FlagHome), "data", "snapshots")
 		snapshotDB, err := sdkTypes.NewLevelDB("metadata", snapshotDir)
 		if err != nil {
 			panic(err)
@@ -151,16 +150,16 @@ func main() {
 			true,
 			invalidCheckPeriod,
 			skipUpgradeHeights,
-			cast.ToString(applicationOptions.Get(flags.FlagHome)),
+			cast.ToString(flags.FlagHome),
 			applicationOptions,
 			baseapp.SetPruning(pruningOpts),
-			baseapp.SetMinGasPrices(cast.ToString(applicationOptions.Get(server.FlagMinGasPrices))),
-			baseapp.SetHaltHeight(cast.ToUint64(applicationOptions.Get(server.FlagHaltHeight))),
-			baseapp.SetHaltTime(cast.ToUint64(applicationOptions.Get(server.FlagHaltTime))),
-			baseapp.SetMinRetainBlocks(cast.ToUint64(applicationOptions.Get(server.FlagMinRetainBlocks))),
-			baseapp.SetInterBlockCache(cache),
+			baseapp.SetMinGasPrices(cast.ToString(server.FlagMinGasPrices)),
+			baseapp.SetHaltHeight(cast.ToUint64(server.FlagHaltHeight)),
+			baseapp.SetHaltTime(cast.ToUint64(server.FlagHaltTime)),
+			baseapp.SetMinRetainBlocks(cast.ToUint64(server.FlagMinRetainBlocks)),
 			baseapp.SetTrace(cast.ToBool(applicationOptions.Get(server.FlagTrace))),
 			baseapp.SetIndexEvents(cast.ToStringSlice(applicationOptions.Get(server.FlagIndexEvents))),
+			baseapp.SetInterBlockCache(cache),
 			baseapp.SetSnapshotStore(snapshotStore),
 			baseapp.SetSnapshotInterval(cast.ToUint64(applicationOptions.Get(server.FlagStateSyncSnapshotInterval))),
 			baseapp.SetSnapshotKeepRecent(cast.ToUint32(applicationOptions.Get(server.FlagStateSyncSnapshotKeepRecent))),
