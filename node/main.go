@@ -25,8 +25,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	"github.com/persistenceOne/persistenceCore/application"
 	"github.com/persistenceOne/persistenceCore/application/initialize"
-	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	tendermintClient "github.com/tendermint/tendermint/libs/cli"
 	"github.com/tendermint/tendermint/libs/log"
 	tendermintDB "github.com/tendermint/tm-db"
@@ -119,19 +119,19 @@ func main() {
 	) serverTypes.Application {
 		var cache sdkTypes.MultiStorePersistentCache
 
-		if cast.ToBool(server.FlagInterBlockCache) {
+		if viper.GetBool(server.FlagInterBlockCache) {
 			cache = store.NewCommitKVStoreCacheManager()
 		}
 
 		skipUpgradeHeights := make(map[int64]bool)
-		for _, h := range cast.ToIntSlice(server.FlagUnsafeSkipUpgrades) {
+		for _, h := range viper.GetIntSlice(server.FlagUnsafeSkipUpgrades) {
 			skipUpgradeHeights[int64(h)] = true
 		}
 		pruningOpts, err := server.GetPruningOptionsFromFlags(applicationOptions)
 		if err != nil {
 			panic(err)
 		}
-		snapshotDir := filepath.Join(cast.ToString(flags.FlagHome), "data", "snapshots")
+		snapshotDir := filepath.Join(viper.GetString(flags.FlagHome), "data", "snapshots")
 		snapshotDB, err := sdkTypes.NewLevelDB("metadata", snapshotDir)
 		if err != nil {
 			panic(err)
@@ -150,19 +150,19 @@ func main() {
 			true,
 			invalidCheckPeriod,
 			skipUpgradeHeights,
-			cast.ToString(flags.FlagHome),
+			viper.GetString(flags.FlagHome),
 			applicationOptions,
 			baseapp.SetPruning(pruningOpts),
-			baseapp.SetMinGasPrices(cast.ToString(server.FlagMinGasPrices)),
-			baseapp.SetHaltHeight(cast.ToUint64(server.FlagHaltHeight)),
-			baseapp.SetHaltTime(cast.ToUint64(server.FlagHaltTime)),
-			baseapp.SetMinRetainBlocks(cast.ToUint64(server.FlagMinRetainBlocks)),
-			baseapp.SetTrace(cast.ToBool(applicationOptions.Get(server.FlagTrace))),
-			baseapp.SetIndexEvents(cast.ToStringSlice(applicationOptions.Get(server.FlagIndexEvents))),
+			baseapp.SetMinGasPrices(viper.GetString(server.FlagMinGasPrices)),
+			baseapp.SetHaltHeight(viper.GetUint64(server.FlagHaltHeight)),
+			baseapp.SetHaltTime(viper.GetUint64(server.FlagHaltTime)),
+			baseapp.SetMinRetainBlocks(viper.GetUint64(server.FlagMinRetainBlocks)),
+			baseapp.SetTrace(viper.GetBool(server.FlagTrace)),
+			baseapp.SetIndexEvents(viper.GetStringSlice(server.FlagIndexEvents)),
 			baseapp.SetInterBlockCache(cache),
 			baseapp.SetSnapshotStore(snapshotStore),
-			baseapp.SetSnapshotInterval(cast.ToUint64(applicationOptions.Get(server.FlagStateSyncSnapshotInterval))),
-			baseapp.SetSnapshotKeepRecent(cast.ToUint32(applicationOptions.Get(server.FlagStateSyncSnapshotKeepRecent))),
+			baseapp.SetSnapshotInterval(viper.GetUint64(server.FlagStateSyncSnapshotInterval)),
+			baseapp.SetSnapshotKeepRecent(viper.GetUint32(server.FlagStateSyncSnapshotKeepRecent)),
 		)
 	}
 
