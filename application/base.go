@@ -125,6 +125,7 @@ type Application struct {
 	FeegrantKeeper     sdkFeeGrantKeeper.Keeper
 	AuthzKeeper        sdkAuthzKeeper.Keeper
 	RouterKeeper       strangeLoveRouterKeeper.Keeper
+	HalvingKeeper      halving.Keeper
 
 	moduleManager *sdkTypesModule.Manager
 
@@ -522,7 +523,7 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		home,
 		application.BaseApp,
 	)
-	halvingKeeper := halving.NewKeeper(
+	application.HalvingKeeper = halving.NewKeeper(
 		keys[halving.StoreKey],
 		application.ParamsKeeper.Subspace(halving.DefaultParamspace),
 		application.MintKeeper,
@@ -628,7 +629,7 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		sdkAuthzModule.NewAppModule(applicationCodec, application.AuthzKeeper, application.AccountKeeper, application.BankKeeper, application.interfaceRegistry),
 		ibcCore.NewAppModule(application.IBCKeeper),
 		params.NewAppModule(application.ParamsKeeper),
-		halving.NewAppModule(applicationCodec, halvingKeeper),
+		halving.NewAppModule(applicationCodec, application.HalvingKeeper),
 		transferModule,
 		routerModule,
 	)
@@ -693,7 +694,7 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		distribution.NewAppModule(applicationCodec, application.DistributionKeeper, application.AccountKeeper, application.BankKeeper, application.StakingKeeper),
 		slashing.NewAppModule(applicationCodec, application.SlashingKeeper, application.AccountKeeper, application.BankKeeper, application.StakingKeeper),
 		params.NewAppModule(application.ParamsKeeper),
-		halving.NewAppModule(applicationCodec, halvingKeeper),
+		halving.NewAppModule(applicationCodec, application.HalvingKeeper),
 		sdkAuthzModule.NewAppModule(applicationCodec, application.AuthzKeeper, application.AccountKeeper, application.BankKeeper, application.interfaceRegistry),
 		sdkFeeGrantModule.NewAppModule(applicationCodec, application.AccountKeeper, application.BankKeeper, application.FeegrantKeeper, application.interfaceRegistry),
 		ibcCore.NewAppModule(application.IBCKeeper),
