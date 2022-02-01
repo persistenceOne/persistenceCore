@@ -100,31 +100,31 @@ import (
 	"honnef.co/go/tools/version"
 )
 
-type application struct {
-	baseApp           *baseapp.BaseApp
+type Application struct {
+	*baseapp.BaseApp
 	legacyAmino       *codec.LegacyAmino
 	applicationCodec  codec.Codec
 	interfaceRegistry types.InterfaceRegistry
 
 	keys map[string]*sdkTypes.KVStoreKey
 
-	accountKeeper      authKeeper.AccountKeeper
-	bankKeeper         sdkBankKeeper.Keeper
-	capabilityKeeper   *sdkCapabilityKeeper.Keeper
-	stakingKeeper      sdkStakingKeeper.Keeper
-	slashingKeeper     slashingKeeper.Keeper
-	mintKeeper         sdkMintKeeper.Keeper
-	distributionKeeper sdkDistributionKeeper.Keeper
-	govKeeper          sdkGovKeeper.Keeper
-	upgradeKeeper      sdkUpgradeKeeper.Keeper
-	crisisKeeper       sdkCrisisKeeper.Keeper
-	paramsKeeper       sdkParamsKeeper.Keeper
-	ibcKeeper          *sdkIBCKeeper.Keeper
-	evidenceKeeper     sdkEvidenceKeeper.Keeper
-	transferKeeper     ibcTransferKeeper.Keeper
-	feegrantKeeper     sdkFeeGrantKeeper.Keeper
-	authzKeeper        sdkAuthzKeeper.Keeper
-	routerKeeper       strangeLoveRouterKeeper.Keeper
+	AccountKeeper      authKeeper.AccountKeeper
+	BankKeeper         sdkBankKeeper.Keeper
+	CapabilityKeeper   *sdkCapabilityKeeper.Keeper
+	StakingKeeper      sdkStakingKeeper.Keeper
+	SlashingKeeper     slashingKeeper.Keeper
+	MintKeeper         sdkMintKeeper.Keeper
+	DistributionKeeper sdkDistributionKeeper.Keeper
+	GovKeeper          sdkGovKeeper.Keeper
+	UpgradeKeeper      sdkUpgradeKeeper.Keeper
+	CrisisKeeper       sdkCrisisKeeper.Keeper
+	ParamsKeeper       sdkParamsKeeper.Keeper
+	IBCKeeper          *sdkIBCKeeper.Keeper
+	EvidenceKeeper     sdkEvidenceKeeper.Keeper
+	TransferKeeper     ibcTransferKeeper.Keeper
+	FeegrantKeeper     sdkFeeGrantKeeper.Keeper
+	AuthzKeeper        sdkAuthzKeeper.Keeper
+	RouterKeeper       strangeLoveRouterKeeper.Keeper
 
 	moduleManager *sdkTypesModule.Manager
 
@@ -133,48 +133,44 @@ type application struct {
 }
 
 var (
-	_ simapp.App              = (*application)(nil)
-	_ serverTypes.Application = (*application)(nil)
+	_ simapp.App              = (*Application)(nil)
+	_ serverTypes.Application = (*Application)(nil)
 )
 
-func (application application) BaseApp() *baseapp.BaseApp {
-	return application.baseApp
-}
-
-func (application application) ApplicationCodec() codec.Codec {
+func (application Application) ApplicationCodec() codec.Codec {
 	return application.applicationCodec
 }
 
-func (application application) Name() string {
-	return application.baseApp.Name()
+func (application Application) Name() string {
+	return application.BaseApp.Name()
 }
 
-func (application application) LegacyAmino() *codec.LegacyAmino {
+func (application Application) LegacyAmino() *codec.LegacyAmino {
 	return application.legacyAmino
 }
 
-func (application application) BeginBlocker(ctx sdkTypes.Context, req abciTypes.RequestBeginBlock) abciTypes.ResponseBeginBlock {
+func (application Application) BeginBlocker(ctx sdkTypes.Context, req abciTypes.RequestBeginBlock) abciTypes.ResponseBeginBlock {
 	return application.moduleManager.BeginBlock(ctx, req)
 }
 
-func (application application) EndBlocker(ctx sdkTypes.Context, req abciTypes.RequestEndBlock) abciTypes.ResponseEndBlock {
+func (application Application) EndBlocker(ctx sdkTypes.Context, req abciTypes.RequestEndBlock) abciTypes.ResponseEndBlock {
 	return application.moduleManager.EndBlock(ctx, req)
 }
 
-func (application application) InitChainer(ctx sdkTypes.Context, req abciTypes.RequestInitChain) abciTypes.ResponseInitChain {
+func (application Application) InitChainer(ctx sdkTypes.Context, req abciTypes.RequestInitChain) abciTypes.ResponseInitChain {
 	var genesisState GenesisState
 	if err := tendermintJSON.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
 	}
 
-	application.upgradeKeeper.SetModuleVersionMap(ctx, application.moduleManager.GetVersionMap())
+	application.UpgradeKeeper.SetModuleVersionMap(ctx, application.moduleManager.GetVersionMap())
 
 	return application.moduleManager.InitGenesis(ctx, application.applicationCodec, genesisState)
 }
-func (application application) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string) (serverTypes.ExportedApp, error) {
-	context := application.baseApp.NewContext(true, tendermintProto.Header{Height: application.baseApp.LastBlockHeight()})
+func (application Application) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string) (serverTypes.ExportedApp, error) {
+	context := application.BaseApp.NewContext(true, tendermintProto.Header{Height: application.BaseApp.LastBlockHeight()})
 
-	height := application.baseApp.LastBlockHeight() + 1
+	height := application.BaseApp.LastBlockHeight() + 1
 	if forZeroHeight {
 		height = 0
 		applyWhiteList := false
@@ -193,14 +189,14 @@ func (application application) ExportAppStateAndValidators(forZeroHeight bool, j
 			whiteListMap[address] = true
 		}
 
-		application.crisisKeeper.AssertInvariants(context)
+		application.CrisisKeeper.AssertInvariants(context)
 
-		application.stakingKeeper.IterateValidators(context, func(_ int64, val sdkStakingTypes.ValidatorI) (stop bool) {
-			_, _ = application.distributionKeeper.WithdrawValidatorCommission(context, val.GetOperator())
+		application.StakingKeeper.IterateValidators(context, func(_ int64, val sdkStakingTypes.ValidatorI) (stop bool) {
+			_, _ = application.DistributionKeeper.WithdrawValidatorCommission(context, val.GetOperator())
 			return false
 		})
 
-		delegations := application.stakingKeeper.GetAllDelegations(context)
+		delegations := application.StakingKeeper.GetAllDelegations(context)
 		for _, delegation := range delegations {
 			validatorAddress, Error := sdkTypes.ValAddressFromBech32(delegation.ValidatorAddress)
 			if Error != nil {
@@ -212,24 +208,24 @@ func (application application) ExportAppStateAndValidators(forZeroHeight bool, j
 				panic(Error)
 			}
 
-			_, _ = application.distributionKeeper.WithdrawDelegationRewards(context, delegatorAddress, validatorAddress)
+			_, _ = application.DistributionKeeper.WithdrawDelegationRewards(context, delegatorAddress, validatorAddress)
 		}
 
-		application.distributionKeeper.DeleteAllValidatorSlashEvents(context)
+		application.DistributionKeeper.DeleteAllValidatorSlashEvents(context)
 
-		application.distributionKeeper.DeleteAllValidatorHistoricalRewards(context)
+		application.DistributionKeeper.DeleteAllValidatorHistoricalRewards(context)
 
 		height := context.BlockHeight()
 		context = context.WithBlockHeight(0)
 
-		application.stakingKeeper.IterateValidators(context, func(_ int64, val sdkStakingTypes.ValidatorI) (stop bool) {
+		application.StakingKeeper.IterateValidators(context, func(_ int64, val sdkStakingTypes.ValidatorI) (stop bool) {
 
-			scraps := application.distributionKeeper.GetValidatorOutstandingRewardsCoins(context, val.GetOperator())
-			feePool := application.distributionKeeper.GetFeePool(context)
+			scraps := application.DistributionKeeper.GetValidatorOutstandingRewardsCoins(context, val.GetOperator())
+			feePool := application.DistributionKeeper.GetFeePool(context)
 			feePool.CommunityPool = feePool.CommunityPool.Add(scraps...)
-			application.distributionKeeper.SetFeePool(context, feePool)
+			application.DistributionKeeper.SetFeePool(context, feePool)
 
-			application.distributionKeeper.Hooks().AfterValidatorCreated(context, val.GetOperator())
+			application.DistributionKeeper.Hooks().AfterValidatorCreated(context, val.GetOperator())
 			return false
 		})
 
@@ -244,25 +240,25 @@ func (application application) ExportAppStateAndValidators(forZeroHeight bool, j
 				panic(Error)
 			}
 
-			application.distributionKeeper.Hooks().BeforeDelegationCreated(context, delegatorAddress, validatorAddress)
-			application.distributionKeeper.Hooks().AfterDelegationModified(context, delegatorAddress, validatorAddress)
+			application.DistributionKeeper.Hooks().BeforeDelegationCreated(context, delegatorAddress, validatorAddress)
+			application.DistributionKeeper.Hooks().AfterDelegationModified(context, delegatorAddress, validatorAddress)
 		}
 
 		context = context.WithBlockHeight(height)
 
-		application.stakingKeeper.IterateRedelegations(context, func(_ int64, redelegation sdkStakingTypes.Redelegation) (stop bool) {
+		application.StakingKeeper.IterateRedelegations(context, func(_ int64, redelegation sdkStakingTypes.Redelegation) (stop bool) {
 			for i := range redelegation.Entries {
 				redelegation.Entries[i].CreationHeight = 0
 			}
-			application.stakingKeeper.SetRedelegation(context, redelegation)
+			application.StakingKeeper.SetRedelegation(context, redelegation)
 			return false
 		})
 
-		application.stakingKeeper.IterateUnbondingDelegations(context, func(_ int64, unbondingDelegation sdkStakingTypes.UnbondingDelegation) (stop bool) {
+		application.StakingKeeper.IterateUnbondingDelegations(context, func(_ int64, unbondingDelegation sdkStakingTypes.UnbondingDelegation) (stop bool) {
 			for i := range unbondingDelegation.Entries {
 				unbondingDelegation.Entries[i].CreationHeight = 0
 			}
-			application.stakingKeeper.SetUnbondingDelegation(context, unbondingDelegation)
+			application.StakingKeeper.SetUnbondingDelegation(context, unbondingDelegation)
 			return false
 		})
 
@@ -272,7 +268,7 @@ func (application application) ExportAppStateAndValidators(forZeroHeight bool, j
 
 		for ; kvStoreReversePrefixIterator.Valid(); kvStoreReversePrefixIterator.Next() {
 			addr := sdkTypes.ValAddress(kvStoreReversePrefixIterator.Key()[1:])
-			validator, found := application.stakingKeeper.GetValidator(context, addr)
+			validator, found := application.StakingKeeper.GetValidator(context, addr)
 
 			if !found {
 				panic("Validator not found!")
@@ -284,22 +280,22 @@ func (application application) ExportAppStateAndValidators(forZeroHeight bool, j
 				validator.Jailed = true
 			}
 
-			application.stakingKeeper.SetValidator(context, validator)
+			application.StakingKeeper.SetValidator(context, validator)
 			counter++
 		}
 
 		_ = kvStoreReversePrefixIterator.Close()
 
-		_, Error := application.stakingKeeper.ApplyAndReturnValidatorSetUpdates(context)
+		_, Error := application.StakingKeeper.ApplyAndReturnValidatorSetUpdates(context)
 		if Error != nil {
 			log.Fatal(Error)
 		}
 
-		application.slashingKeeper.IterateValidatorSigningInfos(
+		application.SlashingKeeper.IterateValidatorSigningInfos(
 			context,
 			func(validatorConsAddress sdkTypes.ConsAddress, validatorSigningInfo slashingTypes.ValidatorSigningInfo) (stop bool) {
 				validatorSigningInfo.StartHeight = 0
-				application.slashingKeeper.SetValidatorSigningInfo(context, validatorConsAddress, validatorSigningInfo)
+				application.SlashingKeeper.SetValidatorSigningInfo(context, validatorConsAddress, validatorSigningInfo)
 				return false
 			},
 		)
@@ -312,17 +308,17 @@ func (application application) ExportAppStateAndValidators(forZeroHeight bool, j
 		return serverTypes.ExportedApp{}, Error
 	}
 
-	validators, err := staking.WriteValidators(context, application.stakingKeeper)
+	validators, err := staking.WriteValidators(context, application.StakingKeeper)
 
 	return serverTypes.ExportedApp{
 		AppState:        applicationState,
 		Validators:      validators,
 		Height:          height,
-		ConsensusParams: application.baseApp.GetConsensusParams(context),
+		ConsensusParams: application.BaseApp.GetConsensusParams(context),
 	}, err
 }
 
-func (application application) ModuleAccountAddrs() map[string]bool {
+func (application Application) ModuleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range ModuleAccountPermissions {
 		modAccAddrs[authTypes.NewModuleAddress(acc).String()] = true
@@ -331,31 +327,31 @@ func (application application) ModuleAccountAddrs() map[string]bool {
 	return modAccAddrs
 }
 
-func (application application) SimulationManager() *sdkTypesModule.SimulationManager {
+func (application Application) SimulationManager() *sdkTypesModule.SimulationManager {
 	return application.simulationManager
 }
 
-func (application application) ListSnapshots(snapshots abciTypes.RequestListSnapshots) abciTypes.ResponseListSnapshots {
-	return application.baseApp.ListSnapshots(snapshots)
+func (application Application) ListSnapshots(snapshots abciTypes.RequestListSnapshots) abciTypes.ResponseListSnapshots {
+	return application.BaseApp.ListSnapshots(snapshots)
 }
 
-func (application application) OfferSnapshot(snapshot abciTypes.RequestOfferSnapshot) abciTypes.ResponseOfferSnapshot {
-	return application.baseApp.OfferSnapshot(snapshot)
+func (application Application) OfferSnapshot(snapshot abciTypes.RequestOfferSnapshot) abciTypes.ResponseOfferSnapshot {
+	return application.BaseApp.OfferSnapshot(snapshot)
 }
 
-func (application application) LoadSnapshotChunk(chunk abciTypes.RequestLoadSnapshotChunk) abciTypes.ResponseLoadSnapshotChunk {
-	return application.baseApp.LoadSnapshotChunk(chunk)
+func (application Application) LoadSnapshotChunk(chunk abciTypes.RequestLoadSnapshotChunk) abciTypes.ResponseLoadSnapshotChunk {
+	return application.BaseApp.LoadSnapshotChunk(chunk)
 }
 
-func (application application) ApplySnapshotChunk(chunk abciTypes.RequestApplySnapshotChunk) abciTypes.ResponseApplySnapshotChunk {
-	return application.baseApp.ApplySnapshotChunk(chunk)
+func (application Application) ApplySnapshotChunk(chunk abciTypes.RequestApplySnapshotChunk) abciTypes.ResponseApplySnapshotChunk {
+	return application.BaseApp.ApplySnapshotChunk(chunk)
 }
 
-func (application application) RegisterGRPCServer(server grpc.Server) {
-	application.baseApp.RegisterGRPCServer(server)
+func (application Application) RegisterGRPCServer(server grpc.Server) {
+	application.BaseApp.RegisterGRPCServer(server)
 }
 
-func (application application) RegisterAPIRoutes(apiServer *api.Server, apiConfig config.APIConfig) {
+func (application Application) RegisterAPIRoutes(apiServer *api.Server, apiConfig config.APIConfig) {
 	clientCtx := apiServer.ClientCtx
 	rpc.RegisterRoutes(clientCtx, apiServer.Router)
 	// Register legacy tx routes.
@@ -385,54 +381,18 @@ func RegisterSwaggerAPI(rtr *mux.Router) {
 	rtr.PathPrefix("/swagger/").Handler(http.StripPrefix("/swagger/", staticServer))
 }
 
-func (application application) RegisterTxService(clientContect client.Context) {
-	authTx.RegisterTxService(application.baseApp.GRPCQueryRouter(), clientContect, application.baseApp.Simulate, application.interfaceRegistry)
+func (application Application) RegisterTxService(clientContect client.Context) {
+	authTx.RegisterTxService(application.BaseApp.GRPCQueryRouter(), clientContect, application.BaseApp.Simulate, application.interfaceRegistry)
 }
 
-func (application application) RegisterTendermintService(clientCtx client.Context) {
-	tmservice.RegisterTendermintService(application.baseApp.GRPCQueryRouter(), clientCtx, application.interfaceRegistry)
+func (application Application) RegisterTendermintService(clientCtx client.Context) {
+	tmservice.RegisterTendermintService(application.BaseApp.GRPCQueryRouter(), clientCtx, application.interfaceRegistry)
 }
 
-func (application application) Info(requestInfo abciTypes.RequestInfo) abciTypes.ResponseInfo {
-	return application.baseApp.Info(requestInfo)
+func (application Application) LoadHeight(height int64) error {
+	return application.BaseApp.LoadVersion(height)
 }
-
-func (application application) SetOption(requestSetOption abciTypes.RequestSetOption) abciTypes.ResponseSetOption {
-	return application.baseApp.SetOption(requestSetOption)
-}
-
-func (application application) Query(requestQuery abciTypes.RequestQuery) abciTypes.ResponseQuery {
-	return application.baseApp.Query(requestQuery)
-}
-
-func (application application) CheckTx(requestCheckTx abciTypes.RequestCheckTx) abciTypes.ResponseCheckTx {
-	return application.baseApp.CheckTx(requestCheckTx)
-}
-
-func (application application) InitChain(requestInitChain abciTypes.RequestInitChain) abciTypes.ResponseInitChain {
-	return application.baseApp.InitChain(requestInitChain)
-}
-
-func (application application) BeginBlock(requestBeginBlock abciTypes.RequestBeginBlock) abciTypes.ResponseBeginBlock {
-	return application.baseApp.BeginBlock(requestBeginBlock)
-}
-
-func (application application) DeliverTx(requestDeliverTx abciTypes.RequestDeliverTx) abciTypes.ResponseDeliverTx {
-	return application.baseApp.DeliverTx(requestDeliverTx)
-}
-
-func (application application) EndBlock(requestEndBlock abciTypes.RequestEndBlock) abciTypes.ResponseEndBlock {
-	return application.baseApp.EndBlock(requestEndBlock)
-}
-
-func (application application) Commit() abciTypes.ResponseCommit {
-	return application.baseApp.Commit()
-}
-
-func (application application) LoadHeight(height int64) error {
-	return application.baseApp.LoadVersion(height)
-}
-func (application application) Initialize(applicationName string, encodingConfiguration applicationParams.EncodingConfiguration, moduleAccountPermissions map[string][]string, logger tendermintLog.Logger, db tendermintDB.DB, traceStore io.Writer, loadLatest bool, invCheckPeriod uint, skipUpgradeHeights map[int64]bool, home string, applicationOptions serverTypes.AppOptions, baseAppOptions ...func(*baseapp.BaseApp)) application {
+func (application Application) Initialize(applicationName string, encodingConfiguration applicationParams.EncodingConfiguration, moduleAccountPermissions map[string][]string, logger tendermintLog.Logger, db tendermintDB.DB, traceStore io.Writer, loadLatest bool, invCheckPeriod uint, skipUpgradeHeights map[int64]bool, home string, applicationOptions serverTypes.AppOptions, baseAppOptions ...func(*baseapp.BaseApp)) Application {
 	applicationCodec := encodingConfiguration.Marshaler
 	legacyAmino := encodingConfiguration.Amino
 	interfaceRegistry := encodingConfiguration.InterfaceRegistry
@@ -459,29 +419,29 @@ func (application application) Initialize(applicationName string, encodingConfig
 	transientStoreKeys := sdkTypes.NewTransientStoreKeys(paramsTypes.TStoreKey)
 	memoryKeys := sdkTypes.NewMemoryStoreKeys(sdkCapabilityTypes.MemStoreKey)
 
-	application.baseApp = baseApp
+	application.BaseApp = baseApp
 	application.legacyAmino = legacyAmino
 	application.applicationCodec = applicationCodec
 	application.interfaceRegistry = interfaceRegistry
 	application.keys = keys
 
-	application.paramsKeeper = sdkParamsKeeper.NewKeeper(
+	application.ParamsKeeper = sdkParamsKeeper.NewKeeper(
 		applicationCodec,
 		legacyAmino,
 		keys[paramsTypes.StoreKey],
 		transientStoreKeys[paramsTypes.TStoreKey],
 	)
-	application.baseApp.SetParamStore(application.paramsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(sdkParamsKeeper.ConsensusParamsKeyTable()))
+	application.BaseApp.SetParamStore(application.ParamsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(sdkParamsKeeper.ConsensusParamsKeyTable()))
 
-	application.capabilityKeeper = sdkCapabilityKeeper.NewKeeper(applicationCodec, keys[sdkCapabilityTypes.StoreKey], memoryKeys[sdkCapabilityTypes.MemStoreKey])
-	scopedIBCKeeper := application.capabilityKeeper.ScopeToModule(ibcHost.ModuleName)
-	scopedTransferKeeper := application.capabilityKeeper.ScopeToModule(ibcTransferTypes.ModuleName)
-	application.capabilityKeeper.Seal()
+	application.CapabilityKeeper = sdkCapabilityKeeper.NewKeeper(applicationCodec, keys[sdkCapabilityTypes.StoreKey], memoryKeys[sdkCapabilityTypes.MemStoreKey])
+	scopedIBCKeeper := application.CapabilityKeeper.ScopeToModule(ibcHost.ModuleName)
+	scopedTransferKeeper := application.CapabilityKeeper.ScopeToModule(ibcTransferTypes.ModuleName)
+	application.CapabilityKeeper.Seal()
 
-	application.accountKeeper = authKeeper.NewAccountKeeper(
+	application.AccountKeeper = authKeeper.NewAccountKeeper(
 		applicationCodec,
 		keys[authTypes.StoreKey],
-		application.paramsKeeper.Subspace(authTypes.ModuleName),
+		application.ParamsKeeper.Subspace(authTypes.ModuleName),
 		authTypes.ProtoBaseAccount,
 		moduleAccountPermissions,
 	)
@@ -495,88 +455,88 @@ func (application application) Initialize(applicationName string, encodingConfig
 		blackListedModuleAddresses[authTypes.NewModuleAddress(moduleAccount).String()] = true
 	}
 
-	application.bankKeeper = sdkBankKeeper.NewBaseKeeper(
+	application.BankKeeper = sdkBankKeeper.NewBaseKeeper(
 		applicationCodec,
 		keys[sdkBankTypes.StoreKey],
-		application.accountKeeper,
-		application.paramsKeeper.Subspace(sdkBankTypes.ModuleName),
+		application.AccountKeeper,
+		application.ParamsKeeper.Subspace(sdkBankTypes.ModuleName),
 		blacklistedAddresses,
 	)
 
-	application.authzKeeper = sdkAuthzKeeper.NewKeeper(
+	application.AuthzKeeper = sdkAuthzKeeper.NewKeeper(
 		keys[sdkAuthzKeeper.StoreKey],
 		applicationCodec,
-		application.baseApp.MsgServiceRouter(),
+		application.BaseApp.MsgServiceRouter(),
 	)
 
-	application.feegrantKeeper = sdkFeeGrantKeeper.NewKeeper(
+	application.FeegrantKeeper = sdkFeeGrantKeeper.NewKeeper(
 		applicationCodec,
 		keys[feegrant.StoreKey],
-		application.accountKeeper,
+		application.AccountKeeper,
 	)
 
 	stakingKeeper := sdkStakingKeeper.NewKeeper(
 		applicationCodec,
 		keys[sdkStakingTypes.StoreKey],
-		application.accountKeeper,
-		application.bankKeeper,
-		application.paramsKeeper.Subspace(sdkStakingTypes.ModuleName),
+		application.AccountKeeper,
+		application.BankKeeper,
+		application.ParamsKeeper.Subspace(sdkStakingTypes.ModuleName),
 	)
 
-	application.mintKeeper = sdkMintKeeper.NewKeeper(
+	application.MintKeeper = sdkMintKeeper.NewKeeper(
 		applicationCodec,
 		keys[sdkMintTypes.StoreKey],
-		application.paramsKeeper.Subspace(sdkMintTypes.ModuleName),
+		application.ParamsKeeper.Subspace(sdkMintTypes.ModuleName),
 		&stakingKeeper,
-		application.accountKeeper,
-		application.bankKeeper,
+		application.AccountKeeper,
+		application.BankKeeper,
 		authTypes.FeeCollectorName,
 	)
 
-	application.distributionKeeper = sdkDistributionKeeper.NewKeeper(
+	application.DistributionKeeper = sdkDistributionKeeper.NewKeeper(
 		applicationCodec,
 		keys[sdkDistributionTypes.StoreKey],
-		application.paramsKeeper.Subspace(sdkDistributionTypes.ModuleName),
-		application.accountKeeper,
-		application.bankKeeper,
+		application.ParamsKeeper.Subspace(sdkDistributionTypes.ModuleName),
+		application.AccountKeeper,
+		application.BankKeeper,
 		&stakingKeeper,
 		authTypes.FeeCollectorName,
 		blackListedModuleAddresses,
 	)
-	application.slashingKeeper = slashingKeeper.NewKeeper(
+	application.SlashingKeeper = slashingKeeper.NewKeeper(
 		applicationCodec,
 		keys[slashingTypes.StoreKey],
 		&stakingKeeper,
-		application.paramsKeeper.Subspace(slashingTypes.ModuleName),
+		application.ParamsKeeper.Subspace(slashingTypes.ModuleName),
 	)
-	application.crisisKeeper = sdkCrisisKeeper.NewKeeper(
-		application.paramsKeeper.Subspace(sdkCrisisTypes.ModuleName),
+	application.CrisisKeeper = sdkCrisisKeeper.NewKeeper(
+		application.ParamsKeeper.Subspace(sdkCrisisTypes.ModuleName),
 		invCheckPeriod,
-		application.bankKeeper,
+		application.BankKeeper,
 		authTypes.FeeCollectorName,
 	)
-	application.upgradeKeeper = sdkUpgradeKeeper.NewKeeper(
+	application.UpgradeKeeper = sdkUpgradeKeeper.NewKeeper(
 		skipUpgradeHeights,
 		keys[sdkUpgradeTypes.StoreKey],
 		applicationCodec,
 		home,
-		application.baseApp,
+		application.BaseApp,
 	)
 	halvingKeeper := halving.NewKeeper(
 		keys[halving.StoreKey],
-		application.paramsKeeper.Subspace(halving.DefaultParamspace),
-		application.mintKeeper,
+		application.ParamsKeeper.Subspace(halving.DefaultParamspace),
+		application.MintKeeper,
 	)
 
-	application.stakingKeeper = *stakingKeeper.SetHooks(
-		sdkStakingTypes.NewMultiStakingHooks(application.distributionKeeper.Hooks(), application.slashingKeeper.Hooks()),
+	application.StakingKeeper = *stakingKeeper.SetHooks(
+		sdkStakingTypes.NewMultiStakingHooks(application.DistributionKeeper.Hooks(), application.SlashingKeeper.Hooks()),
 	)
 
-	application.ibcKeeper = sdkIBCKeeper.NewKeeper(
+	application.IBCKeeper = sdkIBCKeeper.NewKeeper(
 		applicationCodec, keys[ibcHost.StoreKey],
-		application.paramsKeeper.Subspace(ibcHost.ModuleName),
-		application.stakingKeeper,
-		application.upgradeKeeper,
+		application.ParamsKeeper.Subspace(ibcHost.ModuleName),
+		application.StakingKeeper,
+		application.UpgradeKeeper,
 		scopedIBCKeeper,
 	)
 
@@ -586,58 +546,58 @@ func (application application) Initialize(applicationName string, encodingConfig
 		sdkGovTypes.ProposalHandler,
 	).AddRoute(
 		paramsProposal.RouterKey,
-		params.NewParamChangeProposalHandler(application.paramsKeeper),
+		params.NewParamChangeProposalHandler(application.ParamsKeeper),
 	).AddRoute(
 		sdkDistributionTypes.RouterKey,
-		distribution.NewCommunityPoolSpendProposalHandler(application.distributionKeeper),
+		distribution.NewCommunityPoolSpendProposalHandler(application.DistributionKeeper),
 	).AddRoute(
 		sdkUpgradeTypes.RouterKey,
-		upgrade.NewSoftwareUpgradeProposalHandler(application.upgradeKeeper),
-	).AddRoute(ibcHost.RouterKey, ibcClient.NewClientProposalHandler(application.ibcKeeper.ClientKeeper))
+		upgrade.NewSoftwareUpgradeProposalHandler(application.UpgradeKeeper),
+	).AddRoute(ibcHost.RouterKey, ibcClient.NewClientProposalHandler(application.IBCKeeper.ClientKeeper))
 
-	application.govKeeper = sdkGovKeeper.NewKeeper(
+	application.GovKeeper = sdkGovKeeper.NewKeeper(
 		applicationCodec,
 		keys[sdkGovTypes.StoreKey],
-		application.paramsKeeper.Subspace(sdkGovTypes.ModuleName).WithKeyTable(sdkGovTypes.ParamKeyTable()),
-		application.accountKeeper,
-		application.bankKeeper,
+		application.ParamsKeeper.Subspace(sdkGovTypes.ModuleName).WithKeyTable(sdkGovTypes.ParamKeyTable()),
+		application.AccountKeeper,
+		application.BankKeeper,
 		&stakingKeeper,
 		govRouter,
 	)
 
-	application.transferKeeper = ibcTransferKeeper.NewKeeper(
+	application.TransferKeeper = ibcTransferKeeper.NewKeeper(
 		applicationCodec,
 		keys[ibcTransferTypes.StoreKey],
-		application.paramsKeeper.Subspace(ibcTransferTypes.ModuleName),
-		application.ibcKeeper.ChannelKeeper,
-		&application.ibcKeeper.PortKeeper,
-		application.accountKeeper,
-		application.bankKeeper,
+		application.ParamsKeeper.Subspace(ibcTransferTypes.ModuleName),
+		application.IBCKeeper.ChannelKeeper,
+		&application.IBCKeeper.PortKeeper,
+		application.AccountKeeper,
+		application.BankKeeper,
 		scopedTransferKeeper,
 	)
-	transferModule := transfer.NewAppModule(application.transferKeeper)
+	transferModule := transfer.NewAppModule(application.TransferKeeper)
 
-	application.routerKeeper = strangeLoveRouterKeeper.NewKeeper(
+	application.RouterKeeper = strangeLoveRouterKeeper.NewKeeper(
 		applicationCodec,
 		keys[strangeLoveRouterTypes.StoreKey],
-		application.paramsKeeper.Subspace(strangeLoveRouterTypes.ModuleName).WithKeyTable(strangeLoveRouterTypes.ParamKeyTable()),
-		application.transferKeeper,
-		application.distributionKeeper,
+		application.ParamsKeeper.Subspace(strangeLoveRouterTypes.ModuleName).WithKeyTable(strangeLoveRouterTypes.ParamKeyTable()),
+		application.TransferKeeper,
+		application.DistributionKeeper,
 	)
 
-	routerModule := strangeLoveRouter.NewAppModule(application.routerKeeper, transferModule)
+	routerModule := strangeLoveRouter.NewAppModule(application.RouterKeeper, transferModule)
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcTypes.NewRouter()
 	ibcRouter.AddRoute(ibcTransferTypes.ModuleName, routerModule)
-	application.ibcKeeper.SetRouter(ibcRouter)
+	application.IBCKeeper.SetRouter(ibcRouter)
 
 	evidenceKeeper := sdkEvidenceKeeper.NewKeeper(
 		applicationCodec,
 		keys[sdkEvidenceTypes.StoreKey],
-		&application.stakingKeeper,
-		application.slashingKeeper,
+		&application.StakingKeeper,
+		application.SlashingKeeper,
 	)
-	application.evidenceKeeper = *evidenceKeeper
+	application.EvidenceKeeper = *evidenceKeeper
 
 	/****  Module Options ****/
 	var skipGenesisInvariants = false
@@ -649,35 +609,49 @@ func (application application) Initialize(applicationName string, encodingConfig
 
 	application.moduleManager = sdkTypesModule.NewManager(
 		genutil.NewAppModule(
-			application.accountKeeper, application.stakingKeeper, application.baseApp.DeliverTx,
+			application.AccountKeeper, application.StakingKeeper, application.BaseApp.DeliverTx,
 			encodingConfiguration.TransactionConfig,
 		),
-		auth.NewAppModule(applicationCodec, application.accountKeeper, nil),
-		vesting.NewAppModule(application.accountKeeper, application.bankKeeper),
-		bank.NewAppModule(applicationCodec, application.bankKeeper, application.accountKeeper),
-		capability.NewAppModule(applicationCodec, *application.capabilityKeeper),
-		crisis.NewAppModule(&application.crisisKeeper, skipGenesisInvariants),
-		gov.NewAppModule(applicationCodec, application.govKeeper, application.accountKeeper, application.bankKeeper),
-		mint.NewAppModule(applicationCodec, application.mintKeeper, application.accountKeeper),
-		slashing.NewAppModule(applicationCodec, application.slashingKeeper, application.accountKeeper, application.bankKeeper, application.stakingKeeper),
-		distribution.NewAppModule(applicationCodec, application.distributionKeeper, application.accountKeeper, application.bankKeeper, application.stakingKeeper),
-		staking.NewAppModule(applicationCodec, application.stakingKeeper, application.accountKeeper, application.bankKeeper),
-		upgrade.NewAppModule(application.upgradeKeeper),
-		evidence.NewAppModule(application.evidenceKeeper),
-		sdkFeeGrantModule.NewAppModule(applicationCodec, application.accountKeeper, application.bankKeeper, application.feegrantKeeper, application.interfaceRegistry),
-		sdkAuthzModule.NewAppModule(applicationCodec, application.authzKeeper, application.accountKeeper, application.bankKeeper, application.interfaceRegistry),
-		ibcCore.NewAppModule(application.ibcKeeper),
-		params.NewAppModule(application.paramsKeeper),
+		auth.NewAppModule(applicationCodec, application.AccountKeeper, nil),
+		vesting.NewAppModule(application.AccountKeeper, application.BankKeeper),
+		bank.NewAppModule(applicationCodec, application.BankKeeper, application.AccountKeeper),
+		capability.NewAppModule(applicationCodec, *application.CapabilityKeeper),
+		crisis.NewAppModule(&application.CrisisKeeper, skipGenesisInvariants),
+		gov.NewAppModule(applicationCodec, application.GovKeeper, application.AccountKeeper, application.BankKeeper),
+		mint.NewAppModule(applicationCodec, application.MintKeeper, application.AccountKeeper),
+		slashing.NewAppModule(applicationCodec, application.SlashingKeeper, application.AccountKeeper, application.BankKeeper, application.StakingKeeper),
+		distribution.NewAppModule(applicationCodec, application.DistributionKeeper, application.AccountKeeper, application.BankKeeper, application.StakingKeeper),
+		staking.NewAppModule(applicationCodec, application.StakingKeeper, application.AccountKeeper, application.BankKeeper),
+		upgrade.NewAppModule(application.UpgradeKeeper),
+		evidence.NewAppModule(application.EvidenceKeeper),
+		sdkFeeGrantModule.NewAppModule(applicationCodec, application.AccountKeeper, application.BankKeeper, application.FeegrantKeeper, application.interfaceRegistry),
+		sdkAuthzModule.NewAppModule(applicationCodec, application.AuthzKeeper, application.AccountKeeper, application.BankKeeper, application.interfaceRegistry),
+		ibcCore.NewAppModule(application.IBCKeeper),
+		params.NewAppModule(application.ParamsKeeper),
 		halving.NewAppModule(applicationCodec, halvingKeeper),
 		transferModule,
 		routerModule,
 	)
 
 	application.moduleManager.SetOrderBeginBlockers(
-		sdkUpgradeTypes.ModuleName, sdkCapabilityTypes.ModuleName, sdkMintTypes.ModuleName, sdkDistributionTypes.ModuleName, slashingTypes.ModuleName,
-		sdkEvidenceTypes.ModuleName, sdkStakingTypes.ModuleName, ibcHost.ModuleName, strangeLoveRouterTypes.ModuleName,
+		sdkUpgradeTypes.ModuleName,
+		sdkCapabilityTypes.ModuleName,
+		sdkMintTypes.ModuleName,
+		sdkDistributionTypes.ModuleName,
+		slashingTypes.ModuleName,
+		sdkEvidenceTypes.ModuleName,
+		sdkStakingTypes.ModuleName,
+		ibcHost.ModuleName,
+		strangeLoveRouterTypes.ModuleName,
 	)
-	application.moduleManager.SetOrderEndBlockers(sdkCrisisTypes.ModuleName, sdkGovTypes.ModuleName, sdkStakingTypes.ModuleName, halving.ModuleName, feegrant.ModuleName, authz.ModuleName)
+	application.moduleManager.SetOrderEndBlockers(
+		sdkCrisisTypes.ModuleName,
+		sdkGovTypes.ModuleName,
+		sdkStakingTypes.ModuleName,
+		feegrant.ModuleName,
+		authz.ModuleName,
+		halving.ModuleName,
+	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
@@ -685,66 +659,79 @@ func (application application) Initialize(applicationName string, encodingConfig
 	// so that other modules that want to create or claim capabilities afterwards in InitChain
 	// can do so safely.
 	application.moduleManager.SetOrderInitGenesis(
-		sdkCapabilityTypes.ModuleName, authTypes.ModuleName, sdkBankTypes.ModuleName, sdkDistributionTypes.ModuleName, sdkStakingTypes.ModuleName,
-		slashingTypes.ModuleName, sdkGovTypes.ModuleName, sdkMintTypes.ModuleName, sdkCrisisTypes.ModuleName,
-		ibcHost.ModuleName, genutilTypes.ModuleName, sdkEvidenceTypes.ModuleName, ibcTransferTypes.ModuleName,
-		feegrant.ModuleName, authz.ModuleName, strangeLoveRouterTypes.ModuleName, halving.ModuleName,
+		sdkCapabilityTypes.ModuleName,
+		authTypes.ModuleName,
+		sdkBankTypes.ModuleName,
+		sdkDistributionTypes.ModuleName,
+		sdkStakingTypes.ModuleName,
+		slashingTypes.ModuleName,
+		sdkGovTypes.ModuleName,
+		sdkMintTypes.ModuleName,
+		sdkCrisisTypes.ModuleName,
+		ibcHost.ModuleName,
+		genutilTypes.ModuleName,
+		sdkEvidenceTypes.ModuleName,
+		ibcTransferTypes.ModuleName,
+		feegrant.ModuleName,
+		authz.ModuleName,
+		strangeLoveRouterTypes.ModuleName,
+		halving.ModuleName,
 	)
 
-	application.moduleManager.RegisterInvariants(&application.crisisKeeper)
-	application.moduleManager.RegisterRoutes(application.baseApp.Router(), application.baseApp.QueryRouter(), encodingConfiguration.Amino)
-	application.configurator = sdkTypesModule.NewConfigurator(application.applicationCodec, application.baseApp.MsgServiceRouter(), application.baseApp.GRPCQueryRouter())
+	application.moduleManager.RegisterInvariants(&application.CrisisKeeper)
+	application.moduleManager.RegisterRoutes(application.BaseApp.Router(), application.BaseApp.QueryRouter(), encodingConfiguration.Amino)
+	application.configurator = sdkTypesModule.NewConfigurator(application.applicationCodec, application.BaseApp.MsgServiceRouter(), application.BaseApp.GRPCQueryRouter())
 	application.moduleManager.RegisterServices(application.configurator)
 
 	simulationManager := sdkTypesModule.NewSimulationManager(
-		auth.NewAppModule(applicationCodec, application.accountKeeper, authSimulation.RandomGenesisAccounts),
-		bank.NewAppModule(applicationCodec, application.bankKeeper, application.accountKeeper),
-		capability.NewAppModule(applicationCodec, *application.capabilityKeeper),
-		gov.NewAppModule(applicationCodec, application.govKeeper, application.accountKeeper, application.bankKeeper),
-		mint.NewAppModule(applicationCodec, application.mintKeeper, application.accountKeeper),
-		staking.NewAppModule(applicationCodec, application.stakingKeeper, application.accountKeeper, application.bankKeeper),
-		distribution.NewAppModule(applicationCodec, application.distributionKeeper, application.accountKeeper, application.bankKeeper, application.stakingKeeper),
-		slashing.NewAppModule(applicationCodec, application.slashingKeeper, application.accountKeeper, application.bankKeeper, application.stakingKeeper),
-		params.NewAppModule(application.paramsKeeper),
+		auth.NewAppModule(applicationCodec, application.AccountKeeper, authSimulation.RandomGenesisAccounts),
+		bank.NewAppModule(applicationCodec, application.BankKeeper, application.AccountKeeper),
+		capability.NewAppModule(applicationCodec, *application.CapabilityKeeper),
+		gov.NewAppModule(applicationCodec, application.GovKeeper, application.AccountKeeper, application.BankKeeper),
+		mint.NewAppModule(applicationCodec, application.MintKeeper, application.AccountKeeper),
+		staking.NewAppModule(applicationCodec, application.StakingKeeper, application.AccountKeeper, application.BankKeeper),
+		distribution.NewAppModule(applicationCodec, application.DistributionKeeper, application.AccountKeeper, application.BankKeeper, application.StakingKeeper),
+		slashing.NewAppModule(applicationCodec, application.SlashingKeeper, application.AccountKeeper, application.BankKeeper, application.StakingKeeper),
+		params.NewAppModule(application.ParamsKeeper),
 		halving.NewAppModule(applicationCodec, halvingKeeper),
-		sdkAuthzModule.NewAppModule(applicationCodec, application.authzKeeper, application.accountKeeper, application.bankKeeper, application.interfaceRegistry),
-		sdkFeeGrantModule.NewAppModule(applicationCodec, application.accountKeeper, application.bankKeeper, application.feegrantKeeper, application.interfaceRegistry),
-		ibcCore.NewAppModule(application.ibcKeeper),
+		sdkAuthzModule.NewAppModule(applicationCodec, application.AuthzKeeper, application.AccountKeeper, application.BankKeeper, application.interfaceRegistry),
+		sdkFeeGrantModule.NewAppModule(applicationCodec, application.AccountKeeper, application.BankKeeper, application.FeegrantKeeper, application.interfaceRegistry),
+		ibcCore.NewAppModule(application.IBCKeeper),
 		transferModule,
 	)
 
 	simulationManager.RegisterStoreDecoders()
 	application.simulationManager = simulationManager
 
-	application.baseApp.MountKVStores(keys)
-	application.baseApp.MountTransientStores(transientStoreKeys)
-	application.baseApp.MountMemoryStores(memoryKeys)
+	application.BaseApp.MountKVStores(keys)
+	application.BaseApp.MountTransientStores(transientStoreKeys)
+	application.BaseApp.MountMemoryStores(memoryKeys)
 
 	anteHandler, err := NewAnteHandler(
 		HandlerOptions{
 			HandlerOptions: ante.HandlerOptions{
-				AccountKeeper:   application.accountKeeper,
-				BankKeeper:      application.bankKeeper,
-				FeegrantKeeper:  application.feegrantKeeper,
+				AccountKeeper:   application.AccountKeeper,
+				BankKeeper:      application.BankKeeper,
+				FeegrantKeeper:  application.FeegrantKeeper,
 				SignModeHandler: encodingConfiguration.TransactionConfig.SignModeHandler(),
 				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
 			},
-			IBCChannelKeeper: application.ibcKeeper.ChannelKeeper,
+			IBCChannelKeeper: application.IBCKeeper.ChannelKeeper,
 		},
 	)
 	if err != nil {
 		panic(fmt.Errorf("failed to create AnteHandler: %s", err))
 	}
 
-	application.baseApp.SetAnteHandler(anteHandler)
-	application.baseApp.SetInitChainer(application.InitChainer)
-	application.baseApp.SetBeginBlocker(application.moduleManager.BeginBlock)
-	application.baseApp.SetEndBlocker(application.moduleManager.EndBlock)
+	application.BaseApp.SetAnteHandler(anteHandler)
+	application.BaseApp.SetInitChainer(application.InitChainer)
+	application.BaseApp.SetBeginBlocker(application.moduleManager.BeginBlock)
+	application.BaseApp.SetEndBlocker(application.moduleManager.EndBlock)
 
-	application.upgradeKeeper.SetUpgradeHandler(
+	application.UpgradeKeeper.SetUpgradeHandler(
 		UpgradeName,
 		func(ctx sdkTypes.Context, _ sdkUpgradeTypes.Plan, _ sdkTypesModule.VersionMap) (sdkTypesModule.VersionMap, error) {
-			application.ibcKeeper.ConnectionKeeper.SetParams(ctx, ibcConnectionTypes.DefaultParams())
+			application.IBCKeeper.ConnectionKeeper.SetParams(ctx, ibcConnectionTypes.DefaultParams())
 			fromVM := make(map[string]uint64)
 			for moduleName := range application.moduleManager.Modules {
 				fromVM[moduleName] = 1
@@ -771,22 +758,22 @@ func (application application) Initialize(applicationName string, encodingConfig
 		},
 	)
 
-	upgradeInfo, err := application.upgradeKeeper.ReadUpgradeInfoFromDisk()
+	upgradeInfo, err := application.UpgradeKeeper.ReadUpgradeInfoFromDisk()
 	if err != nil {
 		panic(fmt.Sprintf("failed to read upgrade info from disk %s", err))
 	}
 
-	if upgradeInfo.Name == UpgradeName && !application.upgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+	if upgradeInfo.Name == UpgradeName && !application.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storeTypes.StoreUpgrades{
 			Added: []string{authz.ModuleName, feegrant.ModuleName, strangeLoveRouterTypes.ModuleName},
 		}
 
 		// configure store loader that checks if version == upgradeHeight and applies store upgrades
-		application.baseApp.SetStoreLoader(sdkUpgradeTypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+		application.BaseApp.SetStoreLoader(sdkUpgradeTypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 	}
 
 	if loadLatest {
-		if err := application.baseApp.LoadLatestVersion(); err != nil {
+		if err := application.BaseApp.LoadLatestVersion(); err != nil {
 			tendermintOS.Exit(err.Error())
 		}
 	}
@@ -794,6 +781,6 @@ func (application application) Initialize(applicationName string, encodingConfig
 	return application
 }
 
-func NewApplication() *application {
-	return &application{}
+func NewApplication() *Application {
+	return &Application{}
 }
