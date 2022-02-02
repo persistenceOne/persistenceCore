@@ -55,7 +55,7 @@ func BenchmarkFullAppSimulation(b *testing.B) {
 	_, simParams, simErr := simulation.SimulateFromSeed(
 		b,
 		os.Stdout,
-		app.BaseApp(),
+		app.BaseApp,
 		simapp.AppStateFn(app.ApplicationCodec(), app.SimulationManager()),
 		simulation2.RandomAccounts, // Replace with own random account function if using keys other than secp256k1
 		simapp.SimulationOperations(app, app.ApplicationCodec(), config),
@@ -86,7 +86,7 @@ func interBlockCacheOpt() func(*baseapp.BaseApp) {
 
 func TestAppStateDeterminism(t *testing.T) {
 	if !simapp.FlagEnabledValue {
-		t.Skip("skipping application simulation")
+		t.Skip("skipping Application simulation")
 	}
 
 	config := simapp.NewConfigFromFlags()
@@ -122,7 +122,7 @@ func TestAppStateDeterminism(t *testing.T) {
 			_, _, err := simulation.SimulateFromSeed(
 				t,
 				os.Stdout,
-				app.BaseApp(),
+				app.BaseApp,
 				simapp.AppStateFn(app.ApplicationCodec(), app.SimulationManager()),
 				simulation2.RandomAccounts, // Replace with own random account function if using keys other than secp256k1
 				simapp.SimulationOperations(app, app.ApplicationCodec(), config),
@@ -136,7 +136,7 @@ func TestAppStateDeterminism(t *testing.T) {
 				simapp.PrintStats(db)
 			}
 
-			appHash := app.BaseApp().LastCommitID().Hash
+			appHash := app.BaseApp.LastCommitID().Hash
 			appHashList[j] = appHash
 
 			if j != 0 {
