@@ -88,9 +88,6 @@ import (
 	applicationParams "github.com/persistenceOne/persistenceCore/application/params"
 	"github.com/persistenceOne/persistenceCore/x/halving"
 	"github.com/rakyll/statik/fs"
-	strangeLoveRouter "github.com/strangelove-ventures/packet-forward-middleware/router"
-	strangeLoveRouterKeeper "github.com/strangelove-ventures/packet-forward-middleware/router/keeper"
-	strangeLoveRouterTypes "github.com/strangelove-ventures/packet-forward-middleware/router/types"
 	abciTypes "github.com/tendermint/tendermint/abci/types"
 	tendermintJSON "github.com/tendermint/tendermint/libs/json"
 	tendermintLog "github.com/tendermint/tendermint/libs/log"
@@ -124,7 +121,6 @@ type Application struct {
 	TransferKeeper     ibcTransferKeeper.Keeper
 	FeegrantKeeper     sdkFeeGrantKeeper.Keeper
 	AuthzKeeper        sdkAuthzKeeper.Keeper
-	RouterKeeper       strangeLoveRouterKeeper.Keeper
 	HalvingKeeper      halving.Keeper
 
 	moduleManager *sdkTypesModule.Manager
@@ -414,7 +410,7 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		sdkMintTypes.StoreKey, sdkDistributionTypes.StoreKey, slashingTypes.StoreKey,
 		sdkGovTypes.StoreKey, paramsTypes.StoreKey, ibcHost.StoreKey, sdkUpgradeTypes.StoreKey,
 		sdkEvidenceTypes.StoreKey, ibcTransferTypes.StoreKey, sdkCapabilityTypes.StoreKey,
-		halving.StoreKey, sdkAuthzKeeper.StoreKey, feegrant.StoreKey, strangeLoveRouterTypes.StoreKey,
+		halving.StoreKey, sdkAuthzKeeper.StoreKey, feegrant.StoreKey,
 	)
 
 	transientStoreKeys := sdkTypes.NewTransientStoreKeys(paramsTypes.TStoreKey)
@@ -578,18 +574,9 @@ func (application Application) Initialize(applicationName string, encodingConfig
 	)
 	transferModule := transfer.NewAppModule(application.TransferKeeper)
 
-	application.RouterKeeper = strangeLoveRouterKeeper.NewKeeper(
-		applicationCodec,
-		keys[strangeLoveRouterTypes.StoreKey],
-		application.ParamsKeeper.Subspace(strangeLoveRouterTypes.ModuleName).WithKeyTable(strangeLoveRouterTypes.ParamKeyTable()),
-		application.TransferKeeper,
-		application.DistributionKeeper,
-	)
-
-	routerModule := strangeLoveRouter.NewAppModule(application.RouterKeeper, transferModule)
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcTypes.NewRouter()
-	ibcRouter.AddRoute(ibcTransferTypes.ModuleName, routerModule)
+	ibcRouter.AddRoute(ibcTransferTypes.ModuleName, transferModule)
 	application.IBCKeeper.SetRouter(ibcRouter)
 
 	evidenceKeeper := sdkEvidenceKeeper.NewKeeper(
@@ -631,7 +618,6 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		params.NewAppModule(application.ParamsKeeper),
 		halving.NewAppModule(applicationCodec, application.HalvingKeeper),
 		transferModule,
-		routerModule,
 	)
 
 	application.moduleManager.SetOrderBeginBlockers(
@@ -643,7 +629,6 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		sdkEvidenceTypes.ModuleName,
 		sdkStakingTypes.ModuleName,
 		ibcHost.ModuleName,
-		strangeLoveRouterTypes.ModuleName,
 	)
 	application.moduleManager.SetOrderEndBlockers(
 		sdkCrisisTypes.ModuleName,
@@ -675,7 +660,6 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		ibcTransferTypes.ModuleName,
 		feegrant.ModuleName,
 		authz.ModuleName,
-		strangeLoveRouterTypes.ModuleName,
 		halving.ModuleName,
 	)
 
@@ -740,7 +724,6 @@ func (application Application) Initialize(applicationName string, encodingConfig
 			// delete new modules from the map, for _new_ modules as to not skip InitGenesis
 			delete(fromVM, authz.ModuleName)
 			delete(fromVM, feegrant.ModuleName)
-			delete(fromVM, strangeLoveRouterTypes.ModuleName)
 
 			// make fromVM[authtypes.ModuleName] = 2 to skip the first RunMigrations for auth (because from version 2 to migration version 2 will not migrate)
 			fromVM[authTypes.ModuleName] = 2
@@ -766,7 +749,7 @@ func (application Application) Initialize(applicationName string, encodingConfig
 
 	if upgradeInfo.Name == UpgradeName && !application.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storeTypes.StoreUpgrades{
-			Added: []string{authz.ModuleName, feegrant.ModuleName, strangeLoveRouterTypes.ModuleName},
+			Added: []string{authz.ModuleName, feegrant.ModuleName},
 		}
 
 		// configure store loader that checks if version == upgradeHeight and applies store upgrades
