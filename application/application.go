@@ -36,7 +36,6 @@ import (
 	ibc "github.com/cosmos/ibc-go/v2/modules/core"
 	ibcClient "github.com/cosmos/ibc-go/v2/modules/core/02-client/client"
 	"github.com/persistenceOne/persistenceCore/x/halving"
-	strangeLoveRouter "github.com/strangelove-ventures/packet-forward-middleware/router"
 )
 
 var ModuleAccountPermissions = map[string][]string{
@@ -75,6 +74,5 @@ var ModuleBasics = module.NewBasicManager(
 	evidence.AppModuleBasic{},
 	transfer.AppModuleBasic{},
 	vesting.AppModuleBasic{},
-	strangeLoveRouter.AppModuleBasic{},
 	halving.AppModuleBasic{},
 )

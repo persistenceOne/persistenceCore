@@ -12,7 +12,6 @@ require (
 	github.com/rakyll/statik v0.1.7
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.8.1
-	github.com/strangelove-ventures/packet-forward-middleware v1.0.1
 	github.com/stretchr/testify v1.7.0
 	github.com/tendermint/tendermint v0.34.14
 	github.com/tendermint/tm-db v0.6.4
@@ -25,3 +24,9 @@ require (
 replace google.golang.org/grpc => google.golang.org/grpc v1.33.2
 
 replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
+
+replace github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.7.7
+
+replace github.com/opencontainers/image-spec => github.com/opencontainers/image-spec v1.0.2
+
+replace github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.3

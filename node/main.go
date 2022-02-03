@@ -8,6 +8,7 @@ package main
 import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
@@ -58,7 +59,8 @@ func main() {
 		WithInput(os.Stdin).
 		WithAccountRetriever(authTypes.AccountRetriever{}).
 		WithBroadcastMode(flags.BroadcastBlock).
-		WithHomeDir(application.DefaultNodeHome)
+		WithHomeDir(application.DefaultNodeHome).
+		WithViper("")
 
 	cobra.EnableCommandSorting = false
 
@@ -66,6 +68,11 @@ func main() {
 		Use:   "persistenceCore",
 		Short: "Persistence Hub Node Daemon (server)",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
+			initClientCtx, err := config.ReadFromClientConfig(initClientCtx)
+			if err != nil {
+				return err
+			}
+
 			if err := client.SetCmdClientContextHandler(initClientCtx, cmd); err != nil {
 				return err
 			}
@@ -96,9 +103,11 @@ func main() {
 		application.DefaultNodeHome,
 	))
 	rootCommand.AddCommand(tendermintClient.NewCompletionCmd(rootCommand, true))
-	rootCommand.AddCommand(debug.Cmd())
-	rootCommand.AddCommand(version.NewVersionCommand())
 	rootCommand.AddCommand(
+		debug.Cmd(),
+		version.NewVersionCommand(),
+		config.Cmd(),
+		initialize.TestnetCmd(application.ModuleBasics, bankTypes.GenesisBalancesIterator{}),
 		rpc.StatusCommand(),
 		queryCommand(),
 		txCommand(),
