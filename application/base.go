@@ -79,6 +79,7 @@ import (
 	ibcTransferTypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
 	ibcCore "github.com/cosmos/ibc-go/v2/modules/core"
 	ibcClient "github.com/cosmos/ibc-go/v2/modules/core/02-client"
+	ibcClientTypes "github.com/cosmos/ibc-go/v2/modules/core/02-client/types"
 	ibcConnectionTypes "github.com/cosmos/ibc-go/v2/modules/core/03-connection/types"
 	ibcTypes "github.com/cosmos/ibc-go/v2/modules/core/05-port/types"
 	ibcHost "github.com/cosmos/ibc-go/v2/modules/core/24-host"
@@ -550,7 +551,7 @@ func (application Application) Initialize(applicationName string, encodingConfig
 	).AddRoute(
 		sdkUpgradeTypes.RouterKey,
 		upgrade.NewSoftwareUpgradeProposalHandler(application.UpgradeKeeper),
-	).AddRoute(ibcHost.RouterKey, ibcClient.NewClientProposalHandler(application.IBCKeeper.ClientKeeper))
+	).AddRoute(ibcClientTypes.RouterKey, ibcClient.NewClientProposalHandler(application.IBCKeeper.ClientKeeper))
 
 	application.GovKeeper = sdkGovKeeper.NewKeeper(
 		applicationCodec,
