@@ -38,6 +38,8 @@ import (
 	"github.com/persistenceOne/persistenceCore/x/halving"
 )
 
+var DefaultNodeHome string
+
 var ModuleAccountPermissions = map[string][]string{
 	authTypes.FeeCollectorName:     nil,
 	distributionTypes.ModuleName:   nil,

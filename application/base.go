@@ -9,7 +9,10 @@ import (
 	"fmt"
 	"io"
 	"log"
+	stdlog "log"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -134,6 +137,15 @@ var (
 	_ simapp.App              = (*Application)(nil)
 	_ serverTypes.Application = (*Application)(nil)
 )
+
+func init() {
+	userHomeDir, err := os.UserHomeDir()
+	if err != nil {
+		stdlog.Println("Failed to get home dir %2", err)
+	}
+
+	DefaultNodeHome = filepath.Join(userHomeDir, ".persistenceCore")
+}
 
 func (application Application) ApplicationCodec() codec.Codec {
 	return application.applicationCodec
