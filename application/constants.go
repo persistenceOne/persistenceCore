@@ -7,7 +7,6 @@ package application
 
 import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
-	"os"
 )
 
 const (
@@ -24,8 +23,4 @@ const (
 	Bech32PrefixValPub   = Bech32MainPrefix + sdkTypes.PrefixValidator + sdkTypes.PrefixOperator + sdkTypes.PrefixPublic
 	Bech32PrefixConsAddr = Bech32MainPrefix + sdkTypes.PrefixValidator + sdkTypes.PrefixConsensus
 	Bech32PrefixConsPub  = Bech32MainPrefix + sdkTypes.PrefixValidator + sdkTypes.PrefixConsensus + sdkTypes.PrefixPublic
-)
-
-var (
-	DefaultNodeHome = os.ExpandEnv("$HOME/.persistenceCore")
 )
