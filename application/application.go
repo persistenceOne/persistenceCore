@@ -31,11 +31,13 @@ import (
 	stakingTypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradeClient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
-	"github.com/cosmos/ibc-go/v2/modules/apps/transfer"
-	ibcTransferTypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
-	ibc "github.com/cosmos/ibc-go/v2/modules/core"
-	ibcClient "github.com/cosmos/ibc-go/v2/modules/core/02-client/client"
+	ica "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts"
+	"github.com/cosmos/ibc-go/v3/modules/apps/transfer"
+	ibcTransferTypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
+	ibc "github.com/cosmos/ibc-go/v3/modules/core"
+	ibcClient "github.com/cosmos/ibc-go/v3/modules/core/02-client/client"
 	"github.com/persistenceOne/persistenceCore/x/halving"
+	"github.com/strangelove-ventures/packet-forward-middleware/v2/router"
 )
 
 var DefaultNodeHome string
@@ -77,4 +79,7 @@ var ModuleBasics = module.NewBasicManager(
 	transfer.AppModuleBasic{},
 	vesting.AppModuleBasic{},
 	halving.AppModuleBasic{},
+	ica.AppModuleBasic{},
+	router.AppModuleBasic{},
+
 )
