@@ -46,8 +46,4 @@ const (
 	stakingMsgCreateValidator           = "/cosmos.staking.v1beta1.MsgCreateValidator"
 	vestingMsgCreateVestingAccount      = "/cosmos.vesting.v1beta1.MsgCreateVestingAccount"
 	transferMsgTransfer                 = "/ibc.applications.transfer.v1.MsgTransfer"
-	liquidityMsgCreatePool              = "/tendermint.liquidity.v1beta1.MsgCreatePool"
-	liquidityMsgSwapWithinBatch         = "/tendermint.liquidity.v1beta1.MsgSwapWithinBatch"
-	liquidityMsgDepositWithinBatch      = "/tendermint.liquidity.v1beta1.MsgDepositWithinBatch"
-	liquidityMsgWithdrawWithinBatch     = "/tendermint.liquidity.v1beta1.MsgWithdrawWithinBatch"
 )
