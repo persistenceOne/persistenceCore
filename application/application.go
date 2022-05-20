@@ -37,9 +37,7 @@ import (
 	ibcTransferTypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v3/modules/core"
 	ibcClient "github.com/cosmos/ibc-go/v3/modules/core/02-client/client"
-	"github.com/gravity-devs/liquidity/x/liquidity"
-	liquiditytypes "github.com/gravity-devs/liquidity/x/liquidity/types"
-	"github.com/strangelove-ventures/packet-forward-middleware/v2/router"
+	"github.com/persistenceOne/persistenceCore/x/halving"
 )
 
 var DefaultNodeHome string
@@ -53,7 +51,6 @@ var ModuleAccountPermissions = map[string][]string{
 	stakingTypes.NotBondedPoolName: {authTypes.Burner, authTypes.Staking},
 	govTypes.ModuleName:            {authTypes.Burner},
 	ibcTransferTypes.ModuleName:    {authTypes.Minter, authTypes.Burner},
-	liquiditytypes.ModuleName:      {authTypes.Minter, authTypes.Burner},
 }
 
 var ModuleBasics = module.NewBasicManager(
@@ -82,7 +79,6 @@ var ModuleBasics = module.NewBasicManager(
 	evidence.AppModuleBasic{},
 	transfer.AppModuleBasic{},
 	vesting.AppModuleBasic{},
-	liquidity.AppModuleBasic{},
-	router.AppModuleBasic{},
+	halving.AppModuleBasic{},
 	ica.AppModuleBasic{},
 )

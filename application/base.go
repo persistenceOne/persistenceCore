@@ -9,8 +9,7 @@ import (
 	"fmt"
 	icaControllerTypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/types"
 	icaTypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
-	"github.com/gravity-devs/liquidity/x/liquidity"
-	"github.com/strangelove-ventures/packet-forward-middleware/v2/router"
+	"github.com/persistenceOne/persistenceCore/x/halving"
 	"io"
 	"log"
 	stdlog "log"
@@ -98,12 +97,8 @@ import (
 	sdkIBCKeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 	"github.com/gogo/protobuf/grpc"
 	"github.com/gorilla/mux"
-	liquiditykeeper "github.com/gravity-devs/liquidity/x/liquidity/keeper"
-	liquiditytypes "github.com/gravity-devs/liquidity/x/liquidity/types"
 	applicationParams "github.com/persistenceOne/persistenceCore/application/params"
 	"github.com/rakyll/statik/fs"
-	routerKeeper "github.com/strangelove-ventures/packet-forward-middleware/v2/router/keeper"
-	routerTypes "github.com/strangelove-ventures/packet-forward-middleware/v2/router/types"
 	abciTypes "github.com/tendermint/tendermint/abci/types"
 	tendermintJSON "github.com/tendermint/tendermint/libs/json"
 	tendermintLog "github.com/tendermint/tendermint/libs/log"
@@ -138,12 +133,8 @@ type Application struct {
 	TransferKeeper     ibcTransferKeeper.Keeper
 	FeegrantKeeper     sdkFeeGrantKeeper.Keeper
 	AuthzKeeper        sdkAuthzKeeper.Keeper
-	RouterKeeper       routerKeeper.Keeper
-	LiquidityKeeper    liquiditykeeper.Keeper
-
-
+	HalvingKeeper      halving.Keeper
 	moduleManager *sdkTypesModule.Manager
-
 	configurator      sdkTypesModule.Configurator
 	simulationManager *sdkTypesModule.SimulationManager
 
@@ -442,8 +433,8 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		authTypes.StoreKey, sdkBankTypes.StoreKey, sdkStakingTypes.StoreKey,
 		sdkMintTypes.StoreKey, sdkDistributionTypes.StoreKey, slashingTypes.StoreKey,
 		sdkGovTypes.StoreKey, paramsTypes.StoreKey, ibcHost.StoreKey, sdkUpgradeTypes.StoreKey,
-		sdkEvidenceTypes.StoreKey,liquiditytypes.StoreKey, ibcTransferTypes.StoreKey, sdkCapabilityTypes.StoreKey,
-		feegrant.StoreKey, sdkAuthzKeeper.StoreKey, routerTypes.StoreKey, icaHostTypes.StoreKey,
+		sdkEvidenceTypes.StoreKey, ibcTransferTypes.StoreKey, sdkCapabilityTypes.StoreKey,
+		feegrant.StoreKey, sdkAuthzKeeper.StoreKey, icaHostTypes.StoreKey, halving.StoreKey,
 	)
 
 	transientStoreKeys := sdkTypes.NewTransientStoreKeys(paramsTypes.TStoreKey)
@@ -554,13 +545,10 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		application.BaseApp,
 	)
 
-	application.LiquidityKeeper = liquiditykeeper.NewKeeper(
-		applicationCodec,
-		keys[liquiditytypes.StoreKey],
-		application.ParamsKeeper.Subspace(liquiditytypes.ModuleName),
-		application.BankKeeper,
-		application.AccountKeeper,
-		application.DistributionKeeper,
+	application.HalvingKeeper = halving.NewKeeper(
+		keys[halving.StoreKey],
+		application.ParamsKeeper.Subspace(halving.DefaultParamspace),
+		application.MintKeeper,
 	)
 
 	application.StakingKeeper = *stakingKeeper.SetHooks(
@@ -629,15 +617,6 @@ func (application Application) Initialize(applicationName string, encodingConfig
 	icaModule := ica.NewAppModule(nil, &application.ICAHostKeeper)
 	icaHostIBCModule := icaHost.NewIBCModule(application.ICAHostKeeper)
 
-	application.RouterKeeper = routerKeeper.NewKeeper(
-		applicationCodec,
-		keys[routerTypes.StoreKey],
-		application.ParamsKeeper.Subspace(routerTypes.ModuleName),
-		application.TransferKeeper,
-		application.DistributionKeeper)
-
-	routerModule := router.NewAppModule(application.RouterKeeper, transferIBCModule)
-
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcTypes.NewRouter()
 	ibcRouter.AddRoute(icaHostTypes.SubModuleName, icaHostIBCModule).
@@ -681,10 +660,9 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		sdkAuthzModule.NewAppModule(applicationCodec, application.AuthzKeeper, application.AccountKeeper, application.BankKeeper, application.interfaceRegistry),
 		ibcCore.NewAppModule(application.IBCKeeper),
 		params.NewAppModule(application.ParamsKeeper),
-		liquidity.NewAppModule(applicationCodec, application.LiquidityKeeper, application.AccountKeeper, application.BankKeeper, application.DistributionKeeper),
+		halving.NewAppModule(applicationCodec, application.HalvingKeeper),
 		transferModule,
 		icaModule,
-		routerModule,
 	)
 
 	application.moduleManager.SetOrderBeginBlockers(
@@ -693,11 +671,9 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		sdkCrisisTypes.ModuleName,
 		sdkGovTypes.ModuleName,
 		sdkStakingTypes.ModuleName,
-		liquiditytypes.ModuleName,
 		ibcTransferTypes.ModuleName,
 		ibcHost.ModuleName,
 		icaTypes.ModuleName,
-		routerTypes.ModuleName,
 		authTypes.ModuleName,
 		sdkBankTypes.ModuleName,
 		sdkDistributionTypes.ModuleName,
@@ -709,16 +685,15 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		feegrant.ModuleName,
 		paramsTypes.ModuleName,
 		vestingTypes.ModuleName,
+		halving.ModuleName,
 	)
 	application.moduleManager.SetOrderEndBlockers(
 		sdkCrisisTypes.ModuleName,
 		sdkGovTypes.ModuleName,
 		sdkStakingTypes.ModuleName,
-		liquiditytypes.ModuleName,
 		ibcTransferTypes.ModuleName,
 		ibcHost.ModuleName,
 		icaTypes.ModuleName,
-		routerTypes.ModuleName,
 		feegrant.ModuleName,
 		authz.ModuleName,
 		sdkCapabilityTypes.ModuleName,
@@ -732,6 +707,7 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		paramsTypes.ModuleName,
 		sdkUpgradeTypes.ModuleName,
 		vestingTypes.ModuleName,
+		halving.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -752,15 +728,14 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		ibcHost.ModuleName,
 		icaTypes.ModuleName,
 		sdkEvidenceTypes.ModuleName,
-		liquiditytypes.ModuleName,
 		feegrant.ModuleName,
 		authz.ModuleName,
 		authTypes.ModuleName,
 		genutilTypes.ModuleName,
-		routerTypes.ModuleName,
 		paramsTypes.ModuleName,
 		sdkUpgradeTypes.ModuleName,
 		vestingTypes.ModuleName,
+		halving.ModuleName,
 	)
 
 	application.moduleManager.RegisterInvariants(&application.CrisisKeeper)
@@ -778,10 +753,10 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		distribution.NewAppModule(applicationCodec, application.DistributionKeeper, application.AccountKeeper, application.BankKeeper, application.StakingKeeper),
 		slashing.NewAppModule(applicationCodec, application.SlashingKeeper, application.AccountKeeper, application.BankKeeper, application.StakingKeeper),
 		params.NewAppModule(application.ParamsKeeper),
+		halving.NewAppModule(applicationCodec, application.HalvingKeeper),
 		sdkAuthzModule.NewAppModule(applicationCodec, application.AuthzKeeper, application.AccountKeeper, application.BankKeeper, application.interfaceRegistry),
 		sdkFeeGrantModule.NewAppModule(applicationCodec, application.AccountKeeper, application.BankKeeper, application.FeegrantKeeper, application.interfaceRegistry),
 		ibcCore.NewAppModule(application.IBCKeeper),
-		liquidity.NewAppModule(applicationCodec, application.LiquidityKeeper, application.AccountKeeper, application.BankKeeper, application.DistributionKeeper),
 		transferModule,
 	)
 
@@ -846,10 +821,6 @@ func (application Application) Initialize(applicationName string, encodingConfig
 					stakingMsgCreateValidator,
 					vestingMsgCreateVestingAccount,
 					transferMsgTransfer,
-					liquidityMsgCreatePool,
-					liquidityMsgSwapWithinBatch,
-					liquidityMsgDepositWithinBatch,
-					liquidityMsgWithdrawWithinBatch,
 				},
 			}
 			ctx.Logger().Info("start to init interchainaccount module...")
@@ -901,10 +872,8 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(slashingTypes.ModuleName)
 	paramsKeeper.Subspace(sdkGovTypes.ModuleName).WithKeyTable(sdkGovTypes.ParamKeyTable())
 	paramsKeeper.Subspace(sdkCrisisTypes.ModuleName)
-	paramsKeeper.Subspace(liquiditytypes.ModuleName)
 	paramsKeeper.Subspace(ibcTransferTypes.ModuleName)
 	paramsKeeper.Subspace(ibcHost.ModuleName)
-	paramsKeeper.Subspace(routerTypes.ModuleName).WithKeyTable(routerTypes.ParamKeyTable())
 	paramsKeeper.Subspace(icaHostTypes.SubModuleName)
 
 	return paramsKeeper
