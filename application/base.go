@@ -860,24 +860,6 @@ func (application Application) Initialize(applicationName string, encodingConfig
 	return application
 }
 
-// initParamsKeeper init params keeper and its subspaces
-func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino, key, tkey sdkTypes.StoreKey) sdkParamsKeeper.Keeper {
-	paramsKeeper := sdkParamsKeeper.NewKeeper(appCodec, legacyAmino, key, tkey)
-
-	paramsKeeper.Subspace(authTypes.ModuleName)
-	paramsKeeper.Subspace(sdkBankTypes.ModuleName)
-	paramsKeeper.Subspace(sdkStakingTypes.ModuleName)
-	paramsKeeper.Subspace(sdkMintTypes.ModuleName)
-	paramsKeeper.Subspace(sdkDistributionTypes.ModuleName)
-	paramsKeeper.Subspace(slashingTypes.ModuleName)
-	paramsKeeper.Subspace(sdkGovTypes.ModuleName).WithKeyTable(sdkGovTypes.ParamKeyTable())
-	paramsKeeper.Subspace(sdkCrisisTypes.ModuleName)
-	paramsKeeper.Subspace(ibcTransferTypes.ModuleName)
-	paramsKeeper.Subspace(ibcHost.ModuleName)
-	paramsKeeper.Subspace(icaHostTypes.SubModuleName)
-
-	return paramsKeeper
-}
 func NewApplication() *Application {
 	return &Application{}
 }
