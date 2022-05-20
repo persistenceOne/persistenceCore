@@ -7,6 +7,9 @@ package application
 
 import (
 	"fmt"
+	icaControllerTypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/types"
+	icaTypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
+	"github.com/persistenceOne/persistenceCore/x/halving"
 	"io"
 	"log"
 	stdlog "log"
@@ -35,6 +38,7 @@ import (
 	authTx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	vestingTypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	sdkAuthzKeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	sdkAuthzModule "github.com/cosmos/cosmos-sdk/x/authz/module"
@@ -77,20 +81,23 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	sdkUpgradeKeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	sdkUpgradeTypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	"github.com/cosmos/ibc-go/v2/modules/apps/transfer"
-	ibcTransferKeeper "github.com/cosmos/ibc-go/v2/modules/apps/transfer/keeper"
-	ibcTransferTypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
-	ibcCore "github.com/cosmos/ibc-go/v2/modules/core"
-	ibcClient "github.com/cosmos/ibc-go/v2/modules/core/02-client"
-	ibcClientTypes "github.com/cosmos/ibc-go/v2/modules/core/02-client/types"
-	ibcConnectionTypes "github.com/cosmos/ibc-go/v2/modules/core/03-connection/types"
-	ibcTypes "github.com/cosmos/ibc-go/v2/modules/core/05-port/types"
-	ibcHost "github.com/cosmos/ibc-go/v2/modules/core/24-host"
-	sdkIBCKeeper "github.com/cosmos/ibc-go/v2/modules/core/keeper"
+	ica "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts"
+	icaHost "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/host"
+	icaHostKeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/host/keeper"
+	icaHostTypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/host/types"
+	"github.com/cosmos/ibc-go/v3/modules/apps/transfer"
+	ibcTransferKeeper "github.com/cosmos/ibc-go/v3/modules/apps/transfer/keeper"
+	ibcTransferTypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
+	ibcCore "github.com/cosmos/ibc-go/v3/modules/core"
+	ibcClient "github.com/cosmos/ibc-go/v3/modules/core/02-client"
+	ibcClientTypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
+	ibcConnectionTypes "github.com/cosmos/ibc-go/v3/modules/core/03-connection/types"
+	ibcTypes "github.com/cosmos/ibc-go/v3/modules/core/05-port/types"
+	ibcHost "github.com/cosmos/ibc-go/v3/modules/core/24-host"
+	sdkIBCKeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 	"github.com/gogo/protobuf/grpc"
 	"github.com/gorilla/mux"
 	applicationParams "github.com/persistenceOne/persistenceCore/application/params"
-	"github.com/persistenceOne/persistenceCore/x/halving"
 	"github.com/rakyll/statik/fs"
 	abciTypes "github.com/tendermint/tendermint/abci/types"
 	tendermintJSON "github.com/tendermint/tendermint/libs/json"
@@ -121,16 +128,20 @@ type Application struct {
 	CrisisKeeper       sdkCrisisKeeper.Keeper
 	ParamsKeeper       sdkParamsKeeper.Keeper
 	IBCKeeper          *sdkIBCKeeper.Keeper
+	ICAHostKeeper      icaHostKeeper.Keeper
 	EvidenceKeeper     sdkEvidenceKeeper.Keeper
 	TransferKeeper     ibcTransferKeeper.Keeper
 	FeegrantKeeper     sdkFeeGrantKeeper.Keeper
 	AuthzKeeper        sdkAuthzKeeper.Keeper
 	HalvingKeeper      halving.Keeper
-
 	moduleManager *sdkTypesModule.Manager
-
 	configurator      sdkTypesModule.Configurator
 	simulationManager *sdkTypesModule.SimulationManager
+
+	// make scoped keepers public for test purposes
+	ScopedIBCKeeper      sdkCapabilityKeeper.ScopedKeeper
+	ScopedTransferKeeper sdkCapabilityKeeper.ScopedKeeper
+	ScopedICAHostKeeper  sdkCapabilityKeeper.ScopedKeeper
 }
 
 var (
@@ -147,8 +158,8 @@ func init() {
 	DefaultNodeHome = filepath.Join(userHomeDir, ".persistenceCore")
 }
 
-func (application Application) ApplicationCodec() codec.Codec {
-	return application.applicationCodec
+func (app Application) ApplicationCodec() codec.Codec {
+	return app.applicationCodec
 }
 
 func (application Application) Name() string {
@@ -423,7 +434,7 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		sdkMintTypes.StoreKey, sdkDistributionTypes.StoreKey, slashingTypes.StoreKey,
 		sdkGovTypes.StoreKey, paramsTypes.StoreKey, ibcHost.StoreKey, sdkUpgradeTypes.StoreKey,
 		sdkEvidenceTypes.StoreKey, ibcTransferTypes.StoreKey, sdkCapabilityTypes.StoreKey,
-		halving.StoreKey, sdkAuthzKeeper.StoreKey, feegrant.StoreKey,
+		feegrant.StoreKey, sdkAuthzKeeper.StoreKey, icaHostTypes.StoreKey, halving.StoreKey,
 	)
 
 	transientStoreKeys := sdkTypes.NewTransientStoreKeys(paramsTypes.TStoreKey)
@@ -445,6 +456,7 @@ func (application Application) Initialize(applicationName string, encodingConfig
 
 	application.CapabilityKeeper = sdkCapabilityKeeper.NewKeeper(applicationCodec, keys[sdkCapabilityTypes.StoreKey], memoryKeys[sdkCapabilityTypes.MemStoreKey])
 	scopedIBCKeeper := application.CapabilityKeeper.ScopeToModule(ibcHost.ModuleName)
+	scopedICAHostKeeper := application.CapabilityKeeper.ScopeToModule(icaHostTypes.SubModuleName)
 	scopedTransferKeeper := application.CapabilityKeeper.ScopeToModule(ibcTransferTypes.ModuleName)
 	application.CapabilityKeeper.Seal()
 
@@ -532,6 +544,7 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		home,
 		application.BaseApp,
 	)
+
 	application.HalvingKeeper = halving.NewKeeper(
 		keys[halving.StoreKey],
 		application.ParamsKeeper.Subspace(halving.DefaultParamspace),
@@ -543,7 +556,8 @@ func (application Application) Initialize(applicationName string, encodingConfig
 	)
 
 	application.IBCKeeper = sdkIBCKeeper.NewKeeper(
-		applicationCodec, keys[ibcHost.StoreKey],
+		applicationCodec,
+		keys[ibcHost.StoreKey],
 		application.ParamsKeeper.Subspace(ibcHost.ModuleName),
 		application.StakingKeeper,
 		application.UpgradeKeeper,
@@ -580,16 +594,33 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		keys[ibcTransferTypes.StoreKey],
 		application.ParamsKeeper.Subspace(ibcTransferTypes.ModuleName),
 		application.IBCKeeper.ChannelKeeper,
+		application.IBCKeeper.ChannelKeeper,
 		&application.IBCKeeper.PortKeeper,
 		application.AccountKeeper,
 		application.BankKeeper,
 		scopedTransferKeeper,
 	)
 	transferModule := transfer.NewAppModule(application.TransferKeeper)
+	transferIBCModule := transfer.NewIBCModule(application.TransferKeeper)
+
+	application.ICAHostKeeper = icaHostKeeper.NewKeeper(
+		applicationCodec,
+		keys[icaHostTypes.StoreKey],
+		application.ParamsKeeper.Subspace(icaHostTypes.SubModuleName),
+		application.IBCKeeper.ChannelKeeper,
+		&application.IBCKeeper.PortKeeper,
+		application.AccountKeeper,
+		scopedICAHostKeeper,
+		application.MsgServiceRouter(),
+	)
+
+	icaModule := ica.NewAppModule(nil, &application.ICAHostKeeper)
+	icaHostIBCModule := icaHost.NewIBCModule(application.ICAHostKeeper)
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcTypes.NewRouter()
-	ibcRouter.AddRoute(ibcTransferTypes.ModuleName, transferModule)
+	ibcRouter.AddRoute(icaHostTypes.SubModuleName, icaHostIBCModule).
+		AddRoute(ibcTransferTypes.ModuleName, transferIBCModule)
 	application.IBCKeeper.SetRouter(ibcRouter)
 
 	evidenceKeeper := sdkEvidenceKeeper.NewKeeper(
@@ -631,24 +662,51 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		params.NewAppModule(application.ParamsKeeper),
 		halving.NewAppModule(applicationCodec, application.HalvingKeeper),
 		transferModule,
+		icaModule,
 	)
 
 	application.moduleManager.SetOrderBeginBlockers(
 		sdkUpgradeTypes.ModuleName,
 		sdkCapabilityTypes.ModuleName,
-		sdkMintTypes.ModuleName,
+		sdkCrisisTypes.ModuleName,
+		sdkGovTypes.ModuleName,
+		sdkStakingTypes.ModuleName,
+		ibcTransferTypes.ModuleName,
+		ibcHost.ModuleName,
+		icaTypes.ModuleName,
+		authTypes.ModuleName,
+		sdkBankTypes.ModuleName,
 		sdkDistributionTypes.ModuleName,
 		slashingTypes.ModuleName,
+		sdkMintTypes.ModuleName,
+		genutilTypes.ModuleName,
 		sdkEvidenceTypes.ModuleName,
-		sdkStakingTypes.ModuleName,
-		ibcHost.ModuleName,
+		authz.ModuleName,
+		feegrant.ModuleName,
+		paramsTypes.ModuleName,
+		vestingTypes.ModuleName,
+		halving.ModuleName,
 	)
 	application.moduleManager.SetOrderEndBlockers(
 		sdkCrisisTypes.ModuleName,
 		sdkGovTypes.ModuleName,
 		sdkStakingTypes.ModuleName,
+		ibcTransferTypes.ModuleName,
+		ibcHost.ModuleName,
+		icaTypes.ModuleName,
 		feegrant.ModuleName,
 		authz.ModuleName,
+		sdkCapabilityTypes.ModuleName,
+		authTypes.ModuleName,
+		sdkBankTypes.ModuleName,
+		sdkDistributionTypes.ModuleName,
+		slashingTypes.ModuleName,
+		sdkMintTypes.ModuleName,
+		genutilTypes.ModuleName,
+		sdkEvidenceTypes.ModuleName,
+		paramsTypes.ModuleName,
+		sdkUpgradeTypes.ModuleName,
+		vestingTypes.ModuleName,
 		halving.ModuleName,
 	)
 
@@ -659,7 +717,6 @@ func (application Application) Initialize(applicationName string, encodingConfig
 	// can do so safely.
 	application.moduleManager.SetOrderInitGenesis(
 		sdkCapabilityTypes.ModuleName,
-		authTypes.ModuleName,
 		sdkBankTypes.ModuleName,
 		sdkDistributionTypes.ModuleName,
 		sdkStakingTypes.ModuleName,
@@ -667,12 +724,17 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		sdkGovTypes.ModuleName,
 		sdkMintTypes.ModuleName,
 		sdkCrisisTypes.ModuleName,
-		ibcHost.ModuleName,
-		genutilTypes.ModuleName,
-		sdkEvidenceTypes.ModuleName,
 		ibcTransferTypes.ModuleName,
+		ibcHost.ModuleName,
+		icaTypes.ModuleName,
+		sdkEvidenceTypes.ModuleName,
 		feegrant.ModuleName,
 		authz.ModuleName,
+		authTypes.ModuleName,
+		genutilTypes.ModuleName,
+		paramsTypes.ModuleName,
+		sdkUpgradeTypes.ModuleName,
+		vestingTypes.ModuleName,
 		halving.ModuleName,
 	)
 
@@ -714,7 +776,7 @@ func (application Application) Initialize(applicationName string, encodingConfig
 				SignModeHandler: encodingConfiguration.TransactionConfig.SignModeHandler(),
 				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
 			},
-			IBCChannelKeeper: application.IBCKeeper.ChannelKeeper,
+			IBCKeeper: application.IBCKeeper,
 		},
 	)
 	if err != nil {
@@ -728,29 +790,47 @@ func (application Application) Initialize(applicationName string, encodingConfig
 
 	application.UpgradeKeeper.SetUpgradeHandler(
 		UpgradeName,
-		func(ctx sdkTypes.Context, _ sdkUpgradeTypes.Plan, _ sdkTypesModule.VersionMap) (sdkTypesModule.VersionMap, error) {
+		func(ctx sdkTypes.Context, _ sdkUpgradeTypes.Plan, fromVM sdkTypesModule.VersionMap) (sdkTypesModule.VersionMap, error) {
 			application.IBCKeeper.ConnectionKeeper.SetParams(ctx, ibcConnectionTypes.DefaultParams())
-			fromVM := make(map[string]uint64)
-			for moduleName := range application.moduleManager.Modules {
-				fromVM[moduleName] = 1
+			fromVM[icaTypes.ModuleName] = icaModule.ConsensusVersion()
+			// create ICS27 Controller submodule params
+			controllerParams := icaControllerTypes.Params{}
+			// create ICS27 Host submodule params
+			hostParams := icaHostTypes.Params{
+				HostEnabled: true,
+				AllowMessages: []string{
+					authzMsgExec,
+					authzMsgGrant,
+					authzMsgRevoke,
+					bankMsgSend,
+					bankMsgMultiSend,
+					distrMsgSetWithdrawAddr,
+					distrMsgWithdrawValidatorCommission,
+					distrMsgFundCommunityPool,
+					distrMsgWithdrawDelegatorReward,
+					feegrantMsgGrantAllowance,
+					feegrantMsgRevokeAllowance,
+					govMsgVoteWeighted,
+					govMsgSubmitProposal,
+					govMsgDeposit,
+					govMsgVote,
+					stakingMsgEditValidator,
+					stakingMsgDelegate,
+					stakingMsgUndelegate,
+					stakingMsgBeginRedelegate,
+					stakingMsgCreateValidator,
+					vestingMsgCreateVestingAccount,
+					transferMsgTransfer,
+				},
 			}
-			// delete new modules from the map, for _new_ modules as to not skip InitGenesis
-			delete(fromVM, authz.ModuleName)
-			delete(fromVM, feegrant.ModuleName)
+			ctx.Logger().Info("start to init interchainaccount module...")
+			// initialize ICS27 module
+			icaModule.InitModule(ctx, controllerParams, hostParams)
 
-			// make fromVM[authtypes.ModuleName] = 2 to skip the first RunMigrations for auth (because from version 2 to migration version 2 will not migrate)
-			fromVM[authTypes.ModuleName] = 2
-
-			// the first RunMigrations, which will migrate all the old modules except auth module
-			newVM, err := application.moduleManager.RunMigrations(ctx, application.configurator, fromVM)
-			if err != nil {
-				return nil, err
-			}
-			// now update auth version back to 1, to make the second RunMigrations includes only auth
-			newVM[authTypes.ModuleName] = 1
+			ctx.Logger().Info("start to run module migrations...")
 
 			// RunMigrations twice is just a way to make auth module's migrates after staking
-			return application.moduleManager.RunMigrations(ctx, application.configurator, newVM)
+			return application.moduleManager.RunMigrations(ctx, application.configurator, fromVM)
 
 		},
 	)
@@ -774,6 +854,8 @@ func (application Application) Initialize(applicationName string, encodingConfig
 			tendermintOS.Exit(err.Error())
 		}
 	}
+	application.ScopedIBCKeeper = scopedIBCKeeper
+	application.ScopedTransferKeeper = scopedTransferKeeper
 
 	return application
 }

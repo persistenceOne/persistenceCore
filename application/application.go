@@ -31,10 +31,12 @@ import (
 	stakingTypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradeClient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
-	"github.com/cosmos/ibc-go/v2/modules/apps/transfer"
-	ibcTransferTypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
-	ibc "github.com/cosmos/ibc-go/v2/modules/core"
-	ibcClient "github.com/cosmos/ibc-go/v2/modules/core/02-client/client"
+	ica "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts"
+	icaTypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
+	"github.com/cosmos/ibc-go/v3/modules/apps/transfer"
+	ibcTransferTypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
+	ibc "github.com/cosmos/ibc-go/v3/modules/core"
+	ibcClient "github.com/cosmos/ibc-go/v3/modules/core/02-client/client"
 	"github.com/persistenceOne/persistenceCore/x/halving"
 )
 
@@ -43,6 +45,7 @@ var DefaultNodeHome string
 var ModuleAccountPermissions = map[string][]string{
 	authTypes.FeeCollectorName:     nil,
 	distributionTypes.ModuleName:   nil,
+	icaTypes.ModuleName:            nil,
 	mintTypes.ModuleName:           {authTypes.Minter},
 	stakingTypes.BondedPoolName:    {authTypes.Burner, authTypes.Staking},
 	stakingTypes.NotBondedPoolName: {authTypes.Burner, authTypes.Staking},
@@ -77,4 +80,5 @@ var ModuleBasics = module.NewBasicManager(
 	transfer.AppModuleBasic{},
 	vesting.AppModuleBasic{},
 	halving.AppModuleBasic{},
+	ica.AppModuleBasic{},
 )
