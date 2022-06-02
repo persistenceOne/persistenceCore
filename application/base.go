@@ -95,6 +95,9 @@ import (
 	ibcTypes "github.com/cosmos/ibc-go/v3/modules/core/05-port/types"
 	ibcHost "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 	sdkIBCKeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
+	"github.com/persistenceOne/persistenceCore/x/liquidstaking"
+	liquidstakingkeeper "github.com/persistenceOne/persistenceCore/x/liquidstaking/keeper"
+	liquidstakingtypes "github.com/persistenceOne/persistenceCore/x/liquidstaking/types"
 	"github.com/gogo/protobuf/grpc"
 	"github.com/gorilla/mux"
 	applicationParams "github.com/persistenceOne/persistenceCore/application/params"
@@ -137,6 +140,8 @@ type Application struct {
 	moduleManager *sdkTypesModule.Manager
 	configurator      sdkTypesModule.Configurator
 	simulationManager *sdkTypesModule.SimulationManager
+	LiquidStakingKeeper liquidstakingkeeper.Keeper
+
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper      sdkCapabilityKeeper.ScopedKeeper
@@ -435,6 +440,7 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		sdkGovTypes.StoreKey, paramsTypes.StoreKey, ibcHost.StoreKey, sdkUpgradeTypes.StoreKey,
 		sdkEvidenceTypes.StoreKey, ibcTransferTypes.StoreKey, sdkCapabilityTypes.StoreKey,
 		feegrant.StoreKey, sdkAuthzKeeper.StoreKey, icaHostTypes.StoreKey, halving.StoreKey,
+		liquidstakingtypes.StoreKey,
 	)
 
 	transientStoreKeys := sdkTypes.NewTransientStoreKeys(paramsTypes.TStoreKey)
@@ -564,6 +570,7 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		scopedIBCKeeper,
 	)
 
+
 	govRouter := sdkGovTypes.NewRouter()
 	govRouter.AddRoute(
 		sdkGovTypes.RouterKey,
@@ -587,6 +594,17 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		application.BankKeeper,
 		&stakingKeeper,
 		govRouter,
+	)
+
+	application.LiquidStakingKeeper = liquidstakingkeeper.NewKeeper(
+		applicationCodec,
+		keys[liquidstakingtypes.StoreKey],
+		application.ParamsKeeper.Subspace(liquidstakingtypes.ModuleName),
+		application.AccountKeeper,
+		application.BankKeeper,
+		application.StakingKeeper,
+		application.DistributionKeeper,
+		application.SlashingKeeper,
 	)
 
 	application.TransferKeeper = ibcTransferKeeper.NewKeeper(
@@ -661,6 +679,7 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		ibcCore.NewAppModule(application.IBCKeeper),
 		params.NewAppModule(application.ParamsKeeper),
 		halving.NewAppModule(applicationCodec, application.HalvingKeeper),
+		liquidstaking.NewAppModule(applicationCodec, application.LiquidStakingKeeper, application.AccountKeeper, application.BankKeeper, application.StakingKeeper, application.GovKeeper),
 		transferModule,
 		icaModule,
 	)
@@ -671,6 +690,7 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		sdkCrisisTypes.ModuleName,
 		sdkGovTypes.ModuleName,
 		sdkStakingTypes.ModuleName,
+		liquidstakingtypes.ModuleName,
 		ibcTransferTypes.ModuleName,
 		ibcHost.ModuleName,
 		icaTypes.ModuleName,
@@ -691,6 +711,7 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		sdkCrisisTypes.ModuleName,
 		sdkGovTypes.ModuleName,
 		sdkStakingTypes.ModuleName,
+		liquidstakingtypes.ModuleName,
 		ibcTransferTypes.ModuleName,
 		ibcHost.ModuleName,
 		icaTypes.ModuleName,
@@ -732,6 +753,7 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		authz.ModuleName,
 		authTypes.ModuleName,
 		genutilTypes.ModuleName,
+		liquidstakingtypes.ModuleName,
 		paramsTypes.ModuleName,
 		sdkUpgradeTypes.ModuleName,
 		vestingTypes.ModuleName,
@@ -757,6 +779,7 @@ func (application Application) Initialize(applicationName string, encodingConfig
 		sdkAuthzModule.NewAppModule(applicationCodec, application.AuthzKeeper, application.AccountKeeper, application.BankKeeper, application.interfaceRegistry),
 		sdkFeeGrantModule.NewAppModule(applicationCodec, application.AccountKeeper, application.BankKeeper, application.FeegrantKeeper, application.interfaceRegistry),
 		ibcCore.NewAppModule(application.IBCKeeper),
+		liquidstaking.NewAppModule(applicationCodec, application.LiquidStakingKeeper, application.AccountKeeper, application.BankKeeper, application.StakingKeeper, application.GovKeeper),
 		transferModule,
 	)
 
