@@ -8,7 +8,7 @@ package app
 import (
 	"encoding/json"
 
-	applicationParams "github.com/persistenceOne/persistenceCore/app/params"
+	"github.com/persistenceOne/persistenceCore/app/params"
 )
 
 // The genesis state of the blockchain is represented here as a map of raw json
@@ -22,6 +22,6 @@ type GenesisState map[string]json.RawMessage
 
 // NewDefaultGenesisState generates the default state for the Application.
 func NewDefaultGenesisState() GenesisState {
-	encCfg := applicationParams.MakeEncodingConfig()
+	encCfg := params.MakeEncodingConfig()
 	return ModuleBasics.DefaultGenesis(encCfg.Marshaler)
 }

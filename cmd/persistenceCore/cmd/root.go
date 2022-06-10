@@ -17,7 +17,7 @@ import (
 	serverTypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/snapshots"
 	"github.com/cosmos/cosmos-sdk/store"
-	sdkTypes "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	authTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -77,7 +77,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 
 // setCfg params at the package state
 func setConfig() {
-	cfg := sdkTypes.GetConfig()
+	cfg := sdk.GetConfig()
 
 	cfg.SetBech32PrefixForAccount(app.Bech32PrefixAccAddr, app.Bech32PrefixAccPub)
 	cfg.SetBech32PrefixForValidator(app.Bech32PrefixValAddr, app.Bech32PrefixValPub)
@@ -191,7 +191,7 @@ func (ac appCreator) newApp(
 	traceStore io.Writer,
 	appOpts serverTypes.AppOptions,
 ) serverTypes.Application {
-	var cache sdkTypes.MultiStorePersistentCache
+	var cache sdk.MultiStorePersistentCache
 
 	if cast.ToBool(appOpts.Get(server.FlagInterBlockCache)) {
 		cache = store.NewCommitKVStoreCacheManager()
@@ -206,7 +206,7 @@ func (ac appCreator) newApp(
 		panic(err)
 	}
 	snapshotDir := filepath.Join(cast.ToString(appOpts.Get(flags.FlagHome)), "data", "snapshots")
-	snapshotDB, err := sdkTypes.NewLevelDB("metadata", snapshotDir)
+	snapshotDB, err := sdk.NewLevelDB("metadata", snapshotDir)
 	if err != nil {
 		panic(err)
 	}
