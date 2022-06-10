@@ -11,9 +11,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/types"
 )
 
-// EncodingConfiguration specifies the concrete encoding types to use for a given app.
+// EncodingConfig specifies the concrete encoding types to use for a given app.
 // This is provided for compatibility between protobuf and amino implementations.
-type EncodingConfiguration struct {
+type EncodingConfig struct {
 	InterfaceRegistry types.InterfaceRegistry
 	Marshaler         codec.Codec
 	TransactionConfig client.TxConfig

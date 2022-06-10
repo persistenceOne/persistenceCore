@@ -12,13 +12,13 @@ import (
 )
 
 // MakeEncodingConfig creates an EncodingConfiguration for an amino based test configuration.
-func MakeEncodingConfig() EncodingConfiguration {
+func MakeEncodingConfig() EncodingConfig {
 	amino := codec.NewLegacyAmino()
 	interfaceRegistry := types.NewInterfaceRegistry()
 	marshaler := codec.NewProtoCodec(interfaceRegistry)
 	txCfg := tx.NewTxConfig(marshaler, tx.DefaultSignModes)
 
-	return EncodingConfiguration{
+	return EncodingConfig{
 		InterfaceRegistry: interfaceRegistry,
 		Marshaler:         marshaler,
 		TransactionConfig: txCfg,

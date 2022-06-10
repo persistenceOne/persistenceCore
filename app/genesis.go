@@ -3,11 +3,12 @@
  SPDX-License-Identifier: Apache-2.0
 */
 
-package application
+package app
 
 import (
 	"encoding/json"
-	applicationParams "github.com/persistenceOne/persistenceCore/application/params"
+
+	applicationParams "github.com/persistenceOne/persistenceCore/app/params"
 )
 
 // The genesis state of the blockchain is represented here as a map of raw json

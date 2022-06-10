@@ -3,15 +3,13 @@
  SPDX-License-Identifier: Apache-2.0
 */
 
-package initialize
+package cmd
 
 import (
 	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
-
-	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -23,6 +21,7 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	"github.com/spf13/cobra"
 )
 
 const (

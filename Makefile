@@ -1,13 +1,29 @@
-export GO111MODULE=on
+#!/usr/bin/make -f
 
-VERSION := $(shell echo $(shell git describe --tags) | sed 's/^v//')
-TM_VERSION := $(shell go list -m github.com/tendermint/tendermint | sed 's:.* ::')
-COMMIT := $(shell git rev-parse --short HEAD)
+BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
+COMMIT := $(shell git log -1 --format='%H')
+
+# don't override user values
+ifeq (,$(VERSION))
+  VERSION := $(shell git describe --exact-match 2>/dev/null)
+  # if VERSION is empty, then populate it with branch's name and raw commit hash
+  ifeq (,$(VERSION))
+    VERSION := $(BRANCH)-$(COMMIT)
+  endif
+endif
+
+PACKAGES_SIMTEST=$(shell go list ./... | grep '/simulation')
 LEDGER_ENABLED ?= true
+SDK_PACK := $(shell go list -m github.com/cosmos/cosmos-sdk | sed  's/ /\@/g')
+TM_VERSION := $(shell go list -m github.com/tendermint/tendermint | sed 's:.* ::') # grab everything after the space in "github.com/tendermint/tendermint v0.34.7"
+BUILDDIR ?= $(CURDIR)/build
+
+export GO111MODULE = on
+
 include sims.mk
 
+# process build tags
 build_tags = netgo
-
 ifeq ($(LEDGER_ENABLED),true)
   ifeq ($(OS),Windows_NT)
     GCCEXE = $(shell where gcc.exe 2> NUL)
@@ -38,11 +54,12 @@ whitespace := $(subst ,, )
 comma := ,
 build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 
+# process linker flags
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=persistenceCore \
 		  -X github.com/cosmos/cosmos-sdk/version.AppName=persistenceCore \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
-		   -X github.com/tendermint/tendermint/version.TMCoreSemVer=$(TM_VERSION) \
+		  -X github.com/tendermint/tendermint/version.TMCoreSemVer=$(TM_VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)
 
 ifeq (cleveldb,$(findstring cleveldb,$(build_tags)))
@@ -72,50 +89,84 @@ DOCKER_VOLUME = -v $(CURDIR):/usr/local/app
 
 .PHONY: all install build verify docker-run
 
-all: verify build
+###############################################################################
+###                              Documentation                              ###
+###############################################################################
 
-install:
-ifeq (${OS},Windows_NT)
-	go build -mod=readonly ${BUILD_FLAGS} -o ${GOBIN}/persistenceCore.exe ./node
+all: install lint test
 
-else
-	go build -mod=readonly ${BUILD_FLAGS} -o ${GOBIN}/persistenceCore ./node
+BUILD_TARGETS := build install
 
-endif
+build: BUILD_ARGS=-o $(BUILDDIR)/
 
-build:
-ifeq (${OS},Windows_NT)
-	go build  ${BUILD_FLAGS} -o build/${GOOS}/${GOARCH}/persistenceCore.exe ./node
+$(BUILD_TARGETS): go.sum $(BUILDDIR)/
+	go $@ -mod=readonly $(BUILD_FLAGS) $(BUILD_ARGS) ./...
 
-else
-	go build  ${BUILD_FLAGS} -o build/${GOOS}/${GOARCH}/persistenceCore ./node
+$(BUILDDIR)/:
+	mkdir -p $(BUILDDIR)/
 
-endif
+build-reproducible: go.sum
+	$(DOCKER) rm latest-build || true
+	$(DOCKER) run --volume=$(CURDIR):/sources:ro \
+        --env TARGET_PLATFORMS='linux/amd64 darwin/amd64 linux/arm64 windows/amd64' \
+        --env APP=gaiad \
+        --env VERSION=$(VERSION) \
+        --env COMMIT=$(COMMIT) \
+        --env LEDGER_ENABLED=$(LEDGER_ENABLED) \
+        --name latest-build tendermintdev/rbuilder:latest
+	$(DOCKER) cp -a latest-build:/home/builder/artifacts/ $(CURDIR)/
 
-verify:
-	@echo "verifying modules"
+build-linux: go.sum
+	LEDGER_ENABLED=false GOOS=linux GOARCH=amd64 $(MAKE) build
+
+build-contract-tests-hooks:
+	mkdir -p $(BUILDDIR)
+	go build -mod=readonly $(BUILD_FLAGS) -o $(BUILDDIR)/ ./cmd/contract_tests
+
+go-mod-cache: go.sum
+	@echo "--> Download go modules to local cache"
+	@go mod download
+
+go.sum: go.mod
+	@echo "--> Ensure dependencies have not been modified"
 	@go mod verify
+
+draw-deps:
+	@# requires brew install graphviz or apt-get install graphviz
+	go get github.com/RobotsAndPencils/goviz
+	@goviz -i ./cmd/gaiad -d 2 | dot -Tpng -o dependency-graph.png
+
+clean:
+	rm -rf $(BUILDDIR)/ artifacts/
+
+distclean: clean
+	rm -rf vendor/
+
+ifeq (${OS},Windows_NT)
+	bin_name = persistenceCore
+else
+	bin_name = persistenceCore.exe
+endif
 
 release: build
 	mkdir -p release
-ifeq (${OS},Windows_NT)
-	tar -czvf release/persistenceCore-${GOOS}-${GOARCH}.tar.gz --directory=build/${GOOS}/${GOARCH} persistenceCore.exe
-else
-	tar -czvf release/persistenceCore-${GOOS}-${GOARCH}.tar.gz --directory=build/${GOOS}/${GOARCH} persistenceCore
-endif
+	tar -czvf release/persistenceCore-${GOOS}-${GOARCH}.tar.gz --directory=build/${GOOS}/${GOARCH} ${bin_name}
 
-
-clean:
-	rm -rf build release
+###############################################################################
+###                              Proto                              		###
+###############################################################################
 
 proto-gen:
 	@echo "Generating Protobuf files"
-	$(DOCKER) run --rm -v $(shell go list -f "{{ .Dir }}" \
-	-m github.com/cosmos/cosmos-sdk):/workspace/cosmos_sdk_dir\
-	 --env COSMOS_SDK_DIR=/workspace/cosmos_sdk_dir \
-	 -v $(CURDIR):/workspace --workdir /workspace \
-	 tendermintdev/sdk-proto-gen sh ./.script/protocgen.sh
+	$(DOCKER) run --rm \
+		-v $(shell go list -f "{{ .Dir }}" -m github.com/cosmos/cosmos-sdk):/workspace/cosmos_sdk_dir \
+	 	--env COSMOS_SDK_DIR=/workspace/cosmos_sdk_dir \
+	 	-v $(CURDIR):/workspace --workdir /workspace \
+	 	tendermintdev/sdk-proto-gen sh ./.script/protocgen.sh
 
+###############################################################################
+###                              Docker                             		###
+###############################################################################
 
 # Commands for running docker
 #
