@@ -17,3 +17,5 @@ var (
 	ErrTooSmallLiquidStakingAmount     = sdkerrors.Register(ModuleName, 12, "liquid staking amount is too small, the result becomes zero")
 	ErrTooSmallLiquidUnstakingAmount   = sdkerrors.Register(ModuleName, 13, "liquid unstaking amount is too small, the result becomes zero")
 )
+
+
