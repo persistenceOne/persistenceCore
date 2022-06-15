@@ -260,7 +260,7 @@ func (ac appCreator) appExport(
 		loadLatest = true
 	}
 
-	gaiaApp := app.NewApplication(
+	persistenceApp := app.NewApplication(
 		app.Name,
 		ac.encCfg,
 		app.ModuleAccountPermissions,
@@ -275,10 +275,10 @@ func (ac appCreator) appExport(
 	)
 
 	if height != -1 {
-		if err := gaiaApp.LoadHeight(height); err != nil {
+		if err := persistenceApp.LoadHeight(height); err != nil {
 			return serverTypes.ExportedApp{}, err
 		}
 	}
 
-	return gaiaApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs)
+	return persistenceApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs)
 }
