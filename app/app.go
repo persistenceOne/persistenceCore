@@ -8,7 +8,6 @@ package app
 import (
 	"fmt"
 	"io"
-	"log"
 	stdlog "log"
 	"net/http"
 	"os"
@@ -357,7 +356,7 @@ func (app Application) ExportAppStateAndValidators(forZeroHeight bool, jailWhite
 
 		_, Error := app.StakingKeeper.ApplyAndReturnValidatorSetUpdates(context)
 		if Error != nil {
-			log.Fatal(Error)
+			stdlog.Fatal(Error)
 		}
 
 		app.SlashingKeeper.IterateValidatorSigningInfos(
