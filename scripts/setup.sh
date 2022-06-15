@@ -1,5 +1,5 @@
 #!/bin/bash
-.script/reset.sh
+scripts/reset.sh
 
 test_mnemonic="wage thunder live sense resemble foil apple course spin horse glass mansion midnight laundry acoustic rhythm loan scale talent push green direct brick please"
 
