@@ -49,10 +49,10 @@ func BenchmarkFullAppSimulation(b *testing.B) {
 			b.Fatal(err)
 		}
 	}()
-
+	encConf := app.MakeEncodingConfig()
 	persistenceApp := app.NewApplication(
 		app.Name, 
-		app.MakeEncodingConfig(), 
+		encConf, 
 		app.ModuleAccountPermissions, 
 		logger, 
 		db, 
@@ -128,9 +128,10 @@ func TestAppStateDeterminism(t *testing.T) {
 			}
 
 			db := dbm.NewMemDB()
+			encConf := app.MakeEncodingConfig()
 			persistenceApp := app.NewApplication(
 				app.Name,
-				app.MakeEncodingConfig(),
+				encConf,
 				app.ModuleAccountPermissions,
 				logger,
 				db,

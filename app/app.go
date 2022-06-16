@@ -99,6 +99,7 @@ import (
 	ibcHost "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 	ibcKeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 	"github.com/CosmWasm/wasmd/x/wasm"
+	wasmClient "github.com/CosmWasm/wasmd/x/wasm/client"
 	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/gogo/protobuf/grpc"
 	"github.com/gorilla/mux"
@@ -164,12 +165,15 @@ var ModuleBasics = module.NewBasicManager(
 	mint.AppModuleBasic{},
 	distribution.AppModuleBasic{},
 	gov.NewAppModuleBasic(
-		paramsClient.ProposalHandler,
-		distributionClient.ProposalHandler,
-		upgradeClient.ProposalHandler,
-		upgradeClient.CancelProposalHandler,
-		ibcClient.UpdateClientProposalHandler,
-		ibcClient.UpgradeProposalHandler,
+		append(
+			wasmClient.ProposalHandlers,
+			paramsClient.ProposalHandler,
+			distributionClient.ProposalHandler,
+			upgradeClient.ProposalHandler,
+			upgradeClient.CancelProposalHandler,
+			ibcClient.UpdateClientProposalHandler,
+			ibcClient.UpgradeProposalHandler,
+		)...,
 	),
 	params.AppModuleBasic{},
 	crisis.AppModuleBasic{},
@@ -181,6 +185,7 @@ var ModuleBasics = module.NewBasicManager(
 	evidence.AppModuleBasic{},
 	transfer.AppModuleBasic{},
 	vesting.AppModuleBasic{},
+	wasm.AppModuleBasic{},
 	halving.AppModuleBasic{},
 	ica.AppModuleBasic{},
 )
