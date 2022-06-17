@@ -154,6 +154,7 @@ var ModuleAccountPermissions = map[string][]string{
 	stakingTypes.NotBondedPoolName: {authTypes.Burner, authTypes.Staking},
 	govTypes.ModuleName:            {authTypes.Burner},
 	ibcTransferTypes.ModuleName:    {authTypes.Minter, authTypes.Burner},
+	wasm.ModuleName:                {authTypes.Burner},
 }
 
 var ModuleBasics = module.NewBasicManager(
