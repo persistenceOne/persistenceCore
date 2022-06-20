@@ -8,7 +8,6 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/testutil"
 	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"
 	"github.com/cosmos/cosmos-sdk/testutil/network"
@@ -20,8 +19,7 @@ import (
 	tmcli "github.com/tendermint/tendermint/libs/cli"
 	tmdb "github.com/tendermint/tm-db"
 
-	chain "github.com/persistenceOne/persistenceCore/application"
-	"github.com/persistenceOne/persistenceCore/application/params"
+	chain "github.com/persistenceOne/persistenceCore/app"
 	"github.com/persistenceOne/persistenceCore/x/liquidstaking/client/cli"
 	"github.com/persistenceOne/persistenceCore/x/liquidstaking/types"
 )
@@ -31,12 +29,6 @@ type IntegrationTestSuite struct {
 
 	cfg     network.Config
 	network *network.Network
-}
-
-func NewAppConstructor(encodingCfg params.EncodingConfiguration) network.AppConstructor {
-	return func(val network.Validator) servertypes.Application {
-		return chain.NewApplication()
-	}
 }
 
 func (s *IntegrationTestSuite) SetupSuite() {
