@@ -22,14 +22,13 @@ start:
 ###############################################################################
 
 software-upgrade:
-	$(CHAIN_BIN) tx gov submit-proposal software-upgrade v2 --yes \
+	$(CHAIN_BIN) tx gov submit-proposal software-upgrade v3 --yes \
 		--title "Test local upgrade" \
 		--description "Test local upgrade" \
 		--upgrade-height $(HEIGHT) \
 		--from $(jq -r .genesis[0].address $(VALIDATOR_CONFIG)) \
-	    --chain-id $(CHAIN_ID) \
-		--node "https://rpc.testnet.persistence.one:443" \
-		--deposit 600000000uxprt \
+		--chain-id $(CHAIN_ID) \
+		--deposit 600000000stake \
 		--upgrade-info "The binary for this upgrade should be built from v0.2.x tagged or from master branch"
 
 run-contract:
