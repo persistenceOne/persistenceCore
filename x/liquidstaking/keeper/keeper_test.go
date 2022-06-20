@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/x/mint"
 	"testing"
 	"time"
 
@@ -21,15 +22,10 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
-	chain "github.com/crescent-network/crescent/app"
-	utils "github.com/crescent-network/crescent/types"
-	"github.com/crescent-network/crescent/x/farming"
-	farmingtypes "github.com/crescent-network/crescent/x/farming/types"
-	liquiditytypes "github.com/crescent-network/crescent/x/liquidity/types"
+	chain "github.com/persistenceOne/persistenceCore/application"
 	"github.com/persistenceOne/persistenceCore/x/liquidstaking"
 	"github.com/persistenceOne/persistenceCore/x/liquidstaking/keeper"
 	"github.com/persistenceOne/persistenceCore/x/liquidstaking/types"
-	"github.com/crescent-network/crescent/x/mint"
 )
 
 var (
@@ -39,7 +35,7 @@ var (
 type KeeperTestSuite struct {
 	suite.Suite
 
-	app        *chain.App
+	app        *chain.Application
 	ctx        sdk.Context
 	keeper     keeper.Keeper
 	querier    keeper.Querier
@@ -51,6 +47,15 @@ type KeeperTestSuite struct {
 
 func TestKeeperTestSuite(t *testing.T) {
 	suite.Run(t, new(KeeperTestSuite))
+}
+
+// ParseTime parses and returns time.Time in time.RFC3339 format.
+func ParseTime(s string) time.Time {
+	t, err := time.Parse(time.RFC3339, s)
+	if err != nil {
+		panic(err)
+	}
+	return t
 }
 
 func (s *KeeperTestSuite) SetupTest() {
@@ -68,7 +73,7 @@ func (s *KeeperTestSuite) SetupTest() {
 	s.delAddrs = chain.AddTestAddrs(s.app, s.ctx, 10, sdk.NewInt(1_000_000_000))
 	s.valAddrs = chain.ConvertAddrsToValAddrs(s.delAddrs)
 
-	s.ctx = s.ctx.WithBlockHeight(100).WithBlockTime(utils.ParseTime("2022-03-01T00:00:00Z"))
+	s.ctx = s.ctx.WithBlockHeight(100).WithBlockTime(ParseTime("2022-03-01T00:00:00Z"))
 	params := s.keeper.GetParams(s.ctx)
 	params.UnstakeFeeRate = sdk.ZeroDec()
 	s.keeper.SetParams(s.ctx, params)
@@ -252,21 +257,21 @@ func (s *KeeperTestSuite) advanceHeight(height int, withBeginBlock bool) {
 				consPower := validator.GetConsensusPower(s.app.StakingKeeper.PowerReduction(s.ctx))
 				powerFraction := sdk.NewDec(consPower).QuoTruncate(sdk.NewDec(totalPower))
 				reward := rewardsToBeDistributed.ToDec().MulTruncate(powerFraction)
-				s.app.DistrKeeper.AllocateTokensToValidator(s.ctx, validator, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: reward}})
+				s.app.DistributionKeeper.AllocateTokensToValidator(s.ctx, validator, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: reward}})
 				totalRewards = totalRewards.Add(reward)
 				return false
 			})
 		}
 		remaining := rewardsToBeDistributed.ToDec().Sub(totalRewards)
 		s.Require().False(remaining.GT(sdk.NewDec(1)))
-		feePool := s.app.DistrKeeper.GetFeePool(s.ctx)
+		feePool := s.app.DistributionKeeper.GetFeePool(s.ctx)
 		feePool.CommunityPool = feePool.CommunityPool.Add(sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: remaining}}...)
-		s.app.DistrKeeper.SetFeePool(s.ctx, feePool)
+		s.app.DistributionKeeper.SetFeePool(s.ctx, feePool)
 		if withBeginBlock {
 			// liquid validator set update, rebalancing, withdraw rewards, re-stake
 			liquidstaking.BeginBlocker(s.ctx, s.app.LiquidStakingKeeper)
 		}
-		staking.EndBlocker(s.ctx, *s.app.StakingKeeper)
+		staking.EndBlocker(s.ctx, s.app.StakingKeeper)
 	}
 }
 
@@ -335,72 +340,3 @@ func (s *KeeperTestSuite) createContinuousVestingAccount(from sdk.AccAddress, to
 	return *cVestingAcc
 }
 
-func (s *KeeperTestSuite) fundAddr(addr sdk.AccAddress, amt sdk.Coins) {
-	err := s.app.BankKeeper.MintCoins(s.ctx, liquiditytypes.ModuleName, amt)
-	s.Require().NoError(err)
-	err = s.app.BankKeeper.SendCoinsFromModuleToAccount(s.ctx, liquiditytypes.ModuleName, addr, amt)
-	s.Require().NoError(err)
-}
-
-// liquidity module keeper utils for liquid staking combine test
-
-func (s *KeeperTestSuite) createPair(creator sdk.AccAddress, baseCoinDenom, quoteCoinDenom string, fund bool) liquiditytypes.Pair {
-	params := s.app.LiquidityKeeper.GetParams(s.ctx)
-	if fund {
-		s.fundAddr(creator, params.PairCreationFee)
-	}
-	pair, err := s.app.LiquidityKeeper.CreatePair(s.ctx, liquiditytypes.NewMsgCreatePair(creator, baseCoinDenom, quoteCoinDenom))
-	s.Require().NoError(err)
-	return pair
-}
-
-func (s *KeeperTestSuite) createPool(creator sdk.AccAddress, pairId uint64, depositCoins sdk.Coins, fund bool) liquiditytypes.Pool {
-	params := s.app.LiquidityKeeper.GetParams(s.ctx)
-	if fund {
-		s.fundAddr(creator, depositCoins.Add(params.PoolCreationFee...))
-	}
-	pool, err := s.app.LiquidityKeeper.CreatePool(s.ctx, liquiditytypes.NewMsgCreatePool(creator, pairId, depositCoins))
-	s.Require().NoError(err)
-	return pool
-}
-
-// farming module keeper utils for liquid staking combine test
-
-func (s *KeeperTestSuite) advanceEpochDays() {
-	currentEpochDays := s.app.FarmingKeeper.GetCurrentEpochDays(s.ctx)
-	s.ctx = s.ctx.WithBlockTime(s.ctx.BlockTime().Add(time.Duration(currentEpochDays) * farmingtypes.Day))
-	farming.EndBlocker(s.ctx, s.app.FarmingKeeper)
-}
-
-func (s *KeeperTestSuite) CreateFixedAmountPlan(farmingPoolAcc sdk.AccAddress, stakingCoinWeightsMap map[string]string, epochAmountMap map[string]int64) {
-	stakingCoinWeights := sdk.NewDecCoins()
-	for denom, weight := range stakingCoinWeightsMap {
-		stakingCoinWeights = stakingCoinWeights.Add(sdk.NewDecCoinFromDec(denom, sdk.MustNewDecFromStr(weight)))
-	}
-
-	epochAmount := sdk.NewCoins()
-	for denom, amount := range epochAmountMap {
-		epochAmount = epochAmount.Add(sdk.NewInt64Coin(denom, amount))
-	}
-
-	msg := farmingtypes.NewMsgCreateFixedAmountPlan(
-		fmt.Sprintf("plan%d", s.app.FarmingKeeper.GetGlobalPlanId(s.ctx)+1),
-		farmingPoolAcc,
-		stakingCoinWeights,
-		farmingtypes.ParseTime("0001-01-01T00:00:00Z"),
-		farmingtypes.ParseTime("9999-12-31T00:00:00Z"),
-		epochAmount,
-	)
-	_, err := s.app.FarmingKeeper.CreateFixedAmountPlan(s.ctx, msg, farmingPoolAcc, farmingPoolAcc, farmingtypes.PlanTypePublic)
-	s.Require().NoError(err)
-}
-
-func (s *KeeperTestSuite) Stake(farmerAcc sdk.AccAddress, amt sdk.Coins) {
-	err := s.app.FarmingKeeper.Stake(s.ctx, farmerAcc, amt)
-	s.Require().NoError(err)
-}
-
-func (s *KeeperTestSuite) Unstake(farmerAcc sdk.AccAddress, amt sdk.Coins) {
-	err := s.app.FarmingKeeper.Unstake(s.ctx, farmerAcc, amt)
-	s.Require().NoError(err)
-}

@@ -8,10 +8,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/cosmos/cosmos-sdk/baseapp"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
-	"github.com/cosmos/cosmos-sdk/simapp"
-	store "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/testutil"
 	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"
 	"github.com/cosmos/cosmos-sdk/testutil/network"
@@ -23,8 +20,8 @@ import (
 	tmcli "github.com/tendermint/tendermint/libs/cli"
 	tmdb "github.com/tendermint/tm-db"
 
-	chain "github.com/crescent-network/crescent/app"
-	"github.com/crescent-network/crescent/app/params"
+	chain "github.com/persistenceOne/persistenceCore/application"
+	"github.com/persistenceOne/persistenceCore/application/params"
 	"github.com/persistenceOne/persistenceCore/x/liquidstaking/client/cli"
 	"github.com/persistenceOne/persistenceCore/x/liquidstaking/types"
 )
@@ -36,15 +33,9 @@ type IntegrationTestSuite struct {
 	network *network.Network
 }
 
-func NewAppConstructor(encodingCfg params.EncodingConfig) network.AppConstructor {
+func NewAppConstructor(encodingCfg params.EncodingConfiguration) network.AppConstructor {
 	return func(val network.Validator) servertypes.Application {
-		return chain.NewApp(
-			val.Ctx.Logger, tmdb.NewMemDB(), nil, true, make(map[int64]bool), val.Ctx.Config.RootDir, 0,
-			encodingCfg,
-			simapp.EmptyAppOptions{},
-			baseapp.SetPruning(store.NewPruningOptionsFromString(val.AppConfig.Pruning)),
-			baseapp.SetMinGasPrices(val.AppConfig.MinGasPrices),
-		)
+		return chain.NewApplication()
 	}
 }
 

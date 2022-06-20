@@ -7,10 +7,11 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	utils "github.com/crescent-network/crescent/types"
 	"github.com/persistenceOne/persistenceCore/x/liquidstaking/types"
-	minttypes "github.com/crescent-network/crescent/x/mint/types"
 )
+
+
+
 
 // tests LiquidStake, LiquidUnstake
 func (s *KeeperTestSuite) TestLiquidStake() {
@@ -100,7 +101,7 @@ func (s *KeeperTestSuite) TestLiquidStake() {
 	crumb := ubdBToken.Amount.Sub(ubdBToken.Amount.QuoRaw(3).MulRaw(3)) // 1
 	s.Require().EqualValues(unbondingAmt, ubdBToken.Amount.Sub(crumb))  // 9999
 	s.Require().Equal(ubds[0].DelegatorAddress, s.delAddrs[0].String())
-	s.Require().Equal(ubdTime, utils.ParseTime("2022-03-22T00:00:00Z"))
+	s.Require().Equal(ubdTime, ParseTime("2022-03-22T00:00:00Z"))
 	bTokenBalanceAfter := s.app.BankKeeper.GetBalance(s.ctx, s.delAddrs[0], liquidBondDenom)
 	s.Require().Equal(bTokenBalanceAfter, sdk.NewCoin(liquidBondDenom, sdk.NewInt(40000)))
 
@@ -254,7 +255,7 @@ func (s *KeeperTestSuite) TestLiquidStakeEdgeCases() {
 
 	// liquid staking, unstaking with huge amount
 	hugeAmt := sdk.NewInt(1_000_000_000_000_000_000)
-	s.fundAddr(s.delAddrs[0], sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, hugeAmt.MulRaw(2))))
+	//s.fundAddr(s.delAddrs[0], sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, hugeAmt.MulRaw(2))))
 	s.Require().NoError(s.liquidStaking(s.delAddrs[0], hugeAmt))
 	s.Require().NoError(s.liquidStaking(s.delAddrs[0], hugeAmt))
 	s.Require().NoError(s.liquidUnstaking(s.delAddrs[0], sdk.NewInt(10), true))
@@ -267,7 +268,7 @@ func (s *KeeperTestSuite) TestLiquidStakeEdgeCases() {
 
 func (s *KeeperTestSuite) TestLiquidUnstakeEdgeCases() {
 	mintParams := s.app.MintKeeper.GetParams(s.ctx)
-	mintParams.InflationSchedules = []minttypes.InflationSchedule{}
+	//mintParams.InflationSchedules = []minttypes.InflationSchedule{}
 	s.app.MintKeeper.SetParams(s.ctx, mintParams)
 
 	_, valOpers, _ := s.CreateValidators([]int64{1000000, 2000000, 3000000})

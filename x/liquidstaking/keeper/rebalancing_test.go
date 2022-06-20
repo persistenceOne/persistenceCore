@@ -1,19 +1,30 @@
 package keeper_test
 
 import (
+	"encoding/json"
+	"fmt"
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	utils "github.com/crescent-network/crescent/types"
 	"github.com/persistenceOne/persistenceCore/x/liquidstaking/types"
 )
 
+func PP(data interface{}) {
+	var p []byte
+	p, err := json.MarshalIndent(data, "", "\t")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("%s \n", p)
+}
+
 func (s *KeeperTestSuite) TestRebalancingCase1() {
 	_, valOpers, pks := s.CreateValidators([]int64{1000000, 1000000, 1000000, 1000000, 1000000})
-	s.ctx = s.ctx.WithBlockHeight(100).WithBlockTime(utils.ParseTime("2022-03-01T00:00:00Z"))
+	s.ctx = s.ctx.WithBlockHeight(100).WithBlockTime(ParseTime("2022-03-01T00:00:00Z"))
 	params := s.keeper.GetParams(s.ctx)
 	params.UnstakeFeeRate = sdk.ZeroDec()
 	params.MinLiquidStakingAmount = sdk.NewInt(10000)
@@ -83,16 +94,16 @@ func (s *KeeperTestSuite) TestRebalancingCase1() {
 	//reds := s.app.StakingKeeper.GetRedelegations(s.ctx, types.LiquidStakingProxyAcc, 20)
 	s.Require().Len(reds, 3)
 
-	utils.PP("before complete")
-	utils.PP(s.keeper.GetAllLiquidValidatorStates(s.ctx))
-	utils.PP(s.keeper.GetNetAmountState(s.ctx))
+	PP("before complete")
+	PP(s.keeper.GetAllLiquidValidatorStates(s.ctx))
+	PP(s.keeper.GetNetAmountState(s.ctx))
 
 	// advance block time and height for complete redelegations
 	s.completeRedelegationUnbonding()
 
-	utils.PP("after complete")
-	utils.PP(s.keeper.GetAllLiquidValidatorStates(s.ctx))
-	utils.PP(s.keeper.GetNetAmountState(s.ctx))
+	PP("after complete")
+	PP(s.keeper.GetAllLiquidValidatorStates(s.ctx))
+	PP(s.keeper.GetNetAmountState(s.ctx))
 
 	// update whitelist validator
 	params.WhitelistedValidators = []types.WhitelistedValidator{
@@ -137,11 +148,11 @@ func (s *KeeperTestSuite) TestRebalancingCase1() {
 		{ValidatorAddress: valOpers[3].String(), TargetWeight: sdk.NewInt(10)},
 	}
 
-	utils.PP(s.keeper.GetAllLiquidValidatorStates(s.ctx))
+	PP(s.keeper.GetAllLiquidValidatorStates(s.ctx))
 	s.keeper.SetParams(s.ctx, params)
 	reds = s.keeper.UpdateLiquidValidatorSet(s.ctx)
 	s.Require().Len(reds, 4)
-	utils.PP(s.keeper.GetAllLiquidValidatorStates(s.ctx))
+	PP(s.keeper.GetAllLiquidValidatorStates(s.ctx))
 
 	proxyAccDel1, found = s.app.StakingKeeper.GetDelegation(s.ctx, types.LiquidStakingProxyAcc, valOpers[0])
 	s.Require().True(found)
@@ -278,7 +289,7 @@ func (s *KeeperTestSuite) TestRebalancingConsecutiveCase() {
 		1000000, 1000000, 1000000, 1000000, 1000000,
 		1000000, 1000000, 1000000, 1000000, 1000000,
 		1000000, 1000000, 1000000, 1000000, 1000000})
-	s.ctx = s.ctx.WithBlockHeight(100).WithBlockTime(utils.ParseTime("2022-03-01T00:00:00Z"))
+	s.ctx = s.ctx.WithBlockHeight(100).WithBlockTime(ParseTime("2022-03-01T00:00:00Z"))
 	params := s.keeper.GetParams(s.ctx)
 	params.UnstakeFeeRate = sdk.ZeroDec()
 	params.MinLiquidStakingAmount = sdk.NewInt(10000)
@@ -286,7 +297,7 @@ func (s *KeeperTestSuite) TestRebalancingConsecutiveCase() {
 	s.keeper.UpdateLiquidValidatorSet(s.ctx)
 
 	stakingAmt := sdk.NewInt(10000000000000)
-	s.fundAddr(s.delAddrs[0], sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, stakingAmt)))
+	//s.fundAddr(s.delAddrs[0], sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, stakingAmt)))
 	// add active validator
 	params.WhitelistedValidators = []types.WhitelistedValidator{
 		{ValidatorAddress: valOpers[0].String(), TargetWeight: sdk.NewInt(1)},
@@ -359,7 +370,7 @@ func (s *KeeperTestSuite) TestRebalancingConsecutiveCase() {
 
 	// complete redelegations
 	s.ctx = s.ctx.WithBlockHeight(s.ctx.BlockHeight() + 100).WithBlockTime(s.ctx.BlockTime().Add(time.Hour * 24 * 20).Add(time.Hour))
-	staking.EndBlocker(s.ctx, *s.app.StakingKeeper)
+	staking.EndBlocker(s.ctx, s.app.StakingKeeper)
 	reds = s.keeper.UpdateLiquidValidatorSet(s.ctx)
 	s.Require().Len(reds, 0)
 	// assert rebalanced
@@ -452,7 +463,7 @@ func (s *KeeperTestSuite) TestRebalancingConsecutiveCase() {
 
 	// complete some redelegations
 	s.ctx = s.ctx.WithBlockHeight(s.ctx.BlockHeight() + 100).WithBlockTime(s.ctx.BlockTime().Add(time.Hour * 24 * 20).Add(time.Hour))
-	staking.EndBlocker(s.ctx, *s.app.StakingKeeper)
+	staking.EndBlocker(s.ctx, s.app.StakingKeeper)
 	reds = s.keeper.UpdateLiquidValidatorSet(s.ctx)
 	s.Require().Len(reds, 9)
 
