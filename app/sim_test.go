@@ -3,7 +3,7 @@
  SPDX-License-Identifier: Apache-2.0
 */
 
-package application_test
+package app_test
 
 import (
 	"encoding/json"
@@ -16,7 +16,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/store"
 	simulation2 "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
-	"github.com/persistenceOne/persistenceCore/application"
+	"github.com/persistenceOne/persistenceCore/app"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/libs/rand"
@@ -25,7 +25,7 @@ import (
 
 // SimAppChainID hardcoded chainID for simulation
 const (
-	SimAppChainID = "gaia-app"
+	SimAppChainID = "persistence-app"
 )
 
 func init() {
@@ -49,23 +49,23 @@ func BenchmarkFullAppSimulation(b *testing.B) {
 		}
 	}()
 
-	app := application.NewApplication().Initialize(application.Name, application.MakeEncodingConfig(), application.ModuleAccountPermissions, logger, db, nil, true, simapp.FlagPeriodValue, map[int64]bool{}, application.DefaultNodeHome, simapp.EmptyAppOptions{}, interBlockCacheOpt())
+	persistenceApp := app.NewApplication(app.Name, app.MakeEncodingConfig(), app.ModuleAccountPermissions, logger, db, nil, true, simapp.FlagPeriodValue, map[int64]bool{}, app.DefaultNodeHome, simapp.EmptyAppOptions{}, interBlockCacheOpt())
 
 	// Run randomized simulation:w
 	_, simParams, simErr := simulation.SimulateFromSeed(
 		b,
 		os.Stdout,
-		app.BaseApp,
-		simapp.AppStateFn(app.ApplicationCodec(), app.SimulationManager()),
+		persistenceApp.BaseApp,
+		simapp.AppStateFn(persistenceApp.ApplicationCodec(), persistenceApp.SimulationManager()),
 		simulation2.RandomAccounts, // Replace with own random account function if using keys other than secp256k1
-		simapp.SimulationOperations(app, app.ApplicationCodec(), config),
-		app.ModuleAccountAddrs(),
+		simapp.SimulationOperations(persistenceApp, persistenceApp.ApplicationCodec(), config),
+		persistenceApp.ModuleAccountAddrs(),
 		config,
-		app.ApplicationCodec(),
+		persistenceApp.ApplicationCodec(),
 	)
 
 	// export state and simParams before the simulation error is checked
-	if err = simapp.CheckExportSimulation(app, config, simParams); err != nil {
+	if err = simapp.CheckExportSimulation(persistenceApp, config, simParams); err != nil {
 		b.Fatal(err)
 	}
 
@@ -112,7 +112,7 @@ func TestAppStateDeterminism(t *testing.T) {
 			}
 
 			db := dbm.NewMemDB()
-			app := application.NewApplication().Initialize(application.Name, application.MakeEncodingConfig(), application.ModuleAccountPermissions, logger, db, nil, true, simapp.FlagPeriodValue, map[int64]bool{}, application.DefaultNodeHome, simapp.EmptyAppOptions{}, interBlockCacheOpt())
+			persistenceApp := app.NewApplication(app.Name, app.MakeEncodingConfig(), app.ModuleAccountPermissions, logger, db, nil, true, simapp.FlagPeriodValue, map[int64]bool{}, app.DefaultNodeHome, simapp.EmptyAppOptions{}, interBlockCacheOpt())
 
 			fmt.Printf(
 				"running non-determinism simulation; seed %d: %d/%d, attempt: %d/%d\n",
@@ -122,13 +122,13 @@ func TestAppStateDeterminism(t *testing.T) {
 			_, _, err := simulation.SimulateFromSeed(
 				t,
 				os.Stdout,
-				app.BaseApp,
-				simapp.AppStateFn(app.ApplicationCodec(), app.SimulationManager()),
+				persistenceApp.BaseApp,
+				simapp.AppStateFn(persistenceApp.ApplicationCodec(), persistenceApp.SimulationManager()),
 				simulation2.RandomAccounts, // Replace with own random account function if using keys other than secp256k1
-				simapp.SimulationOperations(app, app.ApplicationCodec(), config),
-				app.ModuleAccountAddrs(),
+				simapp.SimulationOperations(persistenceApp, persistenceApp.ApplicationCodec(), config),
+				persistenceApp.ModuleAccountAddrs(),
 				config,
-				app.ApplicationCodec(),
+				persistenceApp.ApplicationCodec(),
 			)
 			require.NoError(t, err)
 
@@ -136,7 +136,7 @@ func TestAppStateDeterminism(t *testing.T) {
 				simapp.PrintStats(db)
 			}
 
-			appHash := app.BaseApp.LastCommitID().Hash
+			appHash := persistenceApp.BaseApp.LastCommitID().Hash
 			appHashList[j] = appHash
 
 			if j != 0 {

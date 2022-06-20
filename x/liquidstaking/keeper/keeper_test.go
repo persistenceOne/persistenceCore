@@ -22,7 +22,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
-	chain "github.com/persistenceOne/persistenceCore/application"
+	chain "github.com/persistenceOne/persistenceCore/app"
 	"github.com/persistenceOne/persistenceCore/x/liquidstaking"
 	"github.com/persistenceOne/persistenceCore/x/liquidstaking/keeper"
 	"github.com/persistenceOne/persistenceCore/x/liquidstaking/types"

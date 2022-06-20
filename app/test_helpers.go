@@ -1,4 +1,4 @@
-package application
+package app
 
 // DONTCOVER
 
@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/tendermint/tendermint/libs/log"
 	"strconv"
 	"testing"
 	"time"
@@ -31,8 +32,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	simappparams "github.com/persistenceOne/persistenceCore/application/params"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
+	simappparams "github.com/persistenceOne/persistenceCore/app/params"
 )
 
 // DefaultConsensusParams defines the default Tendermint consensus params used in
@@ -54,7 +55,7 @@ var DefaultConsensusParams = &abci.ConsensusParams{
 	},
 }
 
-func MakeTestEncodingConfig() simappparams.EncodingConfiguration {
+func MakeTestEncodingConfig() simappparams.EncodingConfig {
 	encodingConfig := simappparams.MakeEncodingConfig()
 	std.RegisterLegacyAminoCodec(encodingConfig.Amino)
 	std.RegisterInterfaces(encodingConfig.InterfaceRegistry)
@@ -64,7 +65,9 @@ func MakeTestEncodingConfig() simappparams.EncodingConfiguration {
 }
 
 func setup(withGenesis bool, invCheckPeriod uint) (*Application, GenesisState) {
-	app := NewApplication()
+	db := dbm.NewMemDB()
+	encCdc := MakeTestEncodingConfig()
+	app := NewApplication(Name,encCdc, ModuleAccountPermissions,log.NewNopLogger(), db, nil, true,invCheckPeriod, map[int64]bool{}, DefaultNodeHome, EmptyAppOptions{})
 	if withGenesis {
 		return app, NewDefaultGenesisState()
 	}
@@ -378,7 +381,7 @@ func NewConfig(dbm *dbm.MemDB) network.Config {
 func NewAppConstructor(encodingCfg params.EncodingConfig, db *dbm.MemDB) network.AppConstructor {
 	return func(val network.Validator) types.Application {
 
-		return NewApplication().Initialize(
+		return NewApplication(
 			Name,
 			MakeEncodingConfig(),
 			ModuleAccountPermissions,

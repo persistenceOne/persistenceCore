@@ -3,15 +3,16 @@
  SPDX-License-Identifier: Apache-2.0
 */
 
-package application
+package app
 
 import (
 	"github.com/cosmos/cosmos-sdk/std"
-	"github.com/persistenceOne/persistenceCore/application/params"
+
+	"github.com/persistenceOne/persistenceCore/app/params"
 )
 
 // MakeEncodingConfig creates an EncodingConfig for testing
-func MakeEncodingConfig() params.EncodingConfiguration {
+func MakeEncodingConfig() params.EncodingConfig {
 	encodingConfig := params.MakeEncodingConfig()
 	std.RegisterLegacyAminoCodec(encodingConfig.Amino)
 	std.RegisterInterfaces(encodingConfig.InterfaceRegistry)
