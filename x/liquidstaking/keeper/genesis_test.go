@@ -35,10 +35,10 @@ func (s *KeeperTestSuite) TestImportExportGenesis() {
 	lvStates := k.GetAllLiquidValidatorStates(ctx)
 	genState := k.ExportGenesis(ctx)
 
-	bz := s.app.AppCodec().MustMarshalJSON(genState)
+	bz := s.app.ApplicationCodec().MustMarshalJSON(genState)
 
 	var genState2 types.GenesisState
-	s.app.AppCodec().MustUnmarshalJSON(bz, &genState2)
+	s.app.ApplicationCodec().MustUnmarshalJSON(bz, &genState2)
 	k.InitGenesis(ctx, genState2)
 	genState3 := k.ExportGenesis(ctx)
 
@@ -59,8 +59,8 @@ func (s *KeeperTestSuite) TestImportExportGenesisEmpty() {
 	genState := k.ExportGenesis(ctx)
 
 	var genState2 types.GenesisState
-	bz := s.app.AppCodec().MustMarshalJSON(genState)
-	s.app.AppCodec().MustUnmarshalJSON(bz, &genState2)
+	bz := s.app.ApplicationCodec().MustMarshalJSON(genState)
+	s.app.ApplicationCodec().MustUnmarshalJSON(bz, &genState2)
 	k.InitGenesis(ctx, genState2)
 
 	genState3 := k.ExportGenesis(ctx)
