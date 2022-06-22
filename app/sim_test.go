@@ -16,11 +16,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/store"
 	simulation2 "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
-	"github.com/persistenceOne/persistenceCore/app"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/libs/rand"
 	dbm "github.com/tendermint/tm-db"
+
+	"github.com/persistenceOne/persistenceCore/app"
 )
 
 // SimAppChainID hardcoded chainID for simulation
@@ -48,8 +49,23 @@ func BenchmarkFullAppSimulation(b *testing.B) {
 			b.Fatal(err)
 		}
 	}()
-
-	persistenceApp := app.NewApplication(app.Name, app.MakeEncodingConfig(), app.ModuleAccountPermissions, logger, db, nil, true, simapp.FlagPeriodValue, map[int64]bool{}, app.DefaultNodeHome, simapp.EmptyAppOptions{}, interBlockCacheOpt())
+	encConf := app.MakeEncodingConfig()
+	persistenceApp := app.NewApplication(
+		app.Name, 
+		encConf, 
+		app.ModuleAccountPermissions, 
+		logger, 
+		db, 
+		nil, 
+		true, 
+		simapp.FlagPeriodValue, 
+		map[int64]bool{}, 
+		app.DefaultNodeHome,
+		app.GetEnabledProposals(),
+		simapp.EmptyAppOptions{},
+		nil,
+		interBlockCacheOpt(),
+	)
 
 	// Run randomized simulation:w
 	_, simParams, simErr := simulation.SimulateFromSeed(
@@ -112,7 +128,23 @@ func TestAppStateDeterminism(t *testing.T) {
 			}
 
 			db := dbm.NewMemDB()
-			persistenceApp := app.NewApplication(app.Name, app.MakeEncodingConfig(), app.ModuleAccountPermissions, logger, db, nil, true, simapp.FlagPeriodValue, map[int64]bool{}, app.DefaultNodeHome, simapp.EmptyAppOptions{}, interBlockCacheOpt())
+			encConf := app.MakeEncodingConfig()
+			persistenceApp := app.NewApplication(
+				app.Name,
+				encConf,
+				app.ModuleAccountPermissions,
+				logger,
+				db,
+				nil,
+				true,
+				simapp.FlagPeriodValue,
+				map[int64]bool{},
+				app.DefaultNodeHome,
+				app.GetEnabledProposals(),
+				simapp.EmptyAppOptions{},
+				nil,
+				interBlockCacheOpt(),
+			)
 
 			fmt.Printf(
 				"running non-determinism simulation; seed %d: %d/%d, attempt: %d/%d\n",

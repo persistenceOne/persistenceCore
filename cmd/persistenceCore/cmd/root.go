@@ -24,6 +24,9 @@ import (
 	bankTypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
+	"github.com/CosmWasm/wasmd/x/wasm"
+	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 	tendermintClient "github.com/tendermint/tendermint/libs/cli"
@@ -83,7 +86,7 @@ func setConfig() {
 	cfg.SetBech32PrefixForValidator(app.Bech32PrefixValAddr, app.Bech32PrefixValPub)
 	cfg.SetBech32PrefixForConsensusNode(app.Bech32PrefixConsAddr, app.Bech32PrefixConsPub)
 	cfg.SetCoinType(app.CoinType)
-	cfg.SetFullFundraiserPath(app.FullFundraiserPath)
+	cfg.SetPurpose(app.Purpose)
 
 	cfg.Seal()
 }
@@ -201,10 +204,12 @@ func (ac appCreator) newApp(
 	for _, h := range cast.ToIntSlice(appOpts.Get(server.FlagUnsafeSkipUpgrades)) {
 		skipUpgradeHeights[int64(h)] = true
 	}
+
 	pruningOpts, err := server.GetPruningOptionsFromFlags(appOpts)
 	if err != nil {
 		panic(err)
 	}
+
 	snapshotDir := filepath.Join(cast.ToString(appOpts.Get(flags.FlagHome)), "data", "snapshots")
 	snapshotDB, err := sdk.NewLevelDB("metadata", snapshotDir)
 	if err != nil {
@@ -214,6 +219,12 @@ func (ac appCreator) newApp(
 	if err != nil {
 		panic(err)
 	}
+
+	var wasmOpts []wasm.Option
+	if cast.ToBool(appOpts.Get("telemetry.enabled")) {
+		wasmOpts = append(wasmOpts, wasmKeeper.WithVMCacheMetrics(prometheus.DefaultRegisterer))
+	}
+
 	return app.NewApplication(
 		app.Name,
 		ac.encCfg,
@@ -225,7 +236,9 @@ func (ac appCreator) newApp(
 		invalidCheckPeriod,
 		skipUpgradeHeights,
 		cast.ToString(appOpts.Get(flags.FlagHome)),
+		app.GetEnabledProposals(),
 		appOpts,
+		wasmOpts,
 		baseapp.SetPruning(pruningOpts),
 		baseapp.SetMinGasPrices(cast.ToString(appOpts.Get(server.FlagMinGasPrices))),
 		baseapp.SetHaltHeight(cast.ToUint64(appOpts.Get(server.FlagHaltHeight))),
@@ -259,7 +272,7 @@ func (ac appCreator) appExport(
 	if height == -1 {
 		loadLatest = true
 	}
-
+	var emptyWasmOpts []wasm.Option
 	persistenceApp := app.NewApplication(
 		app.Name,
 		ac.encCfg,
@@ -271,7 +284,9 @@ func (ac appCreator) appExport(
 		uint(1),
 		map[int64]bool{},
 		homePath,
+		app.GetEnabledProposals(),
 		appOpts,
+		emptyWasmOpts,
 	)
 
 	if height != -1 {
