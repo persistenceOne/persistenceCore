@@ -7,3 +7,5 @@ vendor/
 target/
 build/
 release/
+
+*.swp
