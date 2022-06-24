@@ -24,14 +24,22 @@ start:
 ###############################################################################
 
 software-upgrade:
-	$(CHAIN_BIN) tx gov submit-proposal software-upgrade v3 --yes \
+	HOME=$(CHAIN_DIR) $(CHAIN_BIN) tx gov submit-proposal software-upgrade v3 --yes \
 		--title "Test local upgrade" \
 		--description "Test local upgrade" \
 		--upgrade-height $(HEIGHT) \
-		--from $(jq -r .genesis[0].address $(VALIDATOR_CONFIG)) \
+		--from val1 \
 		--chain-id $(CHAIN_ID) \
-		--deposit 600000000stake \
-		--upgrade-info "The binary for this upgrade should be built from v0.2.x tagged or from master branch"
+		--deposit 6000stake \
+		--fees 2000stake \
+		--gas auto \
+		--gas-adjustment 1.5 \
+		-b block \
+		--upgrade-info "Binary upgrade"
+	
 
 run-contract:
 	$(MAKE) .bash SCRIPT_FILE=contract.sh
+
+run-upgrade:
+	$(MAKE) .bash SCRIPT_FILE=upgrade.sh

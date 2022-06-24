@@ -694,8 +694,10 @@ func NewApplication(
 			// Since we provide custom DefaultGenesis (privileges StoreCode) in
 			// app/genesis.go rather than the wasm module, we need to set the params
 			// here when migrating (is it is not customized).
-			params := app.WasmKeeper.GetParams(ctx)
-			params.CodeUploadAccess = wasmTypes.AllowNobody
+			params := wasmTypes.Params{
+				CodeUploadAccess:             wasmTypes.AllowNobody,
+				InstantiateDefaultPermission: wasmTypes.AccessTypeEverybody,
+			}
 			app.WasmKeeper.SetParams(ctx, params)
 
 			app.IBCKeeper.ConnectionKeeper.SetParams(ctx, ibcConnectionTypes.DefaultParams())

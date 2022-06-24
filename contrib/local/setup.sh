@@ -13,9 +13,9 @@ jq -r ".genesis[0].mnemonic" $VALIDATOR_CONFIG | $CHAIN_BIN init $CHAIN_ID --cha
 jq -r ".genesis[0].mnemonic" $VALIDATOR_CONFIG | $CHAIN_BIN keys add $(jq -r ".genesis[0].name" $VALIDATOR_CONFIG) --recover --keyring-backend="test"
 
 # Add keys to keyringg
-for ((i=0; i<$(jq -r '.validators | length' $KEYS_CONFIG); i++))
+for ((i=0; i<$(jq -r '.validators | length' $VALIDATOR_CONFIG); i++))
 do
-  jq -r ".validators[$i].mnemonic" $KEYS_CONFIG | $CHAIN_BIN keys add $(jq -r ".validators[$i].name" $KEYS_CONFIG) --recover --keyring-backend="test"
+  jq -r ".validators[$i].mnemonic" $VALIDATOR_CONFIG | $CHAIN_BIN keys add $(jq -r ".validators[$i].name" $VALIDATOR_CONFIG) --recover --keyring-backend="test"
 done
 
 for ((i=0; i<$(jq -r '.keys | length' $KEYS_CONFIG); i++))
@@ -58,7 +58,7 @@ jq -r '.app_state.staking.params.unbonding_time |= "30s"' $HOME/.persistenceCore
 jq -r '.app_state.slashing.params.downtime_jail_duration |= "6s"' $HOME/.persistenceCore/config/genesis.json > /tmp/trash/genesis.json; mv /tmp/trash/genesis.json $HOME/.persistenceCore/config/genesis.json
 jq -r '.app_state.gov.deposit_params.max_deposit_period |= "30s"' $HOME/.persistenceCore/config/genesis.json > /tmp/trash/genesis.json; mv /tmp/trash/genesis.json $HOME/.persistenceCore/config/genesis.json
 jq -r '.app_state.gov.deposit_params.min_deposit[0].amount |= "10"' $HOME/.persistenceCore/config/genesis.json > /tmp/trash/genesis.json; mv /tmp/trash/genesis.json $HOME/.persistenceCore/config/genesis.json
-jq -r '.app_state.gov.voting_params.voting_period |= "30s"' $HOME/.persistenceCore/config/genesis.json > /tmp/trash/genesis.json; mv /tmp/trash/genesis.json $HOME/.persistenceCore/config/genesis.json
+jq -r '.app_state.gov.voting_params.voting_period |= "60s"' $HOME/.persistenceCore/config/genesis.json > /tmp/trash/genesis.json; mv /tmp/trash/genesis.json $HOME/.persistenceCore/config/genesis.json
 jq -r '.app_state.gov.tally_params.quorum |= "0.000000000000000000"' $HOME/.persistenceCore/config/genesis.json > /tmp/trash/genesis.json; mv /tmp/trash/genesis.json $HOME/.persistenceCore/config/genesis.json
 jq -r '.app_state.gov.tally_params.threshold |= "0.000000000000000000"' $HOME/.persistenceCore/config/genesis.json > /tmp/trash/genesis.json; mv /tmp/trash/genesis.json $HOME/.persistenceCore/config/genesis.json
 jq -r '.app_state.gov.tally_params.veto_threshold |= "0.000000000000000000"' $HOME/.persistenceCore/config/genesis.json > /tmp/trash/genesis.json; mv /tmp/trash/genesis.json $HOME/.persistenceCore/config/genesis.json
