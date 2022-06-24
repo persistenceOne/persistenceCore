@@ -2,6 +2,8 @@ CHAIN_ID := testing
 CHAIN_DIR := /tmp/trash
 CHAIN_BIN := ./../../build/persistenceCore
 
+all: clean setup start
+
 .bash:
 	CHAIN_ID=$(CHAIN_ID) \
 	HOME=$(CHAIN_DIR) \

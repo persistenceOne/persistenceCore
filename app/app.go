@@ -99,6 +99,7 @@ import (
 	ibcHost "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 	ibcKeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 	"github.com/CosmWasm/wasmd/x/wasm"
+	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	wasmClient "github.com/CosmWasm/wasmd/x/wasm/client"
 	wasmKeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/gogo/protobuf/grpc"
@@ -690,6 +691,13 @@ func NewApplication(
 	app.UpgradeKeeper.SetUpgradeHandler(
 		UpgradeName,
 		func(ctx sdk.Context, _ upgradeTypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+			// Since we provide custom DefaultGenesis (privileges StoreCode) in
+			// app/genesis.go rather than the wasm module, we need to set the params
+			// here when migrating (is it is not customized).
+			params := app.WasmKeeper.GetParams(ctx)
+			params.CodeUploadAccess = wasmTypes.AllowNobody
+			app.WasmKeeper.SetParams(ctx, params)
+
 			app.IBCKeeper.ConnectionKeeper.SetParams(ctx, ibcConnectionTypes.DefaultParams())
 			fromVM[icaTypes.ModuleName] = icaModule.ConsensusVersion()
 			// create ICS27 Controller submodule params
@@ -741,7 +749,7 @@ func NewApplication(
 
 	if upgradeInfo.Name == UpgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storeTypes.StoreUpgrades{
-			Added: []string{authz.ModuleName, feegrant.ModuleName},
+			Added: []string{wasm.ModuleName, icaHostTypes.StoreKey},
 		}
 
 		// configure store loader that checks if version == upgradeHeight and applies store upgrades

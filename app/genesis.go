@@ -8,7 +8,8 @@ package app
 import (
 	"encoding/json"
 
-	"github.com/persistenceOne/persistenceCore/app/params"
+	"github.com/CosmWasm/wasmd/x/wasm"
+	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
 )
 
 // The genesis state of the blockchain is represented here as a map of raw json
@@ -22,6 +23,16 @@ type GenesisState map[string]json.RawMessage
 
 // NewDefaultGenesisState generates the default state for the Application.
 func NewDefaultGenesisState() GenesisState {
-	encCfg := params.MakeEncodingConfig()
-	return ModuleBasics.DefaultGenesis(encCfg.Marshaler)
+	encCfg := MakeEncodingConfig()
+	gen := ModuleBasics.DefaultGenesis(encCfg.Marshaler)
+
+	// here we override wasm config to make it permissioned by default
+	wasmGen := wasm.GenesisState{
+		Params: wasmTypes.Params{
+			CodeUploadAccess:             wasmTypes.AllowNobody,
+			InstantiateDefaultPermission: wasmTypes.AccessTypeEverybody,
+		},
+	}
+	gen[wasm.ModuleName] = encCfg.Marshaler.MustMarshalJSON(&wasmGen)
+	return gen
 }
