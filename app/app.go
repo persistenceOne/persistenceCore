@@ -122,7 +122,7 @@ var DefaultNodeHome string
 var (
 	// ProposalsEnabled is "true" and EnabledSpecificProposals is "", then enable all x/wasm proposals.
 	// ProposalsEnabled is not "true" and EnabledSpecificProposals is "", then disable all x/wasm proposals.
-	ProposalsEnabled = "false"
+	ProposalsEnabled = "true"
 	// EnableSpecificProposals if set to non-empty string it must be comma-separated list of values that are all a subset
 	// of "EnableAllProposals" (takes precedence over ProposalsEnabled)
 	// https://github.com/CosmWasm/wasmd/blob/02a54d33ff2c064f3539ae12d75d027d9c665f05/x/wasm/internal/types/proposal.go#L28-L34
@@ -296,7 +296,7 @@ func NewApplication(
 		keys: keys,
 	}
 
-	app.ParamsKeeper = paramsKeeper.NewKeeper(
+	app.ParamsKeeper = initParamsKeeper(
 		applicationCodec,
 		legacyAmino,
 		keys[paramsTypes.StoreKey],
@@ -314,7 +314,7 @@ func NewApplication(
 	app.AccountKeeper = authKeeper.NewAccountKeeper(
 		applicationCodec,
 		keys[authTypes.StoreKey],
-		app.ParamsKeeper.Subspace(authTypes.ModuleName),
+		app.GetSubspace(authTypes.ModuleName),
 		authTypes.ProtoBaseAccount,
 		moduleAccountPermissions,
 	)
@@ -332,7 +332,7 @@ func NewApplication(
 		applicationCodec,
 		keys[bankTypes.StoreKey],
 		app.AccountKeeper,
-		app.ParamsKeeper.Subspace(bankTypes.ModuleName),
+		app.GetSubspace(bankTypes.ModuleName),
 		blacklistedAddresses,
 	)
 
@@ -353,13 +353,13 @@ func NewApplication(
 		keys[stakingTypes.StoreKey],
 		app.AccountKeeper,
 		app.BankKeeper,
-		app.ParamsKeeper.Subspace(stakingTypes.ModuleName),
+		app.GetSubspace(stakingTypes.ModuleName),
 	)
 
 	app.MintKeeper = mintKeeper.NewKeeper(
 		applicationCodec,
 		keys[mintTypes.StoreKey],
-		app.ParamsKeeper.Subspace(mintTypes.ModuleName),
+		app.GetSubspace(mintTypes.ModuleName),
 		&stakingKeeper,
 		app.AccountKeeper,
 		app.BankKeeper,
@@ -369,7 +369,7 @@ func NewApplication(
 	app.DistributionKeeper = distributionKeeper.NewKeeper(
 		applicationCodec,
 		keys[distributionTypes.StoreKey],
-		app.ParamsKeeper.Subspace(distributionTypes.ModuleName),
+		app.GetSubspace(distributionTypes.ModuleName),
 		app.AccountKeeper,
 		app.BankKeeper,
 		&stakingKeeper,
@@ -380,10 +380,10 @@ func NewApplication(
 		applicationCodec,
 		keys[slashingTypes.StoreKey],
 		&stakingKeeper,
-		app.ParamsKeeper.Subspace(slashingTypes.ModuleName),
+		app.GetSubspace(slashingTypes.ModuleName),
 	)
 	app.CrisisKeeper = crisisKeeper.NewKeeper(
-		app.ParamsKeeper.Subspace(crisisTypes.ModuleName),
+		app.GetSubspace(crisisTypes.ModuleName),
 		invCheckPeriod,
 		app.BankKeeper,
 		authTypes.FeeCollectorName,
@@ -398,7 +398,7 @@ func NewApplication(
 
 	app.HalvingKeeper = halving.NewKeeper(
 		keys[halving.StoreKey],
-		app.ParamsKeeper.Subspace(halving.DefaultParamspace),
+		app.GetSubspace(halving.ModuleName),
 		app.MintKeeper,
 	)
 
@@ -409,7 +409,7 @@ func NewApplication(
 	app.IBCKeeper = ibcKeeper.NewKeeper(
 		applicationCodec,
 		keys[ibcHost.StoreKey],
-		app.ParamsKeeper.Subspace(ibcHost.ModuleName),
+		app.GetSubspace(ibcHost.ModuleName),
 		app.StakingKeeper,
 		app.UpgradeKeeper,
 		scopedIBCKeeper,
@@ -418,7 +418,7 @@ func NewApplication(
 	app.TransferKeeper = ibcTransferKeeper.NewKeeper(
 		applicationCodec,
 		keys[ibcTransferTypes.StoreKey],
-		app.ParamsKeeper.Subspace(ibcTransferTypes.ModuleName),
+		app.GetSubspace(ibcTransferTypes.ModuleName),
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
@@ -432,7 +432,7 @@ func NewApplication(
 	app.ICAHostKeeper = icaHostKeeper.NewKeeper(
 		applicationCodec,
 		keys[icaHostTypes.StoreKey],
-		app.ParamsKeeper.Subspace(icaHostTypes.SubModuleName),
+		app.GetSubspace(icaHostTypes.SubModuleName),
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
@@ -463,7 +463,7 @@ func NewApplication(
 	app.WasmKeeper = wasm.NewKeeper(
 		applicationCodec,
 		keys[wasm.StoreKey],
-		app.ParamsKeeper.Subspace(wasm.ModuleName),
+		app.GetSubspace(wasm.ModuleName),
 		app.AccountKeeper,
 		app.BankKeeper,
 		app.StakingKeeper,
@@ -506,7 +506,7 @@ func NewApplication(
 	app.GovKeeper = govKeeper.NewKeeper(
 		applicationCodec,
 		keys[govTypes.StoreKey],
-		app.ParamsKeeper.Subspace(govTypes.ModuleName).WithKeyTable(govTypes.ParamKeyTable()),
+		app.GetSubspace(govTypes.ModuleName),
 		app.AccountKeeper,
 		app.BankKeeper,
 		&stakingKeeper,
@@ -741,6 +741,7 @@ func NewApplication(
 			// RunMigrations twice is just a way to make auth module's migrates after staking
 			return app.moduleManager.RunMigrations(ctx, app.configurator, fromVM)
 
+			// 
 		},
 	)
 
@@ -968,6 +969,12 @@ func (app Application) ModuleAccountAddrs() map[string]bool {
 	return modAccAddrs
 }
 
+
+func (app *Application) GetSubspace(moduleName string) paramsTypes.Subspace {
+	subspace, _ := app.ParamsKeeper.GetSubspace(moduleName)
+	return subspace
+}
+
 func (app Application) SimulationManager() *module.SimulationManager {
 	return app.simulationManager
 }
@@ -1032,4 +1039,26 @@ func (app Application) RegisterTendermintService(clientCtx client.Context) {
 
 func (app Application) LoadHeight(height int64) error {
 	return app.BaseApp.LoadVersion(height)
+}
+
+
+// initParamsKeeper init params keeper and its subspaces.
+func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino, key, tkey sdk.StoreKey) paramsKeeper.Keeper {
+	paramsKeeper := paramsKeeper.NewKeeper(appCodec, legacyAmino, key, tkey)
+
+	paramsKeeper.Subspace(authTypes.ModuleName)
+	paramsKeeper.Subspace(bankTypes.ModuleName)
+	paramsKeeper.Subspace(stakingTypes.ModuleName)
+	paramsKeeper.Subspace(mintTypes.ModuleName)
+	paramsKeeper.Subspace(distributionTypes.ModuleName)
+	paramsKeeper.Subspace(slashingTypes.ModuleName)
+	paramsKeeper.Subspace(crisisTypes.ModuleName)
+	paramsKeeper.Subspace(halving.DefaultParamspace)
+	paramsKeeper.Subspace(govTypes.ModuleName).WithKeyTable(govTypes.ParamKeyTable())
+	paramsKeeper.Subspace(ibcTransferTypes.ModuleName)
+	paramsKeeper.Subspace(ibcHost.ModuleName)
+	paramsKeeper.Subspace(icaHostTypes.SubModuleName)
+	paramsKeeper.Subspace(wasm.ModuleName)
+
+	return paramsKeeper
 }
