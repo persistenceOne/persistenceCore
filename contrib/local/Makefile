@@ -1,3 +1,5 @@
+GO_BIN := /usr/local/bin/go
+
 CHAIN_ID := testing
 CHAIN_DIR := /tmp/trash
 CHAIN_BIN := ./../../build/persistenceCore
@@ -22,21 +24,6 @@ start:
 ###############################################################################
 ###                              Test commands                              ###
 ###############################################################################
-
-software-upgrade:
-	HOME=$(CHAIN_DIR) $(CHAIN_BIN) tx gov submit-proposal software-upgrade v3 --yes \
-		--title "Test local upgrade" \
-		--description "Test local upgrade" \
-		--upgrade-height $(HEIGHT) \
-		--from val1 \
-		--chain-id $(CHAIN_ID) \
-		--deposit 6000stake \
-		--fees 2000stake \
-		--gas auto \
-		--gas-adjustment 1.5 \
-		-b block \
-		--upgrade-info "Binary upgrade"
-	
 
 run-contract:
 	$(MAKE) .bash SCRIPT_FILE=contract.sh
