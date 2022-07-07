@@ -13,9 +13,9 @@ jq -r ".genesis[0].mnemonic" $VALIDATOR_CONFIG | $CHAIN_BIN init $CHAIN_ID --cha
 jq -r ".genesis[0].mnemonic" $VALIDATOR_CONFIG | $CHAIN_BIN keys add $(jq -r ".genesis[0].name" $VALIDATOR_CONFIG) --recover --keyring-backend="test"
 
 # Add keys to keyringg
-for ((i=0; i<$(jq -r '.validators | length' $KEYS_CONFIG); i++))
+for ((i=0; i<$(jq -r '.validators | length' $VALIDATOR_CONFIG); i++))
 do
-  jq -r ".validators[$i].mnemonic" $KEYS_CONFIG | $CHAIN_BIN keys add $(jq -r ".validators[$i].name" $KEYS_CONFIG) --recover --keyring-backend="test"
+  jq -r ".validators[$i].mnemonic" $VALIDATOR_CONFIG | $CHAIN_BIN keys add $(jq -r ".validators[$i].name" $VALIDATOR_CONFIG) --recover --keyring-backend="test"
 done
 
 for ((i=0; i<$(jq -r '.keys | length' $KEYS_CONFIG); i++))
