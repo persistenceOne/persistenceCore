@@ -27,6 +27,7 @@ import (
 	storeTypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authRest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
@@ -94,7 +95,6 @@ import (
 	ibcCoreClient "github.com/cosmos/ibc-go/v3/modules/core/02-client"
 	ibcClient "github.com/cosmos/ibc-go/v3/modules/core/02-client/client"
 	ibcClientTypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
-	ibcConnectionTypes "github.com/cosmos/ibc-go/v3/modules/core/03-connection/types"
 	ibcTypes "github.com/cosmos/ibc-go/v3/modules/core/05-port/types"
 	ibcHost "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 	ibcKeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
@@ -111,7 +111,6 @@ import (
 	tendermintOS "github.com/tendermint/tendermint/libs/os"
 	tendermintProto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tendermintDB "github.com/tendermint/tm-db"
-	"honnef.co/go/tools/version"
 
 	appParams "github.com/persistenceOne/persistenceCore/app/params"
 	"github.com/persistenceOne/persistenceCore/x/halving"

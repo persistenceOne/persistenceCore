@@ -3,7 +3,7 @@ module github.com/persistenceOne/persistenceCore
 go 1.17
 
 require (
-	github.com/CosmWasm/wasmd v0.27.1-0.20220607123528-14688c09855e
+	github.com/CosmWasm/wasmd v0.27.0
 	github.com/cosmos/cosmos-sdk v0.45.4
 	github.com/cosmos/ibc-go/v3 v3.0.0
 	github.com/gogo/protobuf v1.3.3
@@ -14,15 +14,16 @@ require (
 	github.com/rakyll/statik v0.1.7
 	github.com/spf13/cast v1.5.0
 	github.com/spf13/cobra v1.4.0
-	github.com/stretchr/testify v1.7.2
+	github.com/stretchr/testify v1.7.1
 	github.com/tendermint/tendermint v0.34.19
 	github.com/tendermint/tm-db v0.6.7
 	google.golang.org/genproto v0.0.0-20220407144326-9054f6ed7bac
 	google.golang.org/grpc v1.45.0
 	gopkg.in/yaml.v2 v2.4.0
-	honnef.co/go/tools v0.0.1-2020.1.4
 
 )
+
+require github.com/rogpeppe/go-internal v1.8.1 // indirect
 
 require (
 	filippo.io/edwards25519 v1.0.0-beta.2 // indirect
@@ -99,6 +100,7 @@ require (
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20200313005456-10cdbea86bc0 // indirect
 	github.com/regen-network/cosmos-proto v0.3.1 // indirect
+	github.com/rogpeppe/go-internal v1.8.1 // indirect
 	github.com/rs/cors v1.8.2 // indirect
 	github.com/rs/zerolog v1.26.0 // indirect
 	github.com/sasha-s/go-deadlock v0.2.1-0.20190427202633-1595213edefa // indirect
