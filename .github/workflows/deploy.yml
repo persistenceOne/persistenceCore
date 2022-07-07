@@ -18,12 +18,11 @@ jobs:
         config:
           - os: ubuntu-latest
           - os: macos-latest
-          - os: windows-latest
     steps:
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
         with:
-          go-version: ^1.17
+          go-version: ^1.18
         id: go
 
       - name: Check out code into the Go module directory
