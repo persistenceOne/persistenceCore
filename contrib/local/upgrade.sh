@@ -1,7 +1,7 @@
 #!/bin/bash
 
 OFFSET_HEIGHT=40
-UPGRADE_NAME=v3-wasm
+UPGRADE_NAME=v3
 
 set -o errexit -o nounset -o pipefail -eu
 
