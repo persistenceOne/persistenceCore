@@ -692,7 +692,6 @@ func NewApplication(
 		UpgradeName,
 		func(ctx sdk.Context, _ upgradeTypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 			ctx.Logger().Info("Inside the upgrade handler")
-			app.IBCKeeper.ConnectionKeeper.SetParams(ctx, ibcConnectionTypes.DefaultParams())
 
 			fromVM[icaTypes.ModuleName] = icaModule.ConsensusVersion()
 			// create ICS27 Controller submodule params
