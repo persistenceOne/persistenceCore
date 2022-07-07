@@ -753,7 +753,7 @@ func NewApplication(
 
 	if upgradeInfo.Name == UpgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storeTypes.StoreUpgrades{
-			Added: []string{wasm.ModuleName},
+			Added: []string{icaHostTypes.StoreKey, wasm.ModuleName},
 		}
 
 		// configure store loader that checks if version == upgradeHeight and applies store upgrades
