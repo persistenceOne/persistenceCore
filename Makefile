@@ -142,15 +142,14 @@ clean:
 distclean: clean
 	rm -rf vendor/
 
+bin_name = persistenceCore
 ifeq (${OS},Windows_NT)
-	bin_name = persistenceCore
-else
 	bin_name = persistenceCore.exe
 endif
 
 release: build
 	mkdir -p release
-	tar -czvf release/persistenceCore-${GOOS}-${GOARCH}.tar.gz --directory=build/${GOOS}/${GOARCH} ${bin_name}
+	tar -czvf release/persistenceCore-${GOOS}-${GOARCH}.tar.gz --directory=build/ ${bin_name}
 
 ###############################################################################
 ###                              Proto                              		###
