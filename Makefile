@@ -65,6 +65,9 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=persistenceCore \
 ifeq (cleveldb,$(findstring cleveldb,$(build_tags)))
   ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=cleveldb
 endif
+ifeq (linkstatic,$(findstring linkstatic,$(build_tags)))
+  ldflags += -linkmode=external -extldflags "-Wl,-z,muldefs -static"
+endif
 ifeq (badgerdb,$(findstring badgerdb,$(build_tags)))
   ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=badgerdb
 endif
@@ -72,7 +75,7 @@ ifeq (rocksdb,$(findstring rocksdb,$(build_tags)))
   CGO_ENABLED=1
 endif
 
-BUILD_FLAGS += -ldflags "${ldflags}" -tags "${build_tags}"
+BUILD_FLAGS += -ldflags '${ldflags}' -tags "${build_tags}"
 
 GOBIN = $(shell go env GOPATH)/bin
 GOARCH = $(shell go env GOARCH)
@@ -181,22 +184,22 @@ proto-gen:
 # 	make docker-clean  # Will clean up the running container, as well as delete the image
 # 						 after one is done testing
 docker-build:
-	${DOCKER} build -t ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME} .
+	$(DOCKER) build ${DOCKER_ARGS} -t ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME} .
 
 docker-build-push: docker-build
-	${DOCKER} push ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME}
+	$(DOCKER) push ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME}
 
 docker-run:
-	${DOCKER} run ${DOCKER_OPTS} ${DOCKER_VOLUME} --name=${DOCKER_CONTAINER_NAME} ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME} ${DOCKER_CMD}
+	$(DOCKER) run --rm ${DOCKER_OPTS} ${DOCKER_VOLUME} --name=${DOCKER_CONTAINER_NAME} ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME} ${DOCKER_CMD}
 
 docker-interactive:
-	${MAKE} docker-run DOCKER_CMD=/bin/sh DOCKER_OPTS="--rm -it"
+	$(MAKE) docker-run DOCKER_CMD=/bin/bash DOCKER_OPTS="-it"
 
 docker-clean-container:
-	-${DOCKER} stop ${DOCKER_CONTAINER_NAME}
-	-${DOCKER} rm ${DOCKER_CONTAINER_NAME}
+	-$(DOCKER) stop ${DOCKER_CONTAINER_NAME}
+	-$(DOCKER) rm ${DOCKER_CONTAINER_NAME}
 
 docker-clean-image:
-	-${DOCKER} rmi ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME}
+	-$(DOCKER) rmi ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME}
 
 docker-clean: docker-clean-container docker-clean-image

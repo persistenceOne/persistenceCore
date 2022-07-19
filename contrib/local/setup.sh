@@ -54,13 +54,14 @@ sed -i 's/timeout_propose = "3s"/timeout_propose = "1s"/g' $HOME/.persistenceCor
 sed -i 's/index_all_keys = false/index_all_keys = true/g' $HOME/.persistenceCore/config/config.toml
 
 echo "Update genesis.json file with updated local params"
-jq -r '.app_state.staking.params.unbonding_time |= "30s"' $HOME/.persistenceCore/config/genesis.json > /tmp/trash/genesis.json; mv /tmp/trash/genesis.json $HOME/.persistenceCore/config/genesis.json
-jq -r '.app_state.slashing.params.downtime_jail_duration |= "6s"' $HOME/.persistenceCore/config/genesis.json > /tmp/trash/genesis.json; mv /tmp/trash/genesis.json $HOME/.persistenceCore/config/genesis.json
-jq -r '.app_state.gov.deposit_params.max_deposit_period |= "30s"' $HOME/.persistenceCore/config/genesis.json > /tmp/trash/genesis.json; mv /tmp/trash/genesis.json $HOME/.persistenceCore/config/genesis.json
-jq -r '.app_state.gov.deposit_params.min_deposit[0].amount |= "10"' $HOME/.persistenceCore/config/genesis.json > /tmp/trash/genesis.json; mv /tmp/trash/genesis.json $HOME/.persistenceCore/config/genesis.json
-jq -r '.app_state.gov.voting_params.voting_period |= "30s"' $HOME/.persistenceCore/config/genesis.json > /tmp/trash/genesis.json; mv /tmp/trash/genesis.json $HOME/.persistenceCore/config/genesis.json
-jq -r '.app_state.gov.tally_params.quorum |= "0.000000000000000000"' $HOME/.persistenceCore/config/genesis.json > /tmp/trash/genesis.json; mv /tmp/trash/genesis.json $HOME/.persistenceCore/config/genesis.json
-jq -r '.app_state.gov.tally_params.threshold |= "0.000000000000000000"' $HOME/.persistenceCore/config/genesis.json > /tmp/trash/genesis.json; mv /tmp/trash/genesis.json $HOME/.persistenceCore/config/genesis.json
-jq -r '.app_state.gov.tally_params.veto_threshold |= "0.000000000000000000"' $HOME/.persistenceCore/config/genesis.json > /tmp/trash/genesis.json; mv /tmp/trash/genesis.json $HOME/.persistenceCore/config/genesis.json
+jq -r '.app_state.staking.params.unbonding_time |= "30s"' $HOME/.persistenceCore/config/genesis.json > /tmp/genesis.json; mv /tmp/genesis.json $HOME/.persistenceCore/config/genesis.json
+jq -r '.app_state.slashing.params.downtime_jail_duration |= "6s"' $HOME/.persistenceCore/config/genesis.json > /tmp/genesis.json; mv /tmp/genesis.json $HOME/.persistenceCore/config/genesis.json
+jq -r '.app_state.gov.deposit_params.max_deposit_period |= "30s"' $HOME/.persistenceCore/config/genesis.json > /tmp/genesis.json; mv /tmp/genesis.json $HOME/.persistenceCore/config/genesis.json
+jq -r '.app_state.gov.deposit_params.min_deposit[0].amount |= "10"' $HOME/.persistenceCore/config/genesis.json > /tmp/genesis.json; mv /tmp/genesis.json $HOME/.persistenceCore/config/genesis.json
+jq -r '.app_state.gov.voting_params.voting_period |= "30s"' $HOME/.persistenceCore/config/genesis.json > /tmp/genesis.json; mv /tmp/genesis.json $HOME/.persistenceCore/config/genesis.json
+jq -r '.app_state.gov.tally_params.quorum |= "0.000000000000000000"' $HOME/.persistenceCore/config/genesis.json > /tmp/genesis.json; mv /tmp/genesis.json $HOME/.persistenceCore/config/genesis.json
+jq -r '.app_state.gov.tally_params.threshold |= "0.000000000000000000"' $HOME/.persistenceCore/config/genesis.json > /tmp/genesis.json; mv /tmp/genesis.json $HOME/.persistenceCore/config/genesis.json
+jq -r '.app_state.gov.tally_params.veto_threshold |= "0.000000000000000000"' $HOME/.persistenceCore/config/genesis.json > /tmp/genesis.json; mv /tmp/genesis.json $HOME/.persistenceCore/config/genesis.json
+jq -r '.app_state.wasm.params.code_upload_access.permission |= "Nobody"' $HOME/.persistenceCore/config/genesis.json > /tmp/genesis.json; mv /tmp/genesis.json $HOME/.persistenceCore/config/genesis.json
 
 $CHAIN_BIN tendermint show-node-id

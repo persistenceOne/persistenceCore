@@ -7,5 +7,6 @@ vendor/
 target/
 build/
 release/
+bin/
 
 *.swp

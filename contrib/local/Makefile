@@ -1,6 +1,7 @@
 CHAIN_ID := testing
-CHAIN_DIR := /tmp/trash
-CHAIN_BIN := ./../../build/persistenceCore
+
+CHAIN_DIR ?= /tmp/trash
+CHAIN_BIN ?= ./../../build/persistenceCore
 
 all: clean setup start
 
@@ -14,7 +15,7 @@ setup:
 	$(MAKE) .bash SCRIPT_FILE=setup.sh
 
 clean:
-	rm -rf $(CHAIN_DIR)
+	rm -rf $(CHAIN_DIR)/.persistenceCore
 
 start:
 	HOME=$(CHAIN_DIR) $(CHAIN_BIN) start --minimum-gas-prices="0.0005stake" $(ARGS)
@@ -34,3 +35,30 @@ run-test:
 
 run-upgrade:
 	$(MAKE) .bash SCRIPT_FILE=upgrade.sh
+
+###############################################################################
+###                              Docker commands                            ###
+###############################################################################
+
+# Docker variables
+DOCKER := $(shell which docker)
+
+DOCKER_IMAGE_NAME = persistenceone/persistencecore
+DOCKER_TAG_NAME = latest
+DOCKER_CONTAINER := persistence-core-container
+DOCKER_ENV ?= \
+	-e HOME=/opt \
+	-e CHAIN_DIR=/opt \
+	-e CHAIN_BIN=/usr/bin/persistenceCore
+
+docker-setup: docker-clean
+	$(DOCKER) run --rm -d \
+		--name=$(DOCKER_CONTAINER) \
+		$(DOCKER_ENV) \
+		$(DOCKER_IMAGE_NAME):$(DOCKER_TAG_NAME) make
+
+docker-exec:
+	$(DOCKER) exec -it $(DOCKER_CONTAINER) /bin/bash
+
+docker-clean:
+	-$(DOCKER) stop $(DOCKER_CONTAINER)
