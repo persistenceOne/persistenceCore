@@ -45,8 +45,8 @@ RUN apk add --no-cache $PACKAGES
 
 WORKDIR /opt
 
-# rest server, p2p, rpc
-EXPOSE 1317 26656 26657
+# rest server, p2p, rpc, grpc
+EXPOSE 1317 26656 26657 9090
 
 # Run persistenceCore by default, omit entrypoint to ease using container with cli
 CMD ["/usr/bin/persistenceCore", "version", "--long"]

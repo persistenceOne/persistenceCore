@@ -2,6 +2,7 @@ CHAIN_ID := testing
 
 CHAIN_DIR ?= /tmp/trash
 CHAIN_BIN ?= ./../../build/persistenceCore
+WASM_PERMISSIONLESS ?= false
 
 all: clean setup start
 
@@ -9,6 +10,7 @@ all: clean setup start
 	CHAIN_ID=$(CHAIN_ID) \
 	HOME=$(CHAIN_DIR) \
 	CHAIN_BIN=$(CHAIN_BIN) \
+	WASM_PERMISSIONLESS=$(WASM_PERMISSIONLESS) \
 	bash $(SCRIPT_FILE)
 
 setup:
@@ -49,7 +51,8 @@ DOCKER_CONTAINER := persistence-core-container
 DOCKER_ENV ?= \
 	-e HOME=/opt \
 	-e CHAIN_DIR=/opt \
-	-e CHAIN_BIN=/usr/bin/persistenceCore
+	-e CHAIN_BIN=/usr/bin/persistenceCore \
+	-e WASM_PERMISSIONLESS=$(WASM_PERMISSIONLESS)
 
 docker-setup: docker-clean
 	$(DOCKER) run --rm -d \
