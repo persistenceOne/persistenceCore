@@ -87,7 +87,7 @@ EOF
 
 echo $TRANSFER | jq
 $CHAIN_BIN tx wasm execute $CONTRACT "$TRANSFER" \
-  --from val1 --gas-adjustment 1.5 --fees "10000stake" \
+  --from $TEST1_KEY --gas-adjustment 1.5 --fees "10000stake" \
   --gas "auto" -y --chain-id $CHAIN_ID -b block -o json | jq
 
 echo "### Query balance after transfer: expected balance: "
