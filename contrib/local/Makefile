@@ -32,6 +32,9 @@ run-contract:
 run-gov-contract:
 	$(MAKE) .bash SCRIPT_FILE=gov_contract.sh
 
+run-cw20-test:
+	$(MAKE) .bash SCRIPT_FILE=test_cw20.sh
+
 run-test:
 	$(MAKE) .bash SCRIPT_FILE=test.sh
 
