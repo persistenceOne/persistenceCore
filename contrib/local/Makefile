@@ -20,7 +20,7 @@ clean:
 	rm -rf $(CHAIN_DIR)/.persistenceCore
 
 start:
-	HOME=$(CHAIN_DIR) $(CHAIN_BIN) start --minimum-gas-prices="0.0005stake" $(ARGS)
+	HOME=$(CHAIN_DIR) $(CHAIN_BIN) start --minimum-gas-prices="0.0005uxprt" $(ARGS)
 
 ###############################################################################
 ###                              Test commands                              ###

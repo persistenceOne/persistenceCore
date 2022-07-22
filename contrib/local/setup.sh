@@ -5,7 +5,7 @@ KEYS_CONFIG="configs/keys.json"
 # Set home to chain dir for easy setup
 
 # Variables
-COINS="100000000000000000stake"
+COINS="100000000000000000uxprt"
 
 set -eu
 
@@ -37,7 +37,7 @@ do
   $CHAIN_BIN add-genesis-account $(jq -r .keys[$i].address $KEYS_CONFIG) $COINS --keyring-backend="test"
 done
 
-$CHAIN_BIN gentx $(jq -r ".genesis[0].name" $VALIDATOR_CONFIG) 5000000000stake --keyring-backend="test" --chain-id $CHAIN_ID
+$CHAIN_BIN gentx $(jq -r ".genesis[0].name" $VALIDATOR_CONFIG) 5000000000uxprt --keyring-backend="test" --chain-id $CHAIN_ID
 echo "Output of gentx"
 cat $HOME/.persistenceCore/config/gentx/*.json | jq
 
@@ -54,6 +54,8 @@ sed -i 's/timeout_propose = "3s"/timeout_propose = "1s"/g' $HOME/.persistenceCor
 sed -i 's/index_all_keys = false/index_all_keys = true/g' $HOME/.persistenceCore/config/config.toml
 
 echo "Update genesis.json file with updated local params"
+sed -i 's/stake/uxprt/g' $HOME/.persistenceCore/config/genesis.json
+
 jq -r '.app_state.staking.params.unbonding_time |= "30s"' $HOME/.persistenceCore/config/genesis.json > /tmp/genesis.json; mv /tmp/genesis.json $HOME/.persistenceCore/config/genesis.json
 jq -r '.app_state.slashing.params.downtime_jail_duration |= "6s"' $HOME/.persistenceCore/config/genesis.json > /tmp/genesis.json; mv /tmp/genesis.json $HOME/.persistenceCore/config/genesis.json
 jq -r '.app_state.gov.deposit_params.max_deposit_period |= "30s"' $HOME/.persistenceCore/config/genesis.json > /tmp/genesis.json; mv /tmp/genesis.json $HOME/.persistenceCore/config/genesis.json
