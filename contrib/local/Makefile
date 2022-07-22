@@ -4,7 +4,7 @@ CHAIN_DIR ?= /tmp/trash
 CHAIN_BIN ?= ./../../build/persistenceCore
 WASM_PERMISSIONLESS ?= false
 
-all: clean setup start
+all: docker-clean clean setup start
 
 .bash:
 	CHAIN_ID=$(CHAIN_ID) \
