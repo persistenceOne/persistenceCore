@@ -1,16 +1,21 @@
 #!/bin/bash
+
 set -o errexit -o nounset -o pipefail -eu
 
 DIR="/tmp/test-contracts"
 mkdir -p $DIR
 
+VAL1_KEY=$($CHAIN_BIN keys show -a val1 --keyring-backend test)
+TEST1_KEY=$($CHAIN_BIN keys show -a test1 --keyring-backend test)
+TEST2_KEY=$($CHAIN_BIN keys show -a test2 --keyring-backend test)
+
 echo "-----------------------"
-echo "## Add new CosmWasm contract via gov proposal"
-wget "https://github.com/CosmWasm/wasmd/raw/14688c09855ee928a12bcb7cd102a53b78e3cbfb/x/wasm/keeper/testdata/hackatom.wasm" -q -O $DIR/hackatom.wasm
-VAL1_KEY=$($CHAIN_BIN keys show -a val1)
-RESP=$($CHAIN_BIN tx gov submit-proposal wasm-store "$DIR/hackatom.wasm" \
-  --title "hackatom" \
-  --description "hackatom test contact" \
+echo "## Add cw CosmWasm contract via gov proposal"
+wget "https://github.com/CosmWasm/cw-plus/releases/download/v0.13.4/cw20_base.wasm" -q -O $DIR/cw20_base.wasm
+
+RESP=$($CHAIN_BIN tx gov submit-proposal wasm-store "$DIR/cw20_base.wasm" \
+  --title "Add cw20_base" \
+  --description "cw20_base contact" \
   --deposit 10000stake \
   --run-as $VAL1_KEY \
   --instantiate-everybody "true" \
@@ -43,34 +48,48 @@ CODE_ID=$($CHAIN_BIN q wasm list-code -o json | jq -r ".code_infos[-1].code_id")
 
 echo "-----------------------"
 echo "## Create new contract instance"
-INIT="{\"verifier\":\"$($CHAIN_BIN keys show val1 -a --keyring-backend test)\", \"beneficiary\":\"$($CHAIN_BIN keys show test1 -a)\"}"
-$CHAIN_BIN tx wasm instantiate "$CODE_ID" "$INIT" --admin="$($CHAIN_BIN keys show val1 -a --keyring-backend test)" \
-  --from val1 --amount "10000stake" --label "local0.1.0" --gas-adjustment 1.5 --fees "10000stake" \
+INIT=$(cat <<EOF
+{
+  "name": "My first token",
+  "symbol": "FRST",
+  "decimals": 6,
+  "initial_balances": [{
+    "address": "$TEST1_KEY",
+    "amount": "123456789000"
+  }]
+}
+EOF
+)
+$CHAIN_BIN tx wasm instantiate "$CODE_ID" "$INIT" --admin="$TEST1_KEY" \
+  --from $TEST1_KEY --amount "10000stake" --label "First Coin" --gas-adjustment 1.5 --fees "10000stake" \
   --gas "auto" -y --chain-id $CHAIN_ID -b block -o json | jq
 
 CONTRACT=$($CHAIN_BIN query wasm list-contract-by-code "$CODE_ID" -o json | jq -r '.contracts[-1]')
 echo "* Contract address: $CONTRACT"
 
-echo "### Query all"
-RESP=$($CHAIN_BIN query wasm contract-state all "$CONTRACT" -o json)
-echo "$RESP" | jq
-echo "### Query smart"
-$CHAIN_BIN query wasm contract-state smart "$CONTRACT" '{"verifier":{}}' -o json | jq
-echo "### Query raw"
-KEY=$(echo "$RESP" | jq -r ".models[0].key")
-$CHAIN_BIN query wasm contract-state raw "$CONTRACT" "$KEY" -o json | jq
+echo "### Query test balance: expected balance: "
+$CHAIN_BIN query wasm contract-state smart $CONTRACT "{\"balance\":{\"address\":\"$TEST1_KEY\"}}"
+echo "### Query non balance: expected balance: "
+$CHAIN_BIN query wasm contract-state smart $CONTRACT "{\"balance\":{\"address\":\"$TEST2_KEY\"}}"
 
 echo "-----------------------"
 echo "## Execute contract $CONTRACT"
-MSG='{"release":{}}'
-$CHAIN_BIN tx wasm execute "$CONTRACT" "$MSG" \
-  --from val1 --gas-adjustment 1.5 --fees "10000stake" \
+TRANSFER=$(cat <<EOF
+{
+  "transfer": {
+    "recipient": "$TEST2_KEY",
+    "amount": "987654321"
+  }
+}
+EOF
+)
+
+echo $TRANSFER | jq
+$CHAIN_BIN tx wasm execute $CONTRACT "$TRANSFER" \
+  --from $TEST1_KEY --gas-adjustment 1.5 --fees "10000stake" \
   --gas "auto" -y --chain-id $CHAIN_ID -b block -o json | jq
 
-echo "-----------------------"
-echo "## Set new admin"
-echo "### Query old admin: $($CHAIN_BIN q wasm contract "$CONTRACT" -o json | jq -r '.contract_info.admin')"
-echo "### Update contract"
-$CHAIN_BIN tx wasm set-contract-admin "$CONTRACT" "$($CHAIN_BIN keys show test1 -a)" \
-  --from val1 --gas-adjustment 1.5 --gas "auto" --fees "10000stake" -y --chain-id $CHAIN_ID -b block -o json | jq
-echo "### Query new admin: $($CHAIN_BIN q wasm contract "$CONTRACT" -o json | jq -r '.contract_info.admin')"
+echo "### Query balance after transfer: expected balance: "
+$CHAIN_BIN query wasm contract-state smart $CONTRACT "{\"balance\":{\"address\":\"$TEST1_KEY\"}}"
+echo "### Query non balance after transfer: expected balance: "
+$CHAIN_BIN query wasm contract-state smart $CONTRACT "{\"balance\":{\"address\":\"$TEST2_KEY\"}}"
