@@ -1,0 +1,21 @@
+#!/bin/bash
+
+BINARY=persistenceCore
+BINARY_2=gaiad
+CHAIN_DIR=./data
+CHAIN_DIR_1=~/.persistenceCore
+CHAINID_1=test-1
+CHAINID_2=test-2
+GRPCPORT_1=8090
+GRPCPORT_2=9090
+GRPCWEB_1=8091
+GRPCWEB_2=9091
+
+
+echo "Starting $CHAINID_1 in $CHAIN_DIR_1..."
+echo "Creating log file at $CHAIN_DIR_1.log"
+$BINARY start --log_level trace --log_format json  --pruning=nothing --grpc.address="0.0.0.0:$GRPCPORT_1" --grpc-web.address="0.0.0.0:$GRPCWEB_1" > $CHAIN_DIR_1.log 2>&1 &
+
+echo "Starting $CHAINID_2 in $CHAIN_DIR..."
+echo "Creating log file at $CHAIN_DIR/$CHAINID_2.log"
+$BINARY_2 start --log_level trace --log_format json --home $CHAIN_DIR/$CHAINID_2 --pruning=nothing --grpc.address="0.0.0.0:$GRPCPORT_2" --grpc-web.address="0.0.0.0:$GRPCWEB_2" > $CHAIN_DIR/$CHAINID_2.log 2>&1 &
