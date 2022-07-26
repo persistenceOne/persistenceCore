@@ -8,5 +8,5 @@ target/
 build/
 release/
 bin/
-.data/
+data
 *.swp

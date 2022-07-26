@@ -1,4 +1,4 @@
 #!/bin/bash
 HERMES_BINARY=hermes
-HERMES_DIRECTORY=./hermes/
-CONFIG_DIR=./hermes/config.toml
+HERMES_DIRECTORY=./
+CONFIG_DIR=./config.toml
