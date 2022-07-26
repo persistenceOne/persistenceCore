@@ -14,9 +14,7 @@ For any of the types bellow, need to build the local clients
   * Override the config params
 * Above command will be blocking, hence advised to run in a separate terminal
 * Run test commands
-  * `make run-gov-contract`: Create proposal via proposal, vote on the proposal, and initiate the contract, run test commands
-  * `make run-cw20-base`: 
-  * `make run-cw20-govinit`:
+  * `make run-cw20-govinit`: Create cw20 contract in wasm via a proposal, instantiate the contract via proposal as well, run test commands
 * `make clean` cleanup
 
 ## In Docker
@@ -43,3 +41,8 @@ WASM_PERMISSIONLESS=true make docker-setup
 
 With this we start the container such that the wasm module runns in permissionless fashion. For testing,
 run `make run-contract` for permissionless contract testing.
+
+Commands we can run with permissionless wasm are
+* `make run-contract`
+* `make run-gov-contract`
+* `make run-cw20-base`
