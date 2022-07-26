@@ -1,18 +1,17 @@
 #!/bin/bash
 set -o errexit -o nounset -o pipefail -eu
 CHAIN_BIN=persistenceCore
-CHAIN_DIR_1=~/.persistenceCore
+CHAIN_DIR_1=./network/data/test-1
 CHAIN_ID=test-1
 DIR="/tmp/test-contracts"
 mkdir -p $DIR
 
 echo "-----------------------"
 echo "## Add new CosmWasm contract via gov proposal"
-wget "https://github.com/CosmWasm/wasmd/raw/14688c09855ee928a12bcb7cd102a53b78e3cbfb/x/wasm/keeper/testdata/hackatom.wasm" -q -O $DIR/hackatom.wasm
 VAL1_KEY=$($CHAIN_BIN keys show -a val1)
-RESP=$(persistenceCore tx gov submit-proposal wasm-store "cw20_ics20.wasm" \
-  --title "ics " \
-  --description "ics20 contract " \
+RESP=$(persistenceCore tx gov submit-proposal wasm-store "./wasm/cw20_ics20.wasm" \
+  --title "ics" \
+  --description "ics20 contract" \
   --deposit 10000stake \
   --run-as $VAL1_KEY \
   --instantiate-everybody "true" \
