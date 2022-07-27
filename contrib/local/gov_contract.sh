@@ -13,9 +13,9 @@ RESP=$($CHAIN_BIN tx gov submit-proposal wasm-store "$DIR/hackatom.wasm" \
   --description "hackatom test contact" \
   --deposit 10000uxprt \
   --run-as $VAL1_KEY \
-  --instantiate-everybody "true" \
+  --instantiate-nobody "true" \
   --keyring-backend test \
-  --from val1 --gas auto --fees 10000uxprt -y \
+  --from $VAL1_KEY --gas auto --fees 10000uxprt -y \
   --chain-id $CHAIN_ID \
   -b block -o json --gas-adjustment 1.5)
 echo "$RESP"
