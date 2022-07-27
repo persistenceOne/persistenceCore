@@ -13,11 +13,11 @@ RESP=$(persistenceCore tx gov submit-proposal wasm-store "./wasm/cw20_ics20.wasm
   --title "ics" \
   --description "ics20 contract" \
   --deposit 10000stake \
-  --run-as $VAL1_KEY \
+  --run-as persistence1095fgex3h37zl4yjptnsd7qfmspesvav7xhgwt \
   --instantiate-everybody "true" \
   --keyring-backend test \
-  --from val1 --gas auto --fees 10000stake -y \
-  --chain-id test-1 \
+  --from persistence1095fgex3h37zl4yjptnsd7qfmspesvav7xhgwt --gas auto --fees 10000stake -y \
+  --chain-id test-core-1 \
   -b block -o json --gas-adjustment 1.5)
 echo "$RESP"
 PROPOSAL_ID=$(echo "$RESP" | jq -r '.logs[0].events[] | select(.type == "submit_proposal") | .attributes[] | select(.key == "proposal_id") | .value')
