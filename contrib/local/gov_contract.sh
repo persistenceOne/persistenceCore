@@ -13,7 +13,7 @@ RESP=$($CHAIN_BIN tx gov submit-proposal wasm-store "$DIR/hackatom.wasm" \
   --description "hackatom test contact" \
   --deposit 10000uxprt \
   --run-as $VAL1_KEY \
-  --instantiate-nobody "true" \
+  --instantiate-everybody "true" \
   --keyring-backend test \
   --from $VAL1_KEY --gas auto --fees 10000uxprt -y \
   --chain-id $CHAIN_ID \
