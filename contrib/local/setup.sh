@@ -45,16 +45,17 @@ echo "Running collect-gentxs"
 $CHAIN_BIN collect-gentxs
 
 echo "Update app.toml file"
-sed -i 's#keyring-backend = "os"#keyring-backend = "test"#g' $HOME/.persistenceCore/config/client.toml
+echo $HOME
+sed -i -e 's#keyring-backend = "os"#keyring-backend = "test"#g' $HOME/.persistenceCore/config/client.toml
 
 echo "Update config.toml file"
-sed -i 's#"tcp://127.0.0.1:26657"#"tcp://0.0.0.0:26657"#g' $HOME/.persistenceCore/config/config.toml
-sed -i 's/timeout_commit = "5s"/timeout_commit = "1s"/g' $HOME/.persistenceCore/config/config.toml
-sed -i 's/timeout_propose = "3s"/timeout_propose = "1s"/g' $HOME/.persistenceCore/config/config.toml
-sed -i 's/index_all_keys = false/index_all_keys = true/g' $HOME/.persistenceCore/config/config.toml
+sed -i -e 's#"tcp://127.0.0.1:26657"#"tcp://0.0.0.0:26657"#g' $HOME/.persistenceCore/config/config.toml
+sed -i -e 's/timeout_commit = "5s"/timeout_commit = "1s"/g' $HOME/.persistenceCore/config/config.toml
+sed -i -e 's/timeout_propose = "3s"/timeout_propose = "1s"/g' $HOME/.persistenceCore/config/config.toml
+sed -i -e 's/index_all_keys = false/index_all_keys = true/g' $HOME/.persistenceCore/config/config.toml
 
 echo "Update genesis.json file with updated local params"
-sed -i 's/stake/uxprt/g' $HOME/.persistenceCore/config/genesis.json
+sed -i -e 's/stake/uxprt/g' $HOME/.persistenceCore/config/genesis.json
 
 jq -r '.app_state.staking.params.unbonding_time |= "30s"' $HOME/.persistenceCore/config/genesis.json > /tmp/genesis.json; mv /tmp/genesis.json $HOME/.persistenceCore/config/genesis.json
 jq -r '.app_state.slashing.params.downtime_jail_duration |= "6s"' $HOME/.persistenceCore/config/genesis.json > /tmp/genesis.json; mv /tmp/genesis.json $HOME/.persistenceCore/config/genesis.json

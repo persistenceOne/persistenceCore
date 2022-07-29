@@ -96,7 +96,7 @@ DOCKER_VOLUME = -v $(CURDIR):/usr/local/app
 ###                              Documentation                              ###
 ###############################################################################
 
-all: install lint test
+all: install
 
 BUILD_TARGETS := build install
 
