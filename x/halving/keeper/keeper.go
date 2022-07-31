@@ -13,7 +13,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/persistenceOne/persistenceCore/x/halving/types"
+	"github.com/persistenceOne/persistenceCore/v3/x/halving/types"
 )
 
 // Keeper of the halving store

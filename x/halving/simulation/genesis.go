@@ -9,7 +9,7 @@ import (
 	"math/rand"
 
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/persistenceOne/persistenceCore/x/halving/types"
+	"github.com/persistenceOne/persistenceCore/v3/x/halving/types"
 )
 
 // GetBlockHeight randomized BlockHeight

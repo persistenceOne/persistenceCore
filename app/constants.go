@@ -14,7 +14,7 @@ const (
 	Bech32MainPrefix = "persistence"
 	UpgradeName      = "v3"
 	CoinType         = 750
-	Purpose 		 = 44
+	Purpose          = 44
 
 	Bech32PrefixAccAddr  = Bech32MainPrefix
 	Bech32PrefixAccPub   = Bech32MainPrefix + sdk.PrefixPublic

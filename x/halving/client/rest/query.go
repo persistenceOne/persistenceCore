@@ -10,7 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
-	"github.com/persistenceOne/persistenceCore/x/halving/types"
+	"github.com/persistenceOne/persistenceCore/v3/x/halving/types"
 	"net/http"
 )
 

@@ -9,7 +9,7 @@ package persistence.halving.v1beta1;
 import "gogoproto/gogo.proto";
 import "persistence/halving/v1beta1/halving.proto";
 
-option go_package = "github.com/persistenceOne/persistenceCore/x/halving/types";
+option go_package = "github.com/persistenceOne/persistenceCore/v3/x/halving/types";
 
 // GenesisState defines the halving module's genesis state.
 message GenesisState {

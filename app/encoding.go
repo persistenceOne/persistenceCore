@@ -8,7 +8,7 @@ package app
 import (
 	"github.com/cosmos/cosmos-sdk/std"
 
-	"github.com/persistenceOne/persistenceCore/app/params"
+	"github.com/persistenceOne/persistenceCore/v3/app/params"
 )
 
 // MakeEncodingConfig creates an EncodingConfig for testing

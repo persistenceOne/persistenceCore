@@ -160,11 +160,7 @@ release: build
 
 proto-gen:
 	@echo "Generating Protobuf files"
-	$(DOCKER) run --rm \
-		-v $(shell go list -f "{{ .Dir }}" -m github.com/cosmos/cosmos-sdk):/workspace/cosmos_sdk_dir \
-	 	--env COSMOS_SDK_DIR=/workspace/cosmos_sdk_dir \
-	 	-v $(CURDIR):/workspace --workdir /workspace \
-		tendermintdev/sdk-proto-gen sh ./scripts/protocgen.sh
+	scripts/protocgen.sh
 
 ###############################################################################
 ###                              Docker                             		###
