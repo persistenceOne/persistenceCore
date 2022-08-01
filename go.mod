@@ -1,4 +1,4 @@
-module github.com/persistenceOne/persistenceCore
+module github.com/persistenceOne/persistenceCore/v3
 
 go 1.18
 

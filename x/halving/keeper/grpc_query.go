@@ -9,7 +9,7 @@ import (
 	"context"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/persistenceOne/persistenceCore/x/halving/types"
+	"github.com/persistenceOne/persistenceCore/v3/x/halving/types"
 )
 
 var _ types.QueryServer = Keeper{}

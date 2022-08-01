@@ -112,8 +112,8 @@ import (
 	tendermintProto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tendermintDB "github.com/tendermint/tm-db"
 
-	appParams "github.com/persistenceOne/persistenceCore/app/params"
-	"github.com/persistenceOne/persistenceCore/x/halving"
+	appParams "github.com/persistenceOne/persistenceCore/v3/app/params"
+	"github.com/persistenceOne/persistenceCore/v3/x/halving"
 )
 
 var DefaultNodeHome string
