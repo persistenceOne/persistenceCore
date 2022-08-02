@@ -1,0 +1,50 @@
+version: "3.9"  # optional since v1.27.0
+services:
+  gaia:
+    image: persistenceone/gaiad:v7.0.2
+    ports:
+      - "1417:1317"
+      - "27656-27657:26656-26657"
+      - "9190:9090"
+    entrypoint: /bin/bash -c "cd /usr/local/share && /usr/bin/make"
+    environment:
+      CHAIN_ID: gaia
+      CHAIN_BIN: gaiad
+      CHAIN_DIR: /opt
+      HOME: /opt
+      WASM_PERMISSIONLESS: "false"
+      CHAIN_DATA_DIR: ".gaia"
+      DENOM: "stake"
+    volumes:
+      - ../.:/usr/local/share:ro
+  persistence:
+    image: persistenceone/persistencecore
+    ports:
+      - "1317:1317"
+      - "26656-26657:26656-26657"
+      - "9090:9090"
+    entrypoint: /bin/bash -c "cd /usr/local/share && make"
+    environment:
+      CHAIN_ID: core-1
+      CHAIN_BIN: persistenceCore
+      CHAIN_DIR: /opt
+      HOME: /opt
+      WASM_PERMISSIONLESS: "false"
+      CHAIN_DATA_DIR: ".persistenceCore"
+      DENOM: "uxprt"
+    volumes:
+      - ../.:/usr/local/share:ro
+  relayer:
+    image: persistenceone/hermes:1.0.0-rc.1
+    environment:
+      RELAYER_CONFIG: /usr/local/share/ibc/ibc.toml
+      KEYS_CONFIG: /usr/local/share/configs/relayer-keys.json
+    entrypoint:
+      - "/bin/bash"
+      - "-c"
+      - "sleep 15 && bash /usr/local/share/ibc/setup.sh && hermes start"
+    depends_on:
+      - gaia
+      - persistence
+    volumes:
+      - ../.:/usr/local/share:ro

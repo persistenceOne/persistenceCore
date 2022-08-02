@@ -1,0 +1,46 @@
+{
+  "chains": [
+    {
+      "name": "gaiad",
+      "id": "gaia",
+      "hdpath": "m/44'/118'/0'/0/0",
+      "keys": [
+        {
+          "name": "ryl-gaiad0",
+          "type": "local",
+          "address": "cosmos1kc4q0ju9u3fke85udkavjr5equ5nyjvs5fq66p",
+          "pubkey": "{\"@type\":\"/cosmos.crypto.secp256k1.PubKey\",\"key\":\"AteFK5ikxOxH0cGjXtDfwGmNhKamkxyN5DSzCdPY5I7N\"}",
+          "mnemonic": "success stool bitter brown error strike lyrics dress absent vast question check curve soon sting portion claim sand you garbage equal tongue pear alpha"
+        },
+        {
+          "name": "ryl-gaia1",
+          "type": "local",
+          "address": "cosmos10ln0c0zvd2m4hz07lpasdxep6c6pszs5naw55f",
+          "pubkey": "{\"@type\":\"/cosmos.crypto.secp256k1.PubKey\",\"key\":\"A/6fG+ZeiZNamgqIQH9CCzm357b2wnYqzYxisVetNKJv\"}",
+          "mnemonic": "explain ecology upper strategy remove tail loop pause foam brown people post curve meadow split appear style obscure brother puzzle moment candy office april"
+        }
+      ]
+    },
+    {
+      "name": "persistenceCore",
+      "id": "core-1",
+      "hdpath": "m/44'/750'/0'/0/0",
+      "keys": [
+        {
+          "name": "ryl-core0",
+          "type": "local",
+          "address": "persistence1nnluajc7hgev88u9cxjejumxgqt26qqzhfzep7",
+          "pubkey": "{\"@type\":\"/cosmos.crypto.secp256k1.PubKey\",\"key\":\"AzlcsMwVcEJofOM7jsFEeQ834udvngWeQE0knAFIgGOr\"}",
+          "mnemonic": "arena carpet carbon wild thrive buzz mixed elephant fancy satoshi room dwarf stomach pause remain wage club video ring among ship table culture excite"
+        },
+        {
+          "name": "ryl-core1",
+          "type": "local",
+          "address": "persistence1ylsqcxw0vnfxswxddnfq3mgyzvs4qr7nzze98t",
+          "pubkey": "{\"@type\":\"/cosmos.crypto.secp256k1.PubKey\",\"key\":\"A0Wk2V0qk5p6Dd2DsQMm/yIGUWt1rjLP6YCZOyk9YZMF\"}",
+          "mnemonic": "tail humor kite foil endorse joke shine document empower thumb glove payment gather front delay begin all enemy laundry vibrant ghost easily vendor priority"
+        }
+      ]
+    }
+  ]
+}
