@@ -7,7 +7,7 @@ WASM_PERMISSIONLESS ?= false
 
 all: docker-clean clean setup start
 
-bash:
+.bash:
 	CHAIN_ID=$(CHAIN_ID) \
 	HOME=$(CHAIN_DIR) \
 	CHAIN_BIN=$(CHAIN_BIN) \
@@ -16,14 +16,7 @@ bash:
 	/bin/bash $(SCRIPT_FILE)
 
 setup:
-	$(MAKE) bash SCRIPT_FILE=setup.sh
-
-# setup-ibc will run 2 chains, setup hermes relayer
-setup-ibc:
-	mkdir -p /tmp/trash1 /tmp/trash2 /tmp/relayer
-	$(MAKE) .bash SCIPT_FILE=setup.sh CHAIN_DIR=/tmp/trash1
-	$(MAKE) .bash SCIPT_FILE=setup.sh CHAIN_DIR=/tmp/trash2
-	$(MAKE) .bash SCRIPT_FILE=ibc/setup.sh CHAIN_DIR=/tmp/relayer
+	$(MAKE) .bash SCRIPT_FILE=setup.sh
 
 clean:
 	rm -rf $(CHAIN_DIR)/$(CHAIN_DATA_DIR)
@@ -83,12 +76,3 @@ docker-exec:
 
 docker-clean:
 	-$(DOCKER) stop $(DOCKER_CONTAINER)
-
-docker-setup-gaiad:
-	DOCKER_CONTAINER="gaia-container" \
-	DOCKER_IMAGE="" \
-	DOCKER_ENV="-e HOME=/opt -e CHAIN_DIR=/opt CAHIN_BIN=/usr/bin/gaiad" \
-	DOCKER_PORTS="-p 127.0.0.1:1417:1317 -p 127.0.0.1:27656-27657:26656-26657 -p 127.0.0.1:9190:9090" \
-		$(MAKE) docker-setup
-
-docker-setup-ibc:
