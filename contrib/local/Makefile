@@ -2,22 +2,31 @@ CHAIN_ID := testing
 
 CHAIN_DIR ?= /tmp/trash
 CHAIN_BIN ?= ./../../build/persistenceCore
+CHAIN_DATA_DIR ?= .persistenceCore
 WASM_PERMISSIONLESS ?= false
 
 all: docker-clean clean setup start
 
-.bash:
+bash:
 	CHAIN_ID=$(CHAIN_ID) \
 	HOME=$(CHAIN_DIR) \
 	CHAIN_BIN=$(CHAIN_BIN) \
 	WASM_PERMISSIONLESS=$(WASM_PERMISSIONLESS) \
-	bash $(SCRIPT_FILE)
+	CHAIN_DATA_DIR=$(CHAIN_DATA_DIR) \
+	/bin/bash $(SCRIPT_FILE)
 
 setup:
-	$(MAKE) .bash SCRIPT_FILE=setup.sh
+	$(MAKE) bash SCRIPT_FILE=setup.sh
+
+# setup-ibc will run 2 chains, setup hermes relayer
+setup-ibc:
+	mkdir -p /tmp/trash1 /tmp/trash2 /tmp/relayer
+	$(MAKE) .bash SCIPT_FILE=setup.sh CHAIN_DIR=/tmp/trash1
+	$(MAKE) .bash SCIPT_FILE=setup.sh CHAIN_DIR=/tmp/trash2
+	$(MAKE) .bash SCRIPT_FILE=ibc/setup.sh CHAIN_DIR=/tmp/relayer
 
 clean:
-	rm -rf $(CHAIN_DIR)/.persistenceCore
+	rm -rf $(CHAIN_DIR)/$(CHAIN_DATA_DIR)
 
 start:
 	HOME=$(CHAIN_DIR) $(CHAIN_BIN) start --minimum-gas-prices="0.0005uxprt" $(ARGS)
@@ -26,20 +35,17 @@ start:
 ###                              Test commands                              ###
 ###############################################################################
 
-run-contract:
-	$(MAKE) .bash SCRIPT_FILE=contract.sh
+run-wasm-contract:
+	$(MAKE) .bash SCRIPT_FILE=wasm/contract.sh
 
-run-gov-contract:
-	$(MAKE) .bash SCRIPT_FILE=gov_contract.sh
+run-wasm-gov-contract:
+	$(MAKE) .bash SCRIPT_FILE=wasm/gov_contract.sh
 
-run-cw20-base:
-	$(MAKE) .bash SCRIPT_FILE=test_cw20.sh
+run-wasm-cw20-base:
+	$(MAKE) .bash SCRIPT_FILE=wasm/test_cw20.sh
 
-run-cw20-govinit:
-	$(MAKE) .bash SCRIPT_FILE=test_cw20_govinit.sh
-
-run-test:
-	$(MAKE) .bash SCRIPT_FILE=test.sh
+run-wasm-cw20-govinit:
+	$(MAKE) .bash SCRIPT_FILE=wasm/test_cw20_govinit.sh
 
 run-upgrade:
 	$(MAKE) .bash SCRIPT_FILE=upgrade.sh
@@ -77,3 +83,12 @@ docker-exec:
 
 docker-clean:
 	-$(DOCKER) stop $(DOCKER_CONTAINER)
+
+docker-setup-gaiad:
+	DOCKER_CONTAINER="gaia-container" \
+	DOCKER_IMAGE="" \
+	DOCKER_ENV="-e HOME=/opt -e CHAIN_DIR=/opt CAHIN_BIN=/usr/bin/gaiad" \
+	DOCKER_PORTS="-p 127.0.0.1:1417:1317 -p 127.0.0.1:27656-27657:26656-26657 -p 127.0.0.1:9190:9090" \
+		$(MAKE) docker-setup
+
+docker-setup-ibc:
