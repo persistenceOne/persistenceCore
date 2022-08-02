@@ -50,16 +50,16 @@ $CHAIN_BIN collect-gentxs
 ls $HOME/$CHAIN_DATA_DIR/config
 
 echo "Update app.toml file"
-sed -i 's#keyring-backend = "os"#keyring-backend = "test"#g' $HOME/$CHAIN_DATA_DIR/config/client.toml
+sed -i -e 's#keyring-backend = "os"#keyring-backend = "test"#g' $HOME/$CHAIN_DATA_DIR/config/client.toml
 
 echo "Update config.toml file"
-sed -i 's#"tcp://127.0.0.1:26657"#"tcp://0.0.0.0:26657"#g' $HOME/$CHAIN_DATA_DIR/config/config.toml
-sed -i 's/timeout_commit = "5s"/timeout_commit = "1s"/g' $HOME/$CHAIN_DATA_DIR/config/config.toml
-sed -i 's/timeout_propose = "3s"/timeout_propose = "1s"/g' $HOME/$CHAIN_DATA_DIR/config/config.toml
-sed -i 's/index_all_keys = false/index_all_keys = true/g' $HOME/$CHAIN_DATA_DIR/config/config.toml
+sed -i -e 's#"tcp://127.0.0.1:26657"#"tcp://0.0.0.0:26657"#g' $HOME/$CHAIN_DATA_DIR/config/config.toml
+sed -i -e 's/timeout_commit = "5s"/timeout_commit = "1s"/g' $HOME/$CHAIN_DATA_DIR/config/config.toml
+sed -i -e 's/timeout_propose = "3s"/timeout_propose = "1s"/g' $HOME/$CHAIN_DATA_DIR/config/config.toml
+sed -i -e 's/index_all_keys = false/index_all_keys = true/g' $HOME/$CHAIN_DATA_DIR/config/config.toml
 
 echo "Update genesis.json file with updated local params"
-sed -i "s/stake/$DENOM/g" $HOME/$CHAIN_DATA_DIR/config/genesis.json
+sed -i -e "s/stake/$DENOM/g" $HOME/$CHAIN_DATA_DIR/config/genesis.json
 
 jq -r '.app_state.staking.params.unbonding_time |= "30s"' $HOME/$CHAIN_DATA_DIR/config/genesis.json > /tmp/genesis.json; mv /tmp/genesis.json $HOME/$CHAIN_DATA_DIR/config/genesis.json
 jq -r '.app_state.slashing.params.downtime_jail_duration |= "6s"' $HOME/$CHAIN_DATA_DIR/config/genesis.json > /tmp/genesis.json; mv /tmp/genesis.json $HOME/$CHAIN_DATA_DIR/config/genesis.json
