@@ -51,6 +51,9 @@ ls $HOME/$CHAIN_DATA_DIR/config
 
 echo "Update app.toml file"
 sed -i -e 's#keyring-backend = "os"#keyring-backend = "test"#g' $HOME/$CHAIN_DATA_DIR/config/client.toml
+sed -i -e 's#output = "text"#output = "json"#g' $HOME/$CHAIN_DATA_DIR/config/client.toml
+sed -i -e 's#broadcast-mode = "sync"#broadcast-mode = "block"#g' $HOME/$CHAIN_DATA_DIR/config/client.toml
+sed -i -e "s#chain-id = \"\"#chain-id = \"$CHAIN_ID\"#g" $HOME/$CHAIN_DATA_DIR/config/client.toml
 
 echo "Update config.toml file"
 sed -i -e 's#"tcp://127.0.0.1:26657"#"tcp://0.0.0.0:26657"#g' $HOME/$CHAIN_DATA_DIR/config/config.toml
