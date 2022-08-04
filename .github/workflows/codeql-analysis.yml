@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'go1.18' ]
+        language: [ 'go' ]
 
     steps:
     - name: Set up Go 1.x
