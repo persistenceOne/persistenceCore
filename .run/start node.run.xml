@@ -1,14 +1,14 @@
 <component name="ProjectRunConfigurationManager">
-    <configuration default="false" name="start node" type="GoApplicationRunConfiguration" factoryName="Go Application"
-                   folderName="start">
-        <module name="persistenceCore"/>
-        <working_directory value="$PROJECT_DIR$/"/>
-        <go_parameters value="-i"/>
-        <parameters value="start"/>
-        <kind value="FILE"/>
-        <filePath value="$PROJECT_DIR$/node/main.go"/>
-        <package value="github.com/persistenceOne/persistenceMantle"/>
-        <directory value="$PROJECT_DIR$/"/>
-        <method v="2"/>
-    </configuration>
+  <configuration default="false" name="start node" type="GoApplicationRunConfiguration" factoryName="Go Application" folderName="start">
+    <module name="persistenceCore" />
+    <working_directory value="$PROJECT_DIR$" />
+    <go_parameters value="-i" />
+    <parameters value="start" />
+    <kind value="FILE" />
+    <package value="github.com/persistenceOne/persistenceCore" />
+    <directory value="$PROJECT_DIR$/" />
+    <filePath value="$PROJECT_DIR$/cmd/persistenceCore/main.go" />
+    <output_directory value="$PROJECT_DIR$/build" />
+    <method v="2" />
+  </configuration>
 </component>
