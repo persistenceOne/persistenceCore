@@ -214,3 +214,4 @@ release-git:
 		--prefix "persistenceCore-$(VERSION)/" \
 		-o "release/Source code.tar.gz" \
 		HEAD
+		
