@@ -19,29 +19,30 @@ You can set the `node` to the persistenceCore config and don't have to worry abo
 persistenceCore config node https://rpc.testnet.persistence.one:443
 ```
 
-To upload the contract
+To upload the contract via proposal
 
 ```
 RESP=$(persistenceCore tx gov submit-proposal wasm-store "<path/to/the/compiled/wasm>" \
   --title "title" \
   --description "description" \
   --deposit 10000uxprt \
-  --run-as $VAL_ADDR \
+  --run-as $TEST_KEY \
   --instantiate-everybody "true" \
   --keyring-backend test \
-  --from $VAL_ADDR --gas auto --fees 10000uxprt -y \
-  --chain-id $CHAIN_ID \
+  --from $TEST_KEY --gas auto --fees 10000uxprt -y \
+  --chain-id test-core-1 \
   -b block -o json --gas-adjustment 1.1)
   
 echo $RESP 
 ```
+The `$TEST_KEY` can be any valid persistenceAddress. Make sure it has some test tokens.
 
 Now `$RESP` has the proposalID, extract the proposal_ID and vote on it
 
 ```
 PROPOSAL_ID=$(echo "$RESP" | jq -r '.logs[0].events[] | select(.type == "submit_proposal") | .attributes[] | select(.key == "proposal_id") | .value')
 
-persistenceCore tx gov vote $PROPOSAL_ID yes --from $VAL_ADDR --yes --chain-id $CHAIN_ID \
+persistenceCore tx gov vote $PROPOSAL_ID yes --from $TEST_KEY --yes --chain-id test-core-1 \
     --fees 500uxprt --gas auto --gas-adjustment 1.1 -b block --keyring-backend test -o json | jq
 ```
 
@@ -60,8 +61,8 @@ RESP=$(persistenceCore tx gov submit-proposal instantiate-contract $CODE_ID "$IN
   --gas-adjustment 1.1 \
   --fees "10000uxprt" \
   --gas "auto" \
-  --run-as $VAL_ADDR \
-  -y --chain-id $CHAIN_ID -b block -o json)
+  --run-as $TEST_KEY \
+  -y --chain-id test-core-1 -b block -o json)
 ```
 
 The `$TEST_KEY` can be any valid persistenceAddress. Make sure it has some test tokens.
@@ -75,7 +76,7 @@ INIT=$(cat <<EOF
   "symbol": "FRST",
   "decimals": 6,
   "initial_balances": [{
-    "address": "$TEST1_KEY",
+    "address": "$TEST_KEY",
     "amount": "123456789000"
   }]
 }
