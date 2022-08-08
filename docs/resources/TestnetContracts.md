@@ -79,3 +79,6 @@ EOF
 Extract the proposal_ID and vote on it.
 
 After the proposal passes, the contract will be instantiated and can be interacted with!!
+
+For more info check out the following link :
+- [Smart Contracts Over Governance](https://docs.cosmwasm.com/tutorials/governance) 
