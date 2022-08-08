@@ -13,6 +13,7 @@ See the list of codes that was uploaded to the testnet previously.
 persistenceCore query wasm list-code --node https://rpc.testnet.persistence.one:443
 ```
 You can set the `node` to the persistenceCore config and don't have to worry about passing that flag always
+
 ```
 persistenceCore config node https://rpc.testnet.persistence.one:443
 ```
