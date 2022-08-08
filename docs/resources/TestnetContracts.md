@@ -48,7 +48,7 @@ persistenceCore tx gov vote $PROPOSAL_ID yes --from $TEST_KEY --yes --chain-id t
 
 The contract is instantiated via a gov-proposal 
 
-Get the $CODE_ID by doing `wasm list-code` after the proposal passes and proceed towards instantiation
+Get the $CODE_ID from `wasm list-code` after the proposal passes and proceed towards instantiation
 
 ```
 RESP=$(persistenceCore tx gov submit-proposal instantiate-contract $CODE_ID "$INIT" \
