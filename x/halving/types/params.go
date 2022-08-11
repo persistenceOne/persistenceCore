@@ -8,7 +8,7 @@ package types
 import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	paramsTypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"gopkg.in/yaml.v2"
 )
 
@@ -19,8 +19,8 @@ var (
 )
 
 // ParamTable for halving module.
-func ParamKeyTable() paramsTypes.KeyTable {
-	return paramsTypes.NewKeyTable().RegisterParamSet(&Params{})
+func ParamKeyTable() paramstypes.KeyTable {
+	return paramstypes.NewKeyTable().RegisterParamSet(&Params{})
 }
 
 func NewParams(blockHeight uint64) Params {
@@ -51,9 +51,9 @@ func (p Params) String() string {
 }
 
 // Implements params.ParamSet
-func (p *Params) ParamSetPairs() paramsTypes.ParamSetPairs {
-	return paramsTypes.ParamSetPairs{
-		paramsTypes.NewParamSetPair(KeyBlockHeight, &p.BlockHeight, validateBlockHeight),
+func (p *Params) ParamSetPairs() paramstypes.ParamSetPairs {
+	return paramstypes.ParamSetPairs{
+		paramstypes.NewParamSetPair(KeyBlockHeight, &p.BlockHeight, validateBlockHeight),
 	}
 }
 
