@@ -7,10 +7,10 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	mintTypes "github.com/cosmos/cosmos-sdk/x/mint/types"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 )
 
 type MintKeeper interface {
-	GetParams(ctx sdk.Context) (params mintTypes.Params)
-	SetParams(ctx sdk.Context, params mintTypes.Params)
+	GetParams(ctx sdk.Context) (params minttypes.Params)
+	SetParams(ctx sdk.Context, params minttypes.Params)
 }
