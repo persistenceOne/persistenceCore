@@ -1,5 +1,6 @@
 CHAIN_ID := testing
 
+CHAIN_NAME ?= persistenceCore
 CHAIN_DIR ?= /tmp/trash
 CHAIN_BIN ?= ./../../build/persistenceCore
 CHAIN_DATA_DIR ?= .persistenceCore
@@ -19,13 +20,13 @@ setup: setup-cosmovisor
 	$(MAKE) .bash SCRIPT_FILE=setup.sh
 
 setup-cosmovisor:
-	go install github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor@v1.0.0
+	GOBIN=/usr/local/bin/ go install github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor@latest
 	mkdir -p $(CHAIN_DIR)/$(CHAIN_DATA_DIR)/cosmovisor/genesis/bin/
 	mkdir -p $(CHAIN_DIR)/$(CHAIN_DATA_DIR)/cosmovisor/upgrades/
 	cp $(CHAIN_BIN) $(CHAIN_DIR)/$(CHAIN_DATA_DIR)/cosmovisor/genesis/bin/
 
 start:
-	HOME=$(CHAIN_DIR) cosmovisor start --minimum-gas-prices="0.0005uxprt" $(ARGS)
+	DAEMON_NAME=$(CHAIN_NAME) HOME=$(CHAIN_DIR) ~/go/bin/cosmovisor start --minimum-gas-prices="0.0005uxprt" $(ARGS)
 
 clean:
 	rm -rf $(CHAIN_DIR)/$(CHAIN_DATA_DIR)
