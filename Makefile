@@ -190,6 +190,7 @@ release-build-platform:
 	@mkdir -p release/
 	-@$(DOCKER) rm -f release-$(PLATFORM)
 	$(MAKE) docker-build DOCKER_FILE="docker/Dockerfile.release" DOCKER_ARGS="--platform linux/$(PLATFORM) --no-cache" DOCKER_TAG_NAME="release-$(PLATFORM)"
+	$(DOCKER) images
 	$(DOCKER) create -ti --name release-$(PLATFORM) ${DOCKER_IMAGE_NAME}:release-$(PLATFORM)
 	$(DOCKER) cp release-$(PLATFORM):/usr/local/app/build/persistenceCore release/persistenceCore-$(VERSION)-linux-$(PLATFORM)
 	tar -zcvf release/persistenceCore-$(VERSION)-linux-$(PLATFORM).tar.gz release/persistenceCore-$(VERSION)-linux-$(PLATFORM)
@@ -214,4 +215,3 @@ release-git:
 		--prefix "persistenceCore-$(VERSION)/" \
 		-o "release/Source code.tar.gz" \
 		HEAD
-		

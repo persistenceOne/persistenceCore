@@ -3,8 +3,12 @@ name: Release
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
 on:
+  pull_request:
+    branches:
+      - master
   release:
-    types: [ published ]
+    types:
+    - published
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -29,6 +33,7 @@ jobs:
 
       - name: Upload release folder
         uses: actions/upload-artifact@v2
+        if: github.event.release
         with:
           name: release
           path: release
