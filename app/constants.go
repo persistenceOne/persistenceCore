@@ -13,7 +13,7 @@ const (
 	Name             = "PersistenceCore"
 	Bech32MainPrefix = "persistence"
 	UpgradeName      = "v3"
-	CoinType         = 750
+	CoinType         = 118
 	Purpose          = 44
 
 	Bech32PrefixAccAddr  = Bech32MainPrefix
