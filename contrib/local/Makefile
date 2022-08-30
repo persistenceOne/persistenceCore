@@ -1,5 +1,6 @@
 CHAIN_ID := testing
 
+GOBIN ?= $(HOME)/go/bin
 CHAIN_NAME ?= persistenceCore
 CHAIN_DIR ?= /tmp/trash
 CHAIN_BIN ?= ./../../build/persistenceCore
@@ -20,8 +21,8 @@ setup: setup-cosmovisor
 	$(MAKE) .bash SCRIPT_FILE=setup.sh
 
 setup-cosmovisor:
-	go install github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor@latest
-	sudo cp ~/go/bin/cosmovisor /usr/local/bin/cosmovisor
+	go install github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor@v1.0.0
+	sudo cp $(GOBIN)/cosmovisor /usr/local/bin/cosmovisor
 	mkdir -p $(CHAIN_DIR)/$(CHAIN_DATA_DIR)/cosmovisor/genesis/bin/
 	mkdir -p $(CHAIN_DIR)/$(CHAIN_DATA_DIR)/cosmovisor/upgrades/
 	cp $(CHAIN_BIN) $(CHAIN_DIR)/$(CHAIN_DATA_DIR)/cosmovisor/genesis/bin/
