@@ -7,7 +7,7 @@ package types
 
 import (
 	"fmt"
-	paramsTypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -37,7 +37,7 @@ func TestParams_ParamSetPairs(t *testing.T) {
 	got := params.ParamSetPairs()
 	require.Equal(t, 1, len(got))
 
-	expectedParamSetPair := paramsTypes.NewParamSetPair(KeyBlockHeight, &params.BlockHeight, validateBlockHeight)
+	expectedParamSetPair := paramstypes.NewParamSetPair(KeyBlockHeight, &params.BlockHeight, validateBlockHeight)
 	require.Equal(t, got[0].Key, expectedParamSetPair.Key)
 	require.Equal(t, got[0].Value, expectedParamSetPair.Value)
 }

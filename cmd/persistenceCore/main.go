@@ -9,17 +9,17 @@ import (
 	"os"
 
 	"github.com/cosmos/cosmos-sdk/server"
-	serverCmd "github.com/cosmos/cosmos-sdk/server/cmd"
+	servercmd "github.com/cosmos/cosmos-sdk/server/cmd"
 
-	"github.com/persistenceOne/persistenceCore/app"
-	"github.com/persistenceOne/persistenceCore/cmd/persistenceCore/cmd"
+	"github.com/persistenceOne/persistenceCore/v3/app"
+	"github.com/persistenceOne/persistenceCore/v3/cmd/persistenceCore/cmd"
 )
 
 func main() {
 
 	rootCmd, _ := cmd.NewRootCmd()
 
-	if err := serverCmd.Execute(rootCmd, app.DefaultNodeHome); err != nil {
+	if err := servercmd.Execute(rootCmd, app.DefaultNodeHome); err != nil {
 		switch e := err.(type) {
 		case server.ErrorCode:
 			os.Exit(e.Code)

@@ -21,7 +21,7 @@ import (
 	"github.com/tendermint/tendermint/libs/rand"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/persistenceOne/persistenceCore/app"
+	"github.com/persistenceOne/persistenceCore/v3/app"
 )
 
 // SimAppChainID hardcoded chainID for simulation
@@ -51,15 +51,15 @@ func BenchmarkFullAppSimulation(b *testing.B) {
 	}()
 	encConf := app.MakeEncodingConfig()
 	persistenceApp := app.NewApplication(
-		app.Name, 
-		encConf, 
-		app.ModuleAccountPermissions, 
-		logger, 
-		db, 
-		nil, 
-		true, 
-		simapp.FlagPeriodValue, 
-		map[int64]bool{}, 
+		app.Name,
+		encConf,
+		app.ModuleAccountPermissions,
+		logger,
+		db,
+		nil,
+		true,
+		simapp.FlagPeriodValue,
+		map[int64]bool{},
 		app.DefaultNodeHome,
 		app.GetEnabledProposals(),
 		simapp.EmptyAppOptions{},

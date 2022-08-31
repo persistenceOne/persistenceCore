@@ -89,6 +89,7 @@ DOCKER_TAG_NAME = latest
 DOCKER_CONTAINER_NAME = persistence-core-container
 DOCKER_CMD ?= "/bin/sh"
 DOCKER_VOLUME = -v $(CURDIR):/usr/local/app
+DOCKER_FILE ?= docker/Dockerfile
 
 .PHONY: all install build verify docker-run
 
@@ -96,7 +97,7 @@ DOCKER_VOLUME = -v $(CURDIR):/usr/local/app
 ###                              Documentation                              ###
 ###############################################################################
 
-all: install lint test
+all: install
 
 BUILD_TARGETS := build install
 
@@ -108,23 +109,8 @@ $(BUILD_TARGETS): go.sum $(BUILDDIR)/
 $(BUILDDIR)/:
 	mkdir -p $(BUILDDIR)/
 
-build-reproducible: go.sum
-	$(DOCKER) rm latest-build || true
-	$(DOCKER) run --volume=$(CURDIR):/sources:ro \
-        --env TARGET_PLATFORMS='linux/amd64 darwin/amd64 linux/arm64 windows/amd64' \
-        --env APP=persistenceCore \
-        --env VERSION=$(VERSION) \
-        --env COMMIT=$(COMMIT) \
-        --env LEDGER_ENABLED=$(LEDGER_ENABLED) \
-        --name latest-build tendermintdev/rbuilder:latest
-	$(DOCKER) cp -a latest-build:/home/builder/artifacts/ $(CURDIR)/
-
 build-linux: go.sum
 	LEDGER_ENABLED=false GOOS=linux GOARCH=amd64 $(MAKE) build
-
-build-contract-tests-hooks:
-	mkdir -p $(BUILDDIR)
-	go build -mod=readonly $(BUILD_FLAGS) -o $(BUILDDIR)/ ./cmd/contract_tests
 
 go-mod-cache: go.sum
 	@echo "--> Download go modules to local cache"
@@ -145,26 +131,13 @@ clean:
 distclean: clean
 	rm -rf vendor/
 
-bin_name = persistenceCore
-ifeq (${OS},Windows_NT)
-	bin_name = persistenceCore.exe
-endif
-
-release: build
-	mkdir -p release
-	tar -czvf release/persistenceCore-${GOOS}-${GOARCH}.tar.gz --directory=build/ ${bin_name}
-
 ###############################################################################
 ###                              Proto                              		###
 ###############################################################################
 
 proto-gen:
 	@echo "Generating Protobuf files"
-	$(DOCKER) run --rm \
-		-v $(shell go list -f "{{ .Dir }}" -m github.com/cosmos/cosmos-sdk):/workspace/cosmos_sdk_dir \
-	 	--env COSMOS_SDK_DIR=/workspace/cosmos_sdk_dir \
-	 	-v $(CURDIR):/workspace --workdir /workspace \
-		tendermintdev/sdk-proto-gen sh ./scripts/protocgen.sh
+	scripts/protocgen.sh
 
 ###############################################################################
 ###                              Docker                             		###
@@ -184,7 +157,9 @@ proto-gen:
 # 	make docker-clean  # Will clean up the running container, as well as delete the image
 # 						 after one is done testing
 docker-build:
-	$(DOCKER) build ${DOCKER_ARGS} -t ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME} .
+	$(DOCKER) buildx build ${DOCKER_ARGS} \
+		-f $(DOCKER_FILE) \
+		-t ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME} .
 
 docker-build-push: docker-build
 	$(DOCKER) push ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME}
@@ -203,3 +178,42 @@ docker-clean-image:
 	-$(DOCKER) rmi ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME}
 
 docker-clean: docker-clean-container docker-clean-image
+
+
+###############################################################################
+###                            Release commands                             ###
+###############################################################################
+
+PLATFORM ?= amd64
+
+release-build-platform:
+	@mkdir -p release/
+	-@$(DOCKER) rm -f release-$(PLATFORM)
+	$(MAKE) docker-build DOCKER_FILE="docker/Dockerfile.release" \
+		DOCKER_ARGS="--platform linux/$(PLATFORM) --no-cache --load" \
+		DOCKER_TAG_NAME="release-$(PLATFORM)"
+	$(DOCKER) images
+	$(DOCKER) create -ti --name release-$(PLATFORM) ${DOCKER_IMAGE_NAME}:release-$(PLATFORM)
+	$(DOCKER) cp release-$(PLATFORM):/usr/local/app/build/persistenceCore release/persistenceCore-$(VERSION)-linux-$(PLATFORM)
+	tar -zcvf release/persistenceCore-$(VERSION)-linux-$(PLATFORM).tar.gz release/persistenceCore-$(VERSION)-linux-$(PLATFORM)
+	-@$(DOCKER) rm -f release-$(PLATFORM)
+
+release-sha:
+	mkdir -p release/
+	rm -f release/sha256sum.txt
+	sha256sum release/* | sed 's#release/##g' > release/sha256sum.txt
+
+# Create git archive
+release-git:
+	mkdir -p release/
+	git archive \
+		--format zip \
+		--prefix "persistenceCore-$(VERSION)/" \
+		-o "release/Source code.zip" \
+		HEAD
+
+	git archive \
+		--format tar.gz \
+		--prefix "persistenceCore-$(VERSION)/" \
+		-o "release/Source code.tar.gz" \
+		HEAD

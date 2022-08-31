@@ -7,32 +7,32 @@ package keeper
 
 import (
 	"fmt"
-	mintTypes "github.com/cosmos/cosmos-sdk/x/mint/types"
-	paramsTypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
+	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
 	"github.com/tendermint/tendermint/libs/log"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/persistenceOne/persistenceCore/x/halving/types"
+	"github.com/persistenceOne/persistenceCore/v3/x/halving/types"
 )
 
 // Keeper of the halving store
 type Keeper struct {
 	storeKey   sdk.StoreKey
-	paramSpace paramsTypes.Subspace
-	mintKeeper types.MintKeeper
+	paramSpace paramstypes.Subspace
+	mintkeeper types.MintKeeper
 }
 
 // NewKeeper creates a new halving Keeper instance
 func NewKeeper(
-	key sdk.StoreKey, paramSpace paramsTypes.Subspace,
-	mintKeeper types.MintKeeper,
+	key sdk.StoreKey, paramSpace paramstypes.Subspace,
+	mintkeeper types.MintKeeper,
 ) Keeper {
 
 	return Keeper{
 		storeKey:   key,
 		paramSpace: paramSpace.WithKeyTable(types.ParamKeyTable()),
-		mintKeeper: mintKeeper,
+		mintkeeper: mintkeeper,
 	}
 }
 
@@ -59,11 +59,11 @@ func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
 //______________________________________________________________________
 
 // GetMintingParams returns the total set of halving parameters.
-func (k Keeper) GetMintingParams(ctx sdk.Context) (params mintTypes.Params) {
-	return k.mintKeeper.GetParams(ctx)
+func (k Keeper) GetMintingParams(ctx sdk.Context) (params minttypes.Params) {
+	return k.mintkeeper.GetParams(ctx)
 }
 
 // SetMintingParams sets the total set of halving parameters.
-func (k Keeper) SetMintingParams(ctx sdk.Context, params mintTypes.Params) {
-	k.mintKeeper.SetParams(ctx, params)
+func (k Keeper) SetMintingParams(ctx sdk.Context, params minttypes.Params) {
+	k.mintkeeper.SetParams(ctx, params)
 }
