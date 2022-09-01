@@ -5,7 +5,7 @@ COMMIT := $(shell git log -1 --format='%H')
 
 # don't override user values
 ifeq (,$(VERSION))
-  VERSION := $(shell git describe --exact-match 2>/dev/null)
+  VERSION := $(shell git describe --tags --exact-match)
   # if VERSION is empty, then populate it with branch's name and raw commit hash
   ifeq (,$(VERSION))
     VERSION := $(BRANCH)-$(COMMIT)
@@ -76,6 +76,10 @@ ifeq (rocksdb,$(findstring rocksdb,$(build_tags)))
 endif
 
 BUILD_FLAGS += -ldflags '${ldflags}' -tags "${build_tags}"
+# check for nostrip option
+ifeq (,$(findstring nostrip,$(BUILD_OPTIONS)))
+  BUILD_FLAGS += -trimpath
+endif
 
 GOBIN = $(shell go env GOPATH)/bin
 GOARCH = $(shell go env GOARCH)
