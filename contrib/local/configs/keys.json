@@ -3,7 +3,7 @@
     {
       "name": "test1",
       "type": "local",
-      "address": "persistence152nvc6f096v6n6tr5lg50xq22ak0chsr0ru7xc",
+      "address": "persistence1ht0tun4u5uj4f4z83p9tncjerwu27ycsm52txm",
       "pubkey": {
         "@type": "/cosmos.crypto.secp256k1.PubKey",
         "key": "AoC0SFBrAyiHrtJ+uGFuxP9CyTK8zSppylBhB+KBONNq"
@@ -13,7 +13,7 @@
     {
       "name": "test2",
       "type": "local",
-      "address": "persistence12m6ll675k83skhd2qkkp2fdv77erd7xw7j0udp",
+      "address": "persistence123em6jp7y96rtylp6tjk9r0dcescl0k4ccqvpu",
       "pubkey": {
         "@type": "/cosmos.crypto.secp256k1.PubKey",
         "key": "Ap9sXO3v1RkIrkUauL8V4aGScZ4bbeCMcZLKBHAp9C2c"
@@ -23,7 +23,7 @@
     {
       "name": "test3",
       "type": "local",
-      "address": "persistence1xh096pfn6hyf9vp6aplammfdx24kj8ztudwy5c",
+      "address": "persistence1hqujwsdhdjxpe5j50lrfdw9f72wlh90t63zdn8",
       "pubkey": {
         "@type": "/cosmos.crypto.secp256k1.PubKey",
         "key": "Am0491WPc8uCuzMwgJPMRwGv2nmuFmDJW+M+ELWIIZKU"
@@ -33,7 +33,7 @@
     {
       "name": "test4",
       "type": "local",
-      "address": "persistence1lhr66nenzpzs6t9tv7l52njpc5gl9depd5zzd4",
+      "address": "persistence10u2fwnujp9murslrawschn0xd792upnc9rq62x",
       "pubkey": {
         "@type": "/cosmos.crypto.secp256k1.PubKey",
         "key": "Ah4C0zoez6M6ex2zSxLguO9bRgII0BZw6IIBjUUJ1Iep"
@@ -43,7 +43,7 @@
     {
       "name": "test5",
       "type": "local",
-      "address": "persistence1t5ahj0q7j5vatrkenffev390ggth8knurvs7gg",
+      "address": "persistence1953kt042t92wjgw2ak6xsquy33eu25qvjy7hf0",
       "pubkey": {
         "@type": "/cosmos.crypto.secp256k1.PubKey",
         "key": "AkpRghwKAStaB1KozioOKOJdoaNXo7fWP8A30rG+9mND"
