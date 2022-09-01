@@ -29,14 +29,14 @@
         {
           "name": "rly-core0",
           "type": "local",
-          "address": "persistence1nnluajc7hgev88u9cxjejumxgqt26qqzhfzep7",
+          "address": "persistence1tgyh4d2x7juszpd4hscnzvl2xsmqqf4lp9dsw2",
           "pubkey": "{\"@type\":\"/cosmos.crypto.secp256k1.PubKey\",\"key\":\"AzlcsMwVcEJofOM7jsFEeQ834udvngWeQE0knAFIgGOr\"}",
           "mnemonic": "arena carpet carbon wild thrive buzz mixed elephant fancy satoshi room dwarf stomach pause remain wage club video ring among ship table culture excite"
         },
         {
           "name": "rly-core1",
           "type": "local",
-          "address": "persistence1ylsqcxw0vnfxswxddnfq3mgyzvs4qr7nzze98t",
+          "address": "persistence1c9yl50f5dpwpmedqjkpzhmq4cgsvepy8y42luf",
           "pubkey": "{\"@type\":\"/cosmos.crypto.secp256k1.PubKey\",\"key\":\"A0Wk2V0qk5p6Dd2DsQMm/yIGUWt1rjLP6YCZOyk9YZMF\"}",
           "mnemonic": "tail humor kite foil endorse joke shine document empower thumb glove payment gather front delay begin all enemy laundry vibrant ghost easily vendor priority"
         }
