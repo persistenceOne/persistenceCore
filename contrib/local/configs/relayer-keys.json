@@ -24,7 +24,7 @@
     {
       "name": "persistenceCore",
       "id": "core-1",
-      "hdpath": "m/44'/750'/0'/0/0",
+      "hdpath": "m/44'/118'/0'/0/0",
       "keys": [
         {
           "name": "rly-core0",
