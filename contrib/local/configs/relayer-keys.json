@@ -24,20 +24,20 @@
     {
       "name": "persistenceCore",
       "id": "core-1",
-      "hdpath": "m/44'/750'/0'/0/0",
+      "hdpath": "m/44'/118'/0'/0/0",
       "keys": [
         {
           "name": "rly-core0",
           "type": "local",
-          "address": "persistence1nnluajc7hgev88u9cxjejumxgqt26qqzhfzep7",
-          "pubkey": "{\"@type\":\"/cosmos.crypto.secp256k1.PubKey\",\"key\":\"AzlcsMwVcEJofOM7jsFEeQ834udvngWeQE0knAFIgGOr\"}",
+          "address": "persistence1tgyh4d2x7juszpd4hscnzvl2xsmqqf4lp9dsw2",
+          "pubkey": "{\"@type\":\"/cosmos.crypto.secp256k1.PubKey\",\"key\":\"A/PUt1vzt9Z2rgfBVZki6bjsDwjXKUPASuB4mnCKoWJ8\"}",
           "mnemonic": "arena carpet carbon wild thrive buzz mixed elephant fancy satoshi room dwarf stomach pause remain wage club video ring among ship table culture excite"
         },
         {
           "name": "rly-core1",
           "type": "local",
-          "address": "persistence1ylsqcxw0vnfxswxddnfq3mgyzvs4qr7nzze98t",
-          "pubkey": "{\"@type\":\"/cosmos.crypto.secp256k1.PubKey\",\"key\":\"A0Wk2V0qk5p6Dd2DsQMm/yIGUWt1rjLP6YCZOyk9YZMF\"}",
+          "address": "persistence1c9yl50f5dpwpmedqjkpzhmq4cgsvepy8y42luf",
+          "pubkey": "{\"@type\":\"/cosmos.crypto.secp256k1.PubKey\",\"key\":\"AklgpjVpwww04L7jRzwDfiwjxlh61kNvStYXemxOREtq\"}",
           "mnemonic": "tail humor kite foil endorse joke shine document empower thumb glove payment gather front delay begin all enemy laundry vibrant ghost easily vendor priority"
         }
       ]
