@@ -28,7 +28,10 @@ setup-cosmovisor:
 	cp $(CHAIN_BIN) $(CHAIN_DIR)/$(CHAIN_DATA_DIR)/cosmovisor/genesis/bin/
 
 start:
-	DAEMON_NAME=$(CHAIN_NAME) HOME=$(CHAIN_DIR) cosmovisor start --minimum-gas-prices="0.0005uxprt" $(ARGS)
+	DAEMON_NAME=$(CHAIN_NAME) \
+	HOME=$(CHAIN_DIR) \
+	DAEMON_HOME=$(CHAIN_DIR)/$(CHAIN_DATA_DIR) \
+	cosmovisor start --minimum-gas-prices="0.0005uxprt" $(ARGS)
 
 clean:
 	rm -rf $(CHAIN_DIR)/$(CHAIN_DATA_DIR)

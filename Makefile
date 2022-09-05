@@ -88,13 +88,6 @@ GOOS = $(shell go env GOOS)
 # Docker variables
 DOCKER := $(shell which docker)
 
-DOCKER_IMAGE_NAME = persistenceone/persistencecore
-DOCKER_TAG_NAME = latest
-DOCKER_CONTAINER_NAME = persistence-core-container
-DOCKER_CMD ?= "/bin/sh"
-DOCKER_VOLUME = -v $(CURDIR):/usr/local/app
-DOCKER_FILE ?= docker/Dockerfile
-
 .PHONY: all install build verify docker-run
 
 ###############################################################################
@@ -160,28 +153,8 @@ proto-gen:
 # 		NOTE: Recommeded to use docker commands directly for long running processes
 # 	make docker-clean  # Will clean up the running container, as well as delete the image
 # 						 after one is done testing
-docker-build:
-	$(DOCKER) buildx build ${DOCKER_ARGS} \
-		-f $(DOCKER_FILE) \
-		-t ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME} .
 
-docker-build-push: docker-build
-	$(DOCKER) push ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME}
-
-docker-run:
-	$(DOCKER) run --rm ${DOCKER_OPTS} ${DOCKER_VOLUME} --name=${DOCKER_CONTAINER_NAME} ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME} ${DOCKER_CMD}
-
-docker-interactive:
-	$(MAKE) docker-run DOCKER_CMD=/bin/bash DOCKER_OPTS="-it"
-
-docker-clean-container:
-	-$(DOCKER) stop ${DOCKER_CONTAINER_NAME}
-	-$(DOCKER) rm ${DOCKER_CONTAINER_NAME}
-
-docker-clean-image:
-	-$(DOCKER) rmi ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME}
-
-docker-clean: docker-clean-container docker-clean-image
+include docker/Makefile
 
 
 ###############################################################################
@@ -193,11 +166,11 @@ PLATFORM ?= amd64
 release-build-platform:
 	@mkdir -p release/
 	-@$(DOCKER) rm -f release-$(PLATFORM)
-	$(MAKE) docker-build DOCKER_FILE="docker/Dockerfile.release" \
-		DOCKER_ARGS="--platform linux/$(PLATFORM) --no-cache --load" \
+	$(MAKE) docker-build PROCESS="persistencecore" DOCKER_FILE="Dockerfile.release" \
+		DOCKER_BUILD_ARGS="--platform linux/$(PLATFORM) --no-cache --load" \
 		DOCKER_TAG_NAME="release-$(PLATFORM)"
 	$(DOCKER) images
-	$(DOCKER) create -ti --name release-$(PLATFORM) ${DOCKER_IMAGE_NAME}:release-$(PLATFORM)
+	$(DOCKER) create -ti --name release-$(PLATFORM) $(DOCKER_IMAGE_NAME):release-$(PLATFORM)
 	$(DOCKER) cp release-$(PLATFORM):/usr/local/app/build/persistenceCore release/persistenceCore-$(VERSION)-linux-$(PLATFORM)
 	tar -zcvf release/persistenceCore-$(VERSION)-linux-$(PLATFORM).tar.gz release/persistenceCore-$(VERSION)-linux-$(PLATFORM)
 	-@$(DOCKER) rm -f release-$(PLATFORM)
