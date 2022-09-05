@@ -160,28 +160,8 @@ proto-gen:
 # 		NOTE: Recommeded to use docker commands directly for long running processes
 # 	make docker-clean  # Will clean up the running container, as well as delete the image
 # 						 after one is done testing
-docker-build:
-	$(DOCKER) buildx build ${DOCKER_ARGS} \
-		-f $(DOCKER_FILE) \
-		-t ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME} .
 
-docker-build-push: docker-build
-	$(DOCKER) push ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME}
-
-docker-run:
-	$(DOCKER) run --rm ${DOCKER_OPTS} ${DOCKER_VOLUME} --name=${DOCKER_CONTAINER_NAME} ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME} ${DOCKER_CMD}
-
-docker-interactive:
-	$(MAKE) docker-run DOCKER_CMD=/bin/bash DOCKER_OPTS="-it"
-
-docker-clean-container:
-	-$(DOCKER) stop ${DOCKER_CONTAINER_NAME}
-	-$(DOCKER) rm ${DOCKER_CONTAINER_NAME}
-
-docker-clean-image:
-	-$(DOCKER) rmi ${DOCKER_IMAGE_NAME}:${DOCKER_TAG_NAME}
-
-docker-clean: docker-clean-container docker-clean-image
+include docker/Makefile
 
 
 ###############################################################################
