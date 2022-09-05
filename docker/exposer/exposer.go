@@ -58,7 +58,7 @@ func getNodeStatus() StatusResponse {
 func getNodeIDHandler(w http.ResponseWriter, r *http.Request) {
 	status := getNodeStatus()
 
-	io.WriteString(w, status.Result.NodeInfo.ID)
+	_, _ = io.WriteString(w, status.Result.NodeInfo.ID)
 }
 
 func getPubKeyHandler(w http.ResponseWriter, r *http.Request) {
@@ -70,7 +70,7 @@ func getPubKeyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data, _ := json.Marshal(response)
-	io.WriteString(w, string(data))
+	_, _ = io.WriteString(w, string(data))
 }
 
 func getGenesisHandler(w http.ResponseWriter, r *http.Request) {
@@ -85,7 +85,7 @@ func getGenesisHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(byteValue)
+	_, _ = w.Write(byteValue)
 }
 
 func main() {
