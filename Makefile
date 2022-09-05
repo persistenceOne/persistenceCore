@@ -88,13 +88,6 @@ GOOS = $(shell go env GOOS)
 # Docker variables
 DOCKER := $(shell which docker)
 
-DOCKER_IMAGE_NAME = persistenceone/persistencecore
-DOCKER_TAG_NAME = latest
-DOCKER_CONTAINER_NAME = persistence-core-container
-DOCKER_CMD ?= "/bin/sh"
-DOCKER_VOLUME = -v $(CURDIR):/usr/local/app
-DOCKER_FILE ?= docker/Dockerfile
-
 .PHONY: all install build verify docker-run
 
 ###############################################################################
@@ -173,11 +166,11 @@ PLATFORM ?= amd64
 release-build-platform:
 	@mkdir -p release/
 	-@$(DOCKER) rm -f release-$(PLATFORM)
-	$(MAKE) docker-build DOCKER_FILE="docker/Dockerfile.release" \
-		DOCKER_ARGS="--platform linux/$(PLATFORM) --no-cache --load" \
+	$(MAKE) docker-build PROCESS="persistencecore" DOCKER_FILE="Dockerfile.release" \
+		DOCKER_BUILD_ARGS="--platform linux/$(PLATFORM) --no-cache --load" \
 		DOCKER_TAG_NAME="release-$(PLATFORM)"
 	$(DOCKER) images
-	$(DOCKER) create -ti --name release-$(PLATFORM) ${DOCKER_IMAGE_NAME}:release-$(PLATFORM)
+	$(DOCKER) create -ti --name release-$(PLATFORM) $(DOCKER_IMAGE_NAME):release-$(PLATFORM)
 	$(DOCKER) cp release-$(PLATFORM):/usr/local/app/build/persistenceCore release/persistenceCore-$(VERSION)-linux-$(PLATFORM)
 	tar -zcvf release/persistenceCore-$(VERSION)-linux-$(PLATFORM).tar.gz release/persistenceCore-$(VERSION)-linux-$(PLATFORM)
 	-@$(DOCKER) rm -f release-$(PLATFORM)

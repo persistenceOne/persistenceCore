@@ -1,8 +1,8 @@
 PROCESS = persistencecore
-IMAGE_NAME = persistenceone/$(PROCESS)
-TAG_NAME = latest
+DOCKER_IMAGE_NAME = persistenceone/$(PROCESS)
+DOCKER_TAG_NAME = latest
 CONTAINER_NAME = container-$(PROCESS)
-FILE = Dockerfile
+DOCKER_FILE = Dockerfile
 
 DOCKER := $(shell which docker)
 
@@ -23,21 +23,24 @@ _DOCKER_ARGS=\
 
 # Command for dockerization
 docker-build:
-	docker buildx build . --platform=linux/amd64 -f docker/$(PROCESS)/$(FILE) -t $(IMAGE_NAME):$(TAG_NAME)
+	$(DOCKER) buildx build . \
+		$(DOCKER_BUILD_ARGS) \
+		-f docker/$(PROCESS)/$(DOCKER_FILE) \
+		-t $(DOCKER_IMAGE_NAME):$(DOCKER_TAG_NAME)
 
 docker-run:
-	docker run --rm -it --name=$(CONTAINER_NAME) \
+	$(DOCKER) run --rm -it --name=$(CONTAINER_NAME) \
 		$(_DOCKER_VOLUME) $(_DOCKER_ARGS) $(_DOCKER_ENV) \
 		$(IMAGE_NAME):$(TAG_NAME) /bin/bash
 
 docker-push:
-	docker push $(IMAGE_NAME):$(TAG_NAME)
+	$(DOCKER) push $(IMAGE_NAME):$(TAG_NAME)
 
 docker-build-push: docker-build docker-push
 
 docker-clean-container:
-	-docker stop $(CONTAINER_NAME)
-	-docker rm $(CONTAINER_NAME)
+	-$(DOCKER) stop $(CONTAINER_NAME)
+	-$(DOCKER) rm $(CONTAINER_NAME)
 
 docker-clean: docker-clean-container
-	-docker rmi $(IMAGE_NAME):$(TAG_NAME)
+	-$(DOCKER) rmi $(IMAGE_NAME):$(TAG_NAME)
