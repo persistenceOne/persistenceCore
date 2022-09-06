@@ -1,0 +1,4 @@
+namespace: local
+
+resources:
+  - ../../../base/persistencecore

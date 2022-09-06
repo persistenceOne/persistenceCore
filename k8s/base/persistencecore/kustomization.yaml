@@ -1,0 +1,13 @@
+resources:
+  - configmap.yaml
+  - genesis.yaml
+  - validator.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: test-addresses-persistencecore
+    files:
+      - configs/keys.json
+      - configs/validators.json
