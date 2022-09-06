@@ -15,7 +15,7 @@ If it is not taken up in a couple of days, feel free to tag `@Anmol1696`, `@pune
 ### Critical bug or security issue
 
 Please report critical security vulnerabilities to
-**[security@persistence.one](mailto:security@persistence.one)**.  *Please avoid opening a public issue on the repository for critical security issues.*
+**[admin@persistence.one](mailto:admin@persistence.one)**.  *Please avoid opening a public issue on the repository for critical security issues.*
 
 The Persistence team will send a response indicating the next steps in handling your
 report. After the initial reply to your report, the team will keep you informed
@@ -29,7 +29,7 @@ In addition, please include the following information along with your report:
 - An explanation of who can exploit this vulnerability, and what they gain when doing so -- write an attack scenario. This will help us evaluate your report quickly especially if the issue is complex.
 - Whether this vulnerability is public or known to third parties. If it is, please provide details.
 
-If you believe that an existing (public) issue is a critical-security-related issue, please email **[security@persistence.one](mailto:security@persistence.one)**. The email should include the issue ID and
+If you believe that an existing (public) issue is a critical-security-related issue, please email **[admin@persistence.one](mailto:admin@persistence.one)**. The email should include the issue ID and
 a short description of why it should be handled according to this critical security
 policy.
 
