@@ -20,7 +20,7 @@ Please report critical security vulnerabilities to
 The Persistence team will send a response indicating the next steps in handling your
 report. After the initial reply to your report, the team will keep you informed
 of the progress towards remediation and may ask for additional
-information or guidance.  For critical problems you may encrypt your report using the public key below.
+information or guidance.
 
 In addition, please include the following information along with your report:
 
