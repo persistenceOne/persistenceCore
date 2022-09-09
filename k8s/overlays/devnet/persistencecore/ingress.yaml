@@ -1,0 +1,76 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-core-devnet
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  tls:
+    # This secret must exist beforehand
+    # The cert must also contain the subj-name grpctest.dev.mydomain.com
+    # https://github.com/kubernetes/ingress-nginx/blob/master/docs/examples/PREREQUISITES.md#tls-certificates
+    - secretName: cloudflare-tls
+      hosts:
+        - rpc.devnet.core.dexter.zone
+  rules:
+    - host: rpc.devnet.core.dexter.zone
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: core-genesis
+                port:
+                  number: 26657
+  ingressClassName: nginx
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-core-devnet-grpc
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+spec:
+  tls:
+    - secretName: cloudflare-tls
+      hosts:
+        - grpc.devnet.core.dexter.zone
+  rules:
+    - host: grpc.devnet.core.dexter.zone
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: core-genesis
+                port:
+                  number: 9090
+  ingressClassName: nginx
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-core-devnet-rest
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  tls:
+    - secretName: cloudflare-tls
+      hosts:
+        - rest.devnet.core.dexter.zone
+  rules:
+    - host: rest.devnet.core.dexter.zone
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: core-genesis
+                port:
+                  number: 1317
+  ingressClassName: nginx

@@ -1,0 +1,5 @@
+namespace: dev-core
+
+resources:
+  - ../../../base/persistencecore
+  - ingress.yaml
