@@ -1,0 +1,54 @@
+{
+  "keys": [
+    {
+      "name": "test",
+      "type": "local",
+      "address": "cosmos1hcqg5wj9t42zawqkqucs7la85ffyv08lum327c",
+      "pubkey": {
+        "@type": "/cosmos.crypto.secp256k1.PubKey",
+        "key": "A2L7bEp1Y89hBqXA/Bsbw2gPLxmFNj6SAVVoXZdT7YAd"
+      },
+      "mnemonic": "together chief must vocal account off apart dinosaur move canvas spring whisper improve cruise idea earn reflect flash goat illegal mistake blood earn ridge"
+    },
+    {
+      "name": "test1",
+      "type": "local",
+      "address": "cosmos1lcck2cxh7dzgkrfk53kysg9ktdrsjj6jv6txhe",
+      "pubkey": {
+        "@type": "/cosmos.crypto.secp256k1.PubKey",
+        "key": "AtuoR1BDBj+Ncd+/4S7X2oeSssYPw/0gwU9Pomn7LpLQ"
+      },
+      "mnemonic": "marble allow december print trial know resource cry next segment twice nose because steel omit confirm hair extend shrimp seminar one minor phone deputy"
+    },
+    {
+      "name": "test2",
+      "type": "local",
+      "address": "cosmos10khgeppewe4rgfrcy809r9h00aquwxxxd6um38",
+      "pubkey": {
+        "@type": "/cosmos.crypto.secp256k1.PubKey",
+        "key": "AldF7lJjd5KfVjf+OYZUW8RcGE31tmFwvnA03WVY5OOd"
+      },
+      "mnemonic": "axis decline final suggest denial erupt satisfy weekend utility fortune dry glory recall real other evil spatial speed seek rubber struggle wolf tortoise large"
+    },
+    {
+      "name": "test3",
+      "type": "local",
+      "address": "cosmos10vcqjzphfdlumas0vp64f0hruhrqxv0cg26cge",
+      "pubkey": {
+        "@type": "/cosmos.crypto.secp256k1.PubKey",
+        "key": "A0Iv3dQ0RFENodXd3civXu6pgdfqPnMB9Ss5W5y9gdSc"
+      },
+      "mnemonic": "crunch armed fatal agent fat daughter shed draft hundred skin wheat maid dice please universe elbow start fantasy reopen paper relief tumble ability holiday\n"
+    },
+    {
+      "name": "wallet",
+      "type": "local",
+      "address": "cosmos15ddw7dkp56zytf3peshxr8fwn5w76y4g462ql2",
+      "pubkey": {
+        "@type": "/cosmos.crypto.secp256k1.PubKey",
+        "key": "A1WqfbAEcfbz5gTZA5+8AVWOtasQ77P/svKjvWQqkfGL"
+      },
+      "mnemonic": "hazard point voice again merit catalog mother kingdom palace fury width patch mixed eye saddle vital deal joke dash circle pattern artefact visual lake\n"
+    }
+  ]
+}

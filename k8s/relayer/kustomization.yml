@@ -1,0 +1,13 @@
+namespace: local
+
+resources:
+- relayer.yml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: test-relayer-config
+    files:
+      - configs/config.toml
+      - configs/keys.json

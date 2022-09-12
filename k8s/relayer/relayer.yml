@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: relayer
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: relayer
+      app.kubernetes.io/name: relayer
+  template:
+    metadata:
+      annotations:
+        quality: release
+        role: api-gateway
+        sla: high
+        tier: gateway
+      labels:
+        app.kubernetes.io/instance: relayer
+        app.kubernetes.io/type: relayer
+        app.kubernetes.io/name: relayer
+        app.kubernetes.io/version: '0.1'
+    spec:
+      imagePullSecrets:
+        - name: test-docker-creds
+      containers:
+        - name: relayer
+          image: informalsystems/hermes:1.0.0
+          imagePullPolicy: Always
+          env:
+            - name: RELAYER_DIR
+              value: /root/.hermes
+            - name: CONFIG
+              value: "config"
+          command:
+            - bash
+            - "-c"
+            - |
+              apt update
+              apt -y install jq
+              mkdir $RELAYER_DIR
+              CONFIG_FILE="$CONFIG.toml"
+              echo "$CONFIG_FILE"
+              cp /configs/$CONFIG_FILE $RELAYER_DIR/config.toml
+              cat $RELAYER_DIR/config.toml
+              for ((i=0; i<$(jq -r ".chains | length" /configs/keys.json); i++))
+              do
+                jq -r ".chains[$i].keys[0]" /configs/keys.json > /tmp/key$i.json
+                hermes keys add \
+                  --chain $(jq -r ".chains[$i].id" /configs/keys.json) \
+                  --key-file /tmp/key$i.json \
+                  --hd-path $(jq -r ".chains[$i].hdpath" /configs/keys.json)
+              done
+              
+              hermes create channel \
+                --a-chain $(jq -r ".chains[1].id" /configs/keys.json) \
+                --b-chain $(jq -r ".chains[0].id" /configs/keys.json) \
+                --a-port $(jq -r ".chains[1].port" /configs/keys.json) \
+                --b-port $(jq -r ".chains[0].port" /configs/keys.json) \
+                --new-client-connection --yes
+              hermes start
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: "0.5"
+              memory: 0.5Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsUser: 0
+          volumeMounts:
+            - mountPath: /relayer
+              name: relayer
+            - mountPath: /configs
+              name: relayer-config
+      volumes:
+        - name: relayer
+          emptyDir: { }
+        - name: relayer-config
+          configMap:
+            name: test-relayer-config

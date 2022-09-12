@@ -1,5 +1,5 @@
 PROCESS=persistencecore
-CLUSTER=devnet
+CLUSTER=local
 
 apply:
 	kubectl apply -k overlays/$(CLUSTER)/$(PROCESS)

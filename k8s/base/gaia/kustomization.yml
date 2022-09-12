@@ -1,0 +1,17 @@
+namespace: local
+
+resources:
+  - service.yml
+  - configmap.yml
+  - genesis.yml
+  - validator.yml
+  - ingress.yml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: test-addresses-gaia
+    files:
+      - configs/keys.json
+      - configs/validators.json
