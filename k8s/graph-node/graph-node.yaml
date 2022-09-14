@@ -1,0 +1,189 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: persistencecore-graph-node
+  labels:
+    app.kubernetes.io/name: persistencecore-graph-node
+spec:
+  clusterIP: None
+  ports:
+    - name: http
+      port: 8000
+      protocol: TCP
+      targetPort: 8000
+    - name: websocket
+      port: 8001
+      protocol: TCP
+      targetPort: 8001
+    - name: admin
+      port: 8020
+      protocol: TCP
+      targetPort: 8020
+  selector:
+    app.kubernetes.io/name: persistencecore-graph-node
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: persistencecore-graph-node
+spec:
+  serviceName: persistencecore-graph-node
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: persistencecore
+      app.kubernetes.io/name: persistencecore-graph-node
+  template:
+    metadata:
+      annotations:
+        quality: release
+        role: api-gateway
+        sla: high
+        tier: gateway
+      labels:
+        app.kubernetes.io/instance: persistencecore
+        app.kubernetes.io/type: persistencecore-graph-node
+        app.kubernetes.io/name: persistencecore-graph-node
+        app.kubernetes.io/version: '0.1'
+    spec:
+      initContainers:
+        - name: wait-for-firehose-node
+          image: graphprotocol/graph-node:latest
+          imagePullPolicy: Always
+          env:
+            - name: FIREHOSE_HOST
+              value: persistencecore-firehose-node.dev-core
+            - name: FIREHOSE_PORT
+              value: "9030"
+          command:
+            - bash
+            - "-c"
+            - |
+              # sleep infinity
+              # while [ $(curl -sw '%{http_code}' http://$FIREHOSE_HOST.svc.cluster.local:$FIREHOSE_PORT/node_id -o /dev/null) -ne 200 ]; do
+              #   echo "Firehose node does not seem to be ready. Waiting for it to start..."
+              #   sleep 10;
+              # done
+              # echo "Ready to start"
+              exit 0
+      containers:
+        - name: graph-node
+          image: graphprotocol/graph-node:latest
+          imagePullPolicy: Always
+          env:
+            - name: CHAIN_ID
+              valueFrom:
+                configMapKeyRef:
+                  key: chain.id
+                  name: persistencecore
+            - name: HOME_DIR
+              value: /persistencecore
+            # - name: postgres_host
+            #   valueFrom:
+            #     secretKeyRef:
+            #         name: postgres-secret
+            #         key: POSTGRES_HOST
+            # - name: postgres_port
+            #   valueFrom:
+            #     secretKeyRef:
+            #         name: postgres-secret
+            #         key: POSTGRES_HOST
+            # - name: postgres_user
+            #   valueFrom:
+            #     secretKeyRef:
+            #         name: postgres-secret
+            #         key: POSTGRES_USER
+            # - name: postgres_pass
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: postgres-secret
+            #       key: POSTGRES_PASSWORD
+            # - name: postgres_db
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: postgres-secret
+            #       key: POSTGRES_DB
+            # - name: ipfs
+            #   value: 
+          command:
+            - bash
+            - "-c"
+            - |
+              sleep infinity
+              # echo "Installing firehose cosmos"
+              # wget https://github.com/figment-networks/firehose-cosmos/releases/download/v0.5.0/firehose-cosmos_linux_amd64 -O firehose-cosmos
+              # chmod +x firehose-cosmos
+              # mv firehose-cosmos /usr/local/bin
+
+              # echo "starting firehose with persistence core"
+              # firehose-cosmos start --config /configs-graph/firehose.yml
+              # sleep infinity
+          # lifecycle:
+          #   postStart:
+          #     exec:
+          #       command:
+          #         - bash
+          #         - "-c"
+          #         - |
+          #           NODE_INDEX=${HOSTNAME##*-}
+          #           NODE_NAME=$(jq -r ".firehose_nodes[$NODE_INDEX].name" /configs-graph/firehose-node.json)
+          #           echo "firehose-node Index: $NODE_INDEX, Key name: $NODE_NAME"
+
+          #           # Wait for the node to be synced
+          #           max_tries=10
+          #           while [[ $(persistenceCore status --home $HOME_DIR 2>&1 | jq ".SyncInfo.catching_up") == true ]]
+          #           do
+          #             if [[ max_tries -lt 0 ]]; then echo "Not able to sync with genesis node"; exit 1; fi
+          #             echo "Still syncing... Sleeping for 15 secs. Tries left $max_tries"
+          #             ((max_tries--))
+          #             sleep 30
+          #           done
+          resources:
+            limits:
+              cpu: "1"
+              memory: "1G"
+            requests:
+              cpu: "0.5"
+              memory: "500M"
+          volumeMounts:
+            - mountPath: /persistencecore
+              name: persistencecore
+            - mountPath: /configs
+              name: addresses
+            - mountPath: /configs-graph
+              name: addresses-graph
+        # - name: exposer-app
+        #   image: persistenceone/exposer:latest
+        #   imagePullPolicy: Always
+        #   env:
+        #     - name: HOME_DIR
+        #       value: /persistencecore
+        #     - name: GENESIS_FILE
+        #       value: /persistencecore/config/genesis.json
+        #     - name: PORT
+        #       value: "8081"
+        #     - name: CLIENT_NAME
+        #       value: "persistencecore"
+        #   command: [ "exposer" ]
+        #   resources:
+        #     limits:
+        #       cpu: "0.1"
+        #       memory: "100M"
+        #     requests:
+        #       cpu: "0.1"
+        #       memory: "100M"
+        #   volumeMounts:
+        #     - mountPath: /persistencecore
+        #       name: persistencecore
+      volumes:
+        - name: persistencecore
+          emptyDir: { }
+        - name: addresses
+          configMap:
+            name: test-addresses-persistencecore
+        - name: addresses-graph
+          configMap:
+            name: test-addresses-persistencecore-graph
+---

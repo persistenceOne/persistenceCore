@@ -1,0 +1,93 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ipfs-node
+  labels:
+    app.kubernetes.io/name: ipfs-node
+spec:
+  clusterIP: None
+  ports:
+    - name: http
+      port: 5001
+      protocol: TCP
+      targetPort: 5001
+  selector:
+    app.kubernetes.io/name: ipfs-node
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ipfs-node
+spec:
+  serviceName: ipf-node
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: persistencecore
+      app.kubernetes.io/name: ipfs-node
+  template:
+    metadata:
+      annotations:
+        quality: release
+        role: api-gateway
+        sla: high
+        tier: gateway
+      labels:
+        app.kubernetes.io/instance: persistencecore
+        app.kubernetes.io/type: ipfs-node
+        app.kubernetes.io/name: ipfs-node
+        app.kubernetes.io/version: '0.1'
+    spec:
+      containers:
+        - name: ipfs-node
+          image: ipfs/go-ipfs:v0.10.0
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: "1"
+              memory: "1G"
+            requests:
+              cpu: "0.5"
+              memory: "500M"
+          volumeMounts:
+            - mountPath: /persistencecore
+              name: persistencecore
+            - mountPath: /configs
+              name: addresses
+            - mountPath: /configs-graph
+              name: addresses-graph
+        # - name: exposer-app
+        #   image: persistenceone/exposer:latest
+        #   imagePullPolicy: Always
+        #   env:
+        #     - name: HOME_DIR
+        #       value: /persistencecore
+        #     - name: GENESIS_FILE
+        #       value: /persistencecore/config/genesis.json
+        #     - name: PORT
+        #       value: "8081"
+        #     - name: CLIENT_NAME
+        #       value: "persistencecore"
+        #   command: [ "exposer" ]
+        #   resources:
+        #     limits:
+        #       cpu: "0.1"
+        #       memory: "100M"
+        #     requests:
+        #       cpu: "0.1"
+        #       memory: "100M"
+        #   volumeMounts:
+        #     - mountPath: /persistencecore
+        #       name: persistencecore
+      volumes:
+        - name: persistencecore
+          emptyDir: { }
+        - name: addresses
+          configMap:
+            name: test-addresses-persistencecore
+        - name: addresses-graph
+          configMap:
+            name: test-addresses-persistencecore-graph
+---

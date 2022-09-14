@@ -1,0 +1,6 @@
+#######################################################
+###       Extractor Configuration Options     ###
+#######################################################
+[extractor]
+enabled = true
+output_file = "stdout"

@@ -1,0 +1,16 @@
+start:
+  args:
+    - ingestor
+    - merger
+    # - relayer
+    - firehose
+  flags:
+    # Common flags
+    common-first-streamable-block: 1
+    common-blockstream-addr: localhost:9000
+
+    # Ingestor specific flags
+    ingestor-mode: node
+    ingestor-node-path: /usr/bin/persistenceCore
+    ingestor-node-args: start --x-crisis-skip-assert-invariants --home /persistencecore
+    ingestor-node-env: "KEY=VALUE,KEY=VALUE"

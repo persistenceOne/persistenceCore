@@ -1,0 +1,14 @@
+{
+  "firehose_nodes": [
+    {
+      "name": "firehose-node-1",
+      "type": "local",
+      "address": "persistence1y3x3uaqnnlhulway8g5dvm4erpd5r4f0d29hn5",
+      "pubkey": {
+        "@type": "/cosmos.crypto.secp256k1.PubKey",
+        "key": "Agn5q1U2vLjdAhg4dcKuUKm3ZwdmrrFmVnlnqsqkXoIA"
+      },
+      "mnemonic": "tag apart multiply food bleak isolate describe stand guide field session design cable combine excess shrug abuse pause course ketchup umbrella program labor ripple"
+    }
+  ]
+}

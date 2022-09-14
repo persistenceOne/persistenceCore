@@ -2,9 +2,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: persistencecore-validator
+  name: persistencecore-firehose-node
   labels:
-    app.kubernetes.io/name: persistencecore-validator
+    app.kubernetes.io/name: persistencecore-firehose-node
 spec:
   clusterIP: None
   ports:
@@ -20,21 +20,25 @@ spec:
       port: 8081
       protocol: TCP
       targetPort: 8081
+    - name: firehose
+      port: 9030
+      protocol: TCP
+      targetPort: 9030
   selector:
-    app.kubernetes.io/name: persistencecore-validator
+    app.kubernetes.io/name: persistencecore-firehose-node
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: persistencecore-validator
+  name: persistencecore-firehose-node
 spec:
-  serviceName: persistencecore-validator
-  replicas: 0
+  serviceName: persistencecore-firehose-node
+  replicas: 1
   revisionHistoryLimit: 3
   selector:
     matchLabels:
       app.kubernetes.io/instance: persistencecore
-      app.kubernetes.io/name: persistencecore-validator
+      app.kubernetes.io/name: persistencecore-firehose-node
   template:
     metadata:
       annotations:
@@ -44,13 +48,13 @@ spec:
         tier: gateway
       labels:
         app.kubernetes.io/instance: persistencecore
-        app.kubernetes.io/type: persistencecore-validator
-        app.kubernetes.io/name: persistencecore-validator
+        app.kubernetes.io/type: persistencecore-firehose-node
+        app.kubernetes.io/name: persistencecore-firehose-node
         app.kubernetes.io/version: '0.1'
     spec:
       initContainers:
         - name: wait-for-genesis
-          image: persistenceone/persistencecore:latest
+          image: betterpersist/persistencecore:fh-latest-2
           imagePullPolicy: Always
           env:
             - name: GENESIS_HOST
@@ -67,8 +71,8 @@ spec:
               done
               echo "Ready to start"
               exit 0
-        - name: init-validator
-          image: persistenceone/persistencecore:latest
+        - name: init-firehose-node
+          image: betterpersist/persistencecore:fh-latest-2
           imagePullPolicy: Always
           env:
             - name: CHAIN_ID
@@ -86,19 +90,19 @@ spec:
             - bash
             - "-c"
             - |
-              VAL_INDEX=${HOSTNAME##*-}
-              echo "Validator Index: $VAL_INDEX"
+              NODE_INDEX=${HOSTNAME##*-}
+              echo "firehose-node Index: $NODE_INDEX"
 
-              rm -rf $HOME_DIR
+              rm -rf $HOME_DIR/*
 
-              VAL_NAME=$(jq -r ".validators[$VAL_INDEX].name" /configs/validators.json)
-              echo "Validator Index: $VAL_INDEX, Key name: $VAL_NAME"
+              NODE_NAME=$(jq -r ".firehose_nodes[$NODE_INDEX].name" /configs-graph/firehose-node.json)
+              echo "firehose-node Index: $NODE_INDEX, Key name: $NODE_NAME"
 
               echo "Printing genesis file before init"
               ls -lrht $HOME_DIR/config
 
-              jq -r ".validators[$VAL_INDEX].mnemonic" /configs/validators.json | persistenceCore init $VAL_NAME --chain-id $CHAIN_ID --home $HOME_DIR --recover
-              jq -r ".validators[$VAL_INDEX].mnemonic" /configs/validators.json | persistenceCore keys add $VAL_NAME --recover --keyring-backend="test" --home $HOME_DIR
+              jq -r ".firehose_nodes[$NODE_INDEX].mnemonic" /configs-graph/firehose-node.json | persistenceCore init $NODE_NAME --chain-id $CHAIN_ID --home $HOME_DIR --recover
+              jq -r ".firehose_nodes[$NODE_INDEX].mnemonic" /configs-graph/firehose-node.json | persistenceCore keys add $NODE_NAME --recover --keyring-backend="test" --home $HOME_DIR
 
               curl http://$GENESIS_HOST.svc.cluster.local:$GENESIS_PORT/genesis -o $HOME_DIR/config/genesis.json
               echo "Genesis file that we got....."
@@ -118,6 +122,16 @@ spec:
               sed -i 's/index_all_keys = false/index_all_keys = true/g' $HOME_DIR/config/config.toml
 
               echo "Printing the whole config.toml file"
+
+              cat << END >> $HOME_DIR/config/config.toml
+              #######################################################
+              ###       Extractor Configuration Options     ###
+              #######################################################
+              [extractor]
+              enabled = true
+              output_file = "stdout"
+              END
+              
               cat $HOME_DIR/config/config.toml
 
               curl -s http://$GENESIS_HOST.svc.cluster.local:$GENESIS_PORT/pub_key
@@ -133,9 +147,11 @@ spec:
               name: persistencecore
             - mountPath: /configs
               name: addresses
+            - mountPath: /configs-graph
+              name: addresses-graph
       containers:
-        - name: validator
-          image: persistenceone/persistencecore
+        - name: firehose-node
+          image: betterpersist/persistencecore:fh-latest-2
           imagePullPolicy: Always
           env:
             - name: CHAIN_ID
@@ -149,8 +165,13 @@ spec:
             - bash
             - "-c"
             - |
-              # Starting the chain
-              persistenceCore start --home $HOME_DIR
+              echo "Installing firehose cosmos"
+              wget https://github.com/figment-networks/firehose-cosmos/releases/download/v0.5.0/firehose-cosmos_linux_amd64 -O firehose-cosmos
+              chmod +x firehose-cosmos
+              mv firehose-cosmos /usr/local/bin
+
+              echo "starting firehose with persistence core"
+              firehose-cosmos start --config /configs-graph/firehose.yml
           lifecycle:
             postStart:
               exec:
@@ -158,9 +179,9 @@ spec:
                   - bash
                   - "-c"
                   - |
-                    VAL_INDEX=${HOSTNAME##*-}
-                    VAL_NAME=$(jq -r ".validators[$VAL_INDEX].name" /configs/validators.json)
-                    echo "Validator Index: $VAL_INDEX, Key name: $VAL_NAME"
+                    NODE_INDEX=${HOSTNAME##*-}
+                    NODE_NAME=$(jq -r ".firehose_nodes[$NODE_INDEX].name" /configs-graph/firehose-node.json)
+                    echo "firehose-node Index: $NODE_INDEX, Key name: $NODE_NAME"
 
                     # Wait for the node to be synced
                     max_tries=10
@@ -171,10 +192,6 @@ spec:
                       ((max_tries--))
                       sleep 30
                     done
-                    
-                    # Run create validator tx command
-                    echo "Running txn for create-validator"
-                    persistenceCore tx staking create-validator --home $HOME_DIR --pubkey=$(persistenceCore tendermint show-validator --home $HOME_DIR) --moniker $VAL_NAME --amount 5000000000uxprt --keyring-backend="test" --chain-id $CHAIN_ID --from $VAL_NAME --commission-rate="0.10" --commission-max-rate="0.20" --commission-max-change-rate="0.01" --min-self-delegation="1000000" --gas="auto" --gas-adjustment 1.5 --yes > /validator.log
           resources:
             limits:
               cpu: "1"
@@ -187,6 +204,8 @@ spec:
               name: persistencecore
             - mountPath: /configs
               name: addresses
+            - mountPath: /configs-graph
+              name: addresses-graph
         - name: exposer-app
           image: persistenceone/exposer:latest
           imagePullPolicy: Always
@@ -216,4 +235,7 @@ spec:
         - name: addresses
           configMap:
             name: test-addresses-persistencecore
+        - name: addresses-graph
+          configMap:
+            name: test-addresses-persistencecore-graph
 ---

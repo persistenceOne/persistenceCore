@@ -21,7 +21,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: core-genesis
+                name: persistencecore-genesis
                 port:
                   number: 26657
   ingressClassName: nginx
@@ -46,7 +46,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: core-genesis
+                name: persistencecore-genesis
                 port:
                   number: 9090
   ingressClassName: nginx
@@ -70,7 +70,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: core-genesis
+                name: persistencecore-genesis
                 port:
                   number: 1317
   ingressClassName: nginx

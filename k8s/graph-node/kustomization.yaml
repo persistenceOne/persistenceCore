@@ -1,0 +1,13 @@
+resources:
+  - firehose-node.yaml
+  - graph-node.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: test-addresses-persistencecore-graph
+    files:
+      - configs-graph/firehose-node.json
+      - configs-graph/firehose.yml
+      - configs-graph/config.toml
