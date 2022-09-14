@@ -14,8 +14,11 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: name/persistencecore
 
       - name: Login to DockerHub
         uses: docker/login-action@v2
@@ -23,20 +26,16 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push persistenceCore latest
-        if: github.event.push
-        uses: docker/build-push-action@v3
-        with:
-          push: true
-          tags: persistenceone/persistencecore:latest
-          file: docker/persistencecore/Dockerfile
+      - name: checkout repo
+        uses: actions/checkout@v2
 
-      - name: Build and push persistencecore release
-        if: github.event.release
-        uses: docker/build-push-action@v3
-        with:
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          file: docker/persistencecore/Dockerfile
+      - name: build docker-image
+        if: github.event.push
+        run: make docker-build PROCESS=exposer DOCKER_IMAGE_NAME=persistenceone/persistencecore DOCKER_TAG_NAME=latest
+
+      - name: push docker-image
+        if: github.event.push
+        run: make docker-push IMAGE_NAME=persistenceone/persistencecore TAG_NAME=${{ steps.meta.outputs.tags }}
+
 
 
