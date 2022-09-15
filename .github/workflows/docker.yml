@@ -3,7 +3,7 @@ name: Docker
 on:
   push:
     branches:
-      - 'master'
+      - 'bahdotsh/test-workflow'
   release:
     types: [published]
 
