@@ -3,9 +3,10 @@ name: Docker
 on:
   push:
     branches:
-      - 'main'
+      - 'master'
   release:
     types: [published]
+
 
 jobs:
   docker:
@@ -31,11 +32,22 @@ jobs:
 
       - name: build docker-image
         if: github.event.push
-        run: make docker-build PROCESS=exposer DOCKER_IMAGE_NAME=persistenceone/persistencecore DOCKER_TAG_NAME=latest
+        run: make docker-build PROCESS=persistencecore DOCKER_IMAGE_NAME=persistenceone/persistencecore DOCKER_TAG_NAME=latest
 
       - name: push docker-image
         if: github.event.push
+        run: make docker-push IMAGE_NAME=persistenceone/persistencecore TAG_NAME=latest
+
+      - name: build docker-image for release
+        if: github.event.release
+        run: make docker-build PROCESS=persistencecore DOCKER_IMAGE_NAME=persistenceone/persistencecore DOCKER_TAG_NAME=${{ steps.meta.outputs.tags }}
+
+      - name: push docker-image for release
+        if: github.event.release
         run: make docker-push IMAGE_NAME=persistenceone/persistencecore TAG_NAME=${{ steps.meta.outputs.tags }}
+
+
+
 
 
 
