@@ -18,3 +18,12 @@ jobs:
         run: |
           echo $RELEASE_VERSION
           echo ${{ steps.vars.outputs.tag }}
+      - name: tags 2
+        id: gen_tags
+        run: |
+          if [[ $GITHUB_REF == 'refs/tags/'* ]]; then
+            TAGS='["user/image:latest","user/image:'${GITHUB_REF/refs\/tags\//}'"]'
+          else
+            TAGS='["user/image:latest"]'
+          fi
+          echo '::set-output name=tags::'$TAGS
