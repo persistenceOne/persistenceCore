@@ -66,7 +66,7 @@ jobs:
             exposer:
               - 'docker/exposer/**'
             core:
-              - 'docker/exposer/**'
+              - 'docker/persistencecore/**'
 
       - name: Set up QEMU
         if: steps.filter.outputs.exposer == 'true' || steps.filter.outputs.core == 'true'
