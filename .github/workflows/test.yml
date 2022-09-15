@@ -18,13 +18,16 @@ jobs:
         run: |
           echo $RELEASE_VERSION
           echo ${{ steps.vars.outputs.tag }}
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
       - name: tags 2
         id: gen_tags
         run: |
-          if [[ $GITHUB_REF == 'refs/SHA/'* ]]; then
-            TAGS='["user/image:latest","user/image:'${GITHUB_REF/refs\/SHA\//}'"]'
+          if [[ $GITHUB_REF == 'refs/tags/'* ]]; then
+            TAGS='["user/image:latest","user/image:'${GITHUB_REF/refs\/tags\//}'"]'
           else
-            TAGS='["user/image:'${GITHUB_SHA}'"]'
+            TAGS='["user/image:'${GITHUB_SHA}'_'${{ steps.date.outputs.date }}'"]'
           fi
           echo '::set-output name=tags::'$TAGS
           echo $TAGS
