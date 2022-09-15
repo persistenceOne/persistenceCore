@@ -24,7 +24,7 @@ jobs:
           if [[ $GITHUB_REF == 'refs/SHA/'* ]]; then
             TAGS='["user/image:latest","user/image:'${GITHUB_REF/refs\/SHA\//}'"]'
           else
-            TAGS='["user/image:'${GITHUB_REF/refs\/SHA\//}'"]'
+            TAGS='["user/image:'${GITHUB_SHA}'"]'
           fi
           echo '::set-output name=tags::'$TAGS
           echo $TAGS
