@@ -8,7 +8,6 @@ DOCKER := $(shell which docker)
 
 _DOCKER_ENV=\
 	-e CHAIN_ID=persistencecore \
-	-e PSTAKE_DIR=/persistencecore \
 	-e COINS="100000000000000000stake" \
 	$(DOCKER_ENV)
 _DOCKER_VOLUME=\
