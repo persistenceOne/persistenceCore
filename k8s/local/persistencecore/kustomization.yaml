@@ -1,0 +1,8 @@
+namespace: default
+
+resources:
+  - ../../base/persistencecore
+
+patchesStrategicMerge:
+  - genesis.yaml
+  - validator.yaml

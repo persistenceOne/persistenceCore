@@ -1,4 +1,0 @@
-namespace: dev-core
-
-resources:
-  - ../../../base/persistencecore
