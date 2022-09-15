@@ -27,4 +27,4 @@ jobs:
             TAGS='["user/image:latest"]'
           fi
           echo '::set-output name=tags::'$TAGS
-          echo '${{ fromJson(steps.gen_tags.outputs.tags) }}'
+          echo $TAGS
