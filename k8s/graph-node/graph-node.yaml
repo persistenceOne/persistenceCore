@@ -50,20 +50,20 @@ spec:
     spec:
       initContainers:
         - name: wait-for-firehose-node
-          image: graphprotocol/graph-node:latest
+          image: networld/grpcurl
           imagePullPolicy: Always
           env:
             - name: FIREHOSE_HOST
               value: persistencecore-firehose-node.dev-core
             - name: FIREHOSE_PORT
-              value: "9030"
+              value: "9030"  
           command:
-            - bash
+            - sh
             - "-c"
             - |
               # sleep infinity
               # while [ $(curl -sw '%{http_code}' http://$FIREHOSE_HOST.svc.cluster.local:$FIREHOSE_PORT/node_id -o /dev/null) -ne 200 ]; do
-              #   echo "Firehose node does not seem to be ready. Waiting for it to start..."
+              #   echo "Firehose node d oes not seem to be ready. Waiting for it to start..."
               #   sleep 10;
               # done
               # echo "Ready to start"
@@ -105,8 +105,6 @@ spec:
             #     secretKeyRef:
             #       name: postgres-secret
             #       key: POSTGRES_DB
-            # - name: ipfs
-            #   value: 
           command:
             - bash
             - "-c"
@@ -142,11 +140,11 @@ spec:
           #           done
           resources:
             limits:
-              cpu: "1"
-              memory: "1G"
-            requests:
               cpu: "0.5"
               memory: "500M"
+            requests:
+              cpu: "0.25"
+              memory: "250M"
           volumeMounts:
             - mountPath: /persistencecore
               name: persistencecore

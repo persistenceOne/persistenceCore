@@ -37,57 +37,24 @@ spec:
       labels:
         app.kubernetes.io/instance: persistencecore
         app.kubernetes.io/type: ipfs-node
-        app.kubernetes.io/name: ipfs-node
-        app.kubernetes.io/version: '0.1'
+         app.kubernetes.io/version: '0.1'
     spec:
+      volumes:
+        - name: ipfs-pv-storage
+          persistentVolumeClaim:
+            claimName: ipfs-pv-claim
       containers:
         - name: ipfs-node
           image: ipfs/go-ipfs:v0.10.0
           imagePullPolicy: Always
           resources:
             limits:
-              cpu: "1"
-              memory: "1G"
-            requests:
               cpu: "0.5"
               memory: "500M"
+            requests:
+              cpu: "0.25"
+              memory: "250M"
           volumeMounts:
-            - mountPath: /persistencecore
-              name: persistencecore
-            - mountPath: /configs
-              name: addresses
-            - mountPath: /configs-graph
-              name: addresses-graph
-        # - name: exposer-app
-        #   image: persistenceone/exposer:latest
-        #   imagePullPolicy: Always
-        #   env:
-        #     - name: HOME_DIR
-        #       value: /persistencecore
-        #     - name: GENESIS_FILE
-        #       value: /persistencecore/config/genesis.json
-        #     - name: PORT
-        #       value: "8081"
-        #     - name: CLIENT_NAME
-        #       value: "persistencecore"
-        #   command: [ "exposer" ]
-        #   resources:
-        #     limits:
-        #       cpu: "0.1"
-        #       memory: "100M"
-        #     requests:
-        #       cpu: "0.1"
-        #       memory: "100M"
-        #   volumeMounts:
-        #     - mountPath: /persistencecore
-        #       name: persistencecore
-      volumes:
-        - name: persistencecore
-          emptyDir: { }
-        - name: addresses
-          configMap:
-            name: test-addresses-persistencecore
-        - name: addresses-graph
-          configMap:
-            name: test-addresses-persistencecore-graph
+            - mountPath: /data/ipfs
+              name: ipfs-pv-storage
 ---

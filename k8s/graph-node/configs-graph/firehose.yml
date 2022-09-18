@@ -13,4 +13,7 @@ start:
     ingestor-mode: node
     ingestor-node-path: /usr/bin/persistenceCore
     ingestor-node-args: start --x-crisis-skip-assert-invariants --home /persistencecore
+    ingestor-node-logs-filter: "module=(p2p|pex|consensus|x/bank|x/wasm)"
+    firehose-real-time-tolerance: 99999h
+    relayer-max-source-latency: 99999h
     ingestor-node-env: "KEY=VALUE,KEY=VALUE"

@@ -171,27 +171,28 @@ spec:
               mv firehose-cosmos /usr/local/bin
 
               echo "starting firehose with persistence core"
-              firehose-cosmos start --config /configs-graph/firehose.yml
-          lifecycle:
-            postStart:
-              exec:
-                command:
-                  - bash
-                  - "-c"
-                  - |
-                    NODE_INDEX=${HOSTNAME##*-}
-                    NODE_NAME=$(jq -r ".firehose_nodes[$NODE_INDEX].name" /configs-graph/firehose-node.json)
-                    echo "firehose-node Index: $NODE_INDEX, Key name: $NODE_NAME"
+              # sleep infinity
+              firehose-cosmos start --config /configs-graph/firehose.yml --data-dir /fh-data
+          # lifecycle:
+          #   postStart:
+          #     exec:
+          #       command:
+          #         - bash
+          #         - "-c"
+          #         - |
+          #           NODE_INDEX=${HOSTNAME##*-}
+          #           NODE_NAME=$(jq -r ".firehose_nodes[$NODE_INDEX].name" /configs-graph/firehose-node.json)
+          #           echo "firehose-node Index: $NODE_INDEX, Key name: $NODE_NAME"
 
-                    # Wait for the node to be synced
-                    max_tries=10
-                    while [[ $(persistenceCore status --home $HOME_DIR 2>&1 | jq ".SyncInfo.catching_up") == true ]]
-                    do
-                      if [[ max_tries -lt 0 ]]; then echo "Not able to sync with genesis node"; exit 1; fi
-                      echo "Still syncing... Sleeping for 15 secs. Tries left $max_tries"
-                      ((max_tries--))
-                      sleep 30
-                    done
+          #           # Wait for the node to be synced
+          #           max_tries=10
+          #           while [[ $(persistenceCore status --home $HOME_DIR 2>&1 | jq ".SyncInfo.catching_up") == true ]]
+          #           do
+          #             if [[ max_tries -lt 0 ]]; then echo "Not able to sync with genesis node"; exit 1; fi
+          #             echo "Still syncing... Sleeping for 15 secs. Tries left $max_tries"
+          #             ((max_tries--))
+          #             sleep 30
+          #           done
           resources:
             limits:
               cpu: "1"
@@ -206,6 +207,8 @@ spec:
               name: addresses
             - mountPath: /configs-graph
               name: addresses-graph
+            - mountPath: /fh-data
+              name: firehose-pv-storage
         - name: exposer-app
           image: persistenceone/exposer:latest
           imagePullPolicy: Always
@@ -232,6 +235,9 @@ spec:
       volumes:
         - name: persistencecore
           emptyDir: { }
+        - name: firehose-pv-storage
+          persistentVolumeClaim:
+            claimName: firehose-pv-claim
         - name: addresses
           configMap:
             name: test-addresses-persistencecore
