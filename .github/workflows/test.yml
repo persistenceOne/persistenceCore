@@ -1,0 +1,104 @@
+name: Test
+
+
+on:
+  pull_request:
+    branches: [ master ]
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: checkout repo
+        uses: actions/checkout@v2
+
+      - name: build and push docker-image
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y%m%d')"
+
+      - name: build and push docker-image
+        id: gen_tags
+        run: |
+          if [[ $GITHUB_REF == 'refs/tags/'* ]]; then
+            TAGS='["latest","'${GITHUB_REF/refs\/tags\//}'"]'
+          else
+            TAGS='["'${GITHUB_SHA} | cut -c1-8'_'${{ steps.date.outputs.date }}'"]'
+          fi
+          echo '::set-output name=tags::'$TAGS
+
+      - name: build and push docker-image
+        run: make docker-build-push
+        env:
+          PROCESS: persistencecore
+          DOCKER_IMAGE_NAME: persistenceone/persistencecore
+          DOCKER_TAG_NAME: ${{ steps.gen_tags.outputs.tags }}
+
+      - name: build and push docker-image for release
+        run: make docker-build-push
+        env:
+          PROCESS: persistencecore
+          DOCKER_IMAGE_NAME: persistenceone/persistencecore
+          DOCKER_TAG_NAME: ${{ steps.gen_tags.outputs.tags }}
+
+  paths-filter:
+    runs-on: ubuntu-latest
+    outputs:
+      output1: ${{ steps.filter.outputs.workflows }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            exposer:
+              - 'docker/exposer/**'
+            core:
+              - 'docker/persistencecore/**'
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: checkout repo
+        uses: actions/checkout@v2
+
+      - name: build and push docker-image
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y%m%d')"
+
+      - name: build and push docker-image
+        id: gen_tags
+        run: |
+          if [[ $GITHUB_REF == 'refs/tags/'* ]]; then
+            TAGS='["latest","'${GITHUB_REF/refs\/tags\//}'"]'
+          else
+            TAGS='["'${GITHUB_SHA} | cut -c1-8'_'${{ steps.date.outputs.date }}'"]'
+          fi
+          echo '::set-output name=tags::'$TAGS
+
+      - name: build and push docker-image for core
+        run: make docker-build-push
+        env:
+          PROCESS: persistencecore
+          DOCKER_IMAGE_NAME: persistenceone/persistencecore
+          DOCKER_TAG_NAME: ${{ steps.gen_tags.outputs.tags }}
+
+      - name: build and push docker-image for exposer
+        run: make docker-build-push
+        env:
+          PROCESS: exposer
+          DOCKER_IMAGE_NAME: persistenceone/exposer
+          DOCKER_TAG_NAME: ${{ step
