@@ -25,7 +25,7 @@ jobs:
 
       - name: build and push docker-image
         id: date
-        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+        run: echo "::set-output name=date::$(date +'%Y%m%d')"
 
       - name: build and push docker-image
         id: gen_tags
@@ -33,7 +33,7 @@ jobs:
           if [[ $GITHUB_REF == 'refs/tags/'* ]]; then
             TAGS='["latest","'${GITHUB_REF/refs\/tags\//}'"]'
           else
-            TAGS='["'${GITHUB_SHA}'_'${{ steps.date.outputs.date }}'"]'
+            TAGS='["'${GITHUB_SHA} | cut -c1-8'_'${{ steps.date.outputs.date }}'"]'
           fi
           echo '::set-output name=tags::'$TAGS
 
@@ -86,7 +86,7 @@ jobs:
       - name: build and push docker-image
         if: steps.filter.outputs.exposer == 'true' || steps.filter.outputs.core == 'true'
         id: date
-        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+        run: echo "::set-output name=date::$(date +'%Y%m%d')"
 
       - name: build and push docker-image
         if: steps.filter.outputs.exposer == 'true' || steps.filter.outputs.core == 'true'
@@ -95,7 +95,7 @@ jobs:
           if [[ $GITHUB_REF == 'refs/tags/'* ]]; then
             TAGS='["latest","'${GITHUB_REF/refs\/tags\//}'"]'
           else
-            TAGS='["'${GITHUB_SHA}'_'${{ steps.date.outputs.date }}'"]'
+            TAGS='["'${GITHUB_SHA} | cut -c1-8'_'${{ steps.date.outputs.date }}'"]'
           fi
           echo '::set-output name=tags::'$TAGS
 
@@ -114,9 +114,3 @@ jobs:
           PROCESS: exposer
           DOCKER_IMAGE_NAME: persistenceone/exposer
           DOCKER_TAG_NAME: ${{ steps.gen_tags.outputs.tags }}
-
-
-
-
-
-
