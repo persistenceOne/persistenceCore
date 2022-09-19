@@ -29,7 +29,7 @@ metadata:
   name: persistencecore-validator
 spec:
   serviceName: persistencecore-validator
-  replicas: 2
+  replicas: 1
   revisionHistoryLimit: 3
   selector:
     matchLabels:
@@ -89,7 +89,7 @@ spec:
               VAL_INDEX=${HOSTNAME##*-}
               echo "Validator Index: $VAL_INDEX"
 
-              rm -rf $HOME_DIR
+              # rm -rf $HOME_DIR
 
               VAL_NAME=$(jq -r ".validators[$VAL_INDEX].name" /configs/validators.json)
               echo "Validator Index: $VAL_INDEX, Key name: $VAL_NAME"
@@ -130,7 +130,7 @@ spec:
               memory: "200M"
           volumeMounts:
             - mountPath: /persistencecore
-              name: persistencecore
+              name: validator-pv-storage
             - mountPath: /configs
               name: addresses
         # - name: sync-validator-to-network
@@ -225,8 +225,10 @@ spec:
               cpu: "0.5"
               memory: "500M"
           volumeMounts:
+            # - mountPath: /persistencecore
+            #   name: persistencecore
             - mountPath: /persistencecore
-              name: persistencecore
+              name: validator-pv-storage
             - mountPath: /configs
               name: addresses
         - name: exposer-app
@@ -251,11 +253,20 @@ spec:
               memory: "100M"
           volumeMounts:
             - mountPath: /persistencecore
-              name: persistencecore
+              name: validator-pv-storage
       volumes:
-        - name: persistencecore
-          emptyDir: { }
+        # - name: persistencecore
+        #   emptyDir: { }
         - name: addresses
           configMap:
             name: test-addresses-persistencecore
+  volumeClaimTemplates:
+  - metadata:
+      name: validator-pv-storage
+    spec:
+      storageClassName: do-block-storage
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 5Gi
 ---
