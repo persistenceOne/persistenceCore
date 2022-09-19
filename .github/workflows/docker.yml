@@ -23,35 +23,28 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v2
 
-      - name: build and push docker-image
+      - name: build and push docker-image date
         id: date
         run: echo "::set-output name=date::$(date +'%Y%m%d')"
 
-      - name: build and push docker-image
+      - name: build and push docker-image tags
         id: gen_tags
         run: |
+          echo $GITHUB_REF
           if [[ $GITHUB_REF == 'refs/tags/'* ]]; then
             TAGS='["latest","'${GITHUB_REF/refs\/tags\//}'"]'
           else
-            TAGS='["'${GITHUB_SHA} | cut -c1-8'_'${{ steps.date.outputs.date }}'"]'
+            TAGS='["'${{ steps.date.outputs.date }}'_'$(echo ${GITHUB_SHA} | cut -c 1-5)'"]'
           fi
           echo '::set-output name=tags::'$TAGS
 
       - name: build and push docker-image
         if: github.event.push
-        run: make docker-build-push
-        env:
-          PROCESS: persistencecore
-          DOCKER_IMAGE_NAME: persistenceone/persistencecore
-          DOCKER_TAG_NAME: ${{ steps.gen_tags.outputs.tags }}
+        run: make DOCKER_TAG_NAME=${{ steps.gen_tags.outputs.tags }} DOCKER_IMAGE_NAME=persistenceone/persistencecore PROCESS=persistencecore docker-build-push
 
       - name: build and push docker-image for release
         if: github.event.release
-        run: make docker-build-push
-        env:
-          PROCESS: persistencecore
-          DOCKER_IMAGE_NAME: persistenceone/persistencecore
-          DOCKER_TAG_NAME: ${{ steps.gen_tags.outputs.tags }}
+        run: make DOCKER_TAG_NAME=${{ steps.gen_tags.outputs.tags }} DOCKER_IMAGE_NAME=persistenceone/persistencecore PROCESS=persistencecore docker-build-push
 
   paths-filter:
     runs-on: ubuntu-latest
@@ -101,16 +94,8 @@ jobs:
 
       - name: build and push docker-image for core
         if: steps.filter.outputs.core == 'true'
-        run: make docker-build-push
-        env:
-          PROCESS: persistencecore
-          DOCKER_IMAGE_NAME: persistenceone/persistencecore
-          DOCKER_TAG_NAME: ${{ steps.gen_tags.outputs.tags }}
+        run: make DOCKER_TAG_NAME=${{ steps.gen_tags.outputs.tags }} DOCKER_IMAGE_NAME=persistenceone/persistencecore PROCESS=persistencecore docker-build-push
 
       - name: build and push docker-image for exposer
         if: steps.filter.outputs.exposer == 'true'
-        run: make docker-build-push
-        env:
-          PROCESS: exposer
-          DOCKER_IMAGE_NAME: persistenceone/exposer
-          DOCKER_TAG_NAME: ${{ steps.gen_tags.outputs.tags }}
+        run: make DOCKER_TAG_NAME=${{ steps.gen_tags.outputs.tags }} DOCKER_IMAGE_NAME=persistenceone/exposer PROCESS=exposer docker-build-push
