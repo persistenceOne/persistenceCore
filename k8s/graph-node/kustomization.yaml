@@ -14,3 +14,4 @@ configMapGenerator:
       - configs-graph/firehose-node.json
       - configs-graph/firehose.yml
       - configs-graph/config.toml
+      - configs-graph/config-graph-node.toml

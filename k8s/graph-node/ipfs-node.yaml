@@ -20,7 +20,7 @@ kind: StatefulSet
 metadata:
   name: ipfs-node
 spec:
-  serviceName: ipf-node
+  serviceName: ipfs-node
   replicas: 1
   revisionHistoryLimit: 3
   selector:
@@ -37,7 +37,8 @@ spec:
       labels:
         app.kubernetes.io/instance: persistencecore
         app.kubernetes.io/type: ipfs-node
-         app.kubernetes.io/version: '0.1'
+        app.kubernetes.io/name: ipfs-node
+        app.kubernetes.io/version: '0.1'
     spec:
       volumes:
         - name: ipfs-pv-storage

@@ -56,88 +56,72 @@ spec:
             - name: FIREHOSE_HOST
               value: persistencecore-firehose-node.dev-core
             - name: FIREHOSE_PORT
-              value: "9030"  
+              value: "9030"
           command:
             - sh
             - "-c"
             - |
-              # sleep infinity
-              # while [ $(curl -sw '%{http_code}' http://$FIREHOSE_HOST.svc.cluster.local:$FIREHOSE_PORT/node_id -o /dev/null) -ne 200 ]; do
-              #   echo "Firehose node d oes not seem to be ready. Waiting for it to start..."
-              #   sleep 10;
-              # done
-              # echo "Ready to start"
+              apk update
+              apk add jq
+              while [ $(./grpcurl -plaintext $FIREHOSE_HOST.svc.cluster.local:$FIREHOSE_PORT grpc.health.v1.Health.Check | jq .status) != '"SERVING"' ]; do
+                echo "Firehose node does not seem to be ready. Waiting for it to start..."
+                sleep 10;
+              done
+              echo "Ready to start"
               exit 0
       containers:
         - name: graph-node
           image: graphprotocol/graph-node:latest
           imagePullPolicy: Always
           env:
-            - name: CHAIN_ID
+            - name: FIREHOSE_HOST
+              value: persistencecore-firehose-node.dev-core
+            - name: FIREHOSE_PORT
+              value: "9030"
+            - name: POSTGRES_HOST
               valueFrom:
-                configMapKeyRef:
-                  key: chain.id
-                  name: persistencecore
-            - name: HOME_DIR
-              value: /persistencecore
-            # - name: postgres_host
-            #   valueFrom:
-            #     secretKeyRef:
-            #         name: postgres-secret
-            #         key: POSTGRES_HOST
-            # - name: postgres_port
-            #   valueFrom:
-            #     secretKeyRef:
-            #         name: postgres-secret
-            #         key: POSTGRES_HOST
-            # - name: postgres_user
-            #   valueFrom:
-            #     secretKeyRef:
-            #         name: postgres-secret
-            #         key: POSTGRES_USER
-            # - name: postgres_pass
-            #   valueFrom:
-            #     secretKeyRef:
-            #       name: postgres-secret
-            #       key: POSTGRES_PASSWORD
-            # - name: postgres_db
-            #   valueFrom:
-            #     secretKeyRef:
-            #       name: postgres-secret
-            #       key: POSTGRES_DB
+                secretKeyRef:
+                    name: postgres-secret
+                    key: POSTGRES_HOST
+            - name: POSTGRES_PORT
+              valueFrom:
+                secretKeyRef:
+                    name: postgres-secret
+                    key: POSTGRES_PORT
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                    name: postgres-secret
+                    key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_DB
           command:
             - bash
             - "-c"
             - |
-              sleep infinity
-              # echo "Installing firehose cosmos"
-              # wget https://github.com/figment-networks/firehose-cosmos/releases/download/v0.5.0/firehose-cosmos_linux_amd64 -O firehose-cosmos
-              # chmod +x firehose-cosmos
-              # mv firehose-cosmos /usr/local/bin
 
-              # echo "starting firehose with persistence core"
-              # firehose-cosmos start --config /configs-graph/firehose.yml
-              # sleep infinity
-          # lifecycle:
-          #   postStart:
-          #     exec:
-          #       command:
-          #         - bash
-          #         - "-c"
-          #         - |
-          #           NODE_INDEX=${HOSTNAME##*-}
-          #           NODE_NAME=$(jq -r ".firehose_nodes[$NODE_INDEX].name" /configs-graph/firehose-node.json)
-          #           echo "firehose-node Index: $NODE_INDEX, Key name: $NODE_NAME"
+              cp configs-graph/config-graph-node.toml config.toml
+              sed -i "s/POSTGRES_USER/$POSTGRES_USER/g" config.toml
+              sed -i "s/POSTGRES_PASSWORD/$POSTGRES_PASSWORD/g" config.toml
+              sed -i "s/POSTGRES_HOST/$POSTGRES_HOST/g" config.toml
+              sed -i "s/POSTGRES_PORT/$POSTGRES_PORT/g" config.toml
+              sed -i "s/POSTGRES_DB/$POSTGRES_DB/g" config.toml
+              sed -i "s/FIREHOSE_HOST/$FIREHOSE_HOST.svc.cluster.local/g" config.toml
+              sed -i "s/FIREHOSE_PORT/$FIREHOSE_PORT/g" config.toml
+              
+              # Print config before starting node
+              cat config.toml
 
-          #           # Wait for the node to be synced
-          #           max_tries=10
-          #           while [[ $(persistenceCore status --home $HOME_DIR 2>&1 | jq ".SyncInfo.catching_up") == true ]]
-          #           do
-          #             if [[ max_tries -lt 0 ]]; then echo "Not able to sync with genesis node"; exit 1; fi
-          #             echo "Still syncing... Sleeping for 15 secs. Tries left $max_tries"
-          #             ((max_tries--))
-          #             sleep 30
-          #           done
+              # Start graph node
+              graph-node --config config.toml
           resources:
             limits:
               cpu: "0.5"
@@ -152,29 +136,6 @@ spec:
               name: addresses
             - mountPath: /configs-graph
               name: addresses-graph
-        # - name: exposer-app
-        #   image: persistenceone/exposer:latest
-        #   imagePullPolicy: Always
-        #   env:
-        #     - name: HOME_DIR
-        #       value: /persistencecore
-        #     - name: GENESIS_FILE
-        #       value: /persistencecore/config/genesis.json
-        #     - name: PORT
-        #       value: "8081"
-        #     - name: CLIENT_NAME
-        #       value: "persistencecore"
-        #   command: [ "exposer" ]
-        #   resources:
-        #     limits:
-        #       cpu: "0.1"
-        #       memory: "100M"
-        #     requests:
-        #       cpu: "0.1"
-        #       memory: "100M"
-        #   volumeMounts:
-        #     - mountPath: /persistencecore
-        #       name: persistencecore
       volumes:
         - name: persistencecore
           emptyDir: { }

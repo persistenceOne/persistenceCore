@@ -1,0 +1,19 @@
+[deployment]
+[[deployment.rule]]
+shard = "primary"
+indexers = [ "index_node_cosmos_1" ]
+
+[store]
+[store.primary]
+connection = "postgresql://POSTGRES_USER:POSTGRES_PASSWORD@POSTGRES_HOST:POSTGRES_PORT/POSTGRES_DB"
+pool_size = 10
+
+[chains]
+ingestor = "block_ingestor_node"
+
+[chains.persistence-devnet]
+shard = "primary"
+protocol = "cosmos"
+provider = [
+  { label = "devnet", details = { type = "firehose", url = "http://FIREHOSE_HOST:FIREHOSE_PORT/" }},
+]
