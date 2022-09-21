@@ -194,29 +194,7 @@ spec:
                   - bash
                   - "-c"
                   - |
-                    VAL_INDEX=${HOSTNAME##*-}
-                    VAL_NAME=$(jq -r ".validators[$VAL_INDEX].name" /configs/validators.json)
-                    echo "Validator Index: $VAL_INDEX, Key name: $VAL_NAME"
-
-                    # Wait for the node to be synced
-                    max_tries=10
-                    while [[ $(persistenceCore status --home $HOME_DIR 2>&1 | jq ".SyncInfo.catching_up") == true ]]
-                    do
-                      if [[ max_tries -lt 0 ]]; then echo "Not able to sync with genesis node"; exit 1; fi
-                      echo "Still syncing... Sleeping for 15 secs. Tries left $max_tries"
-                      ((max_tries--))
-                      sleep 30
-                    done
-
-                    VAL_ADDRESS=$(persistenceCore keys show $VAL_NAME --home $HOME_DIR --bech val --keyring-backend test --output json | jq -r ".address")
-                    STATUS=$(persistenceCore q staking validator $VAL_ADDRESS --node http://$GENESIS_HOST.svc.cluster.local:$GENESIS_RPC_PORT --output json | jq -r ".status")
-
-                    echo $STATUS
-                    if [ "$STATUS" != "BOND_STATUS_BONDED" ]; then
-                      # Run create validator tx command  
-                      echo "Running txn for create-validator"
-                      persistenceCore tx staking create-validator --home $HOME_DIR --pubkey=$(persistenceCore tendermint show-validator --home $HOME_DIR) --moniker $VAL_NAME --amount 5000000000uxprt --keyring-backend="test" --chain-id $CHAIN_ID --from $VAL_NAME --commission-rate="0.10" --commission-max-rate="0.20" --commission-max-change-rate="0.01" --min-self-delegation="1000000" --gas="auto" --gas-adjustment 1.5 --yes > /validator.log
-                    fi
+                   bash /scripts/create-staking-tx.sh > "/create-staking-tx.log"
           resources:
             limits:
               cpu: "1"
@@ -231,6 +209,8 @@ spec:
               name: validator-pv-storage
             - mountPath: /configs
               name: addresses
+            - mountPath: /scripts
+              name: scripts
         - name: exposer-app
           image: persistenceone/exposer:latest
           imagePullPolicy: Always
@@ -260,6 +240,9 @@ spec:
         - name: addresses
           configMap:
             name: test-addresses-persistencecore
+        - name: scripts
+          configMap:
+            name: scripts
   volumeClaimTemplates:
   - metadata:
       name: validator-pv-storage
