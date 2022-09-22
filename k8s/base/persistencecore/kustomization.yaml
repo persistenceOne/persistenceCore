@@ -11,3 +11,5 @@ configMapGenerator:
     files:
       - configs/keys.json
       - configs/validators.json
+      - configs/cw20_base.wasmd
+      - configs/cw20_ics20.wasm

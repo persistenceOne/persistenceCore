@@ -1,3 +1,5 @@
+namespace: local
+
 resources:
   - service.yml
   - configmap.yml
@@ -9,7 +11,9 @@ generatorOptions:
   disableNameSuffixHash: true
 
 configMapGenerator:
-  - name: test-addresses-gaia
+  - name: test-addresses-wasm
     files:
       - configs/keys.json
       - configs/validators.json
+      - configs/cw20_base.wasmd
+      - configs/cw20_ics20.wasm

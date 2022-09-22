@@ -119,7 +119,7 @@ address_type = { derivation = 'cosmos' }
 id = 'persistencecore'
 rpc_addr = 'http://persistencecore-genesis.local.svc.cluster.local:26657'
 grpc_addr = 'http://persistencecore-genesis.local.svc.cluster.local:9090'
-websocket_addr = 'ws://pstake-genesis.local.svc.cluster.local:26657/websocket'
+websocket_addr = 'ws://persistencecore-genesis.local.svc.cluster.local:26657/websocket'
 rpc_timeout = '10s'
 account_prefix = 'persistence'
 key_name = 'persistence'

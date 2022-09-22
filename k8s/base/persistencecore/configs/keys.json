@@ -3,42 +3,32 @@
     {
       "name": "test1",
       "type": "local",
-      "address": "persistence1pss7nxeh3f9md2vuxku8q99femnwdjtcpe9ky9",
+      "address": "persistence1fk57xyyxz89krc3nn5law2xekan84gufzagszw",
       "pubkey": {
         "@type": "/cosmos.crypto.secp256k1.PubKey",
-        "key": "Aw57xBfOrMyTep3ULDevI1R9/RpoNu3VvKM/w+D0hp7z"
+        "key": "A3n4L7G8aFv7g3UfBZFVZA5oByH8H6E6oxBiKDpxrTPx"
       },
-      "mnemonic": "opinion knife other balcony surge more bamboo canoe romance ask argue teach anxiety adjust spike mystery wolf alone torch tail six decide wash alley"
+      "mnemonic": "flash tuna music boat sign image judge engage pistol reason love reform defy game ceiling basket roof clay keen hint flash buyer fancy buyer"
     },
     {
       "name": "test2",
       "type": "local",
-      "address": "persistence16e0p4vwufmsn0lucwsnfmjfx67ry84y47edfwq",
+      "address": "persistence1mcc78qln7dlfjy0ssy7cdtqeapnntnsam8d0v0",
       "pubkey": {
         "@type": "/cosmos.crypto.secp256k1.PubKey",
-        "key": "AvRaiAePcKIgKibm9d7LO/2DLd1p7FaDeua+ilvf4p+A"
+        "key": "A2dU48gSo7PrMFQKhxxf49v8aTwZhBxMZA0aZnaBcn0c"
       },
-      "mnemonic": "logic help only text door wealth hurt always remove glory viable income agent olive trial female couch old offer crash menu zero pencil thrive"
+      "mnemonic": "gravity bus kingdom auto limit gate humble abstract reopen resemble awkward cannon maximum bread balance insane banana maple screen mimic cluster pigeon badge walnut"
     },
     {
       "name": "test3",
       "type": "local",
-      "address": "persistence1pn45c2jdwfwrwva0cknfdlnfst28ucpurteeqt",
+      "address": "persistence1xl7tdmvqwwlds20tsxjvkx4wul9lcd60hfh0u4",
       "pubkey": {
         "@type": "/cosmos.crypto.secp256k1.PubKey",
-        "key": "A2eBCH+BVDXjVkJDZQE5RhKL3jN3apLqCTIjzXzWbMxJ"
+        "key": "AjlLiT+y2kL+HBgR/TRO7wprZONxYDHb71+9vDA7rz1g"
       },
-      "mnemonic": "middle weather hip ghost quick oxygen awful library broken chicken tackle animal crunch appear fee indoor fitness enough orphan trend tackle faint eyebrow all"
-    },
-    {
-      "name": "test4",
-      "type": "local",
-      "address": "persistence1y3x3uaqnnlhulway8g5dvm4erpd5r4f0d29hn5",
-      "pubkey": {
-        "@type": "/cosmos.crypto.secp256k1.PubKey",
-        "key": "Agn5q1U2vLjdAhg4dcKuUKm3ZwdmrrFmVnlnqsqkXoIA"
-      },
-      "mnemonic": "tag apart multiply food bleak isolate describe stand guide field session design cable combine excess shrug abuse pause course ketchup umbrella program labor ripple"
+      "mnemonic": "horse end velvet train canoe walnut lottery security sure right rigid busy either sand bar palace choice extend august mystery action surround coconut online"
     }
   ]
 }

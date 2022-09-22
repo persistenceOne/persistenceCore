@@ -3,3 +3,4 @@ namespace: dev-core
 resources:
   - ../../../base/persistencecore
   - ../../../base/gaia
+  - ../../../relayer

@@ -1,5 +1,0 @@
-namespace: local
-
-resources:
-  - ../../../base/persistencecore
-  - ../../../base/gaia

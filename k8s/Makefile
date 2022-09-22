@@ -1,5 +1,5 @@
 PROCESS=persistencecore
-CLUSTER=local
+NAMESPACE=local
 
 apply:
 	kubectl apply -k overlays/$(CLUSTER)/$(PROCESS)

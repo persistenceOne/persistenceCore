@@ -1,0 +1,76 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-wasm
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  tls:
+    # This secret must exist beforehand
+    # The cert must also contain the subj-name grpctest.dev.mydomain.com
+    # https://github.com/kubernetes/ingress-nginx/blob/master/docs/examples/PREREQUISITES.md#tls-certificates
+    - secretName: cloudflare-tls
+      hosts:
+        - rpc.devnet.cosmos.pstake.finance
+  rules:
+    - host: rpc.devnet.cosmos.pstake.finance
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: wasm-genesis
+                port:
+                  number: 26657
+  ingressClassName: nginx
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-wasm-grpc
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+spec:
+  tls:
+    - secretName: cloudflare-tls
+      hosts:
+        - grpc.devnet.cosmos.pstake.finance
+  rules:
+    - host: grpc.devnet.cosmos.pstake.finance
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: pstake-genesis
+                port:
+                  number: 9090
+  ingressClassName: nginx
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-wasm-rest
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  tls:
+    - secretName: cloudflare-tls
+      hosts:
+        - rest.devnet.cosmos.pstake.finance
+  rules:
+    - host: rest.devnet.cosmos.pstake.finance
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: wasm-genesis
+                port:
+                  number: 1317
+  ingressClassName: nginx

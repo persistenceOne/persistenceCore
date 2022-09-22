@@ -4,14 +4,14 @@
       "name": "persistence",
       "id": "persistencecore",
       "hdpath": "m/44'/118'/0'/0/0",
-      "port": "transfer",
+      "port": "wasm.persistence1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrq7e8hts",
       "keys": [
         {
           "name": "persistence",
           "type": "local",
-          "address": "persistence1826wkxx8wv7mfnank8l6xu9rxm7kg8rvvk4e0a",
-          "pubkey": "{\"@type\":\"/cosmos.crypto.secp256k1.PubKey\",\"key\":\"A7z3y2BknPQMh4j2lGYePxFUJajYONuVI1Xp9xOu6AOL\"}",
-          "mnemonic": "april patch recipe debate remove hurdle concert gesture design near predict enough color tail business imitate twelve february punch cheap vanish december cool wheel"
+          "address": "persistence1fk57xyyxz89krc3nn5law2xekan84gufzagszw",
+          "pubkey": "{\"@type\":\"/cosmos.crypto.secp256k1.PubKey\",\"key\":\"A3n4L7G8aFv7g3UfBZFVZA5oByH8H6E6oxBiKDpxrTPx\"}",
+          "mnemonic": "flash tuna music boat sign image judge engage pistol reason love reform defy game ceiling basket roof clay keen hint flash buyer fancy buyer"
         }
       ]
     },
@@ -24,9 +24,9 @@
         {
           "name": "cosmos",
           "type": "local",
-          "address": "cosmos1d9fylz3mgxw2x33thvw3kg6eymuxzqwd38tx35",
-          "pubkey": "{\"@type\":\"/cosmos.crypto.secp256k1.PubKey\",\"key\":\"Aumqzi9se6XFoejFZaOVhYo7lHExAqUrBiIn0daH2Mi6\"}",
-          "mnemonic": "monitor size panic second inform stock trophy grit sustain refuse render heart midnight sport wise exile pumpkin pole letter harvest spell crater move salad"
+          "address": "cosmos1hcqg5wj9t42zawqkqucs7la85ffyv08lum327c",
+          "pubkey": "{\"@type\":\"/cosmos.crypto.secp256k1.PubKey\",\"key\":\"A2L7bEp1Y89hBqXA/Bsbw2gPLxmFNj6SAVVoXZdT7YAd\"}",
+          "mnemonic": "together chief must vocal account off apart dinosaur move canvas spring whisper improve cruise idea earn reflect flash goat illegal mistake blood earn ridge"
         }
       ]
     }
