@@ -29,7 +29,7 @@ metadata:
   name: persistencecore-validator
 spec:
   serviceName: persistencecore-validator
-  replicas: 1
+  replicas: 0
   revisionHistoryLimit: 3
   selector:
     matchLabels:

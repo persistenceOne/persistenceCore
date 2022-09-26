@@ -63,12 +63,23 @@ spec:
             - |
               apk update
               apk add jq
-              while [ $(./grpcurl -plaintext $FIREHOSE_HOST.svc.cluster.local:$FIREHOSE_PORT grpc.health.v1.Health.Check | jq .status) != '"SERVING"' ]; do
-                echo "Firehose node does not seem to be ready. Waiting for it to start..."
-                sleep 10;
+
+              x=1; while [ $x -le 10 ]; do
+                echo "Attempt number: $x"
+                FIREHOSE_STATUS=$(./grpcurl -plaintext $FIREHOSE_HOST.svc.cluster.local:$FIREHOSE_PORT grpc.health.v1.Health.Check | jq .status)
+                if [ $FIREHOSE_STATUS == '"SERVING"' ]
+                then
+                  echo "Ready to start"
+                  exit 0
+                fi
+                echo "Firehose node does not seem to be ready. Status: $FIREHOSE_STATUS Waiting for it to start. Sleeping for 15 seconds."
+                sleep 15
+                x=$(( $x + 1 ))
               done
-              echo "Ready to start"
-              exit 0
+              
+              echo "Retry limit exceeded. Current status: $(./grpcurl -plaintext $FIREHOSE_HOST.svc.cluster.local:$FIREHOSE_PORT grpc.health.v1.Health.Check | jq .status)"
+              exit 1
+
       containers:
         - name: graph-node
           image: graphprotocol/graph-node:latest
@@ -78,6 +89,10 @@ spec:
               value: persistencecore-firehose-node.dev-core
             - name: FIREHOSE_PORT
               value: "9030"
+            - name: IPFS_HOST
+              value: ipfs-node.dev-core
+            - name: IPFS_PORT
+              value: "5001"
             - name: POSTGRES_HOST
               valueFrom:
                 secretKeyRef:
@@ -120,8 +135,13 @@ spec:
               # Print config before starting node
               cat config.toml
 
+              # maybe dns needs some time to resolve?
+              sleep 10
+
               # Start graph node
-              graph-node --config config.toml
+              graph-node --config config.toml \
+                --ipfs "$IPFS_HOST.svc.cluster.local:$IPFS_PORT" \
+                --node-id index_node_cosmos_1
           resources:
             limits:
               cpu: "0.5"

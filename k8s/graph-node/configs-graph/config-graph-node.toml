@@ -15,5 +15,5 @@ ingestor = "block_ingestor_node"
 shard = "primary"
 protocol = "cosmos"
 provider = [
-  { label = "devnet", details = { type = "firehose", url = "http://FIREHOSE_HOST:FIREHOSE_PORT/" }},
+  { label = "devnet", details = { type = "firehose", url = "http://FIREHOSE_HOST:FIREHOSE_PORT" }},
 ]
