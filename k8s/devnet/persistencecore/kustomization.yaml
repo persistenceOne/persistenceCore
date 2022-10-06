@@ -1,4 +1,6 @@
 namespace: dev-core
 
-bases:
+resources:
   - ../../base/persistencecore
+  - ingress.yaml
+  - ../../graph-node
