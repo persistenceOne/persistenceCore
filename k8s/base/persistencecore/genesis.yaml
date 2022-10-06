@@ -76,6 +76,11 @@ spec:
             - |
               VAL_INDEX=${HOSTNAME##*-}
               echo "Validator Index: $VAL_INDEX"
+
+              if test -f $HOME_DIR/config/genesis.json; then
+                  echo "Genesis.json exists."
+                  exit 0
+              fi
               
               persistenceCore init persistenceCore --chain-id $CHAIN_ID --home $HOME_DIR
               jq -r ".genesis[0].mnemonic" /configs/validators.json | persistenceCore keys add $(jq -r ".genesis[0].name" /configs/validators.json) --recover --keyring-backend='test' --home $HOME_DIR
@@ -142,7 +147,7 @@ spec:
               memory: "100M"
           volumeMounts:
             - mountPath: /persistencecore
-              name: persistencecore
+              name: genesis-pv-storage
             - mountPath: /configs
               name: addresses
       containers:
@@ -171,7 +176,7 @@ spec:
               memory: "500M"
           volumeMounts:
             - mountPath: /persistencecore
-              name: persistencecore
+              name: genesis-pv-storage
             - mountPath: /configs
               name: addresses
         - name: exposer-app
@@ -192,11 +197,18 @@ spec:
               memory: "100M"
           volumeMounts:
             - mountPath: /persistencecore
-              name: persistencecore
+              name: genesis-pv-storage
       volumes:
-        - name: persistencecore
-          emptyDir: { }
         - name: addresses
           configMap:
             name: test-addresses-persistencecore
+  volumeClaimTemplates:
+  - metadata:
+      name: genesis-pv-storage
+    spec:
+      storageClassName: do-block-storage
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 5Gi
 ---

@@ -235,8 +235,6 @@ spec:
             - mountPath: /persistencecore
               name: validator-pv-storage
       volumes:
-        # - name: persistencecore
-        #   emptyDir: { }
         - name: addresses
           configMap:
             name: test-addresses-persistencecore
