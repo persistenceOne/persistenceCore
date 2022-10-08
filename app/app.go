@@ -7,6 +7,7 @@ package app
 
 import (
 	"fmt"
+
 	"io"
 	stdlog "log"
 	"net/http"
@@ -17,7 +18,6 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmclient "github.com/CosmWasm/wasmd/x/wasm/client"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
@@ -87,6 +87,8 @@ import (
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	ica "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts"
+	icacontroller "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller"
+	icacontrollerkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/keeper"
 	icacontrollertypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/types"
 	icahost "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/host"
 	icahostkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/host/keeper"
@@ -104,6 +106,19 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 	"github.com/gogo/protobuf/grpc"
 	"github.com/gorilla/mux"
+	"github.com/persistenceOne/persistence-sdk/x/epochs"
+	epochskeeper "github.com/persistenceOne/persistence-sdk/x/epochs/keeper"
+	epochstypes "github.com/persistenceOne/persistence-sdk/x/epochs/types"
+	"github.com/persistenceOne/persistence-sdk/x/ibchooker"
+	ibchookerkeeper "github.com/persistenceOne/persistence-sdk/x/ibchooker/keeper"
+	ibchookertypes "github.com/persistenceOne/persistence-sdk/x/ibchooker/types"
+	"github.com/persistenceOne/persistence-sdk/x/interchainquery"
+	interchainquerykeeper "github.com/persistenceOne/persistence-sdk/x/interchainquery/keeper"
+	interchainquerytypes "github.com/persistenceOne/persistence-sdk/x/interchainquery/types"
+	"github.com/persistenceOne/pstake-native/x/lscosmos"
+	lscosmosclient "github.com/persistenceOne/pstake-native/x/lscosmos/client"
+	lscosmoskeeper "github.com/persistenceOne/pstake-native/x/lscosmos/keeper"
+	lscosmostypes "github.com/persistenceOne/pstake-native/x/lscosmos/types"
 	"github.com/rakyll/statik/fs"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
 	tendermintjson "github.com/tendermint/tendermint/libs/json"
@@ -146,15 +161,26 @@ func GetEnabledProposals() []wasm.ProposalType {
 }
 
 var ModuleAccountPermissions = map[string][]string{
-	authtypes.FeeCollectorName:     nil,
-	distributiontypes.ModuleName:   nil,
-	icatypes.ModuleName:            nil,
-	minttypes.ModuleName:           {authtypes.Minter},
-	stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
-	stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
-	govtypes.ModuleName:            {authtypes.Burner},
-	ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
-	wasm.ModuleName:                {authtypes.Burner},
+	authtypes.FeeCollectorName:               nil,
+	distributiontypes.ModuleName:             nil,
+	icatypes.ModuleName:                      nil,
+	minttypes.ModuleName:                     {authtypes.Minter},
+	stakingtypes.BondedPoolName:              {authtypes.Burner, authtypes.Staking},
+	stakingtypes.NotBondedPoolName:           {authtypes.Burner, authtypes.Staking},
+	govtypes.ModuleName:                      {authtypes.Burner},
+	ibctransfertypes.ModuleName:              {authtypes.Minter, authtypes.Burner},
+	wasm.ModuleName:                          {authtypes.Burner},
+	lscosmostypes.ModuleName:                 {authtypes.Minter, authtypes.Burner},
+	lscosmostypes.DepositModuleAccount:       nil,
+	lscosmostypes.DelegationModuleAccount:    nil,
+	lscosmostypes.RewardModuleAccount:        nil,
+	lscosmostypes.UndelegationModuleAccount:  nil,
+	lscosmostypes.RewardBoosterModuleAccount: nil,
+}
+
+var receiveAllowedMAcc = map[string]bool{
+	lscosmostypes.UndelegationModuleAccount: true,
+	lscosmostypes.DelegationModuleAccount:   true,
 }
 
 var ModuleBasics = module.NewBasicManager(
@@ -174,6 +200,10 @@ var ModuleBasics = module.NewBasicManager(
 			upgradeclient.CancelProposalHandler,
 			ibcclient.UpdateClientProposalHandler,
 			ibcclient.UpgradeProposalHandler,
+			lscosmosclient.RegisterHostChainProposalHandler,
+			lscosmosclient.MinDepositAndFeeChangeProposalHandler,
+			lscosmosclient.PstakeFeeAddressChangeProposalHandler,
+			lscosmosclient.AllowListValidatorSetChangeProposalHandler,
 		)...,
 	),
 	params.AppModuleBasic{},
@@ -189,6 +219,10 @@ var ModuleBasics = module.NewBasicManager(
 	wasm.AppModuleBasic{},
 	halving.AppModuleBasic{},
 	ica.AppModuleBasic{},
+	epochs.AppModuleBasic{},
+	interchainquery.AppModuleBasic{},
+	ibchooker.AppModuleBasic{},
+	lscosmos.AppModuleBasic{},
 )
 
 var (
@@ -213,35 +247,42 @@ type Application struct {
 
 	keys map[string]*sdk.KVStoreKey
 
-	AccountKeeper      authkeeper.AccountKeeper
-	BankKeeper         bankkeeper.Keeper
-	CapabilityKeeper   *capabilitykeeper.Keeper
-	StakingKeeper      stakingkeeper.Keeper
-	SlashingKeeper     slashingkeeper.Keeper
-	MintKeeper         mintkeeper.Keeper
-	DistributionKeeper distributionkeeper.Keeper
-	GovKeeper          govkeeper.Keeper
-	UpgradeKeeper      upgradekeeper.Keeper
-	CrisisKeeper       crisiskeeper.Keeper
-	ParamsKeeper       paramskeeper.Keeper
-	IBCKeeper          *ibckeeper.Keeper
-	ICAHostKeeper      icahostkeeper.Keeper
-	EvidenceKeeper     evidencekeeper.Keeper
-	TransferKeeper     ibctransferkeeper.Keeper
-	FeegrantKeeper     feegrantkeeper.Keeper
-	AuthzKeeper        authzkeeper.Keeper
-	HalvingKeeper      halving.Keeper
-	WasmKeeper         wasm.Keeper
+	AccountKeeper         authkeeper.AccountKeeper
+	BankKeeper            bankkeeper.Keeper
+	CapabilityKeeper      *capabilitykeeper.Keeper
+	StakingKeeper         stakingkeeper.Keeper
+	SlashingKeeper        slashingkeeper.Keeper
+	MintKeeper            mintkeeper.Keeper
+	DistributionKeeper    distributionkeeper.Keeper
+	GovKeeper             govkeeper.Keeper
+	UpgradeKeeper         upgradekeeper.Keeper
+	CrisisKeeper          crisiskeeper.Keeper
+	ParamsKeeper          paramskeeper.Keeper
+	IBCKeeper             *ibckeeper.Keeper
+	ICAHostKeeper         icahostkeeper.Keeper
+	EvidenceKeeper        evidencekeeper.Keeper
+	TransferKeeper        ibctransferkeeper.Keeper
+	FeegrantKeeper        feegrantkeeper.Keeper
+	AuthzKeeper           authzkeeper.Keeper
+	HalvingKeeper         halving.Keeper
+	WasmKeeper            wasm.Keeper
+	EpochsKeeper          epochskeeper.Keeper
+	ICAControllerKeeper   icacontrollerkeeper.Keeper
+	LSCosmosKeeper        lscosmoskeeper.Keeper
+	InterchainQueryKeeper interchainquerykeeper.Keeper
+	TransferHooksKeeper   ibchookerkeeper.Keeper
 
 	moduleManager     *module.Manager
 	configurator      module.Configurator
 	simulationManager *module.SimulationManager
 
 	// make scoped keepers public for test purposes
-	ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
-	ScopedTransferKeeper capabilitykeeper.ScopedKeeper
-	ScopedICAHostKeeper  capabilitykeeper.ScopedKeeper
-	ScopedWasmKeeper     capabilitykeeper.ScopedKeeper
+	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
+	ScopedTransferKeeper      capabilitykeeper.ScopedKeeper
+	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
+	ScopedICAControllerKeeper capabilitykeeper.ScopedKeeper
+	ScopedLSCosmosKeeper      capabilitykeeper.ScopedKeeper
+	ScopedWasmKeeper          capabilitykeeper.ScopedKeeper
 }
 
 func NewApplication(
@@ -282,6 +323,7 @@ func NewApplication(
 		govtypes.StoreKey, paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey,
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
 		feegrant.StoreKey, authzkeeper.StoreKey, icahosttypes.StoreKey, halving.StoreKey, wasm.StoreKey,
+		icacontrollertypes.StoreKey, epochstypes.StoreKey, lscosmostypes.StoreKey, interchainquerytypes.StoreKey,
 	)
 
 	transientStoreKeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -308,6 +350,8 @@ func NewApplication(
 	scopedICAHostKeeper := app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
 	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasm.ModuleName)
+	scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
+	scopedLSCosmosKeeper := app.CapabilityKeeper.ScopeToModule(lscosmostypes.ModuleName)
 	app.CapabilityKeeper.Seal()
 
 	app.AccountKeeper = authkeeper.NewAccountKeeper(
@@ -318,13 +362,13 @@ func NewApplication(
 		moduleAccountPermissions,
 	)
 
-	blacklistedAddresses := make(map[string]bool)
-	for account := range moduleAccountPermissions {
-		blacklistedAddresses[authtypes.NewModuleAddress(account).String()] = true
-	}
-	blackListedModuleAddresses := make(map[string]bool)
+	blockedModuleAddrs := make(map[string]bool)
 	for moduleAccount := range moduleAccountPermissions {
-		blackListedModuleAddresses[authtypes.NewModuleAddress(moduleAccount).String()] = true
+		blockedModuleAddrs[authtypes.NewModuleAddress(moduleAccount).String()] = true
+	}
+	sendCoinBlockedAddrs := make(map[string]bool)
+	for acc := range moduleAccountPermissions {
+		sendCoinBlockedAddrs[authtypes.NewModuleAddress(acc).String()] = !receiveAllowedMAcc[acc]
 	}
 
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
@@ -332,7 +376,7 @@ func NewApplication(
 		keys[banktypes.StoreKey],
 		app.AccountKeeper,
 		app.GetSubspace(banktypes.ModuleName),
-		blacklistedAddresses,
+		sendCoinBlockedAddrs,
 	)
 
 	app.AuthzKeeper = authzkeeper.NewKeeper(
@@ -373,7 +417,7 @@ func NewApplication(
 		app.BankKeeper,
 		&stakingKeeper,
 		authtypes.FeeCollectorName,
-		blackListedModuleAddresses,
+		blockedModuleAddrs,
 	)
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
 		applicationCodec,
@@ -403,6 +447,11 @@ func NewApplication(
 
 	app.StakingKeeper = *stakingKeeper.SetHooks(
 		stakingtypes.NewMultiStakingHooks(app.DistributionKeeper.Hooks(), app.SlashingKeeper.Hooks()),
+	)
+
+	epochsKeeper := *epochskeeper.NewKeeper(
+		applicationCodec,
+		keys[epochstypes.StoreKey],
 	)
 
 	app.IBCKeeper = ibckeeper.NewKeeper(
@@ -438,9 +487,52 @@ func NewApplication(
 		scopedICAHostKeeper,
 		app.MsgServiceRouter(),
 	)
+	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
+		applicationCodec, keys[icacontrollertypes.StoreKey],
+		app.GetSubspace(icacontrollertypes.SubModuleName),
+		app.IBCKeeper.ChannelKeeper, // may be replaced with middleware such as ics29 fee
+		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
+		scopedICAControllerKeeper, app.MsgServiceRouter(),
+	)
 
-	icaModule := ica.NewAppModule(nil, &app.ICAHostKeeper)
+	icaModule := ica.NewAppModule(&app.ICAControllerKeeper, &app.ICAHostKeeper)
 	icaHostIBCModule := icahost.NewIBCModule(app.ICAHostKeeper)
+
+	app.InterchainQueryKeeper = interchainquerykeeper.NewKeeper(
+		applicationCodec, keys[interchainquerytypes.StoreKey], app.IBCKeeper)
+	interchainQueryModule := interchainquery.NewAppModule(applicationCodec, app.InterchainQueryKeeper)
+
+	app.LSCosmosKeeper = lscosmoskeeper.NewKeeper(
+		applicationCodec,
+		keys[lscosmostypes.StoreKey],
+		memoryKeys[lscosmostypes.MemStoreKey],
+		app.GetSubspace(lscosmostypes.ModuleName),
+		app.BankKeeper,
+		app.AccountKeeper,
+		epochsKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		&app.IBCKeeper.PortKeeper,
+		app.TransferKeeper,
+		app.ICAControllerKeeper,
+		&app.InterchainQueryKeeper,
+		scopedLSCosmosKeeper,
+		app.MsgServiceRouter(),
+	)
+	err := app.InterchainQueryKeeper.SetCallbackHandler(lscosmostypes.ModuleName, app.LSCosmosKeeper.CallbackHandler())
+	if err != nil {
+		panic(err)
+	}
+	app.EpochsKeeper = *epochsKeeper.SetHooks(
+		epochstypes.NewMultiEpochHooks(app.LSCosmosKeeper.NewEpochHooks()),
+	)
+	// Information will flow: ibc-port -> icaController -> lscosmos.
+	lscosmosModule := lscosmos.NewAppModule(applicationCodec, app.LSCosmosKeeper, app.AccountKeeper, app.BankKeeper)
+	icaControllerIBCModule := icacontroller.NewIBCModule(app.ICAControllerKeeper, lscosmosModule)
+
+	ibcTransferHooksKeeper := ibchookerkeeper.NewKeeper()
+	app.TransferHooksKeeper = *ibcTransferHooksKeeper.SetHooks(ibchookertypes.NewMultiStakingHooks(app.LSCosmosKeeper.NewIBCTransferHooks()))
+	ibcTransferHooksMiddleware := ibchooker.NewAppModule(app.TransferHooksKeeper, transferIBCModule)
 
 	evidenceKeeper := evidencekeeper.NewKeeper(
 		applicationCodec,
@@ -481,7 +573,9 @@ func NewApplication(
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibctypes.NewRouter()
 	ibcRouter.AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
-		AddRoute(ibctransfertypes.ModuleName, transferIBCModule).
+		AddRoute(ibctransfertypes.ModuleName, ibcTransferHooksMiddleware).
+		AddRoute(icacontrollertypes.SubModuleName, icaControllerIBCModule).
+		AddRoute(lscosmostypes.ModuleName, icaControllerIBCModule).
 		AddRoute(wasm.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper))
 	app.IBCKeeper.SetRouter(ibcRouter)
 
@@ -498,7 +592,10 @@ func NewApplication(
 	).AddRoute(
 		upgradetypes.RouterKey,
 		upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper),
-	).AddRoute(ibcclienttypes.RouterKey, ibccoreclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
+	).AddRoute(
+		ibcclienttypes.RouterKey, ibccoreclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper),
+	).AddRoute(lscosmostypes.RouterKey, lscosmos.NewLSCosmosProposalHandler(app.LSCosmosKeeper))
+
 	if len(enabledProposals) != 0 {
 		govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.WasmKeeper, enabledProposals))
 	}
@@ -543,12 +640,17 @@ func NewApplication(
 		params.NewAppModule(app.ParamsKeeper),
 		halving.NewAppModule(applicationCodec, app.HalvingKeeper),
 		transferModule,
+		ibcTransferHooksMiddleware,
 		icaModule,
 		wasm.NewAppModule(applicationCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
+		epochs.NewAppModule(app.EpochsKeeper),
+		interchainQueryModule,
+		lscosmosModule,
 	)
 
 	app.moduleManager.SetOrderBeginBlockers(
 		upgradetypes.ModuleName,
+		epochstypes.ModuleName,
 		capabilitytypes.ModuleName,
 		crisistypes.ModuleName,
 		govtypes.ModuleName,
@@ -569,6 +671,9 @@ func NewApplication(
 		vestingtypes.ModuleName,
 		halving.ModuleName,
 		wasm.ModuleName,
+		ibchookertypes.ModuleName,
+		interchainquerytypes.ModuleName,
+		lscosmostypes.ModuleName,
 	)
 	app.moduleManager.SetOrderEndBlockers(
 		crisistypes.ModuleName,
@@ -592,6 +697,10 @@ func NewApplication(
 		vestingtypes.ModuleName,
 		halving.ModuleName,
 		wasm.ModuleName,
+		epochstypes.ModuleName,
+		ibchookertypes.ModuleName,
+		interchainquerytypes.ModuleName,
+		lscosmostypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -621,6 +730,10 @@ func NewApplication(
 		vestingtypes.ModuleName,
 		halving.ModuleName,
 		wasm.ModuleName,
+		epochstypes.ModuleName,
+		ibchookertypes.ModuleName,
+		interchainquerytypes.ModuleName,
+		lscosmostypes.ModuleName,
 	)
 
 	app.moduleManager.RegisterInvariants(&app.CrisisKeeper)
@@ -643,6 +756,8 @@ func NewApplication(
 		feegrantmodule.NewAppModule(applicationCodec, app.AccountKeeper, app.BankKeeper, app.FeegrantKeeper, app.interfaceRegistry),
 		ibc.NewAppModule(app.IBCKeeper),
 		transferModule,
+		interchainQueryModule,
+		lscosmosModule,
 	)
 
 	simulationManager.RegisterStoreDecoders()
@@ -690,43 +805,6 @@ func NewApplication(
 	app.UpgradeKeeper.SetUpgradeHandler(
 		UpgradeName,
 		func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
-			ctx.Logger().Info("starting the upgrade now")
-
-			fromVM[icatypes.ModuleName] = icaModule.ConsensusVersion()
-			// create ICS27 Controller submodule params
-			controllerParams := icacontrollertypes.Params{}
-			// create ICS27 Host submodule params
-			hostParams := icahosttypes.Params{
-				HostEnabled: true,
-				AllowMessages: []string{
-					authzMsgExec,
-					authzMsgGrant,
-					authzMsgRevoke,
-					bankMsgSend,
-					bankMsgMultiSend,
-					distrMsgSetWithdrawAddr,
-					distrMsgWithdrawValidatorCommission,
-					distrMsgFundCommunityPool,
-					distrMsgWithdrawDelegatorReward,
-					feegrantMsgGrantAllowance,
-					feegrantMsgRevokeAllowance,
-					govMsgVoteWeighted,
-					govMsgSubmitProposal,
-					govMsgDeposit,
-					govMsgVote,
-					stakingMsgEditValidator,
-					stakingMsgDelegate,
-					stakingMsgUndelegate,
-					stakingMsgBeginRedelegate,
-					stakingMsgCreateValidator,
-					vestingMsgCreateVestingAccount,
-					transferMsgTransfer,
-				},
-			}
-			ctx.Logger().Info("start to init interchainaccount module...")
-			// initialize ICS27 module
-			icaModule.InitModule(ctx, controllerParams, hostParams)
-
 			ctx.Logger().Info("start to run module migrations...")
 
 			// RunMigrations twice is just a way to make auth module's migrates after staking
@@ -735,13 +813,15 @@ func NewApplication(
 				return nil, err
 			}
 
-			// Since we provide custom DefaultGenesis (privileges StoreCode) in
-			// app/genesis.go rather than the wasm module, we need to set the params
-			// here when migrating (is it is not customized).
-			params := app.WasmKeeper.GetParams(ctx)
-			params.CodeUploadAccess = wasmtypes.AllowNobody
-			params.InstantiateDefaultPermission = wasmtypes.AccessTypeNobody
-			app.WasmKeeper.SetParams(ctx, params)
+			// enable ica controller
+			icaControllerParams := app.ICAControllerKeeper.GetParams(ctx)
+			icaControllerParams.ControllerEnabled = true
+			app.ICAControllerKeeper.SetParams(ctx, icaControllerParams)
+
+			// faster initaite of enabling module
+			hostChainParams := app.LSCosmosKeeper.GetHostChainParams(ctx)
+			hostChainParams.PstakeParams.PstakeFeeAddress = "persistence18dsfsljczehwd5yem9qq2jcz56dz3shp48j3zj"
+			app.LSCosmosKeeper.SetHostChainParams(ctx, hostChainParams)
 
 			return newVM, nil
 		},
@@ -754,7 +834,8 @@ func NewApplication(
 
 	if upgradeInfo.Name == UpgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
-			Added: []string{icahosttypes.StoreKey, wasm.ModuleName},
+			Added: []string{icacontrollertypes.SubModuleName, epochstypes.StoreKey,
+				interchainquerytypes.StoreKey, lscosmostypes.StoreKey},
 		}
 
 		// configure store loader that checks if version == upgradeHeight and applies store upgrades
@@ -776,6 +857,8 @@ func NewApplication(
 	app.ScopedTransferKeeper = scopedTransferKeeper
 	app.ScopedICAHostKeeper = scopedICAHostKeeper
 	app.ScopedWasmKeeper = scopedWasmKeeper
+	app.ScopedICAControllerKeeper = scopedICAControllerKeeper
+	app.ScopedLSCosmosKeeper = scopedLSCosmosKeeper
 
 	return app
 }
@@ -1059,6 +1142,9 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(ibchost.ModuleName)
 	paramsKeeper.Subspace(icahosttypes.SubModuleName)
 	paramsKeeper.Subspace(wasm.ModuleName)
+	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
+	paramsKeeper.Subspace(lscosmostypes.ModuleName)
+	paramsKeeper.Subspace(interchainquerytypes.ModuleName)
 
 	return paramsKeeper
 }
