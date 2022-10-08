@@ -102,7 +102,7 @@ persistenceCore start
 > will create keys with coin-type 118(cosmos) and will only be supported by CLI and not by current or future wallets.
 
 * Install the Persistence application on the Ledger
-  device. [ref](https://github.com/persistenceOne/persistenceCore/blob/master/docs/resources/Ledger.md#install-the-persistence-ledger-application)
+  device. [ref](https://github.com/persistenceOne/persistenceCore/blob/main/docs/resources/Ledger.md#install-the-persistence-ledger-application)
 * Connect the Ledger device to a system with persistenceCore binary and open the Persistence application on it.
 * Add key
 
