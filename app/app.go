@@ -109,6 +109,7 @@ import (
 	"github.com/persistenceOne/persistence-sdk/x/epochs"
 	epochskeeper "github.com/persistenceOne/persistence-sdk/x/epochs/keeper"
 	epochstypes "github.com/persistenceOne/persistence-sdk/x/epochs/types"
+	"github.com/persistenceOne/persistence-sdk/x/halving"
 	"github.com/persistenceOne/persistence-sdk/x/ibchooker"
 	ibchookerkeeper "github.com/persistenceOne/persistence-sdk/x/ibchooker/keeper"
 	ibchookertypes "github.com/persistenceOne/persistence-sdk/x/ibchooker/types"
@@ -128,7 +129,6 @@ import (
 	tendermintdb "github.com/tendermint/tm-db"
 
 	appparams "github.com/persistenceOne/persistenceCore/v3/app/params"
-	"github.com/persistenceOne/persistenceCore/v3/x/halving"
 )
 
 var DefaultNodeHome string
