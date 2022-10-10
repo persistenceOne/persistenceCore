@@ -574,8 +574,8 @@ github.com/olekukonko/tablewriter v0.0.2-0.20190409134802-7e037d187b0c/go.mod h1
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.7.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.12.1/go.mod h1:zj2OWP4+oCPe1qIXoGWkgMRwljMUYCdkwsT2108oapk=
-github.com/onsi/ginkgo v1.14.0 h1:2mOpI4JVVPBN+WQRa0WKH2eXR+Ey+uK4n7Zj0aYpIQA=
 github.com/onsi/ginkgo v1.14.0/go.mod h1:iSB4RoI2tjJc9BBv4NKIKWKya62Rps+oPG/Lv9klQyY=
+github.com/onsi/ginkgo v1.16.4 h1:29JGrr5oVBm5ulCWet69zQkzWipVXIol6ygQUe/EzNc=
 github.com/onsi/gomega v1.4.1/go.mod h1:C1qb7wdrVGGVU+Z6iS04AVkA3Q65CEZX59MT0QO5uiA=
 github.com/onsi/gomega v1.4.3/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1CpauHY=
 github.com/onsi/gomega v1.7.1/go.mod h1:XdKZgCCFLUoM/7CFJVPcG8C1xQ1AJ0vpAezJrB7JYyY=
@@ -607,10 +607,8 @@ github.com/pelletier/go-toml v1.9.5/go.mod h1:u1nR/EPcESfeI/szUZKdtJ0xRNbUoANCko
 github.com/pelletier/go-toml/v2 v2.0.5 h1:ipoSadvV8oGUjnUbMub59IDPPwfxF694nG/jwbMiyQg=
 github.com/pelletier/go-toml/v2 v2.0.5/go.mod h1:OMHamSCAODeSsVrwwvcJOaoN0LIUIaFVNZzmWyNfXas=
 github.com/performancecopilot/speed v3.0.0+incompatible/go.mod h1:/CLtqpZ5gBg1M9iaPbIdPPGyKcA8hKdoy6hAWba7Yac=
-github.com/persistenceOne/persistence-sdk v0.0.0-20220907073812-928636f2f67e h1:aCdek2WwLhMsKi7T0WGOHiEe6mGzTItr/E4NIkQzt+I=
-github.com/persistenceOne/persistence-sdk v0.0.0-20220907073812-928636f2f67e/go.mod h1:DF+21zMP10vsc15iHeXYG8c9KYXMQu7FOPMS3dTvDtE=
-github.com/persistenceOne/persistence-sdk v0.0.0-20221010130722-e9f7d6052344 h1:fZOMdKeo/Wh2ON41r0cpwFtNRaxgzkktMgC6/xla5MA=
-github.com/persistenceOne/persistence-sdk v0.0.0-20221010130722-e9f7d6052344/go.mod h1:SmtjwFyUXZvmepTZECYsr2TXTcbfWycfoF16gRzdTCU=
+github.com/persistenceOne/persistence-sdk v1.0.0-rc0 h1:eHdU4UnIlgvgDZi06OV5/R87rq7ahU7/TTsxhw3QUYs=
+github.com/persistenceOne/persistence-sdk v1.0.0-rc0/go.mod h1:SmtjwFyUXZvmepTZECYsr2TXTcbfWycfoF16gRzdTCU=
 github.com/persistenceOne/pstake-native v1.0.0-rc0 h1:eqjNWbrzyBYNA6kA1QtSndaxDkIpwj7am8yQkc+vN2I=
 github.com/persistenceOne/pstake-native v1.0.0-rc0/go.mod h1:Z3N3rjMo30Qpdgxv0MQjNZS+5hVXDqfL8NFnNIC9Y0c=
 github.com/peterh/liner v1.1.1-0.20190123174540-a2c9a5303de7/go.mod h1:CRroGNssyjTd/qIG2FyxByd2S8JEAZXBl4qUrZf8GS0=
