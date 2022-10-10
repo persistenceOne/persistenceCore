@@ -10,8 +10,8 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
-	github.com/persistenceOne/persistence-sdk v0.0.0-20220907073812-928636f2f67e
-	github.com/persistenceOne/pstake-native v0.0.0-20221008182251-5513d3bf73cd
+	github.com/persistenceOne/persistence-sdk v0.0.0-20221010130722-e9f7d6052344
+	github.com/persistenceOne/pstake-native v1.0.0-rc0
 	github.com/prometheus/client_golang v1.13.0
 	github.com/rakyll/statik v0.1.7
 	github.com/spf13/cast v1.5.0
@@ -20,7 +20,7 @@ require (
 	github.com/tendermint/tendermint v0.34.21
 	github.com/tendermint/tm-db v0.6.7
 	google.golang.org/genproto v0.0.0-20220725144611-272f38e5d71b
-	google.golang.org/grpc v1.48.0
+	google.golang.org/grpc v1.49.0
 	gopkg.in/yaml.v2 v2.4.0
 
 )
@@ -132,5 +132,3 @@ replace google.golang.org/grpc => google.golang.org/grpc v1.33.2
 replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 
 replace github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.7.7
-
-replace github.com/persistenceOne/pstake-native => ../pstake-native
