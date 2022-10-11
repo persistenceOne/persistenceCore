@@ -7,7 +7,6 @@ package app
 
 import (
 	"fmt"
-
 	"io"
 	stdlog "log"
 	"net/http"
@@ -822,6 +821,12 @@ func NewApplication(
 			hostChainParams := app.LSCosmosKeeper.GetHostChainParams(ctx)
 			hostChainParams.PstakeParams.PstakeFeeAddress = "persistence18dsfsljczehwd5yem9qq2jcz56dz3shp48j3zj"
 			app.LSCosmosKeeper.SetHostChainParams(ctx, hostChainParams)
+
+			// increase block params.
+			blockParams := app.GetConsensusParams(ctx)
+			blockParams.Block.MaxGas = blockParams.Block.MaxGas * 20
+			blockParams.Block.MaxBytes = blockParams.Block.MaxBytes * 20
+			app.StoreConsensusParams(ctx, blockParams)
 
 			return newVM, nil
 		},
