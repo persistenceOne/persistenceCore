@@ -127,7 +127,7 @@ import (
 	tendermintproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tendermintdb "github.com/tendermint/tm-db"
 
-	appparams "github.com/persistenceOne/persistenceCore/v3/app/params"
+	appparams "github.com/persistenceOne/persistenceCore/v4/app/params"
 )
 
 var DefaultNodeHome string
@@ -839,8 +839,8 @@ func NewApplication(
 
 	if upgradeInfo.Name == UpgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
-			Added: []string{icacontrollertypes.SubModuleName, epochstypes.StoreKey,
-				interchainquerytypes.StoreKey, lscosmostypes.StoreKey},
+			Added: []string{icacontrollertypes.SubModuleName, epochstypes.ModuleName,
+				interchainquerytypes.ModuleName, lscosmostypes.ModuleName},
 		}
 
 		// configure store loader that checks if version == upgradeHeight and applies store upgrades

@@ -33,8 +33,8 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/persistenceOne/persistenceCore/v3/app"
-	"github.com/persistenceOne/persistenceCore/v3/app/params"
+	"github.com/persistenceOne/persistenceCore/v4/app"
+	"github.com/persistenceOne/persistenceCore/v4/app/params"
 )
 
 const flagInvalidCheckPeriod = "invalid-check-period"
