@@ -813,9 +813,7 @@ func NewApplication(
 			}
 
 			// enable ica controller
-			icaControllerParams := app.ICAControllerKeeper.GetParams(ctx)
-			icaControllerParams.ControllerEnabled = true
-			app.ICAControllerKeeper.SetParams(ctx, icaControllerParams)
+			app.ICAControllerKeeper.SetParams(ctx, icacontrollertypes.DefaultParams())
 
 			// faster initaite of enabling module
 			hostChainParams := app.LSCosmosKeeper.GetHostChainParams(ctx)
@@ -824,8 +822,8 @@ func NewApplication(
 
 			// increase block params.
 			blockParams := app.GetConsensusParams(ctx)
-			blockParams.Block.MaxGas = blockParams.Block.MaxGas * 20
-			blockParams.Block.MaxBytes = blockParams.Block.MaxBytes * 20
+			blockParams.Block.MaxGas = 100000000
+			blockParams.Block.MaxBytes = 10485760
 			app.StoreConsensusParams(ctx, blockParams)
 
 			return newVM, nil
