@@ -9,7 +9,7 @@ require (
 	github.com/gogo/protobuf v1.3.3
 	github.com/gorilla/mux v1.8.0
 	github.com/persistenceOne/persistence-sdk v1.0.0-rc1
-	github.com/persistenceOne/pstake-native v1.0.0-rc1
+	github.com/persistenceOne/pstake-native v1.0.0-rc3
 	github.com/prometheus/client_golang v1.13.0
 	github.com/rakyll/statik v0.1.7
 	github.com/spf13/cast v1.5.0
