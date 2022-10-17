@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/CosmWasm/wasmd v0.29.1
-	github.com/cosmos/cosmos-sdk v0.45.9
+	github.com/cosmos/cosmos-sdk v0.45.10-0.20221014225501-18eaf090ca1c
 	github.com/cosmos/ibc-go/v3 v3.3.0
 	github.com/gogo/protobuf v1.3.3
 	github.com/gorilla/mux v1.8.0
