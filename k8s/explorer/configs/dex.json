@@ -1,0 +1,20 @@
+{
+    "chain_name": "persistencecore",
+    "coingecko": "persistence",
+    "api": "https://rest.devnet.core.dexter.zone:443",
+    "rpc": ["https://rpc.devnet.core.dexter.zone:443", "https://rpc.devnet.core.dexter.zone:443"],
+    "snapshot_provider": "",
+    "sdk_version": "0.45.6",
+    "coin_type": "118",
+    "min_tx_fee": "3000",
+    "addr_prefix": "persistence",
+    "logo": "",
+    "assets": [{
+      "base": "uxprt",
+      "symbol": "XPRT",
+      "exponent": "6",
+      "coingecko_id": "persistence",
+      "logo": ""
+    }]
+  }
+  

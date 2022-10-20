@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: faucet
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+spec:
+  tls:
+    - secretName: cloudflare-tls
+      hosts:
+        - faucet.devnet.core.dexter.zone
+  rules:
+    - host: faucet.devnet.core.dexter.zone
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: faucet
+                port:
+                  number: 5000
+  ingressClassName: nginx

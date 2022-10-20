@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: explorer
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+spec:
+  tls:
+    - secretName: cloudflare-tls
+      hosts:
+        - explorer.devnet.core.dexter.zone
+  rules:
+    - host: explorer.devnet.core.dexter.zone
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: explorer
+                port:
+                  number: 8080
+  ingressClassName: nginx

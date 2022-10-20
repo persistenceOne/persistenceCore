@@ -1,0 +1,14 @@
+namespace: dev-core
+
+resources:
+  - configmap.yml
+  - explorer.yml
+  - ingress.yml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: chain-configs
+    files:
+      - configs/dex.json

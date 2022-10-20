@@ -1,0 +1,14 @@
+namespace: dev-core
+
+resources:
+  - configmap.yml
+  - faucet.yml
+  - ingress.yml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: faucet
+    envs:
+      - configs/.persistencecore.env

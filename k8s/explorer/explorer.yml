@@ -1,0 +1,62 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: explorer
+  labels:
+    app.kubernetes.io/name: ping-pub-explorer
+spec:
+  clusterIP: None
+  ports:
+    - name: explorer
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app.kubernetes.io/name: ping-pub-explorer
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: explorer
+spec:
+  serviceName: explorer
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: explorer
+      app.kubernetes.io/name: ping-pub-explorer
+  template:
+    metadata:
+      annotations:
+        quality: release
+        role: api-gateway
+        sla: high
+        tier: gateway
+      labels:
+        app.kubernetes.io/instance: explorer
+        app.kubernetes.io/type: explorer
+        app.kubernetes.io/name: ping-pub-explorer
+        app.kubernetes.io/version: '0.1'
+    spec:
+      imagePullSecrets:
+        - name: test-docker-creds
+      containers:
+        - name: ping-pub-explorer
+          image: persistenceone/ping-pub-explorer
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: "0.5"
+              memory: "500M"
+            requests:
+              cpu: "0.25"
+              memory: "250M"
+          volumeMounts:
+            - mountPath: /home/explorer/src/chains/mainnet
+              name: explorer-testchain-configs
+      volumes:
+        - name: explorer-testchain-configs
+          configMap:
+            name: chain-configs

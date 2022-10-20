@@ -1,0 +1,57 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: faucet
+  labels:
+    app.kubernetes.io/name: faucet
+spec:
+  clusterIP: None
+  ports:
+    - name: http
+      port: 5000
+      protocol: TCP
+      targetPort: 5000
+  selector:
+    app.kubernetes.io/name: faucet
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faucet
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: faucet
+      app.kubernetes.io/name: faucet
+  template:
+    metadata:
+      annotations:
+        quality: release
+        role: api-gateway
+        sla: high
+        tier: gateway
+      labels:
+        app.kubernetes.io/instance: faucet
+        app.kubernetes.io/type: faucet
+        app.kubernetes.io/name: faucet
+        app.kubernetes.io/version: '0.1'
+    spec:
+      imagePullSecrets:
+        - name: test-docker-creds
+      containers:
+        - name: faucet
+          image: persistenceone/faucet
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: faucet
+          resources:
+            limits:
+              cpu: "0.5"
+              memory: "500M"
+            requests:
+              cpu: "0.25"
+              memory: "250M"
