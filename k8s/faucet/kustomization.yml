@@ -1,7 +1,6 @@
 namespace: dev-core
 
 resources:
-  - configmap.yml
   - faucet.yml
   - ingress.yml
 
