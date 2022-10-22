@@ -612,10 +612,10 @@ github.com/pelletier/go-toml v1.9.5/go.mod h1:u1nR/EPcESfeI/szUZKdtJ0xRNbUoANCko
 github.com/pelletier/go-toml/v2 v2.0.5 h1:ipoSadvV8oGUjnUbMub59IDPPwfxF694nG/jwbMiyQg=
 github.com/pelletier/go-toml/v2 v2.0.5/go.mod h1:OMHamSCAODeSsVrwwvcJOaoN0LIUIaFVNZzmWyNfXas=
 github.com/performancecopilot/speed v3.0.0+incompatible/go.mod h1:/CLtqpZ5gBg1M9iaPbIdPPGyKcA8hKdoy6hAWba7Yac=
-github.com/persistenceOne/persistence-sdk v1.0.0-rc1 h1:BmWd/bVpKsD+Hbtil/kQ3MvaT2Gn6jb9frolXNi72Jc=
-github.com/persistenceOne/persistence-sdk v1.0.0-rc1/go.mod h1:SmtjwFyUXZvmepTZECYsr2TXTcbfWycfoF16gRzdTCU=
-github.com/persistenceOne/pstake-native v1.0.0-rc5 h1:OWSQ6vMX6+8P1OtTDqFjTIRnPFzaOXBGiKS4L8kuCPo=
-github.com/persistenceOne/pstake-native v1.0.0-rc5/go.mod h1:N7e3FiGfIO2DHZgxNrsub6W00DMs67mXMGpJtziO6no=
+github.com/persistenceOne/persistence-sdk v1.0.0 h1:2HTdjW3HNhJ4fZYF22UsiajCQRKYk+TPpIQkCUeOj3A=
+github.com/persistenceOne/persistence-sdk v1.0.0/go.mod h1:EZ4YlLUQMzRbxrF1/YoAaEv9+GYyfxoHvlsc9ULrxDw=
+github.com/persistenceOne/pstake-native v1.0.0 h1:+fbx1k66FmtLcbP1oJdQPB7Sn/8TK6a2hRmb6MQnQYc=
+github.com/persistenceOne/pstake-native v1.0.0/go.mod h1:TWpbFwElaM+nMGhUkmoIDoD7MQ8gF5fmH5lorR7lOUE=
 github.com/peterh/liner v1.1.1-0.20190123174540-a2c9a5303de7/go.mod h1:CRroGNssyjTd/qIG2FyxByd2S8JEAZXBl4qUrZf8GS0=
 github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5 h1:q2e307iGHPdTGp0hoxKjt1H5pDo6utceo3dQVK3I5XQ=
 github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5/go.mod h1:jvVRKCrJTQWu0XVbaOlby/2lO20uSCHEMzzplHXte1o=
