@@ -7,7 +7,6 @@ package app
 
 import (
 	"fmt"
-	nodeservice "github.com/cosmos/cosmos-sdk/client/grpc/node"
 	"io"
 	stdlog "log"
 	"net/http"
@@ -20,6 +19,7 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
+	nodeservice "github.com/cosmos/cosmos-sdk/client/grpc/node"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/codec"
