@@ -116,7 +116,6 @@ import (
 	"github.com/persistenceOne/persistence-sdk/x/interchainquery"
 	interchainquerykeeper "github.com/persistenceOne/persistence-sdk/x/interchainquery/keeper"
 	interchainquerytypes "github.com/persistenceOne/persistence-sdk/x/interchainquery/types"
-	appparams "github.com/persistenceOne/persistenceCore/v4/app/params"
 	"github.com/persistenceOne/pstake-native/x/lscosmos"
 	lscosmosclient "github.com/persistenceOne/pstake-native/x/lscosmos/client"
 	lscosmoskeeper "github.com/persistenceOne/pstake-native/x/lscosmos/keeper"
@@ -128,6 +127,8 @@ import (
 	tendermintos "github.com/tendermint/tendermint/libs/os"
 	tendermintproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tendermintdb "github.com/tendermint/tm-db"
+
+	appparams "github.com/persistenceOne/persistenceCore/v4/app/params"
 )
 
 var DefaultNodeHome string
