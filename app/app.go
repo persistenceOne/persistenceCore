@@ -128,7 +128,7 @@ import (
 	tendermintproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tendermintdb "github.com/tendermint/tm-db"
 
-	appparams "github.com/persistenceOne/persistenceCore/v4/app/params"
+	appparams "github.com/persistenceOne/persistenceCore/v5/app/params"
 )
 
 var DefaultNodeHome string
@@ -813,20 +813,7 @@ func NewApplication(
 			if err != nil {
 				return nil, err
 			}
-
-			// enable ica controller
-			app.ICAControllerKeeper.SetParams(ctx, icacontrollertypes.DefaultParams())
-
-			// faster initaite of enabling module
-			hostChainParams := app.LSCosmosKeeper.GetHostChainParams(ctx)
-			hostChainParams.PstakeParams.PstakeFeeAddress = "persistence18dsfsljczehwd5yem9qq2jcz56dz3shp48j3zj"
-			app.LSCosmosKeeper.SetHostChainParams(ctx, hostChainParams)
-
-			// increase block params.
-			blockParams := app.GetConsensusParams(ctx)
-			blockParams.Block.MaxGas = 100000000
-			blockParams.Block.MaxBytes = 10485760
-			app.StoreConsensusParams(ctx, blockParams)
+			//add more upgrade instructions
 
 			return newVM, nil
 		},
