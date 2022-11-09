@@ -814,6 +814,26 @@ func NewApplication(
 				return nil, err
 			}
 			//add more upgrade instructions
+			failAndRemoveUnbondings := func(ctx sdk.Context, k lscosmoskeeper.Keeper, startEpoch, endEpoch int64) {
+				for i := startEpoch; i < endEpoch; i = i + lscosmostypes.UndelegationEpochNumberFactor {
+					icurEpoch := lscosmostypes.CurrentUnbondingEpoch(i)
+					if icurEpoch < endEpoch {
+						//FAIL icurEpoch.
+						hostAccountUndelegationForEpoch, err := k.GetHostAccountUndelegationForEpoch(ctx, icurEpoch)
+						if err != nil {
+							panic(err)
+						}
+						err = k.RemoveHostAccountUndelegation(ctx, icurEpoch)
+						if err != nil {
+							panic(err)
+						}
+						k.FailUnbondingEpochCValue(ctx, icurEpoch, hostAccountUndelegationForEpoch.TotalUndelegationAmount)
+						k.Logger(ctx).Info(fmt.Sprintf("Failed unbonding for undelegationEpoch: %v", icurEpoch))
+
+					}
+				}
+			}
+			failAndRemoveUnbondings(ctx, app.LSCosmosKeeper, 1, 5)
 
 			return newVM, nil
 		},
