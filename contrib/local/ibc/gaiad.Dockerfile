@@ -1,4 +1,4 @@
-FROM golang:1.1-alpine3.16 AS go-builder
+FROM golang:1.19-alpine3.16 AS go-builder
 ARG GAIA_TAG_NAME
 
 # Set up dependencies
