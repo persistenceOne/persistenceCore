@@ -53,6 +53,13 @@ spec:
             requests:
               cpu: "0.25"
               memory: "250M"
+          command:
+            - sh
+            - "-c"
+            - |
+              sed -i '/devServer: {/a\    allowedHosts: "all",' vue.config.js
+              yarn serve --host 0.0.0.0
+              
           volumeMounts:
             - mountPath: /home/explorer/src/chains/mainnet
               name: explorer-testchain-configs
