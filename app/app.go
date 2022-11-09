@@ -19,6 +19,7 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
+	nodeservice "github.com/cosmos/cosmos-sdk/client/grpc/node"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -225,8 +226,9 @@ var ModuleBasics = module.NewBasicManager(
 )
 
 var (
-	_ simapp.App              = (*Application)(nil)
-	_ servertypes.Application = (*Application)(nil)
+	_ simapp.App                          = (*Application)(nil)
+	_ servertypes.Application             = (*Application)(nil)
+	_ servertypes.ApplicationQueryService = (*Application)(nil)
 )
 
 func init() {
@@ -1095,7 +1097,8 @@ func (app Application) RegisterAPIRoutes(apiServer *api.Server, apiConfig config
 	authtx.RegisterGRPCGatewayRoutes(clientCtx, apiServer.GRPCGatewayRouter)
 	// Register new tendermint queries routes from grpc-gateway.
 	tmservice.RegisterGRPCGatewayRoutes(clientCtx, apiServer.GRPCGatewayRouter)
-
+	// Register node gRPC service for grpc-gateway.
+	nodeservice.RegisterGRPCGatewayRoutes(clientCtx, apiServer.GRPCGatewayRouter)
 	// Register legacy and grpc-gateway routes for all modules.
 	ModuleBasics.RegisterRESTRoutes(clientCtx, apiServer.Router)
 	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiServer.GRPCGatewayRouter)
@@ -1123,7 +1126,9 @@ func (app Application) RegisterTxService(clientContect client.Context) {
 func (app Application) RegisterTendermintService(clientCtx client.Context) {
 	tmservice.RegisterTendermintService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.interfaceRegistry)
 }
-
+func (app Application) RegisterNodeService(clientCtx client.Context) {
+	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter())
+}
 func (app Application) LoadHeight(height int64) error {
 	return app.BaseApp.LoadVersion(height)
 }
