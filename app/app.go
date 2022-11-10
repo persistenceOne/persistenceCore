@@ -19,6 +19,7 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
+	nodeservice "github.com/cosmos/cosmos-sdk/client/grpc/node"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -127,7 +128,7 @@ import (
 	tendermintproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tendermintdb "github.com/tendermint/tm-db"
 
-	appparams "github.com/persistenceOne/persistenceCore/v4/app/params"
+	appparams "github.com/persistenceOne/persistenceCore/v5/app/params"
 )
 
 var DefaultNodeHome string
@@ -225,8 +226,9 @@ var ModuleBasics = module.NewBasicManager(
 )
 
 var (
-	_ simapp.App              = (*Application)(nil)
-	_ servertypes.Application = (*Application)(nil)
+	_ simapp.App                          = (*Application)(nil)
+	_ servertypes.Application             = (*Application)(nil)
+	_ servertypes.ApplicationQueryService = (*Application)(nil)
 )
 
 func init() {
@@ -811,20 +813,27 @@ func NewApplication(
 			if err != nil {
 				return nil, err
 			}
+			//add more upgrade instructions
+			failAndRemoveUnbondings := func(ctx sdk.Context, k lscosmoskeeper.Keeper, startEpoch, endEpoch int64) {
+				for i := startEpoch; i < endEpoch; i = i + lscosmostypes.UndelegationEpochNumberFactor {
+					icurEpoch := lscosmostypes.CurrentUnbondingEpoch(i)
+					if icurEpoch < endEpoch {
+						//FAIL icurEpoch.
+						hostAccountUndelegationForEpoch, err := k.GetHostAccountUndelegationForEpoch(ctx, icurEpoch)
+						if err != nil {
+							panic(err)
+						}
+						err = k.RemoveHostAccountUndelegation(ctx, icurEpoch)
+						if err != nil {
+							panic(err)
+						}
+						k.FailUnbondingEpochCValue(ctx, icurEpoch, hostAccountUndelegationForEpoch.TotalUndelegationAmount)
+						k.Logger(ctx).Info(fmt.Sprintf("Failed unbonding for undelegationEpoch: %v", icurEpoch))
 
-			// enable ica controller
-			app.ICAControllerKeeper.SetParams(ctx, icacontrollertypes.DefaultParams())
-
-			// faster initaite of enabling module
-			hostChainParams := app.LSCosmosKeeper.GetHostChainParams(ctx)
-			hostChainParams.PstakeParams.PstakeFeeAddress = "persistence18dsfsljczehwd5yem9qq2jcz56dz3shp48j3zj"
-			app.LSCosmosKeeper.SetHostChainParams(ctx, hostChainParams)
-
-			// increase block params.
-			blockParams := app.GetConsensusParams(ctx)
-			blockParams.Block.MaxGas = 100000000
-			blockParams.Block.MaxBytes = 10485760
-			app.StoreConsensusParams(ctx, blockParams)
+					}
+				}
+			}
+			failAndRemoveUnbondings(ctx, app.LSCosmosKeeper, 1, 5)
 
 			return newVM, nil
 		},
@@ -1095,7 +1104,8 @@ func (app Application) RegisterAPIRoutes(apiServer *api.Server, apiConfig config
 	authtx.RegisterGRPCGatewayRoutes(clientCtx, apiServer.GRPCGatewayRouter)
 	// Register new tendermint queries routes from grpc-gateway.
 	tmservice.RegisterGRPCGatewayRoutes(clientCtx, apiServer.GRPCGatewayRouter)
-
+	// Register node gRPC service for grpc-gateway.
+	nodeservice.RegisterGRPCGatewayRoutes(clientCtx, apiServer.GRPCGatewayRouter)
 	// Register legacy and grpc-gateway routes for all modules.
 	ModuleBasics.RegisterRESTRoutes(clientCtx, apiServer.Router)
 	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiServer.GRPCGatewayRouter)
@@ -1123,7 +1133,9 @@ func (app Application) RegisterTxService(clientContect client.Context) {
 func (app Application) RegisterTendermintService(clientCtx client.Context) {
 	tmservice.RegisterTendermintService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.interfaceRegistry)
 }
-
+func (app Application) RegisterNodeService(clientCtx client.Context) {
+	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter())
+}
 func (app Application) LoadHeight(height int64) error {
 	return app.BaseApp.LoadVersion(height)
 }
