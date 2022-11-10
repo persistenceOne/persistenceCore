@@ -821,14 +821,14 @@ func NewApplication(
 						//FAIL icurEpoch.
 						hostAccountUndelegationForEpoch, err := k.GetHostAccountUndelegationForEpoch(ctx, icurEpoch)
 						if err != nil {
-							panic(err)
+							ctx.Logger().Error(fmt.Sprintf("Error fetching %d epoch host undelegation with err: %s", icurEpoch, err.Error()))
 						}
 						err = k.RemoveHostAccountUndelegation(ctx, icurEpoch)
 						if err != nil {
-							panic(err)
+							ctx.Logger().Error(fmt.Sprintf("Error failing %d epoch remove undelegation with err: %s", icurEpoch, err.Error()))
 						}
 						k.FailUnbondingEpochCValue(ctx, icurEpoch, hostAccountUndelegationForEpoch.TotalUndelegationAmount)
-						k.Logger(ctx).Info(fmt.Sprintf("Failed unbonding for undelegationEpoch: %v", icurEpoch))
+						k.Logger(ctx).Info(fmt.Sprintf("Successfully failed unbonding for undelegationEpoch: %v", icurEpoch))
 
 					}
 				}
