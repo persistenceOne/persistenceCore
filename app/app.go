@@ -28,7 +28,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/simapp"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
@@ -839,20 +838,20 @@ func NewApplication(
 		},
 	)
 
-	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
-	if err != nil {
-		panic(fmt.Sprintf("failed to read upgrade info from disk %s", err))
-	}
-
-	if upgradeInfo.Name == UpgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
-		storeUpgrades := storetypes.StoreUpgrades{
-			Added: []string{icacontrollertypes.SubModuleName, epochstypes.ModuleName,
-				interchainquerytypes.ModuleName, lscosmostypes.ModuleName},
-		}
-
-		// configure store loader that checks if version == upgradeHeight and applies store upgrades
-		app.BaseApp.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
-	}
+	//upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
+	//if err != nil {
+	//	panic(fmt.Sprintf("failed to read upgrade info from disk %s", err))
+	//}
+	//
+	//if upgradeInfo.Name == UpgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+	//	storeUpgrades := storetypes.StoreUpgrades{
+	//		Added: []string{icacontrollertypes.SubModuleName, epochstypes.ModuleName,
+	//			interchainquerytypes.ModuleName, lscosmostypes.ModuleName},
+	//	}
+	//
+	//	// configure store loader that checks if version == upgradeHeight and applies store upgrades
+	//	app.BaseApp.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+	//}
 
 	if loadLatest {
 		if err := app.BaseApp.LoadLatestVersion(); err != nil {
