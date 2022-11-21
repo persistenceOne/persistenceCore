@@ -19,8 +19,8 @@ type CosMints struct {
 }
 
 var (
-	cosValidatorAddress = "chihuahuavaloper1hscf4cjrhzsea5an5smt4z9aezhh4sf5jjrqka"
-	cosConsensusAddress = "chihuahuavalcons1rd5gs24he44ufnwawshu3u73lh33cx5z7npzre"
+	cosValidatorAddress = "persistencevaloper1chn6uy6h4zeh5mktapw4cy77getes7fp9hp5pw"
+	cosConsensusAddress = "persistencevalcons1chn6uy6h4zeh5mktapw4cy77getes7fp3yjgd0"
 )
 
 func mintLostTokens(
@@ -48,15 +48,15 @@ func mintLostTokens(
 	for _, mintRecord := range cosMints {
 		coinAmount, mintOk := sdk.NewIntFromString(mintRecord.AmountUxprt)
 		if !mintOk {
-			panic(fmt.Sprintf("error parsing mint of %suhuahua to %s", mintRecord.AmountUxprt, mintRecord.Address))
+			panic(fmt.Sprintf("error parsing mint of %suxprt to %s", mintRecord.AmountUxprt, mintRecord.Address))
 		}
 
-		coin := sdk.NewCoin("uhuahua", coinAmount)
+		coin := sdk.NewCoin("uxprt", coinAmount)
 		coins := sdk.NewCoins(coin)
 
 		err = mintKeeper.MintCoins(ctx, coins)
 		if err != nil {
-			panic(fmt.Sprintf("error minting %suhuahua to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, err))
+			panic(fmt.Sprintf("error minting %suxprt to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, err))
 		}
 
 		delegatorAccount, err := sdk.AccAddressFromBech32(mintRecord.Address)
@@ -66,7 +66,7 @@ func mintLostTokens(
 
 		err = bankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, delegatorAccount, coins)
 		if err != nil {
-			panic(fmt.Sprintf("error sending minted %suhuahua to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, err))
+			panic(fmt.Sprintf("error sending minted %suxprt to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, err))
 		}
 
 		sdkAddress, err := sdk.AccAddressFromBech32(mintRecord.Address)
@@ -76,7 +76,7 @@ func mintLostTokens(
 
 		_, err = stakingKeeper.Delegate(ctx, sdkAddress, coin.Amount, stakingtypes.Unbonded, cosValidator, true)
 		if err != nil {
-			panic(fmt.Sprintf("error delegating minted %suhuahua from %s to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, cosValidatorAddress, err))
+			panic(fmt.Sprintf("error delegating minted %suxprt from %s to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, cosValidatorAddress, err))
 		}
 	}
 }
