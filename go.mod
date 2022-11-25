@@ -1,4 +1,4 @@
-module github.com/persistenceOne/persistenceCore/v5
+module github.com/monopauli/persistenceCore
 
 go 1.19
 
