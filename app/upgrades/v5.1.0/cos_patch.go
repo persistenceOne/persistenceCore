@@ -29,6 +29,7 @@ func mintLostTokens(
 	stakingKeeper *stakingkeeper.Keeper,
 	mintKeeper *mintkeeper.Keeper,
 ) {
+
 	var cosMints []CosMints
 	err := json.Unmarshal([]byte(recordsJsonString), &cosMints)
 	if err != nil {
@@ -63,13 +64,6 @@ func mintLostTokens(
 		if err != nil {
 			panic(fmt.Sprintf("error converting human address %s to sdk.AccAddress: %+v", mintRecord.Address, err))
 		}
-
-		println("Delegator Account: " + delegatorAccount.String())
-		println("Module Name: " + string(minttypes.ModuleName))
-		println("Coins: " + coins.String())
-		println("Mint Record Amount: " + mintRecord.AmountUxprt)
-		println("Mint Record Address: " + mintRecord.Address)
-		println("SDK Context: " + string(ctx.BlockHeader().ChainID))
 
 		err = bankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, delegatorAccount, coins)
 		if err != nil {
@@ -111,7 +105,6 @@ func revertTombstone(ctx sdk.Context, slashingKeeper *slashingkeeper.Keeper) err
 
 	signInfo.Tombstoned = false
 	slashingKeeper.SetValidatorSigningInfo(ctx, cosConsAddress, signInfo)
-	//slashingKeeper.RevertTombstone(ctx, cosConsAddress)
 
 	// Set jail until=now, the validator then must unjail manually
 	slashingKeeper.JailUntil(ctx, cosConsAddress, ctx.BlockTime())

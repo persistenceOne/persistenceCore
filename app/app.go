@@ -847,21 +847,6 @@ func NewApplication(
 		},
 	)
 
-	//upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
-	//if err != nil {
-	//	panic(fmt.Sprintf("failed to read upgrade info from disk %s", err))
-	//}
-	//
-	//if upgradeInfo.Name == UpgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
-	//	storeUpgrades := storetypes.StoreUpgrades{
-	//		Added: []string{icacontrollertypes.SubModuleName, epochstypes.ModuleName,
-	//			interchainquerytypes.ModuleName, lscosmostypes.ModuleName},
-	//	}
-	//
-	//	// configure store loader that checks if version == upgradeHeight and applies store upgrades
-	//	app.BaseApp.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
-	//}
-
 	if loadLatest {
 		if err := app.BaseApp.LoadLatestVersion(); err != nil {
 			tendermintos.Exit(err.Error())
