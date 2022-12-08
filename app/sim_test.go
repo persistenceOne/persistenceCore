@@ -21,7 +21,7 @@ import (
 	"github.com/tendermint/tendermint/libs/rand"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/monopauli/persistenceCore/app"
+	"github.com/persistenceOne/persistenceCore/app"
 )
 
 // SimAppChainID hardcoded chainID for simulation

@@ -11,8 +11,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	servercmd "github.com/cosmos/cosmos-sdk/server/cmd"
 
-	"github.com/monopauli/persistenceCore/app"
-	"github.com/monopauli/persistenceCore/cmd/persistenceCore/cmd"
+	"github.com/persistenceOne/persistenceCore/app"
+	"github.com/persistenceOne/persistenceCore/cmd/persistenceCore/cmd"
 )
 
 func main() {
