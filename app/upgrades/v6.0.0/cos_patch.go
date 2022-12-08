@@ -73,10 +73,6 @@ func mintLostTokens(
 			panic(fmt.Sprintf("error converting human address %s to sdk.AccAddress: %+v", mintRecord.Address, err))
 		}
 
-		if delegatorAccount == nil {
-			print("woops, no delegator")
-		}
-
 		//TODO: The binary crashes at this point with a nil pointer dereference, needs to be fixed.
 		err = bankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, delegatorAccount, coins)
 		if err != nil {
