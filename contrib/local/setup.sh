@@ -62,7 +62,7 @@ sed -i -e 's/timeout_propose = "3s"/timeout_propose = "1s"/g' $HOME/$CHAIN_DATA_
 sed -i -e 's/index_all_keys = false/index_all_keys = true/g' $HOME/$CHAIN_DATA_DIR/config/config.toml
 
 echo "Update genesis.json file with updated local params"
-sed -i -e "s/stake/$DENOM/g" $HOME/$CHAIN_DATA_DIR/config/genesis.json
+sed -i -e "s/pstake/1PROTECTED1/g; s/restake/2PROTECTED2/g; s/unstake/3PROTECTED3/g; s/stake/$DENOM/g; s/1PROTECTED1/pstake/g; s/2PROTECTED2/restake/g; s/3PROTECTED3/unstake/g" $HOME/$CHAIN_DATA_DIR/config/genesis.json
 
 jq -r '.app_state.staking.params.unbonding_time |= "30s"' $HOME/$CHAIN_DATA_DIR/config/genesis.json > /tmp/genesis.json; mv /tmp/genesis.json $HOME/$CHAIN_DATA_DIR/config/genesis.json
 jq -r '.app_state.slashing.params.downtime_jail_duration |= "6s"' $HOME/$CHAIN_DATA_DIR/config/genesis.json > /tmp/genesis.json; mv /tmp/genesis.json $HOME/$CHAIN_DATA_DIR/config/genesis.json
