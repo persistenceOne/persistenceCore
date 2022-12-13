@@ -127,7 +127,7 @@ import (
 	tendermintproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tendermintdb "github.com/tendermint/tm-db"
 
-	appparams "github.com/persistenceOne/persistenceCore/v5/app/params"
+	appparams "github.com/persistenceOne/persistenceCore/v6/app/params"
 )
 
 var DefaultNodeHome string
@@ -813,26 +813,6 @@ func NewApplication(
 				return nil, err
 			}
 			//add more upgrade instructions
-			failAndRemoveUnbondings := func(ctx sdk.Context, k lscosmoskeeper.Keeper, startEpoch, endEpoch int64) {
-				for i := startEpoch; i < endEpoch; i = i + lscosmostypes.UndelegationEpochNumberFactor {
-					icurEpoch := lscosmostypes.CurrentUnbondingEpoch(i)
-					if icurEpoch < endEpoch {
-						//FAIL icurEpoch.
-						hostAccountUndelegationForEpoch, err := k.GetHostAccountUndelegationForEpoch(ctx, icurEpoch)
-						if err != nil {
-							ctx.Logger().Error(fmt.Sprintf("Error fetching %d epoch host undelegation with err: %s", icurEpoch, err.Error()))
-						}
-						err = k.RemoveHostAccountUndelegation(ctx, icurEpoch)
-						if err != nil {
-							ctx.Logger().Error(fmt.Sprintf("Error failing %d epoch remove undelegation with err: %s", icurEpoch, err.Error()))
-						}
-						k.FailUnbondingEpochCValue(ctx, icurEpoch, hostAccountUndelegationForEpoch.TotalUndelegationAmount)
-						k.Logger(ctx).Info(fmt.Sprintf("Successfully failed unbonding for undelegationEpoch: %v", icurEpoch))
-
-					}
-				}
-			}
-			failAndRemoveUnbondings(ctx, app.LSCosmosKeeper, 1, 5)
 
 			return newVM, nil
 		},
