@@ -248,30 +248,30 @@ type Application struct {
 
 	keys map[string]*sdk.KVStoreKey
 
-	AccountKeeper         authkeeper.AccountKeeper
+	AccountKeeper         *authkeeper.AccountKeeper
 	BankKeeper            bankkeeper.Keeper
 	CapabilityKeeper      *capabilitykeeper.Keeper
-	StakingKeeper         stakingkeeper.Keeper
-	SlashingKeeper        slashingkeeper.Keeper
-	MintKeeper            mintkeeper.Keeper
-	DistributionKeeper    distributionkeeper.Keeper
-	GovKeeper             govkeeper.Keeper
-	UpgradeKeeper         upgradekeeper.Keeper
-	CrisisKeeper          crisiskeeper.Keeper
-	ParamsKeeper          paramskeeper.Keeper
+	StakingKeeper         *stakingkeeper.Keeper
+	SlashingKeeper        *slashingkeeper.Keeper
+	MintKeeper            *mintkeeper.Keeper
+	DistributionKeeper    *distributionkeeper.Keeper
+	GovKeeper             *govkeeper.Keeper
+	UpgradeKeeper         *upgradekeeper.Keeper
+	CrisisKeeper          *crisiskeeper.Keeper
+	ParamsKeeper          *paramskeeper.Keeper
 	IBCKeeper             *ibckeeper.Keeper
-	ICAHostKeeper         icahostkeeper.Keeper
-	EvidenceKeeper        evidencekeeper.Keeper
-	TransferKeeper        ibctransferkeeper.Keeper
-	FeegrantKeeper        feegrantkeeper.Keeper
-	AuthzKeeper           authzkeeper.Keeper
-	HalvingKeeper         halving.Keeper
-	WasmKeeper            wasm.Keeper
-	EpochsKeeper          epochskeeper.Keeper
-	ICAControllerKeeper   icacontrollerkeeper.Keeper
-	LSCosmosKeeper        lscosmoskeeper.Keeper
-	InterchainQueryKeeper interchainquerykeeper.Keeper
-	TransferHooksKeeper   ibchookerkeeper.Keeper
+	ICAHostKeeper         *icahostkeeper.Keeper
+	EvidenceKeeper        *evidencekeeper.Keeper
+	TransferKeeper        *ibctransferkeeper.Keeper
+	FeegrantKeeper        *feegrantkeeper.Keeper
+	AuthzKeeper           *authzkeeper.Keeper
+	HalvingKeeper         *halving.Keeper
+	WasmKeeper            *wasm.Keeper
+	EpochsKeeper          *epochskeeper.Keeper
+	ICAControllerKeeper   *icacontrollerkeeper.Keeper
+	LSCosmosKeeper        *lscosmoskeeper.Keeper
+	InterchainQueryKeeper *interchainquerykeeper.Keeper
+	TransferHooksKeeper   *ibchookerkeeper.Keeper
 
 	moduleManager     *module.Manager
 	configurator      module.Configurator
@@ -338,12 +338,13 @@ func NewApplication(
 		keys:              keys,
 	}
 
-	app.ParamsKeeper = initParamsKeeper(
+	paramsKeeper := initParamsKeeper(
 		applicationCodec,
 		legacyAmino,
 		keys[paramstypes.StoreKey],
 		transientStoreKeys[paramstypes.TStoreKey],
 	)
+	app.ParamsKeeper = &paramsKeeper
 	app.BaseApp.SetParamStore(app.ParamsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(paramskeeper.ConsensusParamsKeyTable()))
 
 	app.CapabilityKeeper = capabilitykeeper.NewKeeper(applicationCodec, keys[capabilitytypes.StoreKey], memoryKeys[capabilitytypes.MemStoreKey])
@@ -355,13 +356,14 @@ func NewApplication(
 	scopedLSCosmosKeeper := app.CapabilityKeeper.ScopeToModule(lscosmostypes.ModuleName)
 	app.CapabilityKeeper.Seal()
 
-	app.AccountKeeper = authkeeper.NewAccountKeeper(
+	accountKeeper := authkeeper.NewAccountKeeper(
 		applicationCodec,
 		keys[authtypes.StoreKey],
 		app.GetSubspace(authtypes.ModuleName),
 		authtypes.ProtoBaseAccount,
 		moduleAccountPermissions,
 	)
+	app.AccountKeeper = &accountKeeper
 
 	blockedModuleAddrs := make(map[string]bool)
 	for moduleAccount := range moduleAccountPermissions {
@@ -372,25 +374,28 @@ func NewApplication(
 		sendCoinBlockedAddrs[authtypes.NewModuleAddress(acc).String()] = !receiveAllowedMAcc[acc]
 	}
 
-	app.BankKeeper = bankkeeper.NewBaseKeeper(
+	bankKeeper := bankkeeper.NewBaseKeeper(
 		applicationCodec,
 		keys[banktypes.StoreKey],
 		app.AccountKeeper,
 		app.GetSubspace(banktypes.ModuleName),
 		sendCoinBlockedAddrs,
 	)
+	app.BankKeeper = &bankKeeper
 
-	app.AuthzKeeper = authzkeeper.NewKeeper(
+	authzKeeper := authzkeeper.NewKeeper(
 		keys[authzkeeper.StoreKey],
 		applicationCodec,
 		app.BaseApp.MsgServiceRouter(),
 	)
+	app.AuthzKeeper = &authzKeeper
 
-	app.FeegrantKeeper = feegrantkeeper.NewKeeper(
+	feegrantKeeper := feegrantkeeper.NewKeeper(
 		applicationCodec,
 		keys[feegrant.StoreKey],
 		app.AccountKeeper,
 	)
+	app.FeegrantKeeper = &feegrantKeeper
 
 	stakingKeeper := stakingkeeper.NewKeeper(
 		applicationCodec,
@@ -400,7 +405,7 @@ func NewApplication(
 		app.GetSubspace(stakingtypes.ModuleName),
 	)
 
-	app.MintKeeper = mintkeeper.NewKeeper(
+	mintKeeper := mintkeeper.NewKeeper(
 		applicationCodec,
 		keys[minttypes.StoreKey],
 		app.GetSubspace(minttypes.ModuleName),
@@ -409,8 +414,9 @@ func NewApplication(
 		app.BankKeeper,
 		authtypes.FeeCollectorName,
 	)
+	app.MintKeeper = &mintKeeper
 
-	app.DistributionKeeper = distributionkeeper.NewKeeper(
+	distributionKeeper := distributionkeeper.NewKeeper(
 		applicationCodec,
 		keys[distributiontypes.StoreKey],
 		app.GetSubspace(distributiontypes.ModuleName),
@@ -420,33 +426,41 @@ func NewApplication(
 		authtypes.FeeCollectorName,
 		blockedModuleAddrs,
 	)
-	app.SlashingKeeper = slashingkeeper.NewKeeper(
+	app.DistributionKeeper = &distributionKeeper
+
+	slashingKeeper := slashingkeeper.NewKeeper(
 		applicationCodec,
 		keys[slashingtypes.StoreKey],
 		&stakingKeeper,
 		app.GetSubspace(slashingtypes.ModuleName),
 	)
-	app.CrisisKeeper = crisiskeeper.NewKeeper(
+	app.SlashingKeeper = &slashingKeeper
+
+	crisisKeeper := crisiskeeper.NewKeeper(
 		app.GetSubspace(crisistypes.ModuleName),
 		invCheckPeriod,
 		app.BankKeeper,
 		authtypes.FeeCollectorName,
 	)
-	app.UpgradeKeeper = upgradekeeper.NewKeeper(
+	app.CrisisKeeper = &crisisKeeper
+
+	upgradeKeeper := upgradekeeper.NewKeeper(
 		skipUpgradeHeights,
 		keys[upgradetypes.StoreKey],
 		applicationCodec,
 		home,
 		app.BaseApp,
 	)
+	app.UpgradeKeeper = &upgradeKeeper
 
-	app.HalvingKeeper = halving.NewKeeper(
+	halvingKeeper := halving.NewKeeper(
 		keys[halving.StoreKey],
 		app.GetSubspace(halving.DefaultParamspace),
 		app.MintKeeper,
 	)
+	app.HalvingKeeper = &halvingKeeper
 
-	app.StakingKeeper = *stakingKeeper.SetHooks(
+	app.StakingKeeper = stakingKeeper.SetHooks(
 		stakingtypes.NewMultiStakingHooks(app.DistributionKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
 
@@ -464,7 +478,7 @@ func NewApplication(
 		scopedIBCKeeper,
 	)
 
-	app.TransferKeeper = ibctransferkeeper.NewKeeper(
+	transferKeeper := ibctransferkeeper.NewKeeper(
 		applicationCodec,
 		keys[ibctransfertypes.StoreKey],
 		app.GetSubspace(ibctransfertypes.ModuleName),
@@ -475,10 +489,12 @@ func NewApplication(
 		app.BankKeeper,
 		scopedTransferKeeper,
 	)
-	transferModule := transfer.NewAppModule(app.TransferKeeper)
-	transferIBCModule := transfer.NewIBCModule(app.TransferKeeper)
+	app.TransferKeeper = &transferKeeper
 
-	app.ICAHostKeeper = icahostkeeper.NewKeeper(
+	transferModule := transfer.NewAppModule(*app.TransferKeeper)
+	transferIBCModule := transfer.NewIBCModule(*app.TransferKeeper)
+
+	icaHostKeeper := icahostkeeper.NewKeeper(
 		applicationCodec,
 		keys[icahosttypes.StoreKey],
 		app.GetSubspace(icahosttypes.SubModuleName),
@@ -488,22 +504,30 @@ func NewApplication(
 		scopedICAHostKeeper,
 		app.MsgServiceRouter(),
 	)
-	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
+	app.ICAHostKeeper = &icaHostKeeper
+
+	icaControllerKeeper := icacontrollerkeeper.NewKeeper(
 		applicationCodec, keys[icacontrollertypes.StoreKey],
 		app.GetSubspace(icacontrollertypes.SubModuleName),
 		app.IBCKeeper.ChannelKeeper, // may be replaced with middleware such as ics29 fee
 		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
 		scopedICAControllerKeeper, app.MsgServiceRouter(),
 	)
+	app.ICAControllerKeeper = &icaControllerKeeper
 
-	icaModule := ica.NewAppModule(&app.ICAControllerKeeper, &app.ICAHostKeeper)
-	icaHostIBCModule := icahost.NewIBCModule(app.ICAHostKeeper)
+	icaModule := ica.NewAppModule(app.ICAControllerKeeper, app.ICAHostKeeper)
+	icaHostIBCModule := icahost.NewIBCModule(*app.ICAHostKeeper)
 
-	app.InterchainQueryKeeper = interchainquerykeeper.NewKeeper(
-		applicationCodec, keys[interchainquerytypes.StoreKey], app.IBCKeeper)
-	interchainQueryModule := interchainquery.NewAppModule(applicationCodec, app.InterchainQueryKeeper)
+	interchainQueryKeeper := interchainquerykeeper.NewKeeper(
+		applicationCodec,
+		keys[interchainquerytypes.StoreKey],
+		app.IBCKeeper,
+	)
+	app.InterchainQueryKeeper = &interchainQueryKeeper
 
-	app.LSCosmosKeeper = lscosmoskeeper.NewKeeper(
+	interchainQueryModule := interchainquery.NewAppModule(applicationCodec, *app.InterchainQueryKeeper)
+
+	lsCosmosKeeper := lscosmoskeeper.NewKeeper(
 		applicationCodec,
 		keys[lscosmostypes.StoreKey],
 		memoryKeys[lscosmostypes.MemStoreKey],
@@ -516,32 +540,35 @@ func NewApplication(
 		&app.IBCKeeper.PortKeeper,
 		app.TransferKeeper,
 		app.ICAControllerKeeper,
-		&app.InterchainQueryKeeper,
+		app.InterchainQueryKeeper,
 		scopedLSCosmosKeeper,
 		app.MsgServiceRouter(),
 	)
+	app.LSCosmosKeeper = &lsCosmosKeeper
+
 	err := app.InterchainQueryKeeper.SetCallbackHandler(lscosmostypes.ModuleName, app.LSCosmosKeeper.CallbackHandler())
 	if err != nil {
 		panic(err)
 	}
-	app.EpochsKeeper = *epochsKeeper.SetHooks(
+
+	app.EpochsKeeper = epochsKeeper.SetHooks(
 		epochstypes.NewMultiEpochHooks(app.LSCosmosKeeper.NewEpochHooks()),
 	)
 	// Information will flow: ibc-port -> icaController -> lscosmos.
-	lscosmosModule := lscosmos.NewAppModule(applicationCodec, app.LSCosmosKeeper, app.AccountKeeper, app.BankKeeper)
-	icaControllerIBCModule := icacontroller.NewIBCModule(app.ICAControllerKeeper, lscosmosModule)
+	lscosmosModule := lscosmos.NewAppModule(applicationCodec, *app.LSCosmosKeeper, app.AccountKeeper, app.BankKeeper)
+	icaControllerIBCModule := icacontroller.NewIBCModule(*app.ICAControllerKeeper, lscosmosModule)
 
 	ibcTransferHooksKeeper := ibchookerkeeper.NewKeeper()
-	app.TransferHooksKeeper = *ibcTransferHooksKeeper.SetHooks(ibchookertypes.NewMultiStakingHooks(app.LSCosmosKeeper.NewIBCTransferHooks()))
-	ibcTransferHooksMiddleware := ibchooker.NewAppModule(app.TransferHooksKeeper, transferIBCModule)
+	app.TransferHooksKeeper = ibcTransferHooksKeeper.SetHooks(ibchookertypes.NewMultiStakingHooks(app.LSCosmosKeeper.NewIBCTransferHooks()))
+	ibcTransferHooksMiddleware := ibchooker.NewAppModule(*app.TransferHooksKeeper, transferIBCModule)
 
 	evidenceKeeper := evidencekeeper.NewKeeper(
 		applicationCodec,
 		keys[evidencetypes.StoreKey],
-		&app.StakingKeeper,
+		app.StakingKeeper,
 		app.SlashingKeeper,
 	)
-	app.EvidenceKeeper = *evidenceKeeper
+	app.EvidenceKeeper = evidenceKeeper
 
 	wasmDir := filepath.Join(home, "wasm")
 	wasmConfig, err := wasm.ReadWasmConfig(applicationOptions)
@@ -552,7 +579,7 @@ func NewApplication(
 	// The last arguments can contain custom message handlers, and custom query handlers,
 	// if we want to allow any custom callbacks
 	supportedFeatures := "iterator,staking,stargate"
-	app.WasmKeeper = wasm.NewKeeper(
+	wasmKeeper := wasm.NewKeeper(
 		applicationCodec,
 		keys[wasm.StoreKey],
 		app.GetSubspace(wasm.ModuleName),
@@ -571,6 +598,8 @@ func NewApplication(
 		supportedFeatures,
 		wasmOpts...,
 	)
+	app.WasmKeeper = &wasmKeeper
+
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibctypes.NewRouter()
 	ibcRouter.AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
@@ -586,21 +615,21 @@ func NewApplication(
 		govtypes.ProposalHandler,
 	).AddRoute(
 		paramsproposal.RouterKey,
-		params.NewParamChangeProposalHandler(app.ParamsKeeper),
+		params.NewParamChangeProposalHandler(*app.ParamsKeeper),
 	).AddRoute(
 		distributiontypes.RouterKey,
-		distribution.NewCommunityPoolSpendProposalHandler(app.DistributionKeeper),
+		distribution.NewCommunityPoolSpendProposalHandler(*app.DistributionKeeper),
 	).AddRoute(
 		upgradetypes.RouterKey,
-		upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper),
+		upgrade.NewSoftwareUpgradeProposalHandler(*app.UpgradeKeeper),
 	).AddRoute(
 		ibcclienttypes.RouterKey, ibccoreclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper),
-	).AddRoute(lscosmostypes.RouterKey, lscosmos.NewLSCosmosProposalHandler(app.LSCosmosKeeper))
+	).AddRoute(lscosmostypes.RouterKey, lscosmos.NewLSCosmosProposalHandler(*app.LSCosmosKeeper))
 
 	if len(enabledProposals) != 0 {
 		govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.WasmKeeper, enabledProposals))
 	}
-	app.GovKeeper = govkeeper.NewKeeper(
+	govKeeper := govkeeper.NewKeeper(
 		applicationCodec,
 		keys[govtypes.StoreKey],
 		app.GetSubspace(govtypes.ModuleName),
@@ -609,6 +638,7 @@ func NewApplication(
 		&stakingKeeper,
 		govRouter,
 	)
+	app.GovKeeper = &govKeeper
 
 	/****  Module Options ****/
 	var skipGenesisInvariants = false
@@ -623,28 +653,28 @@ func NewApplication(
 			app.AccountKeeper, app.StakingKeeper, app.BaseApp.DeliverTx,
 			encodingConfiguration.TransactionConfig,
 		),
-		auth.NewAppModule(applicationCodec, app.AccountKeeper, nil),
-		vesting.NewAppModule(app.AccountKeeper, app.BankKeeper),
+		auth.NewAppModule(applicationCodec, *app.AccountKeeper, nil),
+		vesting.NewAppModule(*app.AccountKeeper, app.BankKeeper),
 		bank.NewAppModule(applicationCodec, app.BankKeeper, app.AccountKeeper),
 		capability.NewAppModule(applicationCodec, *app.CapabilityKeeper),
-		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants),
-		gov.NewAppModule(applicationCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
-		mint.NewAppModule(applicationCodec, app.MintKeeper, app.AccountKeeper),
-		slashing.NewAppModule(applicationCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
-		distribution.NewAppModule(applicationCodec, app.DistributionKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
-		staking.NewAppModule(applicationCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
-		upgrade.NewAppModule(app.UpgradeKeeper),
-		evidence.NewAppModule(app.EvidenceKeeper),
-		feegrantmodule.NewAppModule(applicationCodec, app.AccountKeeper, app.BankKeeper, app.FeegrantKeeper, app.interfaceRegistry),
-		authzmodule.NewAppModule(applicationCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
+		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants),
+		gov.NewAppModule(applicationCodec, *app.GovKeeper, app.AccountKeeper, app.BankKeeper),
+		mint.NewAppModule(applicationCodec, *app.MintKeeper, app.AccountKeeper),
+		slashing.NewAppModule(applicationCodec, *app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
+		distribution.NewAppModule(applicationCodec, *app.DistributionKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
+		staking.NewAppModule(applicationCodec, *app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
+		upgrade.NewAppModule(*app.UpgradeKeeper),
+		evidence.NewAppModule(*app.EvidenceKeeper),
+		feegrantmodule.NewAppModule(applicationCodec, app.AccountKeeper, app.BankKeeper, *app.FeegrantKeeper, app.interfaceRegistry),
+		authzmodule.NewAppModule(applicationCodec, *app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		ibc.NewAppModule(app.IBCKeeper),
-		params.NewAppModule(app.ParamsKeeper),
-		halving.NewAppModule(applicationCodec, app.HalvingKeeper),
+		params.NewAppModule(*app.ParamsKeeper),
+		halving.NewAppModule(applicationCodec, *app.HalvingKeeper),
 		transferModule,
 		ibcTransferHooksMiddleware,
 		icaModule,
-		wasm.NewAppModule(applicationCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
-		epochs.NewAppModule(app.EpochsKeeper),
+		wasm.NewAppModule(applicationCodec, app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
+		epochs.NewAppModule(*app.EpochsKeeper),
 		interchainQueryModule,
 		lscosmosModule,
 	)
@@ -737,24 +767,24 @@ func NewApplication(
 		lscosmostypes.ModuleName,
 	)
 
-	app.moduleManager.RegisterInvariants(&app.CrisisKeeper)
+	app.moduleManager.RegisterInvariants(app.CrisisKeeper)
 	app.moduleManager.RegisterRoutes(app.BaseApp.Router(), app.BaseApp.QueryRouter(), encodingConfiguration.Amino)
 	app.configurator = module.NewConfigurator(app.applicationCodec, app.BaseApp.MsgServiceRouter(), app.BaseApp.GRPCQueryRouter())
 	app.moduleManager.RegisterServices(app.configurator)
 
 	simulationManager := module.NewSimulationManager(
-		auth.NewAppModule(applicationCodec, app.AccountKeeper, authsimulation.RandomGenesisAccounts),
+		auth.NewAppModule(applicationCodec, *app.AccountKeeper, authsimulation.RandomGenesisAccounts),
 		bank.NewAppModule(applicationCodec, app.BankKeeper, app.AccountKeeper),
 		capability.NewAppModule(applicationCodec, *app.CapabilityKeeper),
-		gov.NewAppModule(applicationCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
-		mint.NewAppModule(applicationCodec, app.MintKeeper, app.AccountKeeper),
-		staking.NewAppModule(applicationCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
-		distribution.NewAppModule(applicationCodec, app.DistributionKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
-		slashing.NewAppModule(applicationCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
-		params.NewAppModule(app.ParamsKeeper),
-		halving.NewAppModule(applicationCodec, app.HalvingKeeper),
-		authzmodule.NewAppModule(applicationCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
-		feegrantmodule.NewAppModule(applicationCodec, app.AccountKeeper, app.BankKeeper, app.FeegrantKeeper, app.interfaceRegistry),
+		gov.NewAppModule(applicationCodec, *app.GovKeeper, app.AccountKeeper, app.BankKeeper),
+		mint.NewAppModule(applicationCodec, *app.MintKeeper, app.AccountKeeper),
+		staking.NewAppModule(applicationCodec, *app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
+		distribution.NewAppModule(applicationCodec, *app.DistributionKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
+		slashing.NewAppModule(applicationCodec, *app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
+		params.NewAppModule(*app.ParamsKeeper),
+		halving.NewAppModule(applicationCodec, *app.HalvingKeeper),
+		authzmodule.NewAppModule(applicationCodec, *app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
+		feegrantmodule.NewAppModule(applicationCodec, app.AccountKeeper, app.BankKeeper, *app.FeegrantKeeper, app.interfaceRegistry),
 		ibc.NewAppModule(app.IBCKeeper),
 		transferModule,
 		interchainQueryModule,
@@ -796,7 +826,7 @@ func NewApplication(
 	// see cmd/wasmd/root.go: 206 - 214 approx
 	if manager := app.SnapshotManager(); manager != nil {
 		err := manager.RegisterExtensions(
-			wasmkeeper.NewWasmSnapshotter(app.CommitMultiStore(), &app.WasmKeeper),
+			wasmkeeper.NewWasmSnapshotter(app.CommitMultiStore(), app.WasmKeeper),
 		)
 		if err != nil {
 			panic(fmt.Errorf("failed to register snapshot extension: %s", err))
@@ -810,7 +840,7 @@ func NewApplication(
 
 			//add more upgrade instructions
 			ctx.Logger().Info("Running revert of tombstoning")
-			err := upgrades.RevertCosTombstoning(ctx, &app.SlashingKeeper, &app.MintKeeper, &bankkeeper.BaseKeeper{}, &app.StakingKeeper)
+			err := upgrades.RevertCosTombstoning(ctx, app.SlashingKeeper, app.MintKeeper, &bankkeeper.BaseKeeper{}, app.StakingKeeper)
 			if err != nil {
 				panic(fmt.Sprintf("failed to revert tombstoning: %s", err))
 			}
@@ -855,7 +885,7 @@ func NewApplication(
 					}
 				}
 			}
-			PstakeUpgradeV6(ctx, app.LSCosmosKeeper)
+			PstakeUpgradeV6(ctx, *app.LSCosmosKeeper)
 
 			ctx.Logger().Info("start to run module migrations...")
 			newVM, err := app.moduleManager.RunMigrations(ctx, app.configurator, fromVM)
@@ -866,19 +896,20 @@ func NewApplication(
 		},
 	)
 
-	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
-	if err != nil {
-		panic(fmt.Sprintf("failed to read upgrade info from disk %s", err))
-	}
+	// commenting out for this upgrade, since not needed
+	//upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
+	//if err != nil {
+	//	panic(fmt.Sprintf("failed to read upgrade info from disk %s", err))
+	//}
 
-	if upgradeInfo.Name == UpgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
-		storeUpgrades := storetypes.StoreUpgrades{
-			Added: []string{},
-		}
-
-		// configure store loader that checks if version == upgradeHeight and applies store upgrades
-		app.BaseApp.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
-	}
+	//if upgradeInfo.Name == UpgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+	//	storeUpgrades := storetypes.StoreUpgrades{
+	//		Added: []string{},
+	//	}
+	//
+	//	// configure store loader that checks if version == upgradeHeight and applies store upgrades
+	//	app.BaseApp.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+	//}
 
 	if loadLatest {
 		if err := app.BaseApp.LoadLatestVersion(); err != nil {
@@ -908,27 +939,27 @@ func (app *Application) CreateUpgradeHandler(mm *module.Manager, configurator mo
 	}
 }
 
-func (app Application) ApplicationCodec() codec.Codec {
+func (app *Application) ApplicationCodec() codec.Codec {
 	return app.applicationCodec
 }
 
-func (app Application) Name() string {
+func (app *Application) Name() string {
 	return app.BaseApp.Name()
 }
 
-func (app Application) LegacyAmino() *codec.LegacyAmino {
+func (app *Application) LegacyAmino() *codec.LegacyAmino {
 	return app.legacyAmino
 }
 
-func (app Application) BeginBlocker(ctx sdk.Context, req abcitypes.RequestBeginBlock) abcitypes.ResponseBeginBlock {
+func (app *Application) BeginBlocker(ctx sdk.Context, req abcitypes.RequestBeginBlock) abcitypes.ResponseBeginBlock {
 	return app.moduleManager.BeginBlock(ctx, req)
 }
 
-func (app Application) EndBlocker(ctx sdk.Context, req abcitypes.RequestEndBlock) abcitypes.ResponseEndBlock {
+func (app *Application) EndBlocker(ctx sdk.Context, req abcitypes.RequestEndBlock) abcitypes.ResponseEndBlock {
 	return app.moduleManager.EndBlock(ctx, req)
 }
 
-func (app Application) InitChainer(ctx sdk.Context, req abcitypes.RequestInitChain) abcitypes.ResponseInitChain {
+func (app *Application) InitChainer(ctx sdk.Context, req abcitypes.RequestInitChain) abcitypes.ResponseInitChain {
 	var genesisState GenesisState
 	if err := tendermintjson.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
@@ -939,7 +970,7 @@ func (app Application) InitChainer(ctx sdk.Context, req abcitypes.RequestInitCha
 	return app.moduleManager.InitGenesis(ctx, app.applicationCodec, genesisState)
 }
 
-func (app Application) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string) (servertypes.ExportedApp, error) {
+func (app *Application) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string) (servertypes.ExportedApp, error) {
 	context := app.BaseApp.NewContext(true, tendermintproto.Header{Height: app.BaseApp.LastBlockHeight()})
 
 	height := app.BaseApp.LastBlockHeight() + 1
@@ -1080,7 +1111,7 @@ func (app Application) ExportAppStateAndValidators(forZeroHeight bool, jailWhite
 		return servertypes.ExportedApp{}, Error
 	}
 
-	validators, err := staking.WriteValidators(context, app.StakingKeeper)
+	validators, err := staking.WriteValidators(context, *app.StakingKeeper)
 
 	return servertypes.ExportedApp{
 		AppState:        applicationState,
@@ -1090,7 +1121,7 @@ func (app Application) ExportAppStateAndValidators(forZeroHeight bool, jailWhite
 	}, err
 }
 
-func (app Application) ModuleAccountAddrs() map[string]bool {
+func (app *Application) ModuleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range ModuleAccountPermissions {
 		modAccAddrs[authtypes.NewModuleAddress(acc).String()] = true
@@ -1104,31 +1135,31 @@ func (app *Application) GetSubspace(moduleName string) paramstypes.Subspace {
 	return subspace
 }
 
-func (app Application) SimulationManager() *module.SimulationManager {
+func (app *Application) SimulationManager() *module.SimulationManager {
 	return app.simulationManager
 }
 
-func (app Application) ListSnapshots(snapshots abcitypes.RequestListSnapshots) abcitypes.ResponseListSnapshots {
+func (app *Application) ListSnapshots(snapshots abcitypes.RequestListSnapshots) abcitypes.ResponseListSnapshots {
 	return app.BaseApp.ListSnapshots(snapshots)
 }
 
-func (app Application) OfferSnapshot(snapshot abcitypes.RequestOfferSnapshot) abcitypes.ResponseOfferSnapshot {
+func (app *Application) OfferSnapshot(snapshot abcitypes.RequestOfferSnapshot) abcitypes.ResponseOfferSnapshot {
 	return app.BaseApp.OfferSnapshot(snapshot)
 }
 
-func (app Application) LoadSnapshotChunk(chunk abcitypes.RequestLoadSnapshotChunk) abcitypes.ResponseLoadSnapshotChunk {
+func (app *Application) LoadSnapshotChunk(chunk abcitypes.RequestLoadSnapshotChunk) abcitypes.ResponseLoadSnapshotChunk {
 	return app.BaseApp.LoadSnapshotChunk(chunk)
 }
 
-func (app Application) ApplySnapshotChunk(chunk abcitypes.RequestApplySnapshotChunk) abcitypes.ResponseApplySnapshotChunk {
+func (app *Application) ApplySnapshotChunk(chunk abcitypes.RequestApplySnapshotChunk) abcitypes.ResponseApplySnapshotChunk {
 	return app.BaseApp.ApplySnapshotChunk(chunk)
 }
 
-func (app Application) RegisterGRPCServer(server grpc.Server) {
+func (app *Application) RegisterGRPCServer(server grpc.Server) {
 	app.BaseApp.RegisterGRPCServer(server)
 }
 
-func (app Application) RegisterAPIRoutes(apiServer *api.Server, apiConfig config.APIConfig) {
+func (app *Application) RegisterAPIRoutes(apiServer *api.Server, apiConfig config.APIConfig) {
 	clientCtx := apiServer.ClientCtx
 	rpc.RegisterRoutes(clientCtx, apiServer.Router)
 	// Register legacy tx routes.
@@ -1159,17 +1190,17 @@ func RegisterSwaggerAPI(rtr *mux.Router) {
 	rtr.PathPrefix("/swagger/").Handler(http.StripPrefix("/swagger/", staticServer))
 }
 
-func (app Application) RegisterTxService(clientContect client.Context) {
+func (app *Application) RegisterTxService(clientContect client.Context) {
 	authtx.RegisterTxService(app.BaseApp.GRPCQueryRouter(), clientContect, app.BaseApp.Simulate, app.interfaceRegistry)
 }
 
-func (app Application) RegisterTendermintService(clientCtx client.Context) {
+func (app *Application) RegisterTendermintService(clientCtx client.Context) {
 	tmservice.RegisterTendermintService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.interfaceRegistry)
 }
-func (app Application) RegisterNodeService(clientCtx client.Context) {
+func (app *Application) RegisterNodeService(clientCtx client.Context) {
 	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter())
 }
-func (app Application) LoadHeight(height int64) error {
+func (app *Application) LoadHeight(height int64) error {
 	return app.BaseApp.LoadVersion(height)
 }
 
