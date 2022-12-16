@@ -14,6 +14,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	upgrades "github.com/persistenceOne/persistenceCore/app/upgrades/v6.0.0"
+
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmclient "github.com/CosmWasm/wasmd/x/wasm/client"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
@@ -127,7 +129,7 @@ import (
 	tendermintproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tendermintdb "github.com/tendermint/tm-db"
 
-	appparams "github.com/persistenceOne/persistenceCore/v5/app/params"
+	appparams "github.com/persistenceOne/persistenceCore/app/params"
 )
 
 var DefaultNodeHome string
@@ -807,6 +809,13 @@ func NewApplication(
 		func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 			ctx.Logger().Info("start to run module migrations...")
 
+			//add more upgrade instructions
+			ctx.Logger().Info("Running revert of tombstoning")
+			err := upgrades.RevertCosTombstoning(ctx, &app.SlashingKeeper, &app.MintKeeper, &bankkeeper.BaseKeeper{}, &app.StakingKeeper)
+			if err != nil {
+				panic(fmt.Sprintf("failed to revert tombstoning: %s", err))
+			}
+
 			// RunMigrations twice is just a way to make auth module's migrates after staking
 			newVM, err := app.moduleManager.RunMigrations(ctx, app.configurator, fromVM)
 			if err != nil {
@@ -838,21 +847,6 @@ func NewApplication(
 		},
 	)
 
-	//upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
-	//if err != nil {
-	//	panic(fmt.Sprintf("failed to read upgrade info from disk %s", err))
-	//}
-	//
-	//if upgradeInfo.Name == UpgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
-	//	storeUpgrades := storetypes.StoreUpgrades{
-	//		Added: []string{icacontrollertypes.SubModuleName, epochstypes.ModuleName,
-	//			interchainquerytypes.ModuleName, lscosmostypes.ModuleName},
-	//	}
-	//
-	//	// configure store loader that checks if version == upgradeHeight and applies store upgrades
-	//	app.BaseApp.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
-	//}
-
 	if loadLatest {
 		if err := app.BaseApp.LoadLatestVersion(); err != nil {
 			tendermintos.Exit(err.Error())
@@ -872,6 +866,13 @@ func NewApplication(
 	app.ScopedLSCosmosKeeper = scopedLSCosmosKeeper
 
 	return app
+}
+
+func (app *Application) CreateUpgradeHandler(mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
+	return func(ctx sdk.Context, _ upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
+
+		return mm.RunMigrations(ctx, configurator, vm)
+	}
 }
 
 func (app Application) ApplicationCodec() codec.Codec {
