@@ -14,6 +14,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
+	"github.com/cosmos/cosmos-sdk/client/pruning"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/server"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
@@ -33,8 +34,8 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/persistenceOne/persistenceCore/app"
-	"github.com/persistenceOne/persistenceCore/app/params"
+	"github.com/persistenceOne/persistenceCore/v6/app"
+	"github.com/persistenceOne/persistenceCore/v6/app/params"
 )
 
 const flagInvalidCheckPeriod = "invalid-check-period"
@@ -99,6 +100,10 @@ func setConfig() {
 func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 	setConfig()
 
+	ac := appCreator{
+		encCfg: encodingConfig,
+	}
+
 	rootCmd.AddCommand(
 		genutilcli.InitCmd(app.ModuleBasics, app.DefaultNodeHome),
 		genutilcli.CollectGenTxsCmd(banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
@@ -110,6 +115,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		debug.Cmd(),
 		version.NewVersionCommand(),
 		config.Cmd(),
+		pruning.PruningCmd(ac.newApp),
 		TestnetCmd(app.ModuleBasics, banktypes.GenesisBalancesIterator{}),
 	)
 
@@ -120,9 +126,6 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		"Assert registered invariants every N blocks",
 	)
 
-	ac := appCreator{
-		encCfg: encodingConfig,
-	}
 	server.AddCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
 
 	// add keybase, auxiliary RPC, query, and tx child commands
@@ -175,6 +178,7 @@ func txCommand() *cobra.Command {
 		authcmd.GetSignCommand(),
 		authcmd.GetSignBatchCommand(),
 		authcmd.GetMultiSignCommand(),
+		authcmd.GetMultiSignBatchCmd(),
 		authcmd.GetValidateSignaturesCommand(),
 		flags.LineBreak,
 		authcmd.GetBroadcastCommand(),
@@ -255,6 +259,8 @@ func (ac appCreator) newApp(
 		baseapp.SetSnapshotStore(snapshotStore),
 		baseapp.SetSnapshotInterval(cast.ToUint64(appOpts.Get(server.FlagStateSyncSnapshotInterval))),
 		baseapp.SetSnapshotKeepRecent(cast.ToUint32(appOpts.Get(server.FlagStateSyncSnapshotKeepRecent))),
+		baseapp.SetIAVLCacheSize(cast.ToInt(appOpts.Get(server.FlagIAVLCacheSize))),
+		baseapp.SetIAVLDisableFastNode(cast.ToBool(appOpts.Get(server.FlagDisableIAVLFastNode))),
 	)
 }
 

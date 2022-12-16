@@ -8,7 +8,7 @@ package app
 import (
 	"encoding/json"
 
-	"github.com/persistenceOne/persistenceCore/app/params"
+	"github.com/persistenceOne/persistenceCore/v6/app/params"
 )
 
 // GenesisState of the blockchain is represented here as a map of raw json
