@@ -1,4 +1,4 @@
-package v6_0_0
+package v6
 
 // "address" is the address who gets reimbursed
 // "valAddress" is the address of the validator to which they had delegated

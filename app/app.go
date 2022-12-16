@@ -14,8 +14,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	upgrades "github.com/persistenceOne/persistenceCore/app/upgrades/v6.0.0"
-
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmclient "github.com/CosmWasm/wasmd/x/wasm/client"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
@@ -130,6 +128,7 @@ import (
 	tendermintdb "github.com/tendermint/tm-db"
 
 	appparams "github.com/persistenceOne/persistenceCore/v6/app/params"
+	upgrades "github.com/persistenceOne/persistenceCore/v6/app/upgrades/v6"
 )
 
 var DefaultNodeHome string

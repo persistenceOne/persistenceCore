@@ -1,4 +1,4 @@
-package v6_0_0
+package v6
 
 import (
 	"encoding/json"
