@@ -53,6 +53,12 @@ setup-local-val:
 	kubectl port-forward pods/$(chain)-genesis-0 $(localp2p):26656 &
 	kubectl port-forward pods/$(chain)-genesis-0 $(localrest):1317 &
 
+port-forward-exposer:
+	kubectl port-forward pods/$(chain)-genesis-0 $(localexposer):8080 &
+	for i in $(shell seq 0 $(num_vals)); do \
+		kubectl port-forward pods/$(chain)-validator-$$(i) `expr $(localexposer) + $i + 1`:8080 &; \
+	done
+
 num_chains = $(shell yq -r ".chains | length" $(FILE))
 port-forward-all:
 	echo "Port forwarding all chains to localhost"
@@ -64,6 +70,15 @@ port-forward-all:
 	done
 	echo "Port forwarding explorer to localhost"
 	kubectl port-forward service/explorer 8080:8080 &
+
+port-forward-all-exposers:
+	echo "Port forwarding all chains exposers to localhost"
+	for i in $(shell seq 0 $(num_chains)); do \
+		$(MAKE) port-forward-exposer \
+			chain=$$(yq -r ".chains[$$i].name" $(FILE)) \
+			localexposer=$$(yq -r ".chains[$$i].ports.exposer" $(FILE)) \
+			num_vals=$$(yq -r ".chains[$$i].numValidators" $(FILE)); \
+	done
 
 .PHONY: stop-forward
 stop-forward:
