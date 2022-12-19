@@ -3459,11 +3459,6 @@ var recordsJsonString = `[
     "valAddress": "persistencevaloper1qtggtsmexluvzulehxs7ypsfl82yk5aznrr2zd"
   },
   {
-    "address": "persistence15pc0lktktdj37dw0rqjsptpqnhqvxhfydva96r",
-    "amount": 0,
-    "valAddress": "persistencevaloper1qtggtsmexluvzulehxs7ypsfl82yk5aznrr2zd"
-  },
-  {
     "address": "persistence15z8y353as0s0sh5j8lwsp74hp9wc494l4l55a8",
     "amount": 21900000,
     "valAddress": "persistencevaloper1qtggtsmexluvzulehxs7ypsfl82yk5aznrr2zd"
