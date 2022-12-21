@@ -840,7 +840,7 @@ func NewApplication(
 
 			//add more upgrade instructions
 			ctx.Logger().Info("Running revert of tombstoning")
-			err := upgrades.RevertCosTombstoning(ctx, app.SlashingKeeper, app.MintKeeper, &bankkeeper.BaseKeeper{}, app.StakingKeeper)
+			err := upgrades.RevertCosTombstoning(ctx, app.SlashingKeeper, app.MintKeeper, app.BankKeeper, app.StakingKeeper)
 			if err != nil {
 				panic(fmt.Sprintf("failed to revert tombstoning: %s", err))
 			}

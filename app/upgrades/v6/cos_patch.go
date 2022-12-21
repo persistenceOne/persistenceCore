@@ -159,6 +159,7 @@ func RevertCosTombstoning(
 ) error {
 	//for _, value := range vals {
 	tombstoneVals(ctx, slashingKeeper, getVals(ctx, stakingKeeper))
+	ctx.Logger().Info(fmt.Sprintf("tombstoned some of the validators: %s", getVals(ctx, stakingKeeper)))
 
 	for _, value := range getVals(ctx, stakingKeeper) {
 		err := revertTombstone(ctx, slashingKeeper, value)
