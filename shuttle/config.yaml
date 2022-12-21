@@ -1,5 +1,5 @@
 chains:
-  - name: core-1
+  - name: dev-core-1
     type: persistencecore
     numValidators: 4
     upgrade:
@@ -8,7 +8,7 @@ chains:
       genesis: v5.0.1
       upgrades:
         - name: v6
-          version: anmol/v6
+          version: anmol/v6-testing
     ports:
       rpc: 26657
       rest: 1317

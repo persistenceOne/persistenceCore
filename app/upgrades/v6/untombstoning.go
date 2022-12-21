@@ -27,39 +27,14 @@ type Validator struct {
 
 // Create new Validator vars for each validator that needs to be untombstoned
 var (
-//	vals = []Validator{
-//		{"HashQuark", "persistencevaloper1gydvxcnm95zwdz7h7whpmusy5d5c3ck0p9muc9", "persistencevalcons1dmjc55ve2pe537hu8h8rjrjhp4r536g5jlnlk8"},
-//		{"fox99", "persistencevaloper1y2svn2zvc0puv3rx6w39aa4zlgj7qe0fz8sh6x", "persistencevalcons1ak5f5ywzmersz4z7e3nsqkem4uvf5jyya62w3c"},
-//		{"Smart Stake", "persistencevaloper1qtggtsmexluvzulehxs7ypsfl82yk5aznrr2zd", "persistencevalcons1gnevun33uphh9cwkyzau5mcf0fxvuw6cyrf29g"},
-//		{"Stakin", "persistencevaloper1xykmyvzk88qrlqh3wuw4jckewleyygupsumyj5", "persistencevalcons15fxjrujvsc0le9udjf63504sd4lndcam8ep4cs"},
-//		{"KuCoin", "persistencevaloper18qgr8va65a50sdmp2yuy4y8w9p4pa2rf76mvmm", "persistencevalcons1m83jqu6q6aqcshnq0yjrdra9nj8rgz79mndh3j"},
-//	}
+	vals = []Validator{
+		{"HashQuark", "persistencevaloper1gydvxcnm95zwdz7h7whpmusy5d5c3ck0p9muc9", "persistencevalcons1dmjc55ve2pe537hu8h8rjrjhp4r536g5jlnlk8"},
+		{"fox99", "persistencevaloper1y2svn2zvc0puv3rx6w39aa4zlgj7qe0fz8sh6x", "persistencevalcons1ak5f5ywzmersz4z7e3nsqkem4uvf5jyya62w3c"},
+		{"Smart Stake", "persistencevaloper1qtggtsmexluvzulehxs7ypsfl82yk5aznrr2zd", "persistencevalcons1gnevun33uphh9cwkyzau5mcf0fxvuw6cyrf29g"},
+		{"Stakin", "persistencevaloper1xykmyvzk88qrlqh3wuw4jckewleyygupsumyj5", "persistencevalcons15fxjrujvsc0le9udjf63504sd4lndcam8ep4cs"},
+		{"KuCoin", "persistencevaloper18qgr8va65a50sdmp2yuy4y8w9p4pa2rf76mvmm", "persistencevalcons1m83jqu6q6aqcshnq0yjrdra9nj8rgz79mndh3j"},
+	}
 )
-
-func getVals(
-	ctx sdk.Context,
-	stakingKeeper *stakingkeeper.Keeper,
-) []Validator {
-	var vals []Validator
-	validators := stakingKeeper.GetAllValidators(ctx)
-	for _, validator := range validators {
-		consPubKey, _ := validator.ConsPubKey()
-		vals = append(vals, Validator{validator.Description.GetMoniker(), validator.OperatorAddress, sdk.GetConsAddress(consPubKey).String()})
-	}
-
-	return vals[len(vals)-2:]
-}
-
-func tombstoneVals(ctx sdk.Context, slashingKeeper *slashingkeeper.Keeper, vals []Validator) {
-	for _, val := range vals {
-		consAddress, _ := sdk.ConsAddressFromBech32(val.conAddress)
-
-		// Revert Tombstone info
-		signInfo, _ := slashingKeeper.GetValidatorSigningInfo(ctx, consAddress)
-		signInfo.Tombstoned = true
-		slashingKeeper.SetValidatorSigningInfo(ctx, consAddress, signInfo)
-	}
-}
 
 func mintLostTokens(
 	ctx sdk.Context,
@@ -74,8 +49,6 @@ func mintLostTokens(
 	}
 
 	for _, mintRecord := range cosMints {
-		mintRecord.Delegatee = getVals(ctx, stakingKeeper)[0].valAddress
-
 		cosValAddress, err := sdk.ValAddressFromBech32(mintRecord.Delegatee)
 		if err != nil {
 			panic(fmt.Sprintf("validator address is not valid bech32: %s", cosValAddress))
@@ -144,7 +117,6 @@ func revertTombstone(ctx sdk.Context, slashingKeeper *slashingkeeper.Keeper, val
 
 	// Set jail until=now, the validator then must unjail manually
 	slashingKeeper.JailUntil(ctx, cosConsAddress, ctx.BlockTime())
-
 	ctx.Logger().Info(fmt.Sprintf("Tombstone successfully reverted for validator: %s: %s", validator.name, validator.valAddress))
 
 	return nil
@@ -157,11 +129,7 @@ func RevertCosTombstoning(
 	bankKeeper *bankkeeper.BaseKeeper,
 	stakingKeeper *stakingkeeper.Keeper,
 ) error {
-	//for _, value := range vals {
-	tombstoneVals(ctx, slashingKeeper, getVals(ctx, stakingKeeper))
-	ctx.Logger().Info(fmt.Sprintf("tombstoned some of the validators: %s", getVals(ctx, stakingKeeper)))
-
-	for _, value := range getVals(ctx, stakingKeeper) {
+	for _, value := range vals {
 		err := revertTombstone(ctx, slashingKeeper, value)
 		if err != nil {
 			return err
