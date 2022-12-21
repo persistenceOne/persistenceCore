@@ -34,6 +34,10 @@ var (
 		{"Stakin", "persistencevaloper1xykmyvzk88qrlqh3wuw4jckewleyygupsumyj5", "persistencevalcons15fxjrujvsc0le9udjf63504sd4lndcam8ep4cs"},
 		{"KuCoin", "persistencevaloper18qgr8va65a50sdmp2yuy4y8w9p4pa2rf76mvmm", "persistencevalcons1m83jqu6q6aqcshnq0yjrdra9nj8rgz79mndh3j"},
 	}
+	// testnetVals holds the validators to untombstone
+	testnetVals = []Validator{
+		{"TombRaider", "persistencevaloper1mgd6a660ysram7a0m8ytmjvryneywgm8mg7lcs", "persistence1mgd6a660ysram7a0m8ytmjvryneywgm8jv7z3f"},
+	}
 )
 
 func mintLostTokens(
@@ -41,13 +45,8 @@ func mintLostTokens(
 	bankKeeper *bankkeeper.BaseKeeper,
 	stakingKeeper *stakingkeeper.Keeper,
 	mintKeeper *mintkeeper.Keeper,
+	cosMints []CosMints,
 ) {
-	var cosMints []CosMints
-	err := json.Unmarshal([]byte(recordsJsonString), &cosMints)
-	if err != nil {
-		panic(fmt.Sprintf("error reading COS JSON: %+v", err))
-	}
-
 	for _, mintRecord := range cosMints {
 		cosValAddress, err := sdk.ValAddressFromBech32(mintRecord.Delegatee)
 		if err != nil {
@@ -129,14 +128,40 @@ func RevertCosTombstoning(
 	bankKeeper *bankkeeper.BaseKeeper,
 	stakingKeeper *stakingkeeper.Keeper,
 ) error {
-	for _, value := range vals {
-		err := revertTombstone(ctx, slashingKeeper, value)
-		if err != nil {
-			return err
+	switch ctx.ChainID() {
+	case "core-1":
+		for _, value := range vals {
+			err := revertTombstone(ctx, slashingKeeper, value)
+			if err != nil {
+				return err
+			}
 		}
+
+		var cosMints []CosMints
+		err := json.Unmarshal([]byte(recordsJsonString), &cosMints)
+		if err != nil {
+			panic(fmt.Sprintf("error reading COS JSON: %+v", err))
+		}
+		mintLostTokens(ctx, bankKeeper, stakingKeeper, mintKeeper, cosMints)
+
+		return nil
+	case "test-core-1":
+		for _, value := range testnetVals {
+			err := revertTombstone(ctx, slashingKeeper, value)
+			if err != nil {
+				return err
+			}
+		}
+
+		var cosMints []CosMints
+		err := json.Unmarshal([]byte(testnetRecordsJsonString), &cosMints)
+		if err != nil {
+			panic(fmt.Sprintf("error reading COS JSON: %+v", err))
+		}
+		mintLostTokens(ctx, bankKeeper, stakingKeeper, mintKeeper, cosMints)
+
+		return nil
+	default:
+		return nil
 	}
-
-	mintLostTokens(ctx, bankKeeper, stakingKeeper, mintKeeper)
-
-	return nil
 }
