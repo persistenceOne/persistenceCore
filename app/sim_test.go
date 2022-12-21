@@ -8,7 +8,6 @@ package app_test
 import (
 	"encoding/json"
 	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"os"
 	"testing"
 
@@ -116,8 +115,6 @@ func TestAppStateDeterminism(t *testing.T) {
 	numSeeds := 3
 	numTimesToRunPerSeed := 5
 	appHashList := make([]json.RawMessage, numTimesToRunPerSeed)
-
-	sdk.ConsAddressFromHex("58F2FB763B1318F9C691B651CCD461E0610CC635")
 
 	for i := 0; i < numSeeds; i++ {
 		config.Seed = rand.Int63()
