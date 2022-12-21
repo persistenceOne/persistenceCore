@@ -8,7 +8,7 @@ import (
 // MintPstakeTokens send stk/uatom to persistence1zl42hd5h9c7z4ej43fhss9nvgm6nuad0js8z6n (for https://www.mintscan.io/cosmos/txs/DE691EC8EBB5A79E2AB421291660111E893823CA0CC9EBDED5E3C72B503067C3 sending amount to reward address)
 // at c_value 0.999142233051758540 = 44961400stk/uatom (`curl -X GET -H "Content-Type: application/json" -H "x-cosmos-block-height: 8650000" 'https://rest.core.persistence.one/pstake/lscosmos/v1beta1/c_value'`)
 func MintPstakeTokens(ctx sdk.Context, k *lscosmoskeeper.Keeper) error {
-	if ctx.ChainID() != "core-1" || ctx.ChainID() != "test-core-1" {
+	if ctx.ChainID() != "core-1" && ctx.ChainID() != "test-core-1" {
 		return nil
 	}
 
