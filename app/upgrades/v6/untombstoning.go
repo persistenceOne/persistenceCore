@@ -53,10 +53,6 @@ func mintLostTokens(
 			return fmt.Errorf("validator address is not valid bech32: %s", cosValAddress)
 		}
 
-		cosValidator, found := stakingKeeper.GetValidator(ctx, cosValAddress)
-		if !found {
-			return fmt.Errorf("cos validator '%s' not found", cosValAddress)
-		}
 		coinAmount, _ := sdk.NewIntFromString(mintRecord.AmountUxprt)
 
 		coin := sdk.NewCoin("uxprt", coinAmount)
@@ -80,6 +76,11 @@ func mintLostTokens(
 		sdkAddress, err := sdk.AccAddressFromBech32(mintRecord.Address)
 		if err != nil {
 			return fmt.Errorf("account address is not valid bech32: %s", mintRecord.Address)
+		}
+
+		cosValidator, found := stakingKeeper.GetValidator(ctx, cosValAddress)
+		if !found {
+			return fmt.Errorf("cos validator '%s' not found", cosValAddress)
 		}
 
 		_, err = stakingKeeper.Delegate(ctx, sdkAddress, coin.Amount, stakingtypes.Unbonded, cosValidator, true)
@@ -131,6 +132,7 @@ func RevertCosTombstoning(
 	// Run code on mainnet and testnet for minting lost tokens
 	// check the blockheight is more than tombstoning height
 	if ctx.ChainID() == "core-1" || ctx.ChainID() == "test-core-1" {
+		var Mints []CosMints
 		var vals []Validator
 		if ctx.ChainID() == "core-1" || ctx.BlockHeight() > 88647536 {
 			var cosMints []CosMints
@@ -138,6 +140,7 @@ func RevertCosTombstoning(
 			if err != nil {
 				return fmt.Errorf("error reading COS JSON: %+v", err)
 			}
+			Mints = append(Mints, cosMints...)
 			vals = append(vals, mainnetVals...)
 		}
 		if ctx.ChainID() == "test-core-1" || ctx.BlockHeight() > 8647536 {
@@ -146,36 +149,12 @@ func RevertCosTombstoning(
 			if err != nil {
 				return fmt.Errorf("error reading COS JSON: %+v", err)
 			}
+			Mints = append(Mints, cosMints...)
 			vals = append(vals, testnetVals...)
 		}
 
-		for _, value := range testnetVals {
-			err := revertTombstone(ctx, slashingKeeper, value)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	// Run code on mainnet and testnet for minting lost tokens
-	// check the blockheight is more than tombstoning height
-	if ctx.ChainID() == "core-1" || ctx.ChainID() == "test-core-1" {
-		var Mints []CosMints
-		if ctx.ChainID() == "core-1" || ctx.BlockHeight() > 88647536 {
-			var cosMints []CosMints
-			err := json.Unmarshal([]byte(recordsJsonString), &cosMints)
-			if err != nil {
-				return fmt.Errorf("error reading COS JSON: %+v", err)
-			}
-			Mints = append(Mints, cosMints...)
-		}
-		if ctx.ChainID() == "test-core-1" || ctx.BlockHeight() > 8647536 {
-			var cosMints []CosMints
-			err := json.Unmarshal([]byte(testnetRecordsJsonString), &cosMints)
-			if err != nil {
-				return fmt.Errorf("error reading COS JSON: %+v", err)
-			}
-			Mints = append(Mints, cosMints...)
+		for _, value := range vals {
+			revertTombstone(ctx, slashingKeeper, value)
 		}
 
 		mintLostTokens(ctx, bankKeeper, stakingKeeper, mintKeeper, Mints)
