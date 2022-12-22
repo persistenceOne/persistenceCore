@@ -27,7 +27,7 @@ type Validator struct {
 
 // Create new Validator vars for each validator that needs to be untombstoned
 var (
-	vals = []Validator{
+	mainnetVals = []Validator{
 		{"HashQuark", "persistencevaloper1gydvxcnm95zwdz7h7whpmusy5d5c3ck0p9muc9", "persistencevalcons1dmjc55ve2pe537hu8h8rjrjhp4r536g5jlnlk8"},
 		{"fox99", "persistencevaloper1y2svn2zvc0puv3rx6w39aa4zlgj7qe0fz8sh6x", "persistencevalcons1ak5f5ywzmersz4z7e3nsqkem4uvf5jyya62w3c"},
 		{"Smart Stake", "persistencevaloper1qtggtsmexluvzulehxs7ypsfl82yk5aznrr2zd", "persistencevalcons1gnevun33uphh9cwkyzau5mcf0fxvuw6cyrf29g"},
@@ -46,17 +46,13 @@ func mintLostTokens(
 	stakingKeeper *stakingkeeper.Keeper,
 	mintKeeper *mintkeeper.Keeper,
 	cosMints []CosMints,
-) {
+) error {
 	for _, mintRecord := range cosMints {
 		cosValAddress, err := sdk.ValAddressFromBech32(mintRecord.Delegatee)
 		if err != nil {
-			panic(fmt.Sprintf("validator address is not valid bech32: %s", cosValAddress))
+			return fmt.Errorf("validator address is not valid bech32: %s", cosValAddress)
 		}
 
-		cosValidator, found := stakingKeeper.GetValidator(ctx, cosValAddress)
-		if !found {
-			panic(fmt.Sprintf("cos validator '%s' not found", cosValAddress))
-		}
 		coinAmount, _ := sdk.NewIntFromString(mintRecord.AmountUxprt)
 
 		coin := sdk.NewCoin("uxprt", coinAmount)
@@ -64,50 +60,56 @@ func mintLostTokens(
 
 		err = mintKeeper.MintCoins(ctx, coins)
 		if err != nil {
-			panic(fmt.Sprintf("error minting %duxprt to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, err))
+			return fmt.Errorf("error minting %duxprt to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, err)
 		}
 
 		delegatorAccount, err := sdk.AccAddressFromBech32(mintRecord.Address)
 		if err != nil {
-			panic(fmt.Sprintf("error converting human address %s to sdk.AccAddress: %+v", mintRecord.Address, err))
+			return fmt.Errorf("error converting human address %s to sdk.AccAddress: %+v", mintRecord.Address, err)
 		}
 
 		err = bankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, delegatorAccount, coins)
 		if err != nil {
-			panic(fmt.Sprintf("error sending minted %duxprt to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, err))
+			return fmt.Errorf("error sending minted %duxprt to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, err)
 		}
 
 		sdkAddress, err := sdk.AccAddressFromBech32(mintRecord.Address)
 		if err != nil {
-			panic(fmt.Sprintf("account address is not valid bech32: %s", mintRecord.Address))
+			return fmt.Errorf("account address is not valid bech32: %s", mintRecord.Address)
+		}
+
+		cosValidator, found := stakingKeeper.GetValidator(ctx, cosValAddress)
+		if !found {
+			return fmt.Errorf("cos validator '%s' not found", cosValAddress)
 		}
 
 		_, err = stakingKeeper.Delegate(ctx, sdkAddress, coin.Amount, stakingtypes.Unbonded, cosValidator, true)
 		if err != nil {
-			panic(fmt.Sprintf("error delegating minted %duxprt from %s to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, mintRecord.Delegatee, err))
+			return fmt.Errorf("error delegating minted %duxprt from %s to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, mintRecord.Delegatee, err)
 		}
 	}
+	return nil
 }
 
 func revertTombstone(ctx sdk.Context, slashingKeeper *slashingkeeper.Keeper, validator Validator) error {
 	cosValAddress, err := sdk.ValAddressFromBech32(validator.valAddress)
 	if err != nil {
-		panic(fmt.Sprintf("validator address is not valid bech32: %s", cosValAddress))
+		return fmt.Errorf("validator address is not valid bech32: %s", cosValAddress)
 	}
 
 	cosConsAddress, err := sdk.ConsAddressFromBech32(validator.conAddress)
 	if err != nil {
-		panic(fmt.Sprintf("consensus address is not valid bech32: %s", cosValAddress))
+		return fmt.Errorf("consensus address is not valid bech32: %s", cosValAddress)
 	}
 
 	// Revert Tombstone info
 	signInfo, ok := slashingKeeper.GetValidatorSigningInfo(ctx, cosConsAddress)
 
 	if !ok {
-		panic(fmt.Sprintf("cannot tombstone validator that does not have any signing information: %s", cosConsAddress.String()))
+		return fmt.Errorf("cannot tombstone validator that does not have any signing information: %s", cosConsAddress.String())
 	}
 	if !signInfo.Tombstoned {
-		panic(fmt.Sprintf("cannut untombstone a validator that is not tombstoned: %s", cosConsAddress.String()))
+		return fmt.Errorf("cannut untombstone a validator that is not tombstoned: %s", cosConsAddress.String())
 	}
 
 	signInfo.Tombstoned = false
@@ -127,40 +129,35 @@ func RevertCosTombstoning(
 	bankKeeper *bankkeeper.BaseKeeper,
 	stakingKeeper *stakingkeeper.Keeper,
 ) error {
-	switch ctx.ChainID() {
-	case "core-1":
+	// Run code on mainnet and testnet for minting lost tokens
+	// check the blockheight is more than tombstoning height
+	if ctx.ChainID() == "core-1" || ctx.ChainID() == "test-core-1" {
+		var Mints []CosMints
+		var vals []Validator
+		if ctx.ChainID() == "core-1" || ctx.BlockHeight() > 88647536 {
+			var cosMints []CosMints
+			err := json.Unmarshal([]byte(recordsJsonString), &cosMints)
+			if err != nil {
+				return fmt.Errorf("error reading COS JSON: %+v", err)
+			}
+			Mints = append(Mints, cosMints...)
+			vals = append(vals, mainnetVals...)
+		}
+		if ctx.ChainID() == "test-core-1" || ctx.BlockHeight() > 8647536 {
+			var cosMints []CosMints
+			err := json.Unmarshal([]byte(testnetRecordsJsonString), &cosMints)
+			if err != nil {
+				return fmt.Errorf("error reading COS JSON: %+v", err)
+			}
+			Mints = append(Mints, cosMints...)
+			vals = append(vals, testnetVals...)
+		}
+
 		for _, value := range vals {
-			err := revertTombstone(ctx, slashingKeeper, value)
-			if err != nil {
-				return err
-			}
+			revertTombstone(ctx, slashingKeeper, value)
 		}
 
-		var cosMints []CosMints
-		err := json.Unmarshal([]byte(recordsJsonString), &cosMints)
-		if err != nil {
-			panic(fmt.Sprintf("error reading COS JSON: %+v", err))
-		}
-		mintLostTokens(ctx, bankKeeper, stakingKeeper, mintKeeper, cosMints)
-
-		return nil
-	case "test-core-1":
-		for _, value := range testnetVals {
-			err := revertTombstone(ctx, slashingKeeper, value)
-			if err != nil {
-				return err
-			}
-		}
-
-		var cosMints []CosMints
-		err := json.Unmarshal([]byte(testnetRecordsJsonString), &cosMints)
-		if err != nil {
-			panic(fmt.Sprintf("error reading COS JSON: %+v", err))
-		}
-		mintLostTokens(ctx, bankKeeper, stakingKeeper, mintKeeper, cosMints)
-
-		return nil
-	default:
-		return nil
+		mintLostTokens(ctx, bankKeeper, stakingKeeper, mintKeeper, Mints)
 	}
+	return nil
 }
