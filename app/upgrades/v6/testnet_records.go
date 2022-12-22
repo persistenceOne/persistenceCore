@@ -1,22 +1,12 @@
 package v6
 
-// "address" is the address who gets reimbursed on testnet
-// "valAddress" is the address of the validator to which they had delegated
+// testnet addresses to mint random addresses various amounts
+// here we have really large amounts to tiny amounts to whole amount
 var testnetRecordsJsonString = `[
   {
-    "address": "persistence1ra2346ysgg7j4m62hpk3ue75nxfrzm6yqe6grk",
-    "amount": 1699830,
-    "valAddress": "persistencevaloper1mgd6a660ysram7a0m8ytmjvryneywgm8mg7lcs"
-  },
-  {
-    "address": "persistence1yg8ps9mpj6wsp5gsp27gf798995ft6klh6mfvq",
-    "amount": 12999,
-    "valAddress": "persistencevaloper1mgd6a660ysram7a0m8ytmjvryneywgm8mg7lcs"
-  },
-  {
-    "address": "persistence1y2svn2zvc0puv3rx6w39aa4zlgj7qe0ftrs2nl",
-    "amount": 49995,
-    "valAddress": "persistencevaloper1mgd6a660ysram7a0m8ytmjvryneywgm8mg7lcs"
+    "address": "persistence1r73ev6xr0tczg60fktq458vwxszkjwautc7w76",
+    "amount": "49995000000",
+    "validator_address": "persistencevaloper1mgd6a660ysram7a0m8ytmjvryneywgm8mg7lcs"
   }
 ]
 `

@@ -15,8 +15,8 @@ import (
 
 type CosMints struct {
 	Address     string `json:"address"`
-	AmountUxprt int64  `json:"amount"`
-	Delegatee   string `json:"valAddress"`
+	AmountUxprt string `json:"amount"`
+	Delegatee   string `json:"validator_address"`
 }
 
 type Validator struct {
@@ -57,7 +57,7 @@ func mintLostTokens(
 		if !found {
 			panic(fmt.Sprintf("cos validator '%s' not found", cosValAddress))
 		}
-		coinAmount := sdk.NewInt(mintRecord.AmountUxprt)
+		coinAmount, _ := sdk.NewIntFromString(mintRecord.AmountUxprt)
 
 		coin := sdk.NewCoin("uxprt", coinAmount)
 		coins := sdk.NewCoins(coin)
@@ -72,7 +72,6 @@ func mintLostTokens(
 			panic(fmt.Sprintf("error converting human address %s to sdk.AccAddress: %+v", mintRecord.Address, err))
 		}
 
-		//TODO: The binary crashes at this point with a nil pointer dereference, needs to be fixed.
 		err = bankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, delegatorAccount, coins)
 		if err != nil {
 			panic(fmt.Sprintf("error sending minted %duxprt to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, err))
