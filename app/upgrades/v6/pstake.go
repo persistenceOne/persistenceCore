@@ -26,8 +26,7 @@ func MintPstakeTokens(ctx sdk.Context, k *lscosmoskeeper.Keeper) error {
 
 	toNewMint := atomTVU.Sub(mintedAmount)
 
-	switch ctx.ChainID() {
-	case "core-1":
+	if ctx.ChainID() == "core-1" {
 		if toNewMint.GT(sdk.NewInt(44961400)) {
 			mischiefUserAddress := sdk.MustAccAddressFromBech32("persistence1zl42hd5h9c7z4ej43fhss9nvgm6nuad0js8z6n")
 			toSendUser := sdk.NewInt(44961400)
@@ -45,7 +44,8 @@ func MintPstakeTokens(ctx sdk.Context, k *lscosmoskeeper.Keeper) error {
 			}
 		}
 		return nil
-	case "test-core-1":
+	}
+	if ctx.ChainID() == "test-core-1" {
 		pstakeFeeAddress := sdk.MustAccAddressFromBech32(k.GetHostChainParams(ctx).PstakeParams.PstakeFeeAddress)
 		err := k.MintTokens(ctx, sdk.NewCoin(mintDenom, toNewMint), pstakeFeeAddress)
 		if err != nil {
@@ -53,7 +53,7 @@ func MintPstakeTokens(ctx sdk.Context, k *lscosmoskeeper.Keeper) error {
 			return err
 		}
 		return nil
-	default:
-		return nil
 	}
+
+	return nil
 }

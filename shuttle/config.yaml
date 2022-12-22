@@ -1,5 +1,5 @@
 chains:
-  - name: dev-core-1
+  - name: core-1
     type: persistencecore
     numValidators: 4
     upgrade:
