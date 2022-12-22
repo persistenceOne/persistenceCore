@@ -14,7 +14,7 @@ setup:
 	helm repo update
 	helm search repo $(HELM_REPO)/$(HELM_CHART) --version $(HELM_VERSION)
 
-install:
+install: delete
 	helm install -f $(FILE) $(HELM_NAME) $(HELM_REPO)/$(HELM_CHART) --version $(HELM_VERSION)
 
 upgrade:
@@ -32,6 +32,16 @@ delete:
 OFFSET_HEIGHT = 80
 UPGRADE_NAME = v6
 CHAIN_ID = $(shell yq -r ".chains[0].name" $(FILE))
+
+setup-client: clean-keys
+	CHAIN_BIN=persistenceCore CHAIN_ID=$(CHAIN_ID) \
+	CHAIN_DATA_DIR=.persistenceCore \
+	NODE_PORT=$(shell yq -r ".chains[0].ports.rpc" $(FILE)) \
+	EXPOSER_PORT=$(shell yq -r ".chains[0].ports.exposer" $(FILE)) \
+	bash -e setup.sh
+
+clean-keys:
+	rm -rf ~/.persistenceCore/keyring-test/
 
 test-upgrade:
 	OFFSET_HEIGHT=$(OFFSET_HEIGHT) \
@@ -52,9 +62,9 @@ setup-local-val:
 	kubectl port-forward pods/$(chain)-genesis-0 $(localrpc):26657 &
 	kubectl port-forward pods/$(chain)-genesis-0 $(localp2p):26656 &
 	kubectl port-forward pods/$(chain)-genesis-0 $(localrest):1317 &
+	kubectl port-forward pods/$(chain)-genesis-0 $(localexposer):8081 &
 
 port-forward-exposer:
-	kubectl port-forward pods/$(chain)-genesis-0 $(localexposer):8080 &
 	for i in $(shell seq 0 $(num_vals)); do \
 		kubectl port-forward pods/$(chain)-validator-$$(i) `expr $(localexposer) + $i + 1`:8080 &; \
 	done
@@ -66,6 +76,7 @@ port-forward-all:
   		$(MAKE) .port-forward \
   			chain=$$(yq -r ".chains[$$i].name" $(FILE)) \
   			localrpc=$$(yq -r ".chains[$$i].ports.rpc" $(FILE)) \
+  			localexposer=$$(yq -r ".chains[$$i].ports.exposer" $(FILE)) \
   			localrest=$$(yq -r ".chains[$$i].ports.rest" $(FILE)); \
 	done
 	echo "Port forwarding explorer to localhost"

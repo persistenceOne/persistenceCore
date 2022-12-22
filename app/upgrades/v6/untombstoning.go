@@ -34,6 +34,10 @@ var (
 		{"Stakin", "persistencevaloper1xykmyvzk88qrlqh3wuw4jckewleyygupsumyj5", "persistencevalcons15fxjrujvsc0le9udjf63504sd4lndcam8ep4cs"},
 		{"KuCoin", "persistencevaloper18qgr8va65a50sdmp2yuy4y8w9p4pa2rf76mvmm", "persistencevalcons1m83jqu6q6aqcshnq0yjrdra9nj8rgz79mndh3j"},
 	}
+	// testnetVals holds the validators to untombstone
+	testnetVals = []Validator{
+		{"TombRaider", "persistencevaloper1mgd6a660ysram7a0m8ytmjvryneywgm8mg7lcs", "persistence1mgd6a660ysram7a0m8ytmjvryneywgm8jv7z3f"},
+	}
 )
 
 func mintLostTokens(
@@ -41,15 +45,9 @@ func mintLostTokens(
 	bankKeeper *bankkeeper.BaseKeeper,
 	stakingKeeper *stakingkeeper.Keeper,
 	mintKeeper *mintkeeper.Keeper,
+	cosMints []CosMints,
 ) {
-	var cosMints []CosMints
-	err := json.Unmarshal([]byte(recordsJsonString), &cosMints)
-	if err != nil {
-		panic(fmt.Sprintf("error reading COS JSON: %+v", err))
-	}
-
 	for _, mintRecord := range cosMints {
-
 		cosValAddress, err := sdk.ValAddressFromBech32(mintRecord.Delegatee)
 		if err != nil {
 			panic(fmt.Sprintf("validator address is not valid bech32: %s", cosValAddress))
@@ -66,7 +64,7 @@ func mintLostTokens(
 
 		err = mintKeeper.MintCoins(ctx, coins)
 		if err != nil {
-			panic(fmt.Sprintf("error minting %suxprt to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, err))
+			panic(fmt.Sprintf("error minting %duxprt to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, err))
 		}
 
 		delegatorAccount, err := sdk.AccAddressFromBech32(mintRecord.Address)
@@ -77,7 +75,7 @@ func mintLostTokens(
 		//TODO: The binary crashes at this point with a nil pointer dereference, needs to be fixed.
 		err = bankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, delegatorAccount, coins)
 		if err != nil {
-			panic(fmt.Sprintf("error sending minted %suxprt to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, err))
+			panic(fmt.Sprintf("error sending minted %duxprt to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, err))
 		}
 
 		sdkAddress, err := sdk.AccAddressFromBech32(mintRecord.Address)
@@ -87,7 +85,7 @@ func mintLostTokens(
 
 		_, err = stakingKeeper.Delegate(ctx, sdkAddress, coin.Amount, stakingtypes.Unbonded, cosValidator, true)
 		if err != nil {
-			panic(fmt.Sprintf("error delegating minted %suxprt from %s to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, mintRecord.Delegatee, err))
+			panic(fmt.Sprintf("error delegating minted %duxprt from %s to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, mintRecord.Delegatee, err))
 		}
 	}
 }
@@ -118,7 +116,6 @@ func revertTombstone(ctx sdk.Context, slashingKeeper *slashingkeeper.Keeper, val
 
 	// Set jail until=now, the validator then must unjail manually
 	slashingKeeper.JailUntil(ctx, cosConsAddress, ctx.BlockTime())
-
 	ctx.Logger().Info(fmt.Sprintf("Tombstone successfully reverted for validator: %s: %s", validator.name, validator.valAddress))
 
 	return nil
@@ -131,14 +128,40 @@ func RevertCosTombstoning(
 	bankKeeper *bankkeeper.BaseKeeper,
 	stakingKeeper *stakingkeeper.Keeper,
 ) error {
-	for _, value := range vals {
-		err := revertTombstone(ctx, slashingKeeper, value)
-		if err != nil {
-			return err
+	switch ctx.ChainID() {
+	case "core-1":
+		for _, value := range vals {
+			err := revertTombstone(ctx, slashingKeeper, value)
+			if err != nil {
+				return err
+			}
 		}
+
+		var cosMints []CosMints
+		err := json.Unmarshal([]byte(recordsJsonString), &cosMints)
+		if err != nil {
+			panic(fmt.Sprintf("error reading COS JSON: %+v", err))
+		}
+		mintLostTokens(ctx, bankKeeper, stakingKeeper, mintKeeper, cosMints)
+
+		return nil
+	case "test-core-1":
+		for _, value := range testnetVals {
+			err := revertTombstone(ctx, slashingKeeper, value)
+			if err != nil {
+				return err
+			}
+		}
+
+		var cosMints []CosMints
+		err := json.Unmarshal([]byte(testnetRecordsJsonString), &cosMints)
+		if err != nil {
+			panic(fmt.Sprintf("error reading COS JSON: %+v", err))
+		}
+		mintLostTokens(ctx, bankKeeper, stakingKeeper, mintKeeper, cosMints)
+
+		return nil
+	default:
+		return nil
 	}
-
-	mintLostTokens(ctx, bankKeeper, stakingKeeper, mintKeeper)
-
-	return nil
 }
