@@ -45,48 +45,46 @@ func mintLostTokens(
 	bankKeeper *bankkeeper.BaseKeeper,
 	stakingKeeper *stakingkeeper.Keeper,
 	mintKeeper *mintkeeper.Keeper,
-	cosMints []CosMints,
+	mintRecord CosMints,
 ) error {
-	for _, mintRecord := range cosMints {
-		cosValAddress, err := sdk.ValAddressFromBech32(mintRecord.Delegatee)
-		if err != nil {
-			return fmt.Errorf("validator address is not valid bech32: %s", cosValAddress)
-		}
+	cosValAddress, err := sdk.ValAddressFromBech32(mintRecord.Delegatee)
+	if err != nil {
+		return fmt.Errorf("validator address is not valid bech32: %s", cosValAddress)
+	}
 
-		coinAmount, _ := sdk.NewIntFromString(mintRecord.AmountUxprt)
+	coinAmount, _ := sdk.NewIntFromString(mintRecord.AmountUxprt)
 
-		coin := sdk.NewCoin("uxprt", coinAmount)
-		coins := sdk.NewCoins(coin)
+	coin := sdk.NewCoin("uxprt", coinAmount)
+	coins := sdk.NewCoins(coin)
 
-		err = mintKeeper.MintCoins(ctx, coins)
-		if err != nil {
-			return fmt.Errorf("error minting %duxprt to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, err)
-		}
+	err = mintKeeper.MintCoins(ctx, coins)
+	if err != nil {
+		return fmt.Errorf("error minting %suxprt to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, err)
+	}
 
-		delegatorAccount, err := sdk.AccAddressFromBech32(mintRecord.Address)
-		if err != nil {
-			return fmt.Errorf("error converting human address %s to sdk.AccAddress: %+v", mintRecord.Address, err)
-		}
+	delegatorAccount, err := sdk.AccAddressFromBech32(mintRecord.Address)
+	if err != nil {
+		return fmt.Errorf("error converting human address %s to sdk.AccAddress: %+v", mintRecord.Address, err)
+	}
 
-		err = bankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, delegatorAccount, coins)
-		if err != nil {
-			return fmt.Errorf("error sending minted %duxprt to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, err)
-		}
+	err = bankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, delegatorAccount, coins)
+	if err != nil {
+		return fmt.Errorf("error sending minted %suxprt to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, err)
+	}
 
-		sdkAddress, err := sdk.AccAddressFromBech32(mintRecord.Address)
-		if err != nil {
-			return fmt.Errorf("account address is not valid bech32: %s", mintRecord.Address)
-		}
+	sdkAddress, err := sdk.AccAddressFromBech32(mintRecord.Address)
+	if err != nil {
+		return fmt.Errorf("account address is not valid bech32: %s", mintRecord.Address)
+	}
 
-		cosValidator, found := stakingKeeper.GetValidator(ctx, cosValAddress)
-		if !found {
-			return fmt.Errorf("cos validator '%s' not found", cosValAddress)
-		}
+	cosValidator, found := stakingKeeper.GetValidator(ctx, cosValAddress)
+	if !found {
+		return fmt.Errorf("cos validator '%s' not found", cosValAddress)
+	}
 
-		_, err = stakingKeeper.Delegate(ctx, sdkAddress, coin.Amount, stakingtypes.Unbonded, cosValidator, true)
-		if err != nil {
-			return fmt.Errorf("error delegating minted %duxprt from %s to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, mintRecord.Delegatee, err)
-		}
+	_, err = stakingKeeper.Delegate(ctx, sdkAddress, coin.Amount, stakingtypes.Unbonded, cosValidator, true)
+	if err != nil {
+		return fmt.Errorf("error delegating minted %suxprt from %s to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, mintRecord.Delegatee, err)
 	}
 	return nil
 }
@@ -157,7 +155,9 @@ func RevertCosTombstoning(
 			revertTombstone(ctx, slashingKeeper, value)
 		}
 
-		mintLostTokens(ctx, bankKeeper, stakingKeeper, mintKeeper, Mints)
+		for _, mint := range Mints {
+			mintLostTokens(ctx, bankKeeper, stakingKeeper, mintKeeper, mint)
+		}
 	}
 	return nil
 }
