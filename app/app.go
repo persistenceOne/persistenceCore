@@ -836,10 +836,10 @@ func NewApplication(
 	app.UpgradeKeeper.SetUpgradeHandler(
 		UpgradeName,
 		func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
-			ctx.Logger().Info("start to run pstake migration...")
+			ctx.Logger().Info("start to run upgrade migration...")
 
 			//add more upgrade instructions
-			ctx.Logger().Info("Running revert of tombstoning")
+			ctx.Logger().Info("running revert of tombstoning")
 			err := upgrades.RevertCosTombstoning(ctx, app.SlashingKeeper, app.MintKeeper, app.BankKeeper, app.StakingKeeper)
 			if err != nil {
 				panic(fmt.Sprintf("failed to revert tombstoning: %s", err))
