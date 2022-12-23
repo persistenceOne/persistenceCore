@@ -35,10 +35,8 @@ jobs:
           echo "TENDERMINT=$(cat go.mod | grep 'github.com/tendermint/tendermint ' | awk '{printf $2}')" >> $GITHUB_ENV
       - name: replace cosmos-sdk and tendermint with their fh versions
         run: |
-          echo "replace github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk ${{ env.COSMOS }}-pfh" 
-          >> go.mod
-          echo "replace github.com/tendermint/tendermint => github.com/persistenceOne/tendermint ${{ env.TENDERMINT
-          }}-pfh" >> go.mod
+          echo "replace github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk ${{ env.COSMOS }}-pfh" >> go.mod
+          echo "replace github.com/tendermint/tendermint => github.com/persistenceOne/tendermint ${{ env.TENDERMINT}}-pfh" >> go.mod
       - uses: actions/setup-go@v3
         with:
           go-version: ^1.19
