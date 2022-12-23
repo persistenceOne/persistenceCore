@@ -1,0 +1,57 @@
+name: Release firehose version
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        type: string
+        required: true
+        description: Persistence tag for which fh version should be created
+
+env:
+  FH_TAG: ${{ inputs.tag }}-fh
+
+jobs:
+  release-fh:
+    name: Release firehose version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: fetch tag
+        run: |
+          git fetch origin refs/tags/${{ inputs.tag }}:refs/tags/${{ inputs.tag }} --no-tags
+          git fetch origin refs/tags/${{ env.FH_TAG }}:refs/tags/${{ env.FH_TAG }} || echo ""
+          echo "TAGS=$(git tag -l | tr '\n' ' ')" >> $GITHUB_ENV
+      - name: exit if tag already exists
+        if: contains(env.TAGS, env.FH_TAG)
+        run: |
+          echo "::error::Tag: $FH_TAG already exists"
+          exit 1
+      - name: checkout
+        run: git checkout ${{ inputs.tag }}
+      - name: extract cosmos-sdk and tendermint versions
+        run: |
+          echo "COSMOS=$(cat go.mod | grep 'github.com/cosmos/cosmos-sdk ' | awk '{printf $2}')" >> $GITHUB_ENV
+          echo "TENDERMINT=$(cat go.mod | grep 'github.com/tendermint/tendermint ' | awk '{printf $2}')" >> $GITHUB_ENV
+      - name: replace cosmos-sdk and tendermint with their fh versions
+        run: |
+          echo "replace github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk ${{ env.COSMOS }}-pfh" 
+          >> go.mod
+          echo "replace github.com/tendermint/tendermint => github.com/persistenceOne/tendermint ${{ env.TENDERMINT
+          }}-pfh" >> go.mod
+      - uses: actions/setup-go@v3
+        with:
+          go-version: ^1.19
+      - name: get dependencies
+        run: go mod tidy
+      - name: build
+        run: make build
+      - name: release tag
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "<>"
+          rm -rf .github/workflows
+          git add -A
+          git commit -m "added firehose support"
+          git tag ${{ env.FH_TAG }}
+          git push origin refs/tags/${{ env.FH_TAG }}
