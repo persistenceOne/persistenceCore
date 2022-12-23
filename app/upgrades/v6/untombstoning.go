@@ -11,6 +11,7 @@ import (
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	tmlog "github.com/tendermint/tendermint/libs/log"
 )
 
 type CosMints struct {
@@ -57,7 +58,8 @@ func mintLostTokens(
 	coin := sdk.NewCoin("uxprt", coinAmount)
 	coins := sdk.NewCoins(coin)
 
-	err = mintKeeper.MintCoins(ctx, coins)
+	// due to huge amount of log lines generated, supress logger
+	err = mintKeeper.MintCoins(ctx.WithLogger(tmlog.NewNopLogger()), coins)
 	if err != nil {
 		return fmt.Errorf("error minting %suxprt to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, err)
 	}

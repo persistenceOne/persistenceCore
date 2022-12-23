@@ -1,6 +1,6 @@
 PROCESS = persistencecore
 DOCKER_IMAGE_NAME = persistenceone/$(PROCESS)
-DOCKER_TAG_NAME = latest
+DOCKER_TAG_NAME = v6.0.0
 CONTAINER_NAME = container-$(PROCESS)
 DOCKER_FILE = Dockerfile
 
