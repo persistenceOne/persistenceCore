@@ -845,10 +845,10 @@ func NewApplication(
 				panic(fmt.Sprintf("failed to revert tombstoning: %s", err))
 			}
 
-			//err = upgrades.MintPstakeTokens(ctx, app.LSCosmosKeeper)
-			//if err != nil {
-			//	panic(fmt.Sprintf("failed to mint pstake tokens: %s", err))
-			//}
+			err = upgrades.MintPstakeTokens(ctx, app.LSCosmosKeeper)
+			if err != nil {
+				panic(fmt.Sprintf("failed to mint pstake tokens: %s", err))
+			}
 
 			ctx.Logger().Info("start to run module migrations...")
 			newVM, err := app.moduleManager.RunMigrations(ctx, app.configurator, fromVM)
