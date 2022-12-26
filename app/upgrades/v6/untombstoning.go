@@ -3,7 +3,6 @@ package v6
 import (
 	"encoding/json"
 	"fmt"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
@@ -28,7 +27,7 @@ type Validator struct {
 
 // Create new Validator vars for each validator that needs to be untombstoned
 var (
-	tombstoneHeight int64 = 1 //8647536
+	tombstoneHeight int64 = 8647536 // hegith at which chain was upgraded, which casued the tombstoned event
 	mainnetVals           = []Validator{
 		{"HashQuark", "persistencevaloper1gydvxcnm95zwdz7h7whpmusy5d5c3ck0p9muc9", "persistencevalcons1dmjc55ve2pe537hu8h8rjrjhp4r536g5jlnlk8"},
 		{"fox99", "persistencevaloper1y2svn2zvc0puv3rx6w39aa4zlgj7qe0fz8sh6x", "persistencevalcons1ak5f5ywzmersz4z7e3nsqkem4uvf5jyya62w3c"},
@@ -108,7 +107,7 @@ func revertTombstone(ctx sdk.Context, slashingKeeper *slashingkeeper.Keeper, val
 	signInfo, ok := slashingKeeper.GetValidatorSigningInfo(ctx, cosConsAddress)
 
 	if !ok {
-		return fmt.Errorf("cannot tombstone validator that does not have any signing information: %s", cosConsAddress.String())
+		return fmt.Errorf("cannot untombstone validator that does not have any signing information: %s", cosConsAddress.String())
 	}
 	if !signInfo.Tombstoned {
 		return fmt.Errorf("cannut untombstone a validator that is not tombstoned: %s", cosConsAddress.String())
@@ -156,13 +155,11 @@ func RevertCosTombstoning(
 		}
 
 		for _, value := range vals {
-			err := revertTombstone(ctx, slashingKeeper, value)
-			ctx.Logger().Error(fmt.Sprintf("revert tombstone error: %s", err.Error()))
+			revertTombstone(ctx, slashingKeeper, value)
 		}
 
 		for _, mint := range Mints {
-			err := mintLostTokens(ctx, bankKeeper, stakingKeeper, mintKeeper, mint)
-			ctx.Logger().Error(fmt.Sprintf("mint tombstone error: %s", err.Error()))
+			mintLostTokens(ctx, bankKeeper, stakingKeeper, mintKeeper, mint)
 		}
 	}
 	return nil
