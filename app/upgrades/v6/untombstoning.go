@@ -3,7 +3,6 @@ package v6
 import (
 	"encoding/json"
 	"fmt"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
@@ -28,7 +27,8 @@ type Validator struct {
 
 // Create new Validator vars for each validator that needs to be untombstoned
 var (
-	mainnetVals = []Validator{
+	tombstoneHeight int64 = 8647536 // hegith at which chain was upgraded, which casued the tombstoned event
+	mainnetVals           = []Validator{
 		{"HashQuark", "persistencevaloper1gydvxcnm95zwdz7h7whpmusy5d5c3ck0p9muc9", "persistencevalcons1dmjc55ve2pe537hu8h8rjrjhp4r536g5jlnlk8"},
 		{"fox99", "persistencevaloper1y2svn2zvc0puv3rx6w39aa4zlgj7qe0fz8sh6x", "persistencevalcons1ak5f5ywzmersz4z7e3nsqkem4uvf5jyya62w3c"},
 		{"Smart Stake", "persistencevaloper1qtggtsmexluvzulehxs7ypsfl82yk5aznrr2zd", "persistencevalcons1gnevun33uphh9cwkyzau5mcf0fxvuw6cyrf29g"},
@@ -37,7 +37,8 @@ var (
 	}
 	// testnetVals holds the validators to untombstone
 	testnetVals = []Validator{
-		{"TombRaider", "persistencevaloper1mgd6a660ysram7a0m8ytmjvryneywgm8mg7lcs", "persistence1mgd6a660ysram7a0m8ytmjvryneywgm8jv7z3f"},
+		{"Eternal", "persistencevaloper1we6rg5vk3rcucjfdls0lv34s0ta4yt3d6gavks", "persistencevalcons15q4w9plw8mke6jdzmvsnztwn9ulegwnzgs6zhw"},
+		{"Doom", "persistencevaloper1l6vm4v6gu7hk0uq70sc2drl36aypwlrkkhd54r", "persistencevalcons1jqdmg26psflpslj42afuq5ndalsyjv0wrh3ssm"},
 	}
 )
 
@@ -48,18 +49,13 @@ func mintLostTokens(
 	mintKeeper *mintkeeper.Keeper,
 	mintRecord CosMints,
 ) error {
-	cosValAddress, err := sdk.ValAddressFromBech32(mintRecord.Delegatee)
-	if err != nil {
-		return fmt.Errorf("validator address is not valid bech32: %s", cosValAddress)
-	}
-
 	coinAmount, _ := sdk.NewIntFromString(mintRecord.AmountUxprt)
 
 	coin := sdk.NewCoin("uxprt", coinAmount)
 	coins := sdk.NewCoins(coin)
 
 	// due to huge amount of log lines generated, supress logger
-	err = mintKeeper.MintCoins(ctx.WithLogger(tmlog.NewNopLogger()), coins)
+	err := mintKeeper.MintCoins(ctx.WithLogger(tmlog.NewNopLogger()), coins)
 	if err != nil {
 		return fmt.Errorf("error minting %suxprt to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, err)
 	}
@@ -77,6 +73,11 @@ func mintLostTokens(
 	sdkAddress, err := sdk.AccAddressFromBech32(mintRecord.Address)
 	if err != nil {
 		return fmt.Errorf("account address is not valid bech32: %s", mintRecord.Address)
+	}
+
+	cosValAddress, err := sdk.ValAddressFromBech32(mintRecord.Delegatee)
+	if err != nil {
+		return fmt.Errorf("validator address is not valid bech32: %s", cosValAddress)
 	}
 
 	cosValidator, found := stakingKeeper.GetValidator(ctx, cosValAddress)
@@ -106,7 +107,7 @@ func revertTombstone(ctx sdk.Context, slashingKeeper *slashingkeeper.Keeper, val
 	signInfo, ok := slashingKeeper.GetValidatorSigningInfo(ctx, cosConsAddress)
 
 	if !ok {
-		return fmt.Errorf("cannot tombstone validator that does not have any signing information: %s", cosConsAddress.String())
+		return fmt.Errorf("cannot untombstone validator that does not have any signing information: %s", cosConsAddress.String())
 	}
 	if !signInfo.Tombstoned {
 		return fmt.Errorf("cannut untombstone a validator that is not tombstoned: %s", cosConsAddress.String())
@@ -134,7 +135,7 @@ func RevertCosTombstoning(
 	if ctx.ChainID() == "core-1" || ctx.ChainID() == "test-core-1" {
 		var Mints []CosMints
 		var vals []Validator
-		if ctx.ChainID() == "core-1" || ctx.BlockHeight() > 88647536 {
+		if ctx.ChainID() == "core-1" || ctx.BlockHeight() > tombstoneHeight {
 			var cosMints []CosMints
 			err := json.Unmarshal([]byte(recordsJsonString), &cosMints)
 			if err != nil {
@@ -143,7 +144,7 @@ func RevertCosTombstoning(
 			Mints = append(Mints, cosMints...)
 			vals = append(vals, mainnetVals...)
 		}
-		if ctx.ChainID() == "test-core-1" || ctx.BlockHeight() > 8647536 {
+		if ctx.ChainID() == "test-core-1" || ctx.BlockHeight() > tombstoneHeight {
 			var cosMints []CosMints
 			err := json.Unmarshal([]byte(testnetRecordsJsonString), &cosMints)
 			if err != nil {

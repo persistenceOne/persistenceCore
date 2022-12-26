@@ -29,8 +29,8 @@ delete:
 ###############################################################################
 ###                              Test commands                              ###
 ###############################################################################
-OFFSET_HEIGHT = 80
-UPGRADE_NAME = v6
+OFFSET_HEIGHT = 50
+UPGRADE_NAME = v6-rc5
 CHAIN_ID = $(shell yq -r ".chains[0].name" $(FILE))
 
 setup-client: clean-keys
@@ -93,4 +93,4 @@ port-forward-all-exposers:
 
 .PHONY: stop-forward
 stop-forward:
-	-pkill -f "port-forward"
+	-@pkill -f "port-forward"
