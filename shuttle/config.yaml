@@ -13,7 +13,6 @@ chains:
       rpc: 26657
       rest: 1317
       p2p: 26656
-      exposer: 9080
 
 explorer:
   enabled: true
