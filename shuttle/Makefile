@@ -93,4 +93,4 @@ port-forward-all-exposers:
 
 .PHONY: stop-forward
 stop-forward:
-	-pkill -f "port-forward"
+	-@pkill -f "port-forward"

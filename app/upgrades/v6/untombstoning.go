@@ -28,7 +28,8 @@ type Validator struct {
 
 // Create new Validator vars for each validator that needs to be untombstoned
 var (
-	mainnetVals = []Validator{
+	tombstoneHeight int64 = 8647536
+	mainnetVals           = []Validator{
 		{"HashQuark", "persistencevaloper1gydvxcnm95zwdz7h7whpmusy5d5c3ck0p9muc9", "persistencevalcons1dmjc55ve2pe537hu8h8rjrjhp4r536g5jlnlk8"},
 		{"fox99", "persistencevaloper1y2svn2zvc0puv3rx6w39aa4zlgj7qe0fz8sh6x", "persistencevalcons1ak5f5ywzmersz4z7e3nsqkem4uvf5jyya62w3c"},
 		{"Smart Stake", "persistencevaloper1qtggtsmexluvzulehxs7ypsfl82yk5aznrr2zd", "persistencevalcons1gnevun33uphh9cwkyzau5mcf0fxvuw6cyrf29g"},
@@ -135,7 +136,7 @@ func RevertCosTombstoning(
 	if ctx.ChainID() == "core-1" || ctx.ChainID() == "test-core-1" {
 		var Mints []CosMints
 		var vals []Validator
-		if ctx.ChainID() == "core-1" || ctx.BlockHeight() > 88647536 {
+		if ctx.ChainID() == "core-1" || ctx.BlockHeight() > tombstoneHeight {
 			var cosMints []CosMints
 			err := json.Unmarshal([]byte(recordsJsonString), &cosMints)
 			if err != nil {
@@ -144,7 +145,7 @@ func RevertCosTombstoning(
 			Mints = append(Mints, cosMints...)
 			vals = append(vals, mainnetVals...)
 		}
-		if ctx.ChainID() == "test-core-1" || ctx.BlockHeight() > 8647536 {
+		if ctx.ChainID() == "test-core-1" || ctx.BlockHeight() > tombstoneHeight {
 			var cosMints []CosMints
 			err := json.Unmarshal([]byte(testnetRecordsJsonString), &cosMints)
 			if err != nil {
