@@ -28,7 +28,7 @@ type Validator struct {
 
 // Create new Validator vars for each validator that needs to be untombstoned
 var (
-	tombstoneHeight int64 = 8647536
+	tombstoneHeight int64 = 1 //8647536
 	mainnetVals           = []Validator{
 		{"HashQuark", "persistencevaloper1gydvxcnm95zwdz7h7whpmusy5d5c3ck0p9muc9", "persistencevalcons1dmjc55ve2pe537hu8h8rjrjhp4r536g5jlnlk8"},
 		{"fox99", "persistencevaloper1y2svn2zvc0puv3rx6w39aa4zlgj7qe0fz8sh6x", "persistencevalcons1ak5f5ywzmersz4z7e3nsqkem4uvf5jyya62w3c"},
