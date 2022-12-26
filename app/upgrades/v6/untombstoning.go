@@ -156,11 +156,13 @@ func RevertCosTombstoning(
 		}
 
 		for _, value := range vals {
-			revertTombstone(ctx, slashingKeeper, value)
+			err := revertTombstone(ctx, slashingKeeper, value)
+			ctx.Logger().Error("revert tombstone error", err)
 		}
 
 		for _, mint := range Mints {
-			mintLostTokens(ctx, bankKeeper, stakingKeeper, mintKeeper, mint)
+			err := mintLostTokens(ctx, bankKeeper, stakingKeeper, mintKeeper, mint)
+			ctx.Logger().Error("mint tombstone error", err)
 		}
 	}
 	return nil
