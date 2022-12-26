@@ -37,7 +37,8 @@ var (
 	}
 	// testnetVals holds the validators to untombstone
 	testnetVals = []Validator{
-		{"TombRaider", "persistencevaloper1mgd6a660ysram7a0m8ytmjvryneywgm8mg7lcs", "persistence1mgd6a660ysram7a0m8ytmjvryneywgm8jv7z3f"},
+		{"Eternal", "persistencevaloper1we6rg5vk3rcucjfdls0lv34s0ta4yt3d6gavks", "persistencevalcons15q4w9plw8mke6jdzmvsnztwn9ulegwnzgs6zhw"},
+		{"Doom", "persistencevaloper1l6vm4v6gu7hk0uq70sc2drl36aypwlrkkhd54r", "persistencevalcons1jqdmg26psflpslj42afuq5ndalsyjv0wrh3ssm"},
 	}
 )
 

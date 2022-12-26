@@ -12,7 +12,7 @@ import (
 const (
 	Name             = "PersistenceCore"
 	Bech32MainPrefix = "persistence"
-	UpgradeName      = "v6"
+	UpgradeName      = "v6-rc5"
 	CoinType         = 118
 	Purpose          = 44
 

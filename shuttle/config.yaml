@@ -5,10 +5,10 @@ chains:
     upgrade:
       enabled: true
       type: build
-      genesis: v5.0.1
+      genesis: v6.0.0-rc4
       upgrades:
-        - name: v6
-          version: anmol/v6-testing
+        - name: v6-rc5
+          version: anmol/v6-rc5
     ports:
       rpc: 26657
       rest: 1317
