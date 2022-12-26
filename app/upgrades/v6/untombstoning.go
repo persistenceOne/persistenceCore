@@ -49,18 +49,13 @@ func mintLostTokens(
 	mintKeeper *mintkeeper.Keeper,
 	mintRecord CosMints,
 ) error {
-	cosValAddress, err := sdk.ValAddressFromBech32(mintRecord.Delegatee)
-	if err != nil {
-		return fmt.Errorf("validator address is not valid bech32: %s", cosValAddress)
-	}
-
 	coinAmount, _ := sdk.NewIntFromString(mintRecord.AmountUxprt)
 
 	coin := sdk.NewCoin("uxprt", coinAmount)
 	coins := sdk.NewCoins(coin)
 
 	// due to huge amount of log lines generated, supress logger
-	err = mintKeeper.MintCoins(ctx.WithLogger(tmlog.NewNopLogger()), coins)
+	err := mintKeeper.MintCoins(ctx.WithLogger(tmlog.NewNopLogger()), coins)
 	if err != nil {
 		return fmt.Errorf("error minting %suxprt to %s: %+v", mintRecord.AmountUxprt, mintRecord.Address, err)
 	}
@@ -78,6 +73,11 @@ func mintLostTokens(
 	sdkAddress, err := sdk.AccAddressFromBech32(mintRecord.Address)
 	if err != nil {
 		return fmt.Errorf("account address is not valid bech32: %s", mintRecord.Address)
+	}
+
+	cosValAddress, err := sdk.ValAddressFromBech32(mintRecord.Delegatee)
+	if err != nil {
+		return fmt.Errorf("validator address is not valid bech32: %s", cosValAddress)
 	}
 
 	cosValidator, found := stakingKeeper.GetValidator(ctx, cosValAddress)
