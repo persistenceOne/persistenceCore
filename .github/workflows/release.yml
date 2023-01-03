@@ -31,9 +31,9 @@ jobs:
           make release-sha
           make release-git
 
-      - name: Upload release folder
-        uses: actions/upload-artifact@v2
-        if: github.event.release
+      - name: attach binaries
+        uses: softprops/action-gh-release@v1
         with:
-          name: release
-          path: release
+          files: releases/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
