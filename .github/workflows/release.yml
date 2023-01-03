@@ -27,13 +27,11 @@ jobs:
       - name: Launch release process
         run: |
           make release-build-platform PLATFORM=amd64
-          make release-build-platform PLATFORM=arm64
           make release-sha
-          make release-git
 
       - name: attach binaries
         uses: softprops/action-gh-release@v1
         with:
-          files: releases/*
+          files: release/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
