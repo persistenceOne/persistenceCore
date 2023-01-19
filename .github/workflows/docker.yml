@@ -1,6 +1,6 @@
 # This workflow builds, scans, adds set of tags on every push/PR to main branch
-# and pushes the image to docker hub: https://hub.docker.com/repository/docker/persistenceone/persistencecore/
-name: Build & Push
+# and pushes the image to docker hub(only): https://hub.docker.com/repository/docker/persistenceone/persistencecore/
+name: Docker CI
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the main branch
@@ -9,15 +9,15 @@ on:
     branches:
       - manasi/docker-ci
 
-#permissions:
-#  contents: read
-#  packages: write
-#
-#env:
-#  # Use docker.io for Docker Hub if empty
-#  REGISTRY: docker.io
-#  # github.repository as <account>/<repo>
-#  IMAGE_NAME: persistenceone/persistencecore
+# NOTE: By default, default action:docker/build-push-action pushes image to Docker hub if registry is not specified
+env:
+  # params for docker build
+  DOCKER_BUILD_ARGS: "--platform linux/$(PLATFORM) --no-cache --load"
+  #Tags
+  DOCKER_REPOSITORY: persistenceone/persistencecore
+  RELEASE_TAG: latest
+  NAME_TAG: v6.0.0
+  DOCKER_FILE: Dockerfile
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -29,7 +29,7 @@ jobs:
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
-        # confirm if we really need buildx/default build-push action for next steps
+        # TODO: remove below if we will NOT use buildx/default build-push action for next steps
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -38,3 +38,24 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # get the current date for the build
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d--%M-%S')"
+
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          context: docker/persistencecore
+          push: true
+          tags: ${{env.DOCKER_REPOSITORY}}:${{env.NAME_TAG}}
+          dockerfile: {{env.DOCKER_FILE}}
+          platforms: linux/amd64
+
+#      - name: Build docker image
+#        run: docker build --file $DOCKER_FILE --build-arg --platform linux/$PLATFORM --no-cache --load
+#            -t $DOCKER_REPOSITORY:NAME_TAG -t date:${{ steps.date.outputs.date }} -t release:$RELEASE_TAG
+#
+#      - name: Push Docker Image
+#        run: docker push $DOCKER_REPOSITORY:NAME_TAG
