@@ -50,7 +50,7 @@ jobs:
           context: docker/persistencecore
           push: true
           tags: ${{env.DOCKER_REPOSITORY}}:${{env.NAME_TAG}}
-          dockerfile: {{env.DOCKER_FILE}}
+          dockerfile: ${{env.DOCKER_FILE}}
           platforms: linux/amd64
 
 #      - name: Build docker image
