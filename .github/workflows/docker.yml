@@ -16,9 +16,8 @@ env:
   #Tags
   DOCKER_REPOSITORY: persistenceone/persistencecore
   RELEASE_TAG: latest
-  NAME_TAG: v6.0.0
+  NAME_TAG: v6.1.0
   DOCKER_FILE: docker/persistencecore/Dockerfile
-
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   release:
@@ -27,8 +26,25 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v3
 
+      - name: Get commit SHA in all possible cases
+        id: commit-sha-short
+        run: |
+          if [ "$EVENT" == 'pull_request' ]
+          then
+            echo "::set-output name=sha::$(echo ${{github.event.pull_request.head.sha}})"
+          elif [ "$EVENT" == 'workflow_run' ]
+          then
+            echo "::set-output name=sha::$(echo ${{github.event.workflow_run.head_sha}})"
+          else
+            echo "::set-output name=sha::$(echo $GITHUB_SHA)"
+          fi
+        env:
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
+
         # TODO: remove below if we will NOT use buildx/default build-push action for next steps
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -39,10 +55,11 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # get the current date for the build
-      - name: Get current date
-        id: date
-        run: echo "::set-output name=date::$(date +'%Y-%m-%d--%M-%S')"
+      # get the current date for the build & save in GITHUB_OUTPUT OR GITHUB_STATE if required
+      # Testing: how to use GITHUB_OUTPUT since set-output is deprecated
+      - name: Set current date to Github Output
+        id: get_date
+        run: echo "current_date=$(date +'%Y-%m-%d--%M-%S')" >> $GITHUB_OUTPUT
 
       # NOTE: docker/build-push-action@v3 uses the git context by default for building the docker images
       # So if build context is not local directory, set it specifically in context: .
@@ -51,7 +68,8 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{env.DOCKER_REPOSITORY}}:${{env.NAME_TAG}}
+          tags: ${{env.DOCKER_REPOSITORY}}:${{env.NAME_TAG}},${{env.DOCKER_REPOSITORY}}:${{env.RELEASE_TAG}},
+                ${{env.DOCKER_REPOSITORY}}:${{ steps.get_date.outputs.current_date }}
           file: ${{env.DOCKER_FILE}}
           platforms: linux/amd64
 
