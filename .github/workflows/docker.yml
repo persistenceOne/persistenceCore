@@ -17,7 +17,7 @@ env:
   DOCKER_REPOSITORY: persistenceone/persistencecore
   RELEASE_TAG: latest
   NAME_TAG: v6.0.0
-  DOCKER_FILE: Dockerfile
+  DOCKER_FILE: docker/persistencecore/Dockerfile
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -44,13 +44,15 @@ jobs:
         id: date
         run: echo "::set-output name=date::$(date +'%Y-%m-%d--%M-%S')"
 
+      # NOTE: docker/build-push-action@v3 uses the git context by default for building the docker images
+      # So if build context is not local directory, set it specifically in context: .
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          context: docker/persistencecore
+          context: .
           push: true
           tags: ${{env.DOCKER_REPOSITORY}}:${{env.NAME_TAG}}
-          dockerfile: ${{env.DOCKER_FILE}}
+          file: ${{env.DOCKER_FILE}}
           platforms: linux/amd64
 
 #      - name: Build docker image
