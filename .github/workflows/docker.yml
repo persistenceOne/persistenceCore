@@ -49,7 +49,7 @@ jobs:
       # Testing: how to use GITHUB_OUTPUT since set-output is deprecated
       - name: Set current date to Github Output
         id: get_date
-        run: echo "current_date=$(date +'%Y-%m-%d %H:%M')" >> $GITHUB_OUTPUT
+        run: echo "current_date=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_OUTPUT
 
       # NOTE: docker/build-push-action@v3 uses the git context by default for building the docker images
       # So if build context is not local directory, set it specifically in context: .
