@@ -14,11 +14,11 @@ env:
   # params for docker build
   DOCKER_BUILD_ARGS: "--platform linux/$(PLATFORM) --no-cache --load"
   #Tags
-  DOCKER_REPOSITORY: persistenceone/persistencecore
+  DOCKER_IMAGE_PATH: persistenceone/persistencecore
   RELEASE_TAG: latest
   NAME_TAG: v6.1.0
   DOCKER_FILE: docker/persistencecore/Dockerfile
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -26,21 +26,11 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v3
 
-      - name: Get commit SHA in all possible cases
-        id: commit-sha-short
-        run: |
-          if [ "$EVENT" == 'pull_request' ]
-          then
-            echo "::set-output name=sha::$(echo ${{github.event.pull_request.head.sha}})"
-          elif [ "$EVENT" == 'workflow_run' ]
-          then
-            echo "::set-output name=sha::$(echo ${{github.event.workflow_run.head_sha}})"
-          else
-            echo "::set-output name=sha::$(echo $GITHUB_SHA)"
-          fi
-        env:
-          EVENT: ${{ github.event_name }}
-          REF: ${{ github.ref }}
+      - name: Get short commit SHA
+        id: get-commit
+        # NOTE: in case of workflow_run/PR/workflow run another release workflow, manage this using github.event.* fields
+        # github.event.pull_request.head.sha/github.event.workflow_run.head_sha
+        run: echo "commit-id=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -59,7 +49,7 @@ jobs:
       # Testing: how to use GITHUB_OUTPUT since set-output is deprecated
       - name: Set current date to Github Output
         id: get_date
-        run: echo "current_date=$(date +'%Y-%m-%d--%M-%S')" >> $GITHUB_OUTPUT
+        run: echo "current_date=$(date +'%Y-%m-%d %H:%M')" >> $GITHUB_OUTPUT
 
       # NOTE: docker/build-push-action@v3 uses the git context by default for building the docker images
       # So if build context is not local directory, set it specifically in context: .
@@ -68,14 +58,9 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{env.DOCKER_REPOSITORY}}:${{env.NAME_TAG}},${{env.DOCKER_REPOSITORY}}:${{env.RELEASE_TAG}},
-                ${{env.DOCKER_REPOSITORY}}:${{ steps.get_date.outputs.current_date }}
+          tags: ${{env.DOCKER_IMAGE_PATH}}:${{env.NAME_TAG}},${{env.DOCKER_REPOSITORY}}:${{env.RELEASE_TAG}},
+                ${{env.DOCKER_IMAGE_PATH}}:${{ steps.get_date.outputs.current_date }},
+                ${{env.DOCKER_IMAGE_PATH}}:${{ steps.get-commit.outputs.commit-id }}
           file: ${{env.DOCKER_FILE}}
           platforms: linux/amd64
 
-#      - name: Build docker image
-#        run: docker build --file $DOCKER_FILE --build-arg --platform linux/$PLATFORM --no-cache --load
-#            -t $DOCKER_REPOSITORY:NAME_TAG -t date:${{ steps.date.outputs.date }} -t release:$RELEASE_TAG
-#
-#      - name: Push Docker Image
-#        run: docker push $DOCKER_REPOSITORY:NAME_TAG
