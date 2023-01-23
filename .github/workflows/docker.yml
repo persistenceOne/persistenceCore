@@ -2,22 +2,22 @@
 # and pushes the image to docker hub(only): https://hub.docker.com/repository/docker/persistenceone/persistencecore/
 name: Docker CI
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the main branch
+# TODO: Manual run for docker image push with tag as input, can merge it with release when needed
 on:
-  push:
-    branches:
-      - manasi/docker-ci
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        type: string
+        required: true
+        description: Persistence binary version
 
 # NOTE: By default, default action:docker/build-push-action pushes image to Docker hub if registry is not specified
 env:
-  # params for docker build
-  DOCKER_BUILD_ARGS: "--platform linux/$(PLATFORM) --no-cache --load"
   #Tags
   DOCKER_IMAGE_PATH: persistenceone/persistencecore
-  RELEASE_TAG: latest
-  NAME_TAG: v6.1.0
-  DOCKER_FILE: docker/persistencecore/Dockerfile
+  IMAGE_VERSION_TAG: {{ inputs.release_tag }}
+  RELEASE_TAG:  latest
+  DOCKER_FILE_PATH: docker/persistencecore/Dockerfile
 
 jobs:
   release:
@@ -30,12 +30,20 @@ jobs:
         id: get-commit
         # NOTE: in case of workflow_run/PR/workflow run another release workflow, manage this using github.event.* fields
         # github.event.pull_request.head.sha/github.event.workflow_run.head_sha
-        run: echo "commit-id=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        run: |
+          if [ "$EVENT" == 'workflow_run' ]
+          then
+            echo "commit-id=$(git rev-parse --short ${{github.event.workflow_run.head_sha}})" >> $GITHUB_OUTPUT
+          else
+            echo "commit-id=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          fi
+        env:
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
-        # TODO: remove below if we will NOT use buildx/default build-push action for next steps
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -45,22 +53,21 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # get the current date for the build & save in GITHUB_OUTPUT OR GITHUB_STATE if required
-      # Testing: how to use GITHUB_OUTPUT since set-output is deprecated
+      # get the current date&time for the build & save in GITHUB_OUTPUT OR GITHUB_STATE if required (not much lag)
       - name: Set current date to Github Output
         id: get_date
-        run: echo "current_date=$(date +'%Y-%m-%dT%H-%M-%S')" >> $GITHUB_OUTPUT
+        run: echo "current_date=$(date +'%Y-%m-%dT%H-%M')" >> $GITHUB_OUTPUT
 
-      # NOTE: docker/build-push-action@v3 uses the git context by default for building the docker images
-      # So if build context is not local directory, set it specifically in context: .
+      # TODO: Add Docker scan(using Snyk token) step after build & before push and publish to Github Actions- Security
+      # TODO: Push image w on severity of reported vulnerabilities
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
           context: .
           push: true
-          tags: ${{env.DOCKER_IMAGE_PATH}}:${{env.NAME_TAG}},${{env.DOCKER_IMAGE_PATH}}:${{env.RELEASE_TAG}},
+          tags: ${{env.DOCKER_IMAGE_PATH}}:${{env.IMAGE_VERSION_TAG}},${{env.DOCKER_IMAGE_PATH}}:${{env.RELEASE_TAG}},
                 ${{env.DOCKER_IMAGE_PATH}}:${{ steps.get_date.outputs.current_date }},
                 ${{env.DOCKER_IMAGE_PATH}}:${{ steps.get-commit.outputs.commit-id }}
-          file: ${{env.DOCKER_FILE}}
+          file: ${{env.DOCKER_FILE_PATH}}
           platforms: linux/amd64
 
