@@ -18,7 +18,7 @@ on:
 env:
   #Tags
   DOCKER_IMAGE_PATH: persistenceone/persistencecore
-  IMAGE_VERSION_TAG: ${{ inputs.release_tag || "v6.0.0" }}
+  IMAGE_VERSION_TAG: ${{ inputs.release_tag || 'v6.0.0' }}
   RELEASE_TAG:  latest
   DOCKER_FILE_PATH: docker/persistencecore/Dockerfile
 
