@@ -4,9 +4,9 @@ name: Docker CI
 
 # TODO: Manual run for docker image push with tag as input, to merge it with Release workflow OR run this after Release workflow
 on:
-  push:
-    branches:
-      - manasi/docker-ci
+#  push:
+#    branches:
+#      - manasi/docker-ci
   workflow_dispatch:
     inputs:
       release_tag:
