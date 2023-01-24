@@ -145,6 +145,6 @@ replace github.com/tendermint/tendermint => github.com/informalsystems/tendermin
 
 // TODO: remove this replace and change to the updated version of these modules
 replace (
-	github.com/persistenceOne/persistence-sdk => /Users/ajeetgoyal/go/src/github.com/persistenceOne/persistence-sdk
-	github.com/persistenceOne/pstake-native => /Users/ajeetgoyal/go/src/github.com/persistenceOne/pstake-native
+	github.com/persistenceOne/persistence-sdk => github.com/ajeet97/persistence-sdk v1.1.0
+	github.com/persistenceOne/pstake-native => github.com/ajeet97/pstake-native v1.5.0
 )
