@@ -28,6 +28,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/simapp"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
@@ -196,15 +197,15 @@ var ModuleBasics = module.NewBasicManager(
 			wasmclient.ProposalHandlers,
 			paramsclient.ProposalHandler,
 			distributionclient.ProposalHandler,
-			upgradeclient.ProposalHandler,
-			upgradeclient.CancelProposalHandler,
+			upgradeclient.LegacyProposalHandler,
+			upgradeclient.LegacyCancelProposalHandler,
 			ibcclient.UpdateClientProposalHandler,
 			ibcclient.UpgradeProposalHandler,
 			lscosmosclient.RegisterHostChainProposalHandler,
 			lscosmosclient.MinDepositAndFeeChangeProposalHandler,
 			lscosmosclient.PstakeFeeAddressChangeProposalHandler,
 			lscosmosclient.AllowListValidatorSetChangeProposalHandler,
-		)...,
+		),
 	),
 	params.AppModuleBasic{},
 	crisis.AppModuleBasic{},
@@ -246,7 +247,7 @@ type Application struct {
 	applicationCodec  codec.Codec
 	interfaceRegistry types.InterfaceRegistry
 
-	keys map[string]*sdk.KVStoreKey
+	keys map[string]*storetypes.KVStoreKey
 
 	AccountKeeper         *authkeeper.AccountKeeper
 	BankKeeper            *bankkeeper.BaseKeeper
@@ -345,7 +346,7 @@ func NewApplication(
 		transientStoreKeys[paramstypes.TStoreKey],
 	)
 	app.ParamsKeeper = &paramsKeeper
-	app.BaseApp.SetParamStore(app.ParamsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(paramskeeper.ConsensusParamsKeyTable()))
+	app.BaseApp.SetParamStore(app.ParamsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(paramstypes.ConsensusParamsKeyTable()))
 
 	app.CapabilityKeeper = capabilitykeeper.NewKeeper(applicationCodec, keys[capabilitytypes.StoreKey], memoryKeys[capabilitytypes.MemStoreKey])
 	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibchost.ModuleName)
@@ -362,9 +363,11 @@ func NewApplication(
 		app.GetSubspace(authtypes.ModuleName),
 		authtypes.ProtoBaseAccount,
 		moduleAccountPermissions,
+		Bech32MainPrefix,
 	)
 	app.AccountKeeper = &accountKeeper
 
+	// todo: figure out if ww still need this
 	blockedModuleAddrs := make(map[string]bool)
 	for moduleAccount := range moduleAccountPermissions {
 		blockedModuleAddrs[authtypes.NewModuleAddress(moduleAccount).String()] = true
@@ -387,6 +390,7 @@ func NewApplication(
 		keys[authzkeeper.StoreKey],
 		applicationCodec,
 		app.BaseApp.MsgServiceRouter(),
+		accountKeeper,
 	)
 	app.AuthzKeeper = &authzKeeper
 
@@ -424,7 +428,6 @@ func NewApplication(
 		app.BankKeeper,
 		&stakingKeeper,
 		authtypes.FeeCollectorName,
-		blockedModuleAddrs,
 	)
 	app.DistributionKeeper = &distributionKeeper
 
@@ -450,6 +453,7 @@ func NewApplication(
 		applicationCodec,
 		home,
 		app.BaseApp,
+		govtypes.ModuleName,
 	)
 	app.UpgradeKeeper = &upgradeKeeper
 
@@ -659,7 +663,7 @@ func NewApplication(
 		capability.NewAppModule(applicationCodec, *app.CapabilityKeeper),
 		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants),
 		gov.NewAppModule(applicationCodec, *app.GovKeeper, app.AccountKeeper, app.BankKeeper),
-		mint.NewAppModule(applicationCodec, *app.MintKeeper, app.AccountKeeper),
+		mint.NewAppModule(applicationCodec, *app.MintKeeper, app.AccountKeeper, nil),
 		slashing.NewAppModule(applicationCodec, *app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, *app.StakingKeeper),
 		distribution.NewAppModule(applicationCodec, *app.DistributionKeeper, app.AccountKeeper, app.BankKeeper, *app.StakingKeeper),
 		staking.NewAppModule(applicationCodec, *app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
@@ -777,7 +781,7 @@ func NewApplication(
 		bank.NewAppModule(applicationCodec, app.BankKeeper, app.AccountKeeper),
 		capability.NewAppModule(applicationCodec, *app.CapabilityKeeper),
 		gov.NewAppModule(applicationCodec, *app.GovKeeper, app.AccountKeeper, app.BankKeeper),
-		mint.NewAppModule(applicationCodec, *app.MintKeeper, app.AccountKeeper),
+		mint.NewAppModule(applicationCodec, *app.MintKeeper, app.AccountKeeper, nil),
 		staking.NewAppModule(applicationCodec, *app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		distribution.NewAppModule(applicationCodec, *app.DistributionKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		slashing.NewAppModule(applicationCodec, *app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
@@ -1168,7 +1172,7 @@ func (app *Application) LoadHeight(height int64) error {
 }
 
 // initParamsKeeper init params keeper and its subspaces.
-func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino, key, tkey sdk.StoreKey) paramskeeper.Keeper {
+func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino, key, tkey storetypes.StoreKey) paramskeeper.Keeper {
 	paramsKeeper := paramskeeper.NewKeeper(appCodec, legacyAmino, key, tkey)
 
 	paramsKeeper.Subspace(authtypes.ModuleName)
