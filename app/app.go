@@ -835,7 +835,7 @@ func NewApplication(
 	// see cmd/wasmd/root.go: 206 - 214 approx
 	if manager := app.SnapshotManager(); manager != nil {
 		err := manager.RegisterExtensions(
-			wasmkeeper.NewWasmSnapshotter(app.CommitMultiStore(), app.WasmKeeper),
+			newWasmSnapshotterWrapper(app.CommitMultiStore(), app.WasmKeeper),
 		)
 		if err != nil {
 			panic(fmt.Errorf("failed to register snapshot extension: %s", err))
@@ -1204,3 +1204,17 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 
 	return paramsKeeper
 }
+
+type wasmSnapshotterWrapper struct {
+	*wasmkeeper.WasmSnapshotter
+}
+
+func newWasmSnapshotterWrapper(cms sdk.MultiStore, keeper *wasmkeeper.Keeper) *wasmSnapshotterWrapper {
+	return &wasmSnapshotterWrapper{
+		wasmkeeper.NewWasmSnapshotter(cms, keeper),
+	}
+}
+
+func (wsw wasmSnapshotterWrapper) PruneSnapshotHeight(height int64) {}
+
+func (wsw wasmSnapshotterWrapper) SetSnapshotInterval(snapshotInterval uint64) {}
