@@ -4,21 +4,21 @@ name: Docker CI
 
 # TODO: Manual run for docker image push with tag as input, to merge it with Release workflow OR run this after Release workflow
 on:
-#  push:
-#    branches:
-#      - manasi/docker-ci
-  workflow_dispatch:
-    inputs:
-      release_tag:
-        type: string
-        required: true
-        description: Persistence binary version
+  push:
+    branches:
+      - manasi/docker-ci
+#  workflow_dispatch:
+#    inputs:
+#      release_tag:
+#        type: string
+#        required: true
+#        description: Persistence binary version
 
 # NOTE: By default, default action:docker/build-push-action pushes image to Docker hub if registry is not specified
 env:
   #Tags
   DOCKER_IMAGE_PATH: persistenceone/persistencecore
-  IMAGE_VERSION_TAG: ${{ inputs.release_tag || 'v6.0.0' }}
+  IMAGE_VERSION_TAG: v6.1.0 #${{ inputs.release_tag || 'v6.0.0' }}
   RELEASE_TAG:  latest
   DOCKER_FILE_PATH: docker/persistencecore/Dockerfile
 
