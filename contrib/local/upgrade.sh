@@ -1,7 +1,7 @@
 #!/bin/bash
 
 OFFSET_HEIGHT=40
-UPGRADE_NAME=v3
+UPGRADE_NAME=v7
 
 set -o errexit -o nounset -o pipefail -eu
 
@@ -32,3 +32,5 @@ echo "###Proposal voting period"
 sleep 40
 echo "### Query proposal postvote"
 $CHAIN_BIN q gov proposal $PROPOSAL_ID -o json | jq
+
+echo "Upgrade Height: $UPGRADE_HEIGHT"
