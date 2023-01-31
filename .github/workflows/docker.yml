@@ -23,7 +23,6 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v3
 
-        # get Commit sha and store, since its invariable once action is triggered
       - name: Get short commit SHA
         id: get-commit
         run: echo "commit-sha=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_OUTPUT
@@ -48,10 +47,9 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-#      # get the current date&time for the build & save in GITHUB_OUTPUT OR GITHUB_STATE if required (not much lag)
-#      - name: Set current date to Github Output
-#        id: get_date
-#        run: echo "current_date=$(date +'%Y-%m-%dT%H-%M')" >> $GITHUB_OUTPUT
+      - name: Set current date to Github Output
+        id: get_date
+        run: echo "current_date=$(date +'%Y-%m-%dT%H-%M')" >> $GITHUB_OUTPUT
 
       # NOTE: By default, default action:docker/build-push-action pushes image to Docker hub if registry is not specified
       - name: Build and push
@@ -60,7 +58,7 @@ jobs:
           context: .
           push: true
           tags: ${{env.DOCKER_IMAGE_PATH}}:${{env.IMAGE_VERSION_TAG}},${{env.DOCKER_IMAGE_PATH}}:${{env.RELEASE_TAG}},
-                ${{env.DOCKER_IMAGE_PATH}}:$(date +'%Y-%m-%dT%H-%M-%S'),
+                ${{env.DOCKER_IMAGE_PATH}}:${{steps.get_date.outputs.current_date}},
                 ${{env.DOCKER_IMAGE_PATH}}:${{ steps.get-commit.outputs.commit-sha }}
           file: ${{env.DOCKER_FILE_PATH}}
           platforms: linux/amd64
