@@ -2,23 +2,17 @@
 # and pushes the image to docker hub(only): https://hub.docker.com/repository/docker/persistenceone/persistencecore/
 name: Docker CI
 
-# TODO: Manual run for docker image push with tag as input, to merge it with Release workflow OR run this after Release workflow
 on:
   push:
     branches:
       - manasi/docker-ci
-#  workflow_dispatch:
-#    inputs:
-#      release_tag:
-#        type: string
-#        required: true
-#        description: Persistence binary version
+  release:
+    types: [published]
 
-# NOTE: By default, default action:docker/build-push-action pushes image to Docker hub if registry is not specified
 env:
   #Tags
   DOCKER_IMAGE_PATH: persistenceone/persistencecore
-  IMAGE_VERSION_TAG: v6.1.0 #${{ inputs.release_tag || 'v6.0.0' }}
+  IMAGE_VERSION_TAG: ${{ 'v6.1.0' || github.event.release.tag_name }}
   RELEASE_TAG:  latest
   DOCKER_FILE_PATH: docker/persistencecore/Dockerfile
 
@@ -29,17 +23,15 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v3
 
+        # get Commit sha and store, since its invariable once action is triggered
       - name: Get short commit SHA
         id: get-commit
-        # NOTE: in case of workflow_run/PR/workflow run another release workflow, manage this using github.event.* fields
-        # github.event.pull_request.head.sha/github.event.workflow_run.head_sha
-        run: |
-          if [ "$EVENT" == 'workflow_run' ]
-          then
-            echo "commit-id=$(git rev-parse --short ${{github.event.workflow_run.head_sha}})" >> $GITHUB_OUTPUT
-          else
-            echo "commit-id=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-          fi
+        run: echo "commit-sha=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_OUTPUT
+#        run: |
+#          if [ "$EVENT" == 'release' ]
+#          then
+#            echo "commit-sha=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_OUTPUT
+#          fi
         env:
           EVENT: ${{ github.event_name }}
           REF: ${{ github.ref }}
@@ -56,21 +48,34 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # get the current date&time for the build & save in GITHUB_OUTPUT OR GITHUB_STATE if required (not much lag)
-      - name: Set current date to Github Output
-        id: get_date
-        run: echo "current_date=$(date +'%Y-%m-%dT%H-%M')" >> $GITHUB_OUTPUT
+#      # get the current date&time for the build & save in GITHUB_OUTPUT OR GITHUB_STATE if required (not much lag)
+#      - name: Set current date to Github Output
+#        id: get_date
+#        run: echo "current_date=$(date +'%Y-%m-%dT%H-%M')" >> $GITHUB_OUTPUT
 
-      # TODO: Add Docker scan(using Snyk token) step after build & before push and publish to Github Actions- Security
-      # TODO: Push image w on severity of reported vulnerabilities
+      # NOTE: By default, default action:docker/build-push-action pushes image to Docker hub if registry is not specified
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
           context: .
           push: true
           tags: ${{env.DOCKER_IMAGE_PATH}}:${{env.IMAGE_VERSION_TAG}},${{env.DOCKER_IMAGE_PATH}}:${{env.RELEASE_TAG}},
-                ${{env.DOCKER_IMAGE_PATH}}:${{ steps.get_date.outputs.current_date }},
-                ${{env.DOCKER_IMAGE_PATH}}:${{ steps.get-commit.outputs.commit-id }}
+                ${{env.DOCKER_IMAGE_PATH}}:$(date +'%Y-%m-%dT%H-%M-%S'),
+                ${{env.DOCKER_IMAGE_PATH}}:${{ steps.get-commit.outputs.commit-sha }}
           file: ${{env.DOCKER_FILE_PATH}}
           platforms: linux/amd64
 
+      # Scan & report docker image scan-vulnerabilities to GitHub Code Scanning
+      - name: Run Snyk to check Docker image for vulnerabilities
+        continue-on-error: true
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: ${{env.DOCKER_IMAGE_PATH}}:${{env.IMAGE_VERSION_TAG}}
+          args: --file=${{env.DOCKER_FILE_PATH}}
+
+      - name: Upload result to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: snyk.sarif
