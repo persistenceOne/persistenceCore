@@ -3,16 +3,13 @@
 name: Docker CI
 
 on:
-  push:
-    branches:
-      - manasi/docker-ci
   release:
     types: [published]
 
 env:
   #Tags
   DOCKER_IMAGE_PATH: persistenceone/persistencecore
-  IMAGE_VERSION_TAG: ${{ 'v6.1.0' || github.event.release.tag_name }}
+  RELEASE_VERSION_TAG: ${{ github.event.release.tag_name }}
   RELEASE_TAG:  latest
   DOCKER_FILE_PATH: docker/persistencecore/Dockerfile
 
@@ -26,11 +23,7 @@ jobs:
       - name: Get short commit SHA
         id: get-commit
         run: echo "commit-sha=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_OUTPUT
-#        run: |
-#          if [ "$EVENT" == 'release' ]
-#          then
-#            echo "commit-sha=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_OUTPUT
-#          fi
+
         env:
           EVENT: ${{ github.event_name }}
           REF: ${{ github.ref }}
@@ -57,9 +50,9 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{env.DOCKER_IMAGE_PATH}}:${{env.IMAGE_VERSION_TAG}},${{env.DOCKER_IMAGE_PATH}}:${{env.RELEASE_TAG}},
+          tags: ${{env.DOCKER_IMAGE_PATH}}:${{env.RELEASE_VERSION_TAG}},${{env.DOCKER_IMAGE_PATH}}:${{env.RELEASE_TAG}},
                 ${{env.DOCKER_IMAGE_PATH}}:${{steps.get_date.outputs.current_date}},
-                ${{env.DOCKER_IMAGE_PATH}}:${{ steps.get-commit.outputs.commit-sha }}
+                ${{env.DOCKER_IMAGE_PATH}}:${{steps.get-commit.outputs.commit-sha }}
           file: ${{env.DOCKER_FILE_PATH}}
           platforms: linux/amd64
 
@@ -73,7 +66,7 @@ jobs:
           image: ${{env.DOCKER_IMAGE_PATH}}:${{env.IMAGE_VERSION_TAG}}
           args: --file=${{env.DOCKER_FILE_PATH}}
 
-      - name: Upload result to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: snyk.sarif
+#      - name: Upload result to GitHub Code Scanning
+#        uses: github/codeql-action/upload-sarif@v2
+#        with:
+#          sarif_file: snyk.sarif
