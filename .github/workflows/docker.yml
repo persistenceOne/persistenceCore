@@ -3,18 +3,23 @@
 name: Docker CI
 
 on:
+  push:
+    branch: manasi/docker-ci
   release:
     types: [published]
 
 env:
   #Tags
   DOCKER_IMAGE_PATH: persistenceone/persistencecore
-  RELEASE_VERSION_TAG: ${{ github.event.release.tag_name }}
+  RELEASE_VERSION_TAG: ${{'v6.1.0'}}  #${{ github.event.release.tag_name }}
   RELEASE_TAG:  latest
   DOCKER_FILE_PATH: docker/persistencecore/Dockerfile
 
 jobs:
   release:
+    permissions:
+    contents: read # for actions/checkout to fetch code
+    security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -66,7 +71,7 @@ jobs:
           image: ${{env.DOCKER_IMAGE_PATH}}:${{env.IMAGE_VERSION_TAG}}
           args: --file=${{env.DOCKER_FILE_PATH}}
 
-#      - name: Upload result to GitHub Code Scanning
-#        uses: github/codeql-action/upload-sarif@v2
-#        with:
-#          sarif_file: snyk.sarif
+      - name: Upload result to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: snyk.sarif
