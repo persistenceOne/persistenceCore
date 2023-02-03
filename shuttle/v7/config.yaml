@@ -1,0 +1,41 @@
+chains:
+  - name: core-1
+    type: persistencecore
+    numValidators: 2
+    upgrade:
+      enabled: true
+      type: build
+      genesis: v6.1.0
+      upgrades:
+        - name: v7
+          version: ajeet/v7-prep
+    ports:
+      rpc: 26657
+      rest: 1317
+      p2p: 26656
+      exposer: 8081
+    # these are used in setup scripts only (not used in the helm setup) 
+    bin: persistenceCore
+    dir: .persistenceCore
+  
+  - name: gaia-4
+    type: cosmos
+    numValidators: 2
+    ports:
+      rpc: 26653
+      rest: 1313
+      exposer: 8083
+    bin: gaiad
+    dir: .gaia
+
+relayers:
+  - name: persistence-gaia
+    type: hermes
+    replicas: 1
+    chains:
+      - core-1
+      - gaia-4
+
+# :8080
+explorer:
+  enabled: true
