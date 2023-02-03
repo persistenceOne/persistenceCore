@@ -2,7 +2,7 @@
 
 Scripts for running local net locally (tested for mac and linux).
 
-## Prerequiest
+## Prerequisite
 
 For any of the types bellow, need to build the local clients
 
