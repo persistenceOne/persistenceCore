@@ -106,7 +106,6 @@ import (
 	ibctypes "github.com/cosmos/ibc-go/v4/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v4/modules/core/24-host"
 	ibckeeper "github.com/cosmos/ibc-go/v4/modules/core/keeper"
-	_ "github.com/cosmos/ibc-go/v4/testing/mock"
 	"github.com/gogo/protobuf/grpc"
 	"github.com/gorilla/mux"
 	"github.com/persistenceOne/persistence-sdk/x/epochs"
