@@ -105,20 +105,20 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v4/modules/core/keeper"
 	"github.com/gogo/protobuf/grpc"
 	"github.com/gorilla/mux"
-	"github.com/persistenceOne/persistence-sdk/x/epochs"
-	epochskeeper "github.com/persistenceOne/persistence-sdk/x/epochs/keeper"
-	epochstypes "github.com/persistenceOne/persistence-sdk/x/epochs/types"
-	"github.com/persistenceOne/persistence-sdk/x/halving"
-	"github.com/persistenceOne/persistence-sdk/x/ibchooker"
-	ibchookerkeeper "github.com/persistenceOne/persistence-sdk/x/ibchooker/keeper"
-	ibchookertypes "github.com/persistenceOne/persistence-sdk/x/ibchooker/types"
-	"github.com/persistenceOne/persistence-sdk/x/interchainquery"
-	interchainquerykeeper "github.com/persistenceOne/persistence-sdk/x/interchainquery/keeper"
-	interchainquerytypes "github.com/persistenceOne/persistence-sdk/x/interchainquery/types"
-	"github.com/persistenceOne/pstake-native/x/lscosmos"
-	lscosmosclient "github.com/persistenceOne/pstake-native/x/lscosmos/client"
-	lscosmoskeeper "github.com/persistenceOne/pstake-native/x/lscosmos/keeper"
-	lscosmostypes "github.com/persistenceOne/pstake-native/x/lscosmos/types"
+	"github.com/persistenceOne/persistence-sdk/v2/x/epochs"
+	epochskeeper "github.com/persistenceOne/persistence-sdk/v2/x/epochs/keeper"
+	epochstypes "github.com/persistenceOne/persistence-sdk/v2/x/epochs/types"
+	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
+	"github.com/persistenceOne/persistence-sdk/v2/x/ibchooker"
+	ibchookerkeeper "github.com/persistenceOne/persistence-sdk/v2/x/ibchooker/keeper"
+	ibchookertypes "github.com/persistenceOne/persistence-sdk/v2/x/ibchooker/types"
+	"github.com/persistenceOne/persistence-sdk/v2/x/interchainquery"
+	interchainquerykeeper "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/keeper"
+	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/types"
+	"github.com/persistenceOne/pstake-native/v2/x/lscosmos"
+	lscosmosclient "github.com/persistenceOne/pstake-native/v2/x/lscosmos/client"
+	lscosmoskeeper "github.com/persistenceOne/pstake-native/v2/x/lscosmos/keeper"
+	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 	"github.com/rakyll/statik/fs"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
 	tendermintjson "github.com/tendermint/tendermint/libs/json"
@@ -463,10 +463,7 @@ func NewApplication(
 		stakingtypes.NewMultiStakingHooks(app.DistributionKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
 
-	epochsKeeper := *epochskeeper.NewKeeper(
-		applicationCodec,
-		keys[epochstypes.StoreKey],
-	)
+	epochsKeeper := *epochskeeper.NewKeeper(keys[epochstypes.StoreKey])
 
 	app.IBCKeeper = ibckeeper.NewKeeper(
 		applicationCodec,
