@@ -1,5 +1,5 @@
 chains:
-  - name: core-1
+  - name: test-core-1
     type: persistencecore
     numValidators: 2
     upgrade:
@@ -18,7 +18,8 @@ chains:
     bin: persistenceCore
     dir: .persistenceCore
   
-  - name: gaia-4
+  - name: test-gaia-1
+    image: ajeetgoyal/gaia:9.0.0-rc3
     type: cosmos
     numValidators: 2
     ports:
@@ -33,8 +34,8 @@ relayers:
     type: hermes
     replicas: 1
     chains:
-      - core-1
-      - gaia-4
+      - test-core-1
+      - test-gaia-1
 
 # :8080
 explorer:

@@ -3,6 +3,11 @@ set -o errexit -o nounset -o pipefail -eu
 
 DIRNAME="$(dirname $(realpath ${BASH_SOURCE[0]}))"
 
+if [ ! -f "$DIRNAME/../../build/persistenceCoreV7" ]; then
+  echo "could not find build/persistenceCoreV7 binary"
+  exit 1
+fi
+
 echo "Replacing local persistenceCore binary with v7 binary"
 cp $DIRNAME/../../build/persistenceCoreV7 ~/go/bin/persistenceCore
 

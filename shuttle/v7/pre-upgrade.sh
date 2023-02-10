@@ -3,6 +3,14 @@ set -o errexit -o nounset -o pipefail -eu
 
 DIRNAME="$(dirname $(realpath ${BASH_SOURCE[0]}))"
 
+if [ ! -f "$DIRNAME/../../build/persistenceCoreV6" ]; then
+  echo "could not find build/persistenceCoreV6 binary"
+  exit 1
+fi
+
+echo "Replacing local persistenceCore binary with v6 binary"
+cp $DIRNAME/../../build/persistenceCoreV6 ~/go/bin/persistenceCore
+
 PERSISTENCE_KEY="persistenceCore keys -a --keyring-backend=test show"
 PERSISTENCE_BALANCE="persistenceCore q bank balances"
 GAIA_KEY="gaiad keys -a --keyring-backend=test show"
