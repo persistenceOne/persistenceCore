@@ -622,8 +622,8 @@ github.com/pelletier/go-toml/v2 v2.0.6/go.mod h1:eumQOmlWiOPt5WriQQqoM5y18pDHwha
 github.com/performancecopilot/speed v3.0.0+incompatible/go.mod h1:/CLtqpZ5gBg1M9iaPbIdPPGyKcA8hKdoy6hAWba7Yac=
 github.com/persistenceOne/persistence-sdk/v2 v2.0.0-rc0 h1:nzMcu1CGw/cAl3Gc5rxHdpAkK8TMEeag0BlGBM3Zj/4=
 github.com/persistenceOne/persistence-sdk/v2 v2.0.0-rc0/go.mod h1:suGw84bvEWW4ZKSGyCvv4bqzo1yIl5Z3bIVUg1bEKw8=
-github.com/persistenceOne/pstake-native/v2 v2.0.0-20230210071027-828b34faf2be h1:YbJmy0h5ik0m8jRFPhkRiW0LghG+oRD5h6Mc1PHxmEM=
-github.com/persistenceOne/pstake-native/v2 v2.0.0-20230210071027-828b34faf2be/go.mod h1:3KfSf2lzq022kIwy6WRNokr297KSbGpPQWcypMiU34Y=
+github.com/persistenceOne/pstake-native/v2 v2.0.0-rc0 h1:dVOCC+r4PnWl8eTYTTThLF0yEZHI6lYk0CUWSHc3TGQ=
+github.com/persistenceOne/pstake-native/v2 v2.0.0-rc0/go.mod h1:3KfSf2lzq022kIwy6WRNokr297KSbGpPQWcypMiU34Y=
 github.com/peterh/liner v1.1.1-0.20190123174540-a2c9a5303de7/go.mod h1:CRroGNssyjTd/qIG2FyxByd2S8JEAZXBl4qUrZf8GS0=
 github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5 h1:q2e307iGHPdTGp0hoxKjt1H5pDo6utceo3dQVK3I5XQ=
 github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5/go.mod h1:jvVRKCrJTQWu0XVbaOlby/2lO20uSCHEMzzplHXte1o=
