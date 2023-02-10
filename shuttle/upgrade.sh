@@ -6,7 +6,7 @@ UPGRADE_NAME="${UPGRADE_NAME}"
 CHAIN_BIN="${CHAIN_BIN:=persistenceCore}"
 DENOM="${DENOM:=uxprt}"
 CHAIN_DATA_DIR="${CHAIN_DATA_DIR:=.persistenceCore}"
-CHAIN_ID="${CHAIN_ID:=persistencecore-1}"
+CHAIN_ID="${CHAIN_ID:=test-core-1}"
 
 set -o errexit -o nounset -o pipefail -eu
 
@@ -17,10 +17,17 @@ UPGRADE_HEIGHT=`expr $CURRENT_HEIGHT + $OFFSET_HEIGHT`
 echo "Starting software upgrade"
 
 echo "### Submit proposal from val1"
-RESP=$($CHAIN_BIN tx gov submit-proposal software-upgrade $UPGRADE_NAME --yes --title "$UPGRADE_NAME" --description "$UPGRADE_NAME" \
-    --upgrade-height $UPGRADE_HEIGHT --from val1 --chain-id $CHAIN_ID --keyring-backend test --deposit 100uxprt \
-    --fees 20000uxprt --gas auto --gas-adjustment 1.5 -b block -o json)
-echo "Response: $RESP"
+RESP=$($CHAIN_BIN tx gov submit-proposal software-upgrade $UPGRADE_NAME --yes \
+    --title "$UPGRADE_NAME" \
+    --description "$UPGRADE_NAME" \
+    --upgrade-height $UPGRADE_HEIGHT \
+    --chain-id $CHAIN_ID \
+    --from val1 \
+    --keyring-backend test \
+    --deposit 100uxprt \
+    --fees 20000uxprt \
+    --gas auto --gas-adjustment 1.5 -b block -o json)
+echo "$RESP" | jq -r '{height, txhash, code, raw_log}'
 PROPOSAL_ID=$(echo "$RESP" | jq -r '.logs[0].events[] | select(.type == "submit_proposal") | .attributes[] | select(.key == "proposal_id") | .value')
 echo "* PROPOSAL_ID: $PROPOSAL_ID"
 

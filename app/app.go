@@ -85,40 +85,40 @@ import (
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	ica "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts"
-	icacontroller "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller"
-	icacontrollerkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/keeper"
-	icacontrollertypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/controller/types"
-	icahost "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/host"
-	icahostkeeper "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/host/keeper"
-	icahosttypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/host/types"
-	icatypes "github.com/cosmos/ibc-go/v3/modules/apps/27-interchain-accounts/types"
-	"github.com/cosmos/ibc-go/v3/modules/apps/transfer"
-	ibctransferkeeper "github.com/cosmos/ibc-go/v3/modules/apps/transfer/keeper"
-	ibctransfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
-	ibc "github.com/cosmos/ibc-go/v3/modules/core"
-	ibccoreclient "github.com/cosmos/ibc-go/v3/modules/core/02-client"
-	ibcclient "github.com/cosmos/ibc-go/v3/modules/core/02-client/client"
-	ibcclienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
-	ibctypes "github.com/cosmos/ibc-go/v3/modules/core/05-port/types"
-	ibchost "github.com/cosmos/ibc-go/v3/modules/core/24-host"
-	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
+	ica "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts"
+	icacontroller "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/controller"
+	icacontrollerkeeper "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/controller/keeper"
+	icacontrollertypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/controller/types"
+	icahost "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/host"
+	icahostkeeper "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/host/keeper"
+	icahosttypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/host/types"
+	icatypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/types"
+	"github.com/cosmos/ibc-go/v4/modules/apps/transfer"
+	ibctransferkeeper "github.com/cosmos/ibc-go/v4/modules/apps/transfer/keeper"
+	ibctransfertypes "github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
+	ibc "github.com/cosmos/ibc-go/v4/modules/core"
+	ibccoreclient "github.com/cosmos/ibc-go/v4/modules/core/02-client"
+	ibcclient "github.com/cosmos/ibc-go/v4/modules/core/02-client/client"
+	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
+	ibctypes "github.com/cosmos/ibc-go/v4/modules/core/05-port/types"
+	ibchost "github.com/cosmos/ibc-go/v4/modules/core/24-host"
+	ibckeeper "github.com/cosmos/ibc-go/v4/modules/core/keeper"
 	"github.com/gogo/protobuf/grpc"
 	"github.com/gorilla/mux"
-	"github.com/persistenceOne/persistence-sdk/x/epochs"
-	epochskeeper "github.com/persistenceOne/persistence-sdk/x/epochs/keeper"
-	epochstypes "github.com/persistenceOne/persistence-sdk/x/epochs/types"
-	"github.com/persistenceOne/persistence-sdk/x/halving"
-	"github.com/persistenceOne/persistence-sdk/x/ibchooker"
-	ibchookerkeeper "github.com/persistenceOne/persistence-sdk/x/ibchooker/keeper"
-	ibchookertypes "github.com/persistenceOne/persistence-sdk/x/ibchooker/types"
-	"github.com/persistenceOne/persistence-sdk/x/interchainquery"
-	interchainquerykeeper "github.com/persistenceOne/persistence-sdk/x/interchainquery/keeper"
-	interchainquerytypes "github.com/persistenceOne/persistence-sdk/x/interchainquery/types"
-	"github.com/persistenceOne/pstake-native/x/lscosmos"
-	lscosmosclient "github.com/persistenceOne/pstake-native/x/lscosmos/client"
-	lscosmoskeeper "github.com/persistenceOne/pstake-native/x/lscosmos/keeper"
-	lscosmostypes "github.com/persistenceOne/pstake-native/x/lscosmos/types"
+	"github.com/persistenceOne/persistence-sdk/v2/x/epochs"
+	epochskeeper "github.com/persistenceOne/persistence-sdk/v2/x/epochs/keeper"
+	epochstypes "github.com/persistenceOne/persistence-sdk/v2/x/epochs/types"
+	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
+	"github.com/persistenceOne/persistence-sdk/v2/x/ibchooker"
+	ibchookerkeeper "github.com/persistenceOne/persistence-sdk/v2/x/ibchooker/keeper"
+	ibchookertypes "github.com/persistenceOne/persistence-sdk/v2/x/ibchooker/types"
+	"github.com/persistenceOne/persistence-sdk/v2/x/interchainquery"
+	interchainquerykeeper "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/keeper"
+	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/types"
+	"github.com/persistenceOne/pstake-native/v2/x/lscosmos"
+	lscosmosclient "github.com/persistenceOne/pstake-native/v2/x/lscosmos/client"
+	lscosmoskeeper "github.com/persistenceOne/pstake-native/v2/x/lscosmos/keeper"
+	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 	"github.com/rakyll/statik/fs"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
 	tendermintjson "github.com/tendermint/tendermint/libs/json"
@@ -127,8 +127,7 @@ import (
 	tendermintproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tendermintdb "github.com/tendermint/tm-db"
 
-	appparams "github.com/persistenceOne/persistenceCore/v6/app/params"
-	upgrades "github.com/persistenceOne/persistenceCore/v6/app/upgrades/v6"
+	appparams "github.com/persistenceOne/persistenceCore/v7/app/params"
 )
 
 var DefaultNodeHome string
@@ -464,10 +463,7 @@ func NewApplication(
 		stakingtypes.NewMultiStakingHooks(app.DistributionKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
 
-	epochsKeeper := *epochskeeper.NewKeeper(
-		applicationCodec,
-		keys[epochstypes.StoreKey],
-	)
+	epochsKeeper := *epochskeeper.NewKeeper(keys[epochstypes.StoreKey])
 
 	app.IBCKeeper = ibckeeper.NewKeeper(
 		applicationCodec,
@@ -482,7 +478,7 @@ func NewApplication(
 		applicationCodec,
 		keys[ibctransfertypes.StoreKey],
 		app.GetSubspace(ibctransfertypes.ModuleName),
-		app.IBCKeeper.ChannelKeeper,
+		app.IBCKeeper.ChannelKeeper, // ICS4 Wrapper
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
@@ -507,16 +503,16 @@ func NewApplication(
 	app.ICAHostKeeper = &icaHostKeeper
 
 	icaControllerKeeper := icacontrollerkeeper.NewKeeper(
-		applicationCodec, keys[icacontrollertypes.StoreKey],
+		applicationCodec,
+		keys[icacontrollertypes.StoreKey],
 		app.GetSubspace(icacontrollertypes.SubModuleName),
 		app.IBCKeeper.ChannelKeeper, // may be replaced with middleware such as ics29 fee
-		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
-		scopedICAControllerKeeper, app.MsgServiceRouter(),
+		app.IBCKeeper.ChannelKeeper,
+		&app.IBCKeeper.PortKeeper,
+		scopedICAControllerKeeper,
+		app.MsgServiceRouter(),
 	)
 	app.ICAControllerKeeper = &icaControllerKeeper
-
-	icaModule := ica.NewAppModule(app.ICAControllerKeeper, app.ICAHostKeeper)
-	icaHostIBCModule := icahost.NewIBCModule(*app.ICAHostKeeper)
 
 	interchainQueryKeeper := interchainquerykeeper.NewKeeper(
 		applicationCodec,
@@ -556,7 +552,7 @@ func NewApplication(
 	)
 	// Information will flow: ibc-port -> icaController -> lscosmos.
 	lscosmosModule := lscosmos.NewAppModule(applicationCodec, *app.LSCosmosKeeper, app.AccountKeeper, app.BankKeeper)
-	icaControllerIBCModule := icacontroller.NewIBCModule(*app.ICAControllerKeeper, lscosmosModule)
+	icaControllerIBCModule := icacontroller.NewIBCMiddleware(lscosmosModule, *app.ICAControllerKeeper)
 
 	ibcTransferHooksKeeper := ibchookerkeeper.NewKeeper()
 	app.TransferHooksKeeper = ibcTransferHooksKeeper.SetHooks(ibchookertypes.NewMultiStakingHooks(app.LSCosmosKeeper.NewIBCTransferHooks()))
@@ -600,13 +596,16 @@ func NewApplication(
 	)
 	app.WasmKeeper = &wasmKeeper
 
+	icaHostStack := icahost.NewIBCModule(*app.ICAHostKeeper)
+	wasmStack := wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper)
+
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibctypes.NewRouter()
-	ibcRouter.AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
+	ibcRouter.AddRoute(icahosttypes.SubModuleName, icaHostStack).
 		AddRoute(ibctransfertypes.ModuleName, ibcTransferHooksMiddleware).
 		AddRoute(icacontrollertypes.SubModuleName, icaControllerIBCModule).
 		AddRoute(lscosmostypes.ModuleName, icaControllerIBCModule).
-		AddRoute(wasm.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper))
+		AddRoute(wasm.ModuleName, wasmStack)
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	govRouter := govtypes.NewRouter()
@@ -657,7 +656,6 @@ func NewApplication(
 		vesting.NewAppModule(*app.AccountKeeper, app.BankKeeper),
 		bank.NewAppModule(applicationCodec, *app.BankKeeper, app.AccountKeeper),
 		capability.NewAppModule(applicationCodec, *app.CapabilityKeeper),
-		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants),
 		gov.NewAppModule(applicationCodec, *app.GovKeeper, app.AccountKeeper, app.BankKeeper),
 		mint.NewAppModule(applicationCodec, *app.MintKeeper, app.AccountKeeper),
 		slashing.NewAppModule(applicationCodec, *app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, *app.StakingKeeper),
@@ -672,11 +670,12 @@ func NewApplication(
 		halving.NewAppModule(applicationCodec, *app.HalvingKeeper),
 		transferModule,
 		ibcTransferHooksMiddleware,
-		icaModule,
+		ica.NewAppModule(app.ICAControllerKeeper, app.ICAHostKeeper),
 		wasm.NewAppModule(applicationCodec, app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		epochs.NewAppModule(*app.EpochsKeeper),
 		interchainQueryModule,
 		lscosmosModule,
+		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants), // always be last to make sure that it checks for all invariants and not only part of them
 	)
 
 	app.moduleManager.SetOrderBeginBlockers(
@@ -838,17 +837,7 @@ func NewApplication(
 		func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 			ctx.Logger().Info("start to run upgrade migration...")
 
-			//add more upgrade instructions
-			ctx.Logger().Info("running revert of tombstoning")
-			err := upgrades.RevertCosTombstoning(ctx, app.SlashingKeeper, app.MintKeeper, app.BankKeeper, app.StakingKeeper)
-			if err != nil {
-				panic(fmt.Sprintf("failed to revert tombstoning: %s", err))
-			}
-
-			err = upgrades.MintPstakeTokens(ctx, app.LSCosmosKeeper)
-			if err != nil {
-				panic(fmt.Sprintf("failed to mint pstake tokens: %s", err))
-			}
+			// nothing to migrate for v7
 
 			ctx.Logger().Info("start to run module migrations...")
 			newVM, err := app.moduleManager.RunMigrations(ctx, app.configurator, fromVM)
