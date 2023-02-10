@@ -93,9 +93,6 @@ import (
 	icahostkeeper "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/host/keeper"
 	icahosttypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/host/types"
 	icatypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/types"
-	ibcfee "github.com/cosmos/ibc-go/v4/modules/apps/29-fee"
-	ibcfeekeeper "github.com/cosmos/ibc-go/v4/modules/apps/29-fee/keeper"
-	ibcfeetypes "github.com/cosmos/ibc-go/v4/modules/apps/29-fee/types"
 	"github.com/cosmos/ibc-go/v4/modules/apps/transfer"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v4/modules/apps/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
@@ -171,7 +168,6 @@ var ModuleAccountPermissions = map[string][]string{
 	stakingtypes.NotBondedPoolName:           {authtypes.Burner, authtypes.Staking},
 	govtypes.ModuleName:                      {authtypes.Burner},
 	ibctransfertypes.ModuleName:              {authtypes.Minter, authtypes.Burner},
-	ibcfeetypes.ModuleName:                   nil,
 	wasm.ModuleName:                          {authtypes.Burner},
 	lscosmostypes.ModuleName:                 {authtypes.Minter, authtypes.Burner},
 	lscosmostypes.DepositModuleAccount:       nil,
@@ -226,7 +222,6 @@ var ModuleBasics = module.NewBasicManager(
 	interchainquery.AppModuleBasic{},
 	ibchooker.AppModuleBasic{},
 	lscosmos.AppModuleBasic{},
-	ibcfee.AppModuleBasic{},
 )
 
 var (
@@ -264,7 +259,6 @@ type Application struct {
 	CrisisKeeper          *crisiskeeper.Keeper
 	ParamsKeeper          *paramskeeper.Keeper
 	IBCKeeper             *ibckeeper.Keeper
-	IBCFeeKeeper          *ibcfeekeeper.Keeper
 	ICAHostKeeper         *icahostkeeper.Keeper
 	EvidenceKeeper        *evidencekeeper.Keeper
 	TransferKeeper        *ibctransferkeeper.Keeper
@@ -284,7 +278,6 @@ type Application struct {
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
-	ScopedIBCFeeKeeper        capabilitykeeper.ScopedKeeper
 	ScopedTransferKeeper      capabilitykeeper.ScopedKeeper
 	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
 	ScopedICAControllerKeeper capabilitykeeper.ScopedKeeper
@@ -331,7 +324,6 @@ func NewApplication(
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
 		feegrant.StoreKey, authzkeeper.StoreKey, icahosttypes.StoreKey, halving.StoreKey, wasm.StoreKey,
 		icacontrollertypes.StoreKey, epochstypes.StoreKey, lscosmostypes.StoreKey, interchainquerytypes.StoreKey,
-		ibcfeetypes.StoreKey,
 	)
 
 	transientStoreKeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -485,19 +477,11 @@ func NewApplication(
 		scopedIBCKeeper,
 	)
 
-	ibcFeeKeeper := ibcfeekeeper.NewKeeper(
-		applicationCodec, keys[ibcfeetypes.StoreKey], app.GetSubspace(ibcfeetypes.ModuleName),
-		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.ChannelKeeper,
-		&app.IBCKeeper.PortKeeper, app.AccountKeeper, app.BankKeeper,
-	)
-	app.IBCFeeKeeper = &ibcFeeKeeper
-
 	transferKeeper := ibctransferkeeper.NewKeeper(
 		applicationCodec,
 		keys[ibctransfertypes.StoreKey],
 		app.GetSubspace(ibctransfertypes.ModuleName),
-		app.IBCFeeKeeper, // ISC4 Wrapper: fee IBC middleware
+		app.IBCKeeper.ChannelKeeper, // ICS4 Wrapper
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
@@ -525,7 +509,7 @@ func NewApplication(
 		applicationCodec,
 		keys[icacontrollertypes.StoreKey],
 		app.GetSubspace(icacontrollertypes.SubModuleName),
-		app.IBCFeeKeeper, // use ics29 fee as ics4Wrapper in middleware stack
+		app.IBCKeeper.ChannelKeeper, // may be replaced with middleware such as ics29 fee
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
 		scopedICAControllerKeeper,
@@ -615,27 +599,15 @@ func NewApplication(
 	)
 	app.WasmKeeper = &wasmKeeper
 
-	// RecvPacket, message that originates from core IBC and goes down to app, the flow is:
-	// channel.RecvPacket -> fee.OnRecvPacket -> icaHost.OnRecvPacket
-	var icaHostStack ibctypes.IBCModule
-	icaHostStack = icahost.NewIBCModule(*app.ICAHostKeeper)
-	icaHostStack = ibcfee.NewIBCMiddleware(icaHostStack, *app.IBCFeeKeeper)
-
-	transferStack := ibcfee.NewIBCMiddleware(ibcTransferHooksMiddleware, *app.IBCFeeKeeper)
-
-	icaControllerStack := ibcfee.NewIBCMiddleware(icaControllerIBCModule, *app.IBCFeeKeeper)
-
-	// Create fee enabled wasm ibc Stack
-	var wasmStack ibctypes.IBCModule
-	wasmStack = wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCFeeKeeper)
-	wasmStack = ibcfee.NewIBCMiddleware(wasmStack, *app.IBCFeeKeeper)
+	icaHostStack := icahost.NewIBCModule(*app.ICAHostKeeper)
+	wasmStack := wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper)
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibctypes.NewRouter()
 	ibcRouter.AddRoute(icahosttypes.SubModuleName, icaHostStack).
-		AddRoute(ibctransfertypes.ModuleName, transferStack).
-		AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
-		AddRoute(lscosmostypes.ModuleName, icaControllerStack).
+		AddRoute(ibctransfertypes.ModuleName, ibcTransferHooksMiddleware).
+		AddRoute(icacontrollertypes.SubModuleName, icaControllerIBCModule).
+		AddRoute(lscosmostypes.ModuleName, icaControllerIBCModule).
 		AddRoute(wasm.ModuleName, wasmStack)
 	app.IBCKeeper.SetRouter(ibcRouter)
 
@@ -701,7 +673,6 @@ func NewApplication(
 		halving.NewAppModule(applicationCodec, *app.HalvingKeeper),
 		transferModule,
 		ibcTransferHooksMiddleware,
-		ibcfee.NewAppModule(*app.IBCFeeKeeper),
 		ica.NewAppModule(app.ICAControllerKeeper, app.ICAHostKeeper),
 		wasm.NewAppModule(applicationCodec, app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		epochs.NewAppModule(*app.EpochsKeeper),
@@ -720,7 +691,6 @@ func NewApplication(
 		ibctransfertypes.ModuleName,
 		ibchost.ModuleName,
 		icatypes.ModuleName,
-		ibcfeetypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
 		distributiontypes.ModuleName,
@@ -745,7 +715,6 @@ func NewApplication(
 		ibctransfertypes.ModuleName,
 		ibchost.ModuleName,
 		icatypes.ModuleName,
-		ibcfeetypes.ModuleName,
 		feegrant.ModuleName,
 		authz.ModuleName,
 		capabilitytypes.ModuleName,
@@ -784,7 +753,6 @@ func NewApplication(
 		ibctransfertypes.ModuleName,
 		ibchost.ModuleName,
 		icatypes.ModuleName,
-		ibcfeetypes.ModuleName,
 		evidencetypes.ModuleName,
 		feegrant.ModuleName,
 		authz.ModuleName,
@@ -823,7 +791,6 @@ func NewApplication(
 		transferModule,
 		interchainQueryModule,
 		lscosmosModule,
-		// wasm module??
 	)
 
 	simulationManager.RegisterStoreDecoders()
@@ -873,19 +840,7 @@ func NewApplication(
 		func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 			ctx.Logger().Info("start to run upgrade migration...")
 
-			// TODO: what needs to be done here for v7?
-
-			//add more upgrade instructions
-			// ctx.Logger().Info("running revert of tombstoning")
-			// err := upgrades.RevertCosTombstoning(ctx, app.SlashingKeeper, app.MintKeeper, app.BankKeeper, app.StakingKeeper)
-			// if err != nil {
-			// 	panic(fmt.Sprintf("failed to revert tombstoning: %s", err))
-			// }
-
-			// err = upgrades.MintPstakeTokens(ctx, app.LSCosmosKeeper)
-			// if err != nil {
-			// 	panic(fmt.Sprintf("failed to mint pstake tokens: %s", err))
-			// }
+			// nothing to migrate for v7
 
 			ctx.Logger().Info("start to run module migrations...")
 			newVM, err := app.moduleManager.RunMigrations(ctx, app.configurator, fromVM)
