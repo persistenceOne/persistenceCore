@@ -2,7 +2,7 @@ package v6
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	lscosmoskeeper "github.com/persistenceOne/pstake-native/x/lscosmos/keeper"
+	lscosmoskeeper "github.com/persistenceOne/pstake-native/v2/x/lscosmos/keeper"
 )
 
 // MintPstakeTokens send stk/uatom to persistence1zl42hd5h9c7z4ej43fhss9nvgm6nuad0js8z6n (for https://www.mintscan.io/cosmos/txs/DE691EC8EBB5A79E2AB421291660111E893823CA0CC9EBDED5E3C72B503067C3 sending amount to reward address)
