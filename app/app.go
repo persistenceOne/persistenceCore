@@ -487,6 +487,7 @@ func NewApplication(
 	)
 	app.TransferKeeper = &transferKeeper
 
+	// keep this
 	transferModule := transfer.NewAppModule(*app.TransferKeeper)
 	transferIBCModule := transfer.NewIBCModule(*app.TransferKeeper)
 
@@ -550,6 +551,7 @@ func NewApplication(
 	app.EpochsKeeper = epochsKeeper.SetHooks(
 		epochstypes.NewMultiEpochHooks(app.LSCosmosKeeper.NewEpochHooks()),
 	)
+	// keep this
 	// Information will flow: ibc-port -> icaController -> lscosmos.
 	lscosmosModule := lscosmos.NewAppModule(applicationCodec, *app.LSCosmosKeeper, app.AccountKeeper, app.BankKeeper)
 	icaControllerIBCModule := icacontroller.NewIBCMiddleware(lscosmosModule, *app.ICAControllerKeeper)
@@ -557,6 +559,7 @@ func NewApplication(
 	ibcTransferHooksKeeper := ibchookerkeeper.NewKeeper()
 	app.TransferHooksKeeper = ibcTransferHooksKeeper.SetHooks(ibchookertypes.NewMultiStakingHooks(app.LSCosmosKeeper.NewIBCTransferHooks()))
 	ibcTransferHooksMiddleware := ibchooker.NewAppModule(*app.TransferHooksKeeper, transferIBCModule)
+	// to this....
 
 	evidenceKeeper := evidencekeeper.NewKeeper(
 		applicationCodec,
@@ -1154,28 +1157,4 @@ func (app *Application) RegisterNodeService(clientCtx client.Context) {
 }
 func (app *Application) LoadHeight(height int64) error {
 	return app.BaseApp.LoadVersion(height)
-}
-
-// initParamsKeeper init params keeper and its subspaces.
-func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino, key, tkey sdk.StoreKey) paramskeeper.Keeper {
-	paramsKeeper := paramskeeper.NewKeeper(appCodec, legacyAmino, key, tkey)
-
-	paramsKeeper.Subspace(authtypes.ModuleName)
-	paramsKeeper.Subspace(banktypes.ModuleName)
-	paramsKeeper.Subspace(stakingtypes.ModuleName)
-	paramsKeeper.Subspace(minttypes.ModuleName)
-	paramsKeeper.Subspace(distributiontypes.ModuleName)
-	paramsKeeper.Subspace(slashingtypes.ModuleName)
-	paramsKeeper.Subspace(crisistypes.ModuleName)
-	paramsKeeper.Subspace(halving.DefaultParamspace)
-	paramsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govtypes.ParamKeyTable())
-	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
-	paramsKeeper.Subspace(ibchost.ModuleName)
-	paramsKeeper.Subspace(icahosttypes.SubModuleName)
-	paramsKeeper.Subspace(wasm.ModuleName)
-	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
-	paramsKeeper.Subspace(lscosmostypes.ModuleName)
-	paramsKeeper.Subspace(interchainquerytypes.ModuleName)
-
-	return paramsKeeper
 }
