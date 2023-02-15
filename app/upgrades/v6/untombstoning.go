@@ -156,13 +156,13 @@ func RevertCosTombstoning(
 		}
 
 		for _, value := range vals {
-			if err := revertTombstone(ctx, slashingKeeper, value);err != nil{
+			if err := revertTombstone(ctx, slashingKeeper, value); err != nil {
 				return err
 			}
 		}
 
 		for _, mint := range Mints {
-			if err :=  mintLostTokens(ctx, bankKeeper, stakingKeeper, mintKeeper, mint); err != nil{
+			if err := mintLostTokens(ctx, bankKeeper, stakingKeeper, mintKeeper, mint); err != nil {
 				return err
 			}
 		}

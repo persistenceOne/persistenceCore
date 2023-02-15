@@ -16,5 +16,5 @@ type GetExchangeRateResponse struct {
 }
 
 type GetAllExchangeRateResponse struct {
-	ExchangeRate []uint64 `json:"exchange_rate"`
+	ExchangeRate []uint64 `json:"all_exchange_rates"`
 }

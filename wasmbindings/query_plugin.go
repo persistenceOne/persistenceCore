@@ -38,14 +38,19 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 
 			return bz, nil
 		case contractQuery.GetAllExchangeRates != nil:
-			var exchangeRates sdk.DecCoins
+			var decExchangeRates sdk.DecCoins
 			qp.oracleKeeper.IterateExchangeRates(ctx, func(denom string, rate sdk.Dec) (stop bool) {
-				exchangeRates = exchangeRates.Add(sdk.NewDecCoinFromDec(denom, rate))
+				decExchangeRates = decExchangeRates.Add(sdk.NewDecCoinFromDec(denom, rate))
 				return false
 			})
 
+			exchangeRates := make([]uint64,len(decExchangeRates))
+			for i, rate := range decExchangeRates {
+				exchangeRates[i] = rate.Amount.BigInt().Uint64()
+			}
+
 			res := bindings.GetAllExchangeRateResponse{
-				ExchangeRate: nil,
+				ExchangeRate: exchangeRates,
 			}
 
 			bz, err := json.Marshal(res)
