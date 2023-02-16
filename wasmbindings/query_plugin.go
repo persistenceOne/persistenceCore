@@ -12,12 +12,12 @@ import (
 	"github.com/persistenceOne/persistenceCore/v7/wasmbindings/bindings"
 )
 
-// CustomQuerier dispatches custom CosmWasm bindings queries.
-func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessage) ([]byte, error) {
+// customQuerier dispatches custom CosmWasm bindings queries.
+func customQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessage) ([]byte, error) {
 	return func(ctx sdk.Context, request json.RawMessage) ([]byte, error) {
 		var contractQuery bindings.OracleQuery
 		if err := json.Unmarshal(request, &contractQuery); err != nil {
-			return nil, sdkerrors.Wrap(err, "checkers query")
+			return nil, sdkerrors.Wrap(err, "invalid oracle query")
 		}
 
 		switch {
@@ -33,7 +33,7 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 
 			bz, err := json.Marshal(res)
 			if err != nil {
-				return nil, sdkerrors.Wrap(err, "checkers get black player query response")
+				return nil, sdkerrors.Wrap(err, "invalid get exchange rate response")
 			}
 
 			return bz, nil
@@ -44,7 +44,7 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 				return false
 			})
 
-			exchangeRates := make([]uint64,len(decExchangeRates))
+			exchangeRates := make([]uint64, len(decExchangeRates))
 			for i, rate := range decExchangeRates {
 				exchangeRates[i] = rate.Amount.BigInt().Uint64()
 			}
@@ -55,7 +55,7 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 
 			bz, err := json.Marshal(res)
 			if err != nil {
-				return nil, sdkerrors.Wrap(err, "checkers get red player query response")
+				return nil, sdkerrors.Wrap(err, "invalid get all exchange rate response")
 			}
 
 			return bz, nil

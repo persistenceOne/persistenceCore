@@ -7,19 +7,16 @@ import (
 )
 
 func RegisterCustomPlugins(
-	checkersKeeper *oraclekeeper.Keeper,
+	oracleKeeper *oraclekeeper.Keeper,
 ) []wasmkeeper.Option {
-	wasmQueryPlugin := NewQueryPlugin(checkersKeeper)
+	wasmQueryPlugin := NewQueryPlugin(oracleKeeper)
 
 	queryPluginOpt := wasmkeeper.WithQueryPlugins(&wasmkeeper.QueryPlugins{
-		Custom: CustomQuerier(wasmQueryPlugin),
+		Custom: customQuerier(wasmQueryPlugin),
 	})
-	messengerDecoratorOpt := wasmkeeper.WithMessageHandlerDecorator(
-		CustomMessageDecorator(checkersKeeper),
-	)
 
+	// TODO: Add more custom plugins based on the contract requirement
 	return []wasm.Option{
 		queryPluginOpt,
-		messengerDecoratorOpt,
 	}
 }
