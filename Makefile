@@ -123,7 +123,7 @@ draw-deps:
 	@goviz -i ./cmd/persistenceCore -d 2 | dot -Tpng -o dependency-graph.png
 
 clean:
-	rm -rf $(BUILDDIR)/ artifacts/
+	rm -rf $(BUILDDIR)/ artifacts/ release/
 
 distclean: clean
 	rm -rf vendor/
