@@ -126,7 +126,6 @@ func NewAppKeeper(
 	maccPerms map[string][]string,
 	sendCoinBlockedAddrs map[string]bool,
 	blockedModuleAddrs map[string]bool,
-	blockedAddress map[string]bool,
 	skipUpgradeHeights map[int64]bool,
 	homePath string,
 	invCheckPeriod uint,

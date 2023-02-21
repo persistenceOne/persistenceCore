@@ -7,9 +7,6 @@ package app
 
 import (
 	"fmt"
-	"github.com/persistenceOne/persistenceCore/v7/app/upgrades"
-	v6 "github.com/persistenceOne/persistenceCore/v7/app/upgrades/v6"
-	v7 "github.com/persistenceOne/persistenceCore/v7/app/upgrades/v7"
 	"io"
 	stdlog "log"
 	"net/http"
@@ -35,67 +32,16 @@ import (
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
-	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
-	crisiskeeper "github.com/cosmos/cosmos-sdk/x/crisis/keeper"
-	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
-	"github.com/cosmos/cosmos-sdk/x/distribution"
-	distributionkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
-	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
-	evidencekeeper "github.com/cosmos/cosmos-sdk/x/evidence/keeper"
-	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
-	"github.com/cosmos/cosmos-sdk/x/feegrant"
-	feegrantkeeper "github.com/cosmos/cosmos-sdk/x/feegrant/keeper"
-	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
-	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
-	"github.com/cosmos/cosmos-sdk/x/params"
-	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	paramsproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
-	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
-	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/cosmos/cosmos-sdk/x/upgrade"
-	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	icacontroller "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/controller"
-	icacontrollerkeeper "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/controller/keeper"
-	icacontrollertypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/controller/types"
-	icahost "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/host"
-	icahostkeeper "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/host/keeper"
-	icahosttypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/host/types"
-	"github.com/cosmos/ibc-go/v4/modules/apps/transfer"
-	ibctransferkeeper "github.com/cosmos/ibc-go/v4/modules/apps/transfer/keeper"
-	ibctransfertypes "github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
-	ibccoreclient "github.com/cosmos/ibc-go/v4/modules/core/02-client"
-	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
-	ibctypes "github.com/cosmos/ibc-go/v4/modules/core/05-port/types"
-	ibchost "github.com/cosmos/ibc-go/v4/modules/core/24-host"
-	ibckeeper "github.com/cosmos/ibc-go/v4/modules/core/keeper"
 	"github.com/gogo/protobuf/grpc"
 	"github.com/gorilla/mux"
-	epochskeeper "github.com/persistenceOne/persistence-sdk/v2/x/epochs/keeper"
-	epochstypes "github.com/persistenceOne/persistence-sdk/v2/x/epochs/types"
-	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
-	"github.com/persistenceOne/persistence-sdk/v2/x/ibchooker"
-	ibchookerkeeper "github.com/persistenceOne/persistence-sdk/v2/x/ibchooker/keeper"
-	ibchookertypes "github.com/persistenceOne/persistence-sdk/v2/x/ibchooker/types"
-	"github.com/persistenceOne/persistence-sdk/v2/x/interchainquery"
-	interchainquerykeeper "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/keeper"
-	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/types"
-	"github.com/persistenceOne/pstake-native/v2/x/lscosmos"
-	lscosmoskeeper "github.com/persistenceOne/pstake-native/v2/x/lscosmos/keeper"
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 	"github.com/rakyll/statik/fs"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
@@ -107,9 +53,14 @@ import (
 
 	"github.com/persistenceOne/persistenceCore/v7/app/keepers"
 	appparams "github.com/persistenceOne/persistenceCore/v7/app/params"
+	"github.com/persistenceOne/persistenceCore/v7/app/upgrades"
+	v7 "github.com/persistenceOne/persistenceCore/v7/app/upgrades/v7"
 )
 
-var DefaultNodeHome string
+var (
+	DefaultNodeHome string
+	Upgrades        = []upgrades.Upgrade{v7.Upgrade}
+)
 
 var (
 	// ProposalsEnabled is "true" and EnabledSpecificProposals is "", then enable all x/wasm proposals.
@@ -142,8 +93,6 @@ var receiveAllowedMAcc = map[string]bool{
 	lscosmostypes.UndelegationModuleAccount: true,
 	lscosmostypes.DelegationModuleAccount:   true,
 }
-
-var Upgrades = []upgrades.Upgrade{v6.Upgrade, v7.Upgrade}
 
 var (
 	_ simapp.App                          = (*Application)(nil)
@@ -205,52 +154,12 @@ func NewApplication(
 	baseApp.SetVersion(version.Version)
 	baseApp.SetInterfaceRegistry(interfaceRegistry)
 
-	keys := sdk.NewKVStoreKeys(
-		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey,
-		minttypes.StoreKey, distributiontypes.StoreKey, slashingtypes.StoreKey,
-		govtypes.StoreKey, paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey,
-		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
-		feegrant.StoreKey, authzkeeper.StoreKey, icahosttypes.StoreKey, halving.StoreKey, wasm.StoreKey,
-		icacontrollertypes.StoreKey, epochstypes.StoreKey, lscosmostypes.StoreKey, interchainquerytypes.StoreKey,
-	)
-
-	transientStoreKeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
-	memoryKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
-
 	app := &Application{
 		BaseApp:           baseApp,
 		legacyAmino:       legacyAmino,
 		applicationCodec:  applicationCodec,
 		interfaceRegistry: interfaceRegistry,
-		keys:              keys,
 	}
-
-	paramsKeeper := initParamsKeeper(
-		applicationCodec,
-		legacyAmino,
-		keys[paramstypes.StoreKey],
-		transientStoreKeys[paramstypes.TStoreKey],
-	)
-	app.ParamsKeeper = &paramsKeeper
-	app.BaseApp.SetParamStore(app.ParamsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(paramskeeper.ConsensusParamsKeyTable()))
-
-	app.CapabilityKeeper = capabilitykeeper.NewKeeper(applicationCodec, keys[capabilitytypes.StoreKey], memoryKeys[capabilitytypes.MemStoreKey])
-	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibchost.ModuleName)
-	scopedICAHostKeeper := app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
-	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
-	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasm.ModuleName)
-	scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
-	scopedLSCosmosKeeper := app.CapabilityKeeper.ScopeToModule(lscosmostypes.ModuleName)
-	app.CapabilityKeeper.Seal()
-
-	accountKeeper := authkeeper.NewAccountKeeper(
-		applicationCodec,
-		keys[authtypes.StoreKey],
-		app.GetSubspace(authtypes.ModuleName),
-		authtypes.ProtoBaseAccount,
-		moduleAccountPermissions,
-	)
-	app.AccountKeeper = &accountKeeper
 
 	blockedModuleAddrs := make(map[string]bool)
 	for moduleAccount := range moduleAccountPermissions {
@@ -261,274 +170,28 @@ func NewApplication(
 		sendCoinBlockedAddrs[authtypes.NewModuleAddress(acc).String()] = !receiveAllowedMAcc[acc]
 	}
 
-	bankKeeper := bankkeeper.NewBaseKeeper(
-		applicationCodec,
-		keys[banktypes.StoreKey],
-		app.AccountKeeper,
-		app.GetSubspace(banktypes.ModuleName),
-		sendCoinBlockedAddrs,
-	)
-	app.BankKeeper = &bankKeeper
-
-	authzKeeper := authzkeeper.NewKeeper(
-		keys[authzkeeper.StoreKey],
-		applicationCodec,
-		app.BaseApp.MsgServiceRouter(),
-	)
-	app.AuthzKeeper = &authzKeeper
-
-	feegrantKeeper := feegrantkeeper.NewKeeper(
-		applicationCodec,
-		keys[feegrant.StoreKey],
-		app.AccountKeeper,
-	)
-	app.FeegrantKeeper = &feegrantKeeper
-
-	stakingKeeper := stakingkeeper.NewKeeper(
-		applicationCodec,
-		keys[stakingtypes.StoreKey],
-		app.AccountKeeper,
-		app.BankKeeper,
-		app.GetSubspace(stakingtypes.ModuleName),
-	)
-
-	mintKeeper := mintkeeper.NewKeeper(
-		applicationCodec,
-		keys[minttypes.StoreKey],
-		app.GetSubspace(minttypes.ModuleName),
-		&stakingKeeper,
-		app.AccountKeeper,
-		app.BankKeeper,
-		authtypes.FeeCollectorName,
-	)
-	app.MintKeeper = &mintKeeper
-
-	distributionKeeper := distributionkeeper.NewKeeper(
-		applicationCodec,
-		keys[distributiontypes.StoreKey],
-		app.GetSubspace(distributiontypes.ModuleName),
-		app.AccountKeeper,
-		app.BankKeeper,
-		&stakingKeeper,
-		authtypes.FeeCollectorName,
-		blockedModuleAddrs,
-	)
-	app.DistributionKeeper = &distributionKeeper
-
-	slashingKeeper := slashingkeeper.NewKeeper(
-		applicationCodec,
-		keys[slashingtypes.StoreKey],
-		&stakingKeeper,
-		app.GetSubspace(slashingtypes.ModuleName),
-	)
-	app.SlashingKeeper = &slashingKeeper
-
-	crisisKeeper := crisiskeeper.NewKeeper(
-		app.GetSubspace(crisistypes.ModuleName),
-		invCheckPeriod,
-		app.BankKeeper,
-		authtypes.FeeCollectorName,
-	)
-	app.CrisisKeeper = &crisisKeeper
-
-	upgradeKeeper := upgradekeeper.NewKeeper(
-		skipUpgradeHeights,
-		keys[upgradetypes.StoreKey],
-		applicationCodec,
-		home,
-		app.BaseApp,
-	)
-	app.UpgradeKeeper = &upgradeKeeper
-
-	halvingKeeper := halving.NewKeeper(
-		keys[halving.StoreKey],
-		app.GetSubspace(halving.DefaultParamspace),
-		app.MintKeeper,
-	)
-	app.HalvingKeeper = &halvingKeeper
-
-	app.StakingKeeper = stakingKeeper.SetHooks(
-		stakingtypes.NewMultiStakingHooks(app.DistributionKeeper.Hooks(), app.SlashingKeeper.Hooks()),
-	)
-
-	epochsKeeper := *epochskeeper.NewKeeper(keys[epochstypes.StoreKey])
-
-	app.IBCKeeper = ibckeeper.NewKeeper(
-		applicationCodec,
-		keys[ibchost.StoreKey],
-		app.GetSubspace(ibchost.ModuleName),
-		app.StakingKeeper,
-		app.UpgradeKeeper,
-		scopedIBCKeeper,
-	)
-
-	transferKeeper := ibctransferkeeper.NewKeeper(
-		applicationCodec,
-		keys[ibctransfertypes.StoreKey],
-		app.GetSubspace(ibctransfertypes.ModuleName),
-		app.IBCKeeper.ChannelKeeper, // ICS4 Wrapper
-		app.IBCKeeper.ChannelKeeper,
-		&app.IBCKeeper.PortKeeper,
-		app.AccountKeeper,
-		app.BankKeeper,
-		scopedTransferKeeper,
-	)
-	app.TransferKeeper = &transferKeeper
-
-	// keep this
-	transferModule := transfer.NewAppModule(*app.TransferKeeper)
-	transferIBCModule := transfer.NewIBCModule(*app.TransferKeeper)
-
-	icaHostKeeper := icahostkeeper.NewKeeper(
-		applicationCodec,
-		keys[icahosttypes.StoreKey],
-		app.GetSubspace(icahosttypes.SubModuleName),
-		app.IBCKeeper.ChannelKeeper,
-		&app.IBCKeeper.PortKeeper,
-		app.AccountKeeper,
-		scopedICAHostKeeper,
-		app.MsgServiceRouter(),
-	)
-	app.ICAHostKeeper = &icaHostKeeper
-
-	icaControllerKeeper := icacontrollerkeeper.NewKeeper(
-		applicationCodec,
-		keys[icacontrollertypes.StoreKey],
-		app.GetSubspace(icacontrollertypes.SubModuleName),
-		app.IBCKeeper.ChannelKeeper, // may be replaced with middleware such as ics29 fee
-		app.IBCKeeper.ChannelKeeper,
-		&app.IBCKeeper.PortKeeper,
-		scopedICAControllerKeeper,
-		app.MsgServiceRouter(),
-	)
-	app.ICAControllerKeeper = &icaControllerKeeper
-
-	interchainQueryKeeper := interchainquerykeeper.NewKeeper(
-		applicationCodec,
-		keys[interchainquerytypes.StoreKey],
-		app.IBCKeeper,
-	)
-	app.InterchainQueryKeeper = &interchainQueryKeeper
-
-	interchainQueryModule := interchainquery.NewAppModule(applicationCodec, *app.InterchainQueryKeeper)
-
-	lsCosmosKeeper := lscosmoskeeper.NewKeeper(
-		applicationCodec,
-		keys[lscosmostypes.StoreKey],
-		memoryKeys[lscosmostypes.MemStoreKey],
-		app.GetSubspace(lscosmostypes.ModuleName),
-		app.BankKeeper,
-		app.AccountKeeper,
-		epochsKeeper,
-		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.ChannelKeeper,
-		&app.IBCKeeper.PortKeeper,
-		app.TransferKeeper,
-		app.ICAControllerKeeper,
-		app.InterchainQueryKeeper,
-		scopedLSCosmosKeeper,
-		app.MsgServiceRouter(),
-	)
-	app.LSCosmosKeeper = &lsCosmosKeeper
-
-	err := app.InterchainQueryKeeper.SetCallbackHandler(lscosmostypes.ModuleName, app.LSCosmosKeeper.CallbackHandler())
-	if err != nil {
-		panic(err)
-	}
-
-	app.EpochsKeeper = epochsKeeper.SetHooks(
-		epochstypes.NewMultiEpochHooks(app.LSCosmosKeeper.NewEpochHooks()),
-	)
-	// keep this
-	// Information will flow: ibc-port -> icaController -> lscosmos.
-	lscosmosModule := lscosmos.NewAppModule(applicationCodec, *app.LSCosmosKeeper, app.AccountKeeper, app.BankKeeper)
-	icaControllerIBCModule := icacontroller.NewIBCMiddleware(lscosmosModule, *app.ICAControllerKeeper)
-
-	ibcTransferHooksKeeper := ibchookerkeeper.NewKeeper()
-	app.TransferHooksKeeper = ibcTransferHooksKeeper.SetHooks(ibchookertypes.NewMultiStakingHooks(app.LSCosmosKeeper.NewIBCTransferHooks()))
-	ibcTransferHooksMiddleware := ibchooker.NewAppModule(*app.TransferHooksKeeper, transferIBCModule)
-	// to this....
-
-	evidenceKeeper := evidencekeeper.NewKeeper(
-		applicationCodec,
-		keys[evidencetypes.StoreKey],
-		app.StakingKeeper,
-		app.SlashingKeeper,
-	)
-	app.EvidenceKeeper = evidenceKeeper
-
 	wasmDir := filepath.Join(home, "wasm")
 	wasmConfig, err := wasm.ReadWasmConfig(applicationOptions)
 	if err != nil {
 		panic(fmt.Sprintf("error while reading wasm config: %s", err))
 	}
 
-	// The last arguments can contain custom message handlers, and custom query handlers,
-	// if we want to allow any custom callbacks
-	supportedFeatures := "iterator,staking,stargate"
-	wasmKeeper := wasm.NewKeeper(
+	// Setup keepers
+	app.AppKeepers = keepers.NewAppKeeper(
 		applicationCodec,
-		keys[wasm.StoreKey],
-		app.GetSubspace(wasm.ModuleName),
-		app.AccountKeeper,
-		app.BankKeeper,
-		app.StakingKeeper,
-		app.DistributionKeeper,
-		app.IBCKeeper.ChannelKeeper,
-		&app.IBCKeeper.PortKeeper,
-		scopedWasmKeeper,
-		app.TransferKeeper,
-		app.MsgServiceRouter(),
-		app.GRPCQueryRouter(),
+		baseApp,
+		legacyAmino,
+		moduleAccountPermissions,
+		sendCoinBlockedAddrs,
+		blockedModuleAddrs,
+		skipUpgradeHeights,
+		home,
+		invCheckPeriod,
+		applicationOptions,
 		wasmDir,
-		wasmConfig,
-		supportedFeatures,
-		wasmOpts...,
+		enabledProposals,
+		wasmOpts,
 	)
-	app.WasmKeeper = &wasmKeeper
-
-	icaHostStack := icahost.NewIBCModule(*app.ICAHostKeeper)
-	wasmStack := wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper)
-
-	// Create static IBC router, add transfer route, then set and seal it
-	ibcRouter := ibctypes.NewRouter()
-	ibcRouter.AddRoute(icahosttypes.SubModuleName, icaHostStack).
-		AddRoute(ibctransfertypes.ModuleName, ibcTransferHooksMiddleware).
-		AddRoute(icacontrollertypes.SubModuleName, icaControllerIBCModule).
-		AddRoute(lscosmostypes.ModuleName, icaControllerIBCModule).
-		AddRoute(wasm.ModuleName, wasmStack)
-	app.IBCKeeper.SetRouter(ibcRouter)
-
-	govRouter := govtypes.NewRouter()
-	govRouter.AddRoute(
-		govtypes.RouterKey,
-		govtypes.ProposalHandler,
-	).AddRoute(
-		paramsproposal.RouterKey,
-		params.NewParamChangeProposalHandler(*app.ParamsKeeper),
-	).AddRoute(
-		distributiontypes.RouterKey,
-		distribution.NewCommunityPoolSpendProposalHandler(*app.DistributionKeeper),
-	).AddRoute(
-		upgradetypes.RouterKey,
-		upgrade.NewSoftwareUpgradeProposalHandler(*app.UpgradeKeeper),
-	).AddRoute(
-		ibcclienttypes.RouterKey, ibccoreclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper),
-	).AddRoute(lscosmostypes.RouterKey, lscosmos.NewLSCosmosProposalHandler(*app.LSCosmosKeeper))
-
-	if len(enabledProposals) != 0 {
-		govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.WasmKeeper, enabledProposals))
-	}
-	govKeeper := govkeeper.NewKeeper(
-		applicationCodec,
-		keys[govtypes.StoreKey],
-		app.GetSubspace(govtypes.ModuleName),
-		app.AccountKeeper,
-		app.BankKeeper,
-		&stakingKeeper,
-		govRouter,
-	)
-	app.GovKeeper = &govKeeper
 
 	/****  Module Options ****/
 	var skipGenesisInvariants = false
@@ -569,7 +232,7 @@ func NewApplication(
 			},
 			IBCKeeper:         app.IBCKeeper,
 			WasmConfig:        &wasmConfig,
-			TXCounterStoreKey: keys[wasm.StoreKey],
+			TXCounterStoreKey: app.GetKVStoreKey()[wasm.StoreKey],
 		},
 	)
 	if err != nil {
@@ -596,37 +259,6 @@ func NewApplication(
 	app.setupUpgradeHandlers()
 	app.setupUpgradeStoreLoaders()
 
-	app.UpgradeKeeper.SetUpgradeHandler(
-		UpgradeName,
-		func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
-			ctx.Logger().Info("start to run upgrade migration...")
-
-			// nothing to migrate for v7
-
-			ctx.Logger().Info("start to run module migrations...")
-			newVM, err := app.moduleManager.RunMigrations(ctx, app.configurator, fromVM)
-			if err != nil {
-				return nil, err
-			}
-			return newVM, nil
-		},
-	)
-
-	// commenting out for this upgrade, since not needed
-	//upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
-	//if err != nil {
-	//	panic(fmt.Sprintf("failed to read upgrade info from disk %s", err))
-	//}
-
-	//if upgradeInfo.Name == UpgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
-	//	storeUpgrades := storetypes.StoreUpgrades{
-	//		Added: []string{},
-	//	}
-	//
-	//	// configure store loader that checks if version == upgradeHeight and applies store upgrades
-	//	app.BaseApp.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
-	//}
-
 	if loadLatest {
 		if err := app.BaseApp.LoadLatestVersion(); err != nil {
 			tendermintos.Exit(err.Error())
@@ -638,12 +270,6 @@ func NewApplication(
 			tendermintos.Exit(fmt.Sprintf("failed initialize pinned codes %s", err))
 		}
 	}
-	app.ScopedIBCKeeper = scopedIBCKeeper
-	app.ScopedTransferKeeper = scopedTransferKeeper
-	app.ScopedICAHostKeeper = scopedICAHostKeeper
-	app.ScopedWasmKeeper = scopedWasmKeeper
-	app.ScopedICAControllerKeeper = scopedICAControllerKeeper
-	app.ScopedLSCosmosKeeper = scopedLSCosmosKeeper
 
 	return app
 }
@@ -781,7 +407,7 @@ func (app *Application) ExportAppStateAndValidators(forZeroHeight bool, jailWhit
 			return false
 		})
 
-		store := context.KVStore(app.keys[stakingtypes.StoreKey])
+		store := context.KVStore(app.GetKVStoreKey()[stakingtypes.StoreKey])
 		kvStoreReversePrefixIterator := sdk.KVStoreReversePrefixIterator(store, stakingtypes.ValidatorsKey)
 		counter := int16(0)
 
