@@ -66,7 +66,7 @@ func (spd *SpamPreventionDecorator) CheckOracleSpam(ctx sdk.Context, msgs []sdk.
 				return err
 			}
 
-			err = spd.oracleKeeper.ValidateFeeder(ctx, feederAddr, valAddr)
+			err = spd.oracleKeeper.ValidateFeeder(ctx, valAddr, feederAddr)
 			if err != nil {
 				return err
 			}
@@ -91,7 +91,7 @@ func (spd *SpamPreventionDecorator) CheckOracleSpam(ctx sdk.Context, msgs []sdk.
 				return err
 			}
 
-			err = spd.oracleKeeper.ValidateFeeder(ctx, feederAddr, valAddr)
+			err = spd.oracleKeeper.ValidateFeeder(ctx, valAddr, feederAddr)
 			if err != nil {
 				return err
 			}

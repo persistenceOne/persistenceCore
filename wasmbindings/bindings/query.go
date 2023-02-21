@@ -12,9 +12,9 @@ type GetExchangeRate struct {
 type GetAllExchangeRates struct{}
 
 type GetExchangeRateResponse struct {
-	ExchangeRate uint64 `json:"exchange_rate"`
+	ExchangeRate string `json:"exchange_rate"`
 }
 
 type GetAllExchangeRateResponse struct {
-	ExchangeRate []uint64 `json:"all_exchange_rates"`
+	ExchangeRate []string `json:"all_exchange_rates"`
 }

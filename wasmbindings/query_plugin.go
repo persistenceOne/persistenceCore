@@ -28,7 +28,7 @@ func customQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 			}
 
 			res := bindings.GetExchangeRateResponse{
-				ExchangeRate: exchangeRate.BigInt().Uint64(),
+				ExchangeRate: exchangeRate.String(),
 			}
 
 			bz, err := json.Marshal(res)
@@ -44,9 +44,9 @@ func customQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 				return false
 			})
 
-			exchangeRates := make([]uint64, len(decExchangeRates))
+			exchangeRates := make([]string, len(decExchangeRates))
 			for i, rate := range decExchangeRates {
-				exchangeRates[i] = rate.Amount.BigInt().Uint64()
+				exchangeRates[i] = rate.Amount.String()
 			}
 
 			res := bindings.GetAllExchangeRateResponse{
