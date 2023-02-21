@@ -7,6 +7,9 @@ package app
 
 import (
 	"fmt"
+	"github.com/persistenceOne/persistenceCore/v7/app/upgrades"
+	v6 "github.com/persistenceOne/persistenceCore/v7/app/upgrades/v6"
+	v7 "github.com/persistenceOne/persistenceCore/v7/app/upgrades/v7"
 	"io"
 	stdlog "log"
 	"net/http"
@@ -15,7 +18,6 @@ import (
 	"strings"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
-	wasmclient "github.com/CosmWasm/wasmd/x/wasm/client"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -31,81 +33,58 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
-	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
-	authsimulation "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
-	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
-	"github.com/cosmos/cosmos-sdk/x/authz"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
-	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
-	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/cosmos/cosmos-sdk/x/capability"
 	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	crisiskeeper "github.com/cosmos/cosmos-sdk/x/crisis/keeper"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	"github.com/cosmos/cosmos-sdk/x/distribution"
-	distributionclient "github.com/cosmos/cosmos-sdk/x/distribution/client"
 	distributionkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
-	"github.com/cosmos/cosmos-sdk/x/evidence"
 	evidencekeeper "github.com/cosmos/cosmos-sdk/x/evidence/keeper"
 	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
 	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	feegrantkeeper "github.com/cosmos/cosmos-sdk/x/feegrant/keeper"
-	feegrantmodule "github.com/cosmos/cosmos-sdk/x/feegrant/module"
-	"github.com/cosmos/cosmos-sdk/x/genutil"
-	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
-	"github.com/cosmos/cosmos-sdk/x/gov"
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	"github.com/cosmos/cosmos-sdk/x/mint"
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
-	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	paramsproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
-	"github.com/cosmos/cosmos-sdk/x/slashing"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
-	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	ica "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts"
 	icacontroller "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/controller"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/controller/keeper"
 	icacontrollertypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/controller/types"
 	icahost "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/host"
 	icahostkeeper "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/host/keeper"
 	icahosttypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/host/types"
-	icatypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/types"
 	"github.com/cosmos/ibc-go/v4/modules/apps/transfer"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v4/modules/apps/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
-	ibc "github.com/cosmos/ibc-go/v4/modules/core"
 	ibccoreclient "github.com/cosmos/ibc-go/v4/modules/core/02-client"
-	ibcclient "github.com/cosmos/ibc-go/v4/modules/core/02-client/client"
 	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
 	ibctypes "github.com/cosmos/ibc-go/v4/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v4/modules/core/24-host"
 	ibckeeper "github.com/cosmos/ibc-go/v4/modules/core/keeper"
 	"github.com/gogo/protobuf/grpc"
 	"github.com/gorilla/mux"
-	"github.com/persistenceOne/persistence-sdk/v2/x/epochs"
 	epochskeeper "github.com/persistenceOne/persistence-sdk/v2/x/epochs/keeper"
 	epochstypes "github.com/persistenceOne/persistence-sdk/v2/x/epochs/types"
 	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
@@ -116,7 +95,6 @@ import (
 	interchainquerykeeper "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/keeper"
 	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/types"
 	"github.com/persistenceOne/pstake-native/v2/x/lscosmos"
-	lscosmosclient "github.com/persistenceOne/pstake-native/v2/x/lscosmos/client"
 	lscosmoskeeper "github.com/persistenceOne/pstake-native/v2/x/lscosmos/keeper"
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 	"github.com/rakyll/statik/fs"
@@ -127,6 +105,7 @@ import (
 	tendermintproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tendermintdb "github.com/tendermint/tm-db"
 
+	"github.com/persistenceOne/persistenceCore/v7/app/keepers"
 	appparams "github.com/persistenceOne/persistenceCore/v7/app/params"
 )
 
@@ -159,70 +138,12 @@ func GetEnabledProposals() []wasm.ProposalType {
 	return proposals
 }
 
-var ModuleAccountPermissions = map[string][]string{
-	authtypes.FeeCollectorName:               nil,
-	distributiontypes.ModuleName:             nil,
-	icatypes.ModuleName:                      nil,
-	minttypes.ModuleName:                     {authtypes.Minter},
-	stakingtypes.BondedPoolName:              {authtypes.Burner, authtypes.Staking},
-	stakingtypes.NotBondedPoolName:           {authtypes.Burner, authtypes.Staking},
-	govtypes.ModuleName:                      {authtypes.Burner},
-	ibctransfertypes.ModuleName:              {authtypes.Minter, authtypes.Burner},
-	wasm.ModuleName:                          {authtypes.Burner},
-	lscosmostypes.ModuleName:                 {authtypes.Minter, authtypes.Burner},
-	lscosmostypes.DepositModuleAccount:       nil,
-	lscosmostypes.DelegationModuleAccount:    nil,
-	lscosmostypes.RewardModuleAccount:        nil,
-	lscosmostypes.UndelegationModuleAccount:  nil,
-	lscosmostypes.RewardBoosterModuleAccount: nil,
-}
-
 var receiveAllowedMAcc = map[string]bool{
 	lscosmostypes.UndelegationModuleAccount: true,
 	lscosmostypes.DelegationModuleAccount:   true,
 }
 
-var ModuleBasics = module.NewBasicManager(
-	auth.AppModuleBasic{},
-	genutil.AppModuleBasic{},
-	bank.AppModuleBasic{},
-	capability.AppModuleBasic{},
-	staking.AppModuleBasic{},
-	mint.AppModuleBasic{},
-	distribution.AppModuleBasic{},
-	gov.NewAppModuleBasic(
-		append(
-			wasmclient.ProposalHandlers,
-			paramsclient.ProposalHandler,
-			distributionclient.ProposalHandler,
-			upgradeclient.ProposalHandler,
-			upgradeclient.CancelProposalHandler,
-			ibcclient.UpdateClientProposalHandler,
-			ibcclient.UpgradeProposalHandler,
-			lscosmosclient.RegisterHostChainProposalHandler,
-			lscosmosclient.MinDepositAndFeeChangeProposalHandler,
-			lscosmosclient.PstakeFeeAddressChangeProposalHandler,
-			lscosmosclient.AllowListValidatorSetChangeProposalHandler,
-		)...,
-	),
-	params.AppModuleBasic{},
-	crisis.AppModuleBasic{},
-	slashing.AppModuleBasic{},
-	feegrantmodule.AppModuleBasic{},
-	authzmodule.AppModuleBasic{},
-	ibc.AppModuleBasic{},
-	upgrade.AppModuleBasic{},
-	evidence.AppModuleBasic{},
-	transfer.AppModuleBasic{},
-	vesting.AppModuleBasic{},
-	wasm.AppModuleBasic{},
-	halving.AppModuleBasic{},
-	ica.AppModuleBasic{},
-	epochs.AppModuleBasic{},
-	interchainquery.AppModuleBasic{},
-	ibchooker.AppModuleBasic{},
-	lscosmos.AppModuleBasic{},
-)
+var Upgrades = []upgrades.Upgrade{v6.Upgrade, v7.Upgrade}
 
 var (
 	_ simapp.App                          = (*Application)(nil)
@@ -241,48 +162,15 @@ func init() {
 
 type Application struct {
 	*baseapp.BaseApp
+	keepers.AppKeepers
+
 	legacyAmino       *codec.LegacyAmino
 	applicationCodec  codec.Codec
 	interfaceRegistry types.InterfaceRegistry
 
-	keys map[string]*sdk.KVStoreKey
-
-	AccountKeeper         *authkeeper.AccountKeeper
-	BankKeeper            *bankkeeper.BaseKeeper
-	CapabilityKeeper      *capabilitykeeper.Keeper
-	StakingKeeper         *stakingkeeper.Keeper
-	SlashingKeeper        *slashingkeeper.Keeper
-	MintKeeper            *mintkeeper.Keeper
-	DistributionKeeper    *distributionkeeper.Keeper
-	GovKeeper             *govkeeper.Keeper
-	UpgradeKeeper         *upgradekeeper.Keeper
-	CrisisKeeper          *crisiskeeper.Keeper
-	ParamsKeeper          *paramskeeper.Keeper
-	IBCKeeper             *ibckeeper.Keeper
-	ICAHostKeeper         *icahostkeeper.Keeper
-	EvidenceKeeper        *evidencekeeper.Keeper
-	TransferKeeper        *ibctransferkeeper.Keeper
-	FeegrantKeeper        *feegrantkeeper.Keeper
-	AuthzKeeper           *authzkeeper.Keeper
-	HalvingKeeper         *halving.Keeper
-	WasmKeeper            *wasm.Keeper
-	EpochsKeeper          *epochskeeper.Keeper
-	ICAControllerKeeper   *icacontrollerkeeper.Keeper
-	LSCosmosKeeper        *lscosmoskeeper.Keeper
-	InterchainQueryKeeper *interchainquerykeeper.Keeper
-	TransferHooksKeeper   *ibchookerkeeper.Keeper
-
 	moduleManager     *module.Manager
 	configurator      module.Configurator
 	simulationManager *module.SimulationManager
-
-	// make scoped keepers public for test purposes
-	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
-	ScopedTransferKeeper      capabilitykeeper.ScopedKeeper
-	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
-	ScopedICAControllerKeeper capabilitykeeper.ScopedKeeper
-	ScopedLSCosmosKeeper      capabilitykeeper.ScopedKeeper
-	ScopedWasmKeeper          capabilitykeeper.ScopedKeeper
 }
 
 func NewApplication(
@@ -650,155 +538,25 @@ func NewApplication(
 		skipGenesisInvariants = opt
 	}
 
-	app.moduleManager = module.NewManager(
-		genutil.NewAppModule(
-			app.AccountKeeper, app.StakingKeeper, app.BaseApp.DeliverTx,
-			encodingConfiguration.TransactionConfig,
-		),
-		auth.NewAppModule(applicationCodec, *app.AccountKeeper, nil),
-		vesting.NewAppModule(*app.AccountKeeper, app.BankKeeper),
-		bank.NewAppModule(applicationCodec, *app.BankKeeper, app.AccountKeeper),
-		capability.NewAppModule(applicationCodec, *app.CapabilityKeeper),
-		gov.NewAppModule(applicationCodec, *app.GovKeeper, app.AccountKeeper, app.BankKeeper),
-		mint.NewAppModule(applicationCodec, *app.MintKeeper, app.AccountKeeper),
-		slashing.NewAppModule(applicationCodec, *app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, *app.StakingKeeper),
-		distribution.NewAppModule(applicationCodec, *app.DistributionKeeper, app.AccountKeeper, app.BankKeeper, *app.StakingKeeper),
-		staking.NewAppModule(applicationCodec, *app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
-		upgrade.NewAppModule(*app.UpgradeKeeper),
-		evidence.NewAppModule(*app.EvidenceKeeper),
-		feegrantmodule.NewAppModule(applicationCodec, app.AccountKeeper, app.BankKeeper, *app.FeegrantKeeper, app.interfaceRegistry),
-		authzmodule.NewAppModule(applicationCodec, *app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
-		ibc.NewAppModule(app.IBCKeeper),
-		params.NewAppModule(*app.ParamsKeeper),
-		halving.NewAppModule(applicationCodec, *app.HalvingKeeper),
-		transferModule,
-		ibcTransferHooksMiddleware,
-		ica.NewAppModule(app.ICAControllerKeeper, app.ICAHostKeeper),
-		wasm.NewAppModule(applicationCodec, app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
-		epochs.NewAppModule(*app.EpochsKeeper),
-		interchainQueryModule,
-		lscosmosModule,
-		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants), // always be last to make sure that it checks for all invariants and not only part of them
-	)
+	app.moduleManager = module.NewManager(appModules(app, encodingConfiguration, skipGenesisInvariants)...)
 
-	app.moduleManager.SetOrderBeginBlockers(
-		upgradetypes.ModuleName,
-		epochstypes.ModuleName,
-		capabilitytypes.ModuleName,
-		crisistypes.ModuleName,
-		govtypes.ModuleName,
-		stakingtypes.ModuleName,
-		ibctransfertypes.ModuleName,
-		ibchost.ModuleName,
-		icatypes.ModuleName,
-		authtypes.ModuleName,
-		banktypes.ModuleName,
-		distributiontypes.ModuleName,
-		slashingtypes.ModuleName,
-		minttypes.ModuleName,
-		genutiltypes.ModuleName,
-		evidencetypes.ModuleName,
-		authz.ModuleName,
-		feegrant.ModuleName,
-		paramstypes.ModuleName,
-		vestingtypes.ModuleName,
-		halving.ModuleName,
-		wasm.ModuleName,
-		ibchookertypes.ModuleName,
-		interchainquerytypes.ModuleName,
-		lscosmostypes.ModuleName,
-	)
-	app.moduleManager.SetOrderEndBlockers(
-		crisistypes.ModuleName,
-		govtypes.ModuleName,
-		stakingtypes.ModuleName,
-		ibctransfertypes.ModuleName,
-		ibchost.ModuleName,
-		icatypes.ModuleName,
-		feegrant.ModuleName,
-		authz.ModuleName,
-		capabilitytypes.ModuleName,
-		authtypes.ModuleName,
-		banktypes.ModuleName,
-		distributiontypes.ModuleName,
-		slashingtypes.ModuleName,
-		minttypes.ModuleName,
-		genutiltypes.ModuleName,
-		evidencetypes.ModuleName,
-		paramstypes.ModuleName,
-		upgradetypes.ModuleName,
-		vestingtypes.ModuleName,
-		halving.ModuleName,
-		wasm.ModuleName,
-		epochstypes.ModuleName,
-		ibchookertypes.ModuleName,
-		interchainquerytypes.ModuleName,
-		lscosmostypes.ModuleName,
-	)
-
-	// NOTE: The genutils module must occur after staking so that pools are
-	// properly initialized with tokens from genesis accounts.
-	// NOTE: Capability module must occur first so that it can initialize any capabilities
-	// so that other modules that want to create or claim capabilities afterwards in InitChain
-	// can do so safely.
-	app.moduleManager.SetOrderInitGenesis(
-		capabilitytypes.ModuleName,
-		banktypes.ModuleName,
-		distributiontypes.ModuleName,
-		stakingtypes.ModuleName,
-		slashingtypes.ModuleName,
-		govtypes.ModuleName,
-		minttypes.ModuleName,
-		crisistypes.ModuleName,
-		ibctransfertypes.ModuleName,
-		ibchost.ModuleName,
-		icatypes.ModuleName,
-		evidencetypes.ModuleName,
-		feegrant.ModuleName,
-		authz.ModuleName,
-		authtypes.ModuleName,
-		genutiltypes.ModuleName,
-		paramstypes.ModuleName,
-		upgradetypes.ModuleName,
-		vestingtypes.ModuleName,
-		halving.ModuleName,
-		wasm.ModuleName,
-		epochstypes.ModuleName,
-		ibchookertypes.ModuleName,
-		interchainquerytypes.ModuleName,
-		lscosmostypes.ModuleName,
-	)
+	app.moduleManager.SetOrderBeginBlockers(orderBeginBlockers()...)
+	app.moduleManager.SetOrderEndBlockers(orderEndBlockers()...)
+	app.moduleManager.SetOrderInitGenesis(orderInitGenesis()...)
 
 	app.moduleManager.RegisterInvariants(app.CrisisKeeper)
 	app.moduleManager.RegisterRoutes(app.BaseApp.Router(), app.BaseApp.QueryRouter(), encodingConfiguration.Amino)
 	app.configurator = module.NewConfigurator(app.applicationCodec, app.BaseApp.MsgServiceRouter(), app.BaseApp.GRPCQueryRouter())
 	app.moduleManager.RegisterServices(app.configurator)
 
-	simulationManager := module.NewSimulationManager(
-		auth.NewAppModule(applicationCodec, *app.AccountKeeper, authsimulation.RandomGenesisAccounts),
-		bank.NewAppModule(applicationCodec, app.BankKeeper, app.AccountKeeper),
-		capability.NewAppModule(applicationCodec, *app.CapabilityKeeper),
-		gov.NewAppModule(applicationCodec, *app.GovKeeper, app.AccountKeeper, app.BankKeeper),
-		mint.NewAppModule(applicationCodec, *app.MintKeeper, app.AccountKeeper),
-		staking.NewAppModule(applicationCodec, *app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
-		distribution.NewAppModule(applicationCodec, *app.DistributionKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
-		slashing.NewAppModule(applicationCodec, *app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
-		params.NewAppModule(*app.ParamsKeeper),
-		halving.NewAppModule(applicationCodec, *app.HalvingKeeper),
-		authzmodule.NewAppModule(applicationCodec, *app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
-		feegrantmodule.NewAppModule(applicationCodec, app.AccountKeeper, app.BankKeeper, *app.FeegrantKeeper, app.interfaceRegistry),
-		ibc.NewAppModule(app.IBCKeeper),
-		transferModule,
-		interchainQueryModule,
-		lscosmosModule,
-	)
+	simulationManager := module.NewSimulationManager(simulationModules(app, encodingConfiguration, skipGenesisInvariants)...)
 
 	simulationManager.RegisterStoreDecoders()
 	app.simulationManager = simulationManager
 
-	app.BaseApp.MountKVStores(keys)
-	app.BaseApp.MountTransientStores(transientStoreKeys)
-	app.BaseApp.MountMemoryStores(memoryKeys)
+	app.BaseApp.MountKVStores(app.GetKVStoreKey())
+	app.BaseApp.MountTransientStores(app.GetTransientStoreKey())
+	app.BaseApp.MountMemoryStores(app.GetMemoryStoreKey())
 
 	anteHandler, err := NewAnteHandler(
 		HandlerOptions{
@@ -834,6 +592,9 @@ func NewApplication(
 			panic(fmt.Errorf("failed to register snapshot extension: %s", err))
 		}
 	}
+
+	app.setupUpgradeHandlers()
+	app.setupUpgradeStoreLoaders()
 
 	app.UpgradeKeeper.SetUpgradeHandler(
 		UpgradeName,
@@ -1132,6 +893,37 @@ func (app *Application) RegisterAPIRoutes(apiServer *api.Server, apiConfig confi
 	// register swagger API from root so that other applications can override easily
 	if apiConfig.Swagger {
 		RegisterSwaggerAPI(apiServer.Router)
+	}
+}
+
+func (app *Application) setupUpgradeHandlers() {
+	for _, upgrade := range Upgrades {
+		app.UpgradeKeeper.SetUpgradeHandler(
+			upgrade.UpgradeName,
+			upgrade.CreateUpgradeHandler(
+				app.moduleManager,
+				app.configurator,
+				&app.AppKeepers,
+			),
+		)
+	}
+}
+
+// configure store loader that checks if version == upgradeHeight and applies store upgrades
+func (app *Application) setupUpgradeStoreLoaders() {
+	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
+	if err != nil {
+		panic(fmt.Sprintf("failed to read upgrade info from disk %s", err))
+	}
+
+	if app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		return
+	}
+
+	for _, upgrade := range Upgrades {
+		if upgradeInfo.Name == upgrade.UpgradeName {
+			app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &upgrade.StoreUpgrades))
+		}
 	}
 }
 

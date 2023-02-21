@@ -2,6 +2,7 @@ package keepers
 
 import (
 	"fmt"
+
 	"github.com/CosmWasm/wasmd/x/wasm"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -18,6 +19,7 @@ import (
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	crisiskeeper "github.com/cosmos/cosmos-sdk/x/crisis/keeper"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
+	"github.com/cosmos/cosmos-sdk/x/distribution"
 	distributionkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	evidencekeeper "github.com/cosmos/cosmos-sdk/x/evidence/keeper"
@@ -28,32 +30,44 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
+	"github.com/cosmos/cosmos-sdk/x/params"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	paramsproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	icacontroller "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/controller"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/controller/keeper"
 	icacontrollertypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/controller/types"
+	icahost "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/host"
 	icahostkeeper "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/host/keeper"
 	icahosttypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/host/types"
+	"github.com/cosmos/ibc-go/v4/modules/apps/transfer"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v4/modules/apps/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
+	ibccoreclient "github.com/cosmos/ibc-go/v4/modules/core/02-client"
+	ibcclienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
+	ibctypes "github.com/cosmos/ibc-go/v4/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v4/modules/core/24-host"
 	ibckeeper "github.com/cosmos/ibc-go/v4/modules/core/keeper"
 	epochskeeper "github.com/persistenceOne/persistence-sdk/v2/x/epochs/keeper"
 	epochstypes "github.com/persistenceOne/persistence-sdk/v2/x/epochs/types"
 	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
+	"github.com/persistenceOne/persistence-sdk/v2/x/ibchooker"
 	ibchookerkeeper "github.com/persistenceOne/persistence-sdk/v2/x/ibchooker/keeper"
+	ibchookertypes "github.com/persistenceOne/persistence-sdk/v2/x/ibchooker/types"
+	"github.com/persistenceOne/persistence-sdk/v2/x/interchainquery"
 	interchainquerykeeper "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/keeper"
 	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/types"
+	"github.com/persistenceOne/pstake-native/v2/x/lscosmos"
 	lscosmoskeeper "github.com/persistenceOne/pstake-native/v2/x/lscosmos/keeper"
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 	tmos "github.com/tendermint/tendermint/libs/os"
-	"path/filepath"
 
 	// unnamed import of statik for swagger UI support
 	_ "github.com/cosmos/cosmos-sdk/client/docs/statik"
@@ -89,6 +103,13 @@ type AppKeepers struct {
 	InterchainQueryKeeper *interchainquerykeeper.Keeper
 	TransferHooksKeeper   *ibchookerkeeper.Keeper
 
+	// Modules
+	TransferModule             transfer.AppModule
+	TransferIBCModule          ibctypes.IBCModule
+	InterchainQueryModule      interchainquery.AppModule
+	LSCosmosModule             lscosmos.AppModule
+	IBCTransferHooksMiddleware ibchooker.AppModule
+
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
 	ScopedTransferKeeper      capabilitykeeper.ScopedKeeper
@@ -110,8 +131,8 @@ func NewAppKeeper(
 	homePath string,
 	invCheckPeriod uint,
 	appOpts servertypes.AppOptions,
-	enabledProposals []wasm.ProposalType,
-	applicationOptions servertypes.AppOptions,
+	wasmDir string,
+	wasmEnabledProposals []wasm.ProposalType,
 	wasmOpts []wasm.Option,
 ) AppKeepers {
 	appKeepers := AppKeepers{}
@@ -268,6 +289,10 @@ func NewAppKeeper(
 	)
 	appKeepers.TransferKeeper = &transferKeeper
 
+	// keep this
+	appKeepers.TransferModule = transfer.NewAppModule(*appKeepers.TransferKeeper)
+	appKeepers.TransferIBCModule = transfer.NewIBCModule(*appKeepers.TransferKeeper)
+
 	icaHostKeeper := icahostkeeper.NewKeeper(
 		appCodec,
 		appKeepers.keys[icahosttypes.StoreKey],
@@ -298,6 +323,7 @@ func NewAppKeeper(
 		appKeepers.IBCKeeper,
 	)
 	appKeepers.InterchainQueryKeeper = &interchainQueryKeeper
+	appKeepers.InterchainQueryModule = interchainquery.NewAppModule(appCodec, *appKeepers.InterchainQueryKeeper)
 
 	lsCosmosKeeper := lscosmoskeeper.NewKeeper(
 		appCodec,
@@ -327,6 +353,16 @@ func NewAppKeeper(
 		epochstypes.NewMultiEpochHooks(appKeepers.LSCosmosKeeper.NewEpochHooks()),
 	)
 
+	// keep this
+	// Information will flow: ibc-port -> icaController -> lscosmos.
+	lscosmosModule := lscosmos.NewAppModule(appCodec, *appKeepers.LSCosmosKeeper, appKeepers.AccountKeeper, appKeepers.BankKeeper)
+	icaControllerIBCModule := icacontroller.NewIBCMiddleware(lscosmosModule, *appKeepers.ICAControllerKeeper)
+
+	ibcTransferHooksKeeper := ibchookerkeeper.NewKeeper()
+	appKeepers.TransferHooksKeeper = ibcTransferHooksKeeper.SetHooks(ibchookertypes.NewMultiStakingHooks(appKeepers.LSCosmosKeeper.NewIBCTransferHooks()))
+	appKeepers.IBCTransferHooksMiddleware = ibchooker.NewAppModule(*appKeepers.TransferHooksKeeper, appKeepers.TransferIBCModule)
+	// to this....
+
 	evidenceKeeper := evidencekeeper.NewKeeper(
 		appCodec,
 		appKeepers.keys[evidencetypes.StoreKey],
@@ -335,8 +371,7 @@ func NewAppKeeper(
 	)
 	appKeepers.EvidenceKeeper = evidenceKeeper
 
-	wasmDir := filepath.Join(homePath, "wasm")
-	wasmConfig, err := wasm.ReadWasmConfig(applicationOptions)
+	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
 	if err != nil {
 		panic(fmt.Sprintf("error while reading wasm config: %s", err))
 	}
@@ -364,6 +399,49 @@ func NewAppKeeper(
 		wasmOpts...,
 	)
 	appKeepers.WasmKeeper = &wasmKeeper
+
+	icaHostStack := icahost.NewIBCModule(*appKeepers.ICAHostKeeper)
+	wasmStack := wasm.NewIBCHandler(appKeepers.WasmKeeper, appKeepers.IBCKeeper.ChannelKeeper, appKeepers.IBCKeeper.ChannelKeeper)
+
+	// Create static IBC router, add transfer route, then set and seal it
+	ibcRouter := ibctypes.NewRouter()
+	ibcRouter.AddRoute(icahosttypes.SubModuleName, icaHostStack).
+		AddRoute(ibctransfertypes.ModuleName, appKeepers.IBCTransferHooksMiddleware).
+		AddRoute(icacontrollertypes.SubModuleName, icaControllerIBCModule).
+		AddRoute(lscosmostypes.ModuleName, icaControllerIBCModule).
+		AddRoute(wasm.ModuleName, wasmStack)
+	appKeepers.IBCKeeper.SetRouter(ibcRouter)
+
+	govRouter := govtypes.NewRouter()
+	govRouter.AddRoute(
+		govtypes.RouterKey,
+		govtypes.ProposalHandler,
+	).AddRoute(
+		paramsproposal.RouterKey,
+		params.NewParamChangeProposalHandler(*appKeepers.ParamsKeeper),
+	).AddRoute(
+		distributiontypes.RouterKey,
+		distribution.NewCommunityPoolSpendProposalHandler(*appKeepers.DistributionKeeper),
+	).AddRoute(
+		upgradetypes.RouterKey,
+		upgrade.NewSoftwareUpgradeProposalHandler(*appKeepers.UpgradeKeeper),
+	).AddRoute(
+		ibcclienttypes.RouterKey, ibccoreclient.NewClientProposalHandler(appKeepers.IBCKeeper.ClientKeeper),
+	).AddRoute(lscosmostypes.RouterKey, lscosmos.NewLSCosmosProposalHandler(*appKeepers.LSCosmosKeeper))
+
+	if len(wasmEnabledProposals) != 0 {
+		govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(appKeepers.WasmKeeper, wasmEnabledProposals))
+	}
+	govKeeper := govkeeper.NewKeeper(
+		appCodec,
+		appKeepers.keys[govtypes.StoreKey],
+		appKeepers.GetSubspace(govtypes.ModuleName),
+		appKeepers.AccountKeeper,
+		appKeepers.BankKeeper,
+		&stakingKeeper,
+		govRouter,
+	)
+	appKeepers.GovKeeper = &govKeeper
 
 	// set scoped keeper from variables in appKeepers
 	appKeepers.ScopedIBCKeeper = scopedIBCKeeper
@@ -404,19 +482,4 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(interchainquerytypes.ModuleName)
 
 	return paramsKeeper
-}
-
-// GetStakingKeeper implements the TestingApp interface.
-func (appKeepers *AppKeepers) GetStakingKeeper() ibctestingtypes.StakingKeeper {
-	return appKeepers.StakingKeeper
-}
-
-// GetIBCKeeper implements the TestingApp interface.
-func (appKeepers *AppKeepers) GetIBCKeeper() *ibckeeper.Keeper {
-	return appKeepers.IBCKeeper
-}
-
-// GetScopedIBCKeeper implements the TestingApp interface.
-func (appKeepers *AppKeepers) GetScopedIBCKeeper() capabilitykeeper.ScopedKeeper {
-	return appKeepers.ScopedIBCKeeper
 }
