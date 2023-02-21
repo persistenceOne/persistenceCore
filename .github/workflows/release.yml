@@ -3,9 +3,6 @@ name: Release
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the main branch
 on:
-  pull_request:
-    branches:
-      - main
   release:
     types:
       - published
@@ -27,13 +24,12 @@ jobs:
       - name: Launch release process
         run: |
           make release-build-platform PLATFORM=amd64
-          make release-build-platform PLATFORM=arm64
           make release-sha
-          make release-git
 
-      - name: Upload release folder
-        uses: actions/upload-artifact@v2
-        if: github.event.release
+      - name: attach binaries
+        uses: softprops/action-gh-release@v1
         with:
-          name: release
-          path: release
+          tag_name: ${{ steps.tag.outputs.release_tag }}
+          files: release/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
