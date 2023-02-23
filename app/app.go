@@ -94,6 +94,9 @@ import (
 	icahostkeeper "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/host/keeper"
 	icahosttypes "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/host/types"
 	icatypes "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/types"
+	ibcfee "github.com/cosmos/ibc-go/v6/modules/apps/29-fee"
+	ibcfeekeeper "github.com/cosmos/ibc-go/v6/modules/apps/29-fee/keeper"
+	ibcfeetypes "github.com/cosmos/ibc-go/v6/modules/apps/29-fee/types"
 	"github.com/cosmos/ibc-go/v6/modules/apps/transfer"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v6/modules/apps/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
@@ -177,6 +180,7 @@ var ModuleAccountPermissions = map[string][]string{
 	lscosmostypes.RewardModuleAccount:        nil,
 	lscosmostypes.UndelegationModuleAccount:  nil,
 	lscosmostypes.RewardBoosterModuleAccount: nil,
+	ibcfeetypes.ModuleName:                   nil,
 }
 
 var receiveAllowedMAcc = map[string]bool{
@@ -224,6 +228,7 @@ var ModuleBasics = module.NewBasicManager(
 	interchainquery.AppModuleBasic{},
 	ibchooker.AppModuleBasic{},
 	lscosmos.AppModuleBasic{},
+	ibcfee.AppModuleBasic{},
 )
 
 var (
@@ -261,6 +266,7 @@ type Application struct {
 	CrisisKeeper          *crisiskeeper.Keeper
 	ParamsKeeper          *paramskeeper.Keeper
 	IBCKeeper             *ibckeeper.Keeper
+	IBCFeeKeeper          ibcfeekeeper.Keeper
 	ICAHostKeeper         *icahostkeeper.Keeper
 	EvidenceKeeper        *evidencekeeper.Keeper
 	TransferKeeper        *ibctransferkeeper.Keeper
@@ -284,6 +290,7 @@ type Application struct {
 	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
 	ScopedICAControllerKeeper capabilitykeeper.ScopedKeeper
 	ScopedLSCosmosKeeper      capabilitykeeper.ScopedKeeper
+	ScopedIBCFeeKeeper        capabilitykeeper.ScopedKeeper
 	ScopedWasmKeeper          capabilitykeeper.ScopedKeeper
 }
 
@@ -325,7 +332,7 @@ func NewApplication(
 		govtypes.StoreKey, paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey,
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
 		feegrant.StoreKey, authzkeeper.StoreKey, icahosttypes.StoreKey, halving.StoreKey, wasm.StoreKey,
-		icacontrollertypes.StoreKey, epochstypes.StoreKey, lscosmostypes.StoreKey, interchainquerytypes.StoreKey,
+		icacontrollertypes.StoreKey, epochstypes.StoreKey, lscosmostypes.StoreKey, interchainquerytypes.StoreKey, ibcfeetypes.StoreKey,
 	)
 
 	transientStoreKeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -477,11 +484,19 @@ func NewApplication(
 		scopedIBCKeeper,
 	)
 
+	// IBC Fee Module keeper
+	app.IBCFeeKeeper = ibcfeekeeper.NewKeeper(
+		applicationCodec, keys[ibcfeetypes.StoreKey],
+		app.IBCKeeper.ChannelKeeper, // may be replaced with IBC middleware
+		app.IBCKeeper.ChannelKeeper,
+		&app.IBCKeeper.PortKeeper, app.AccountKeeper, app.BankKeeper,
+	)
+
 	transferKeeper := ibctransferkeeper.NewKeeper(
 		applicationCodec,
 		keys[ibctransfertypes.StoreKey],
 		app.GetSubspace(ibctransfertypes.ModuleName),
-		app.IBCKeeper.ChannelKeeper,
+		app.IBCFeeKeeper, // ISC4 Wrapper: fee IBC middleware
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
@@ -497,7 +512,7 @@ func NewApplication(
 		applicationCodec,
 		keys[icahosttypes.StoreKey],
 		app.GetSubspace(icahosttypes.SubModuleName),
-		app.IBCKeeper.ChannelKeeper,
+		app.IBCFeeKeeper, // use ics29 fee as ics4Wrapper in middleware stack
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
@@ -556,7 +571,7 @@ func NewApplication(
 	)
 	// Information will flow: ibc-port -> icaController -> lscosmos.
 	lscosmosModule := lscosmos.NewAppModule(applicationCodec, *app.LSCosmosKeeper, app.AccountKeeper, app.BankKeeper)
-	icaControllerIBCModule := icacontroller.NewIBCModule(*app.ICAControllerKeeper, lscosmosModule)
+	icaControllerIBCModule := icacontroller.NewIBCMiddleware(lscosmosModule, *app.ICAControllerKeeper)
 
 	ibcTransferHooksKeeper := ibchookerkeeper.NewKeeper()
 	app.TransferHooksKeeper = ibcTransferHooksKeeper.SetHooks(ibchookertypes.NewMultiStakingHooks(app.LSCosmosKeeper.NewIBCTransferHooks()))
@@ -606,7 +621,7 @@ func NewApplication(
 		AddRoute(ibctransfertypes.ModuleName, ibcTransferHooksMiddleware).
 		AddRoute(icacontrollertypes.SubModuleName, icaControllerIBCModule).
 		AddRoute(lscosmostypes.ModuleName, icaControllerIBCModule).
-		AddRoute(wasm.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper))
+		AddRoute(wasm.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCFeeKeeper))
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	govRouter := govv1beta1types.NewRouter()
