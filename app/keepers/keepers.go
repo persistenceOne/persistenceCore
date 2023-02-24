@@ -288,7 +288,6 @@ func NewAppKeeper(
 	)
 	appKeepers.TransferKeeper = &transferKeeper
 
-	// keep this
 	appKeepers.TransferModule = transfer.NewAppModule(*appKeepers.TransferKeeper)
 	appKeepers.TransferIBCModule = transfer.NewIBCModule(*appKeepers.TransferKeeper)
 
@@ -352,15 +351,13 @@ func NewAppKeeper(
 		epochstypes.NewMultiEpochHooks(appKeepers.LSCosmosKeeper.NewEpochHooks()),
 	)
 
-	// keep this
 	// Information will flow: ibc-port -> icaController -> lscosmos.
-	lscosmosModule := lscosmos.NewAppModule(appCodec, *appKeepers.LSCosmosKeeper, appKeepers.AccountKeeper, appKeepers.BankKeeper)
-	icaControllerIBCModule := icacontroller.NewIBCMiddleware(lscosmosModule, *appKeepers.ICAControllerKeeper)
+	appKeepers.LSCosmosModule = lscosmos.NewAppModule(appCodec, *appKeepers.LSCosmosKeeper, appKeepers.AccountKeeper, appKeepers.BankKeeper)
+	icaControllerIBCModule := icacontroller.NewIBCMiddleware(appKeepers.LSCosmosModule, *appKeepers.ICAControllerKeeper)
 
 	ibcTransferHooksKeeper := ibchookerkeeper.NewKeeper()
 	appKeepers.TransferHooksKeeper = ibcTransferHooksKeeper.SetHooks(ibchookertypes.NewMultiStakingHooks(appKeepers.LSCosmosKeeper.NewIBCTransferHooks()))
 	appKeepers.IBCTransferHooksMiddleware = ibchooker.NewAppModule(*appKeepers.TransferHooksKeeper, appKeepers.TransferIBCModule)
-	// to this....
 
 	evidenceKeeper := evidencekeeper.NewKeeper(
 		appCodec,

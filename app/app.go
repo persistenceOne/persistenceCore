@@ -177,7 +177,7 @@ func NewApplication(
 	}
 
 	// Setup keepers
-	app.AppKeepers = keepers.NewAppKeeper(
+	appKeepers := keepers.NewAppKeeper(
 		applicationCodec,
 		baseApp,
 		legacyAmino,
@@ -192,6 +192,7 @@ func NewApplication(
 		enabledProposals,
 		wasmOpts,
 	)
+	app.AppKeepers = appKeepers
 
 	/****  Module Options ****/
 	var skipGenesisInvariants = false
