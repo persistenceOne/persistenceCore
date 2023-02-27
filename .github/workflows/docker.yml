@@ -11,7 +11,7 @@ on:
 env:
   #Tags
   DOCKER_IMAGE_PATH: persistenceone/persistencecore
-  RELEASE_VERSION_TAG: ${{'v6.1.0'}}  #${{ github.event.release.tag_name }}
+  RELEASE_VERSION_TAG: ${{ github.event.release.tag_name }}
   RELEASE_TAG:  latest
   DOCKER_FILE_PATH: docker/persistencecore/Dockerfile
 
@@ -59,19 +59,3 @@ jobs:
                 ${{env.DOCKER_IMAGE_PATH}}:${{steps.get-commit.outputs.commit-sha }}
           file: ${{env.DOCKER_FILE_PATH}}
           platforms: linux/amd64
-
-      # Scan & report docker image scan-vulnerabilities to GitHub Code Scanning
-      - name: Run Snyk to check Docker image for vulnerabilities
-        continue-on-error: true
-        uses: snyk/actions/docker@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          image: ${{env.DOCKER_IMAGE_PATH}}:${{env.IMAGE_VERSION_TAG}}
-          args: --file=${{env.DOCKER_FILE_PATH}}
-
-      - name: Upload result to GitHub Code Scanning
-        continue-on-error: true
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: snyk.sarif
