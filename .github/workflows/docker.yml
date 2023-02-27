@@ -3,8 +3,6 @@
 name: Docker CI
 
 on:
-  pull_request:
-    branch: manasi/docker-ci
   release:
     types: [published]
 
