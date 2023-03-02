@@ -60,6 +60,7 @@ import (
 var (
 	DefaultNodeHome string
 	Upgrades        = []upgrades.Upgrade{v7.Upgrade}
+	ModuleBasics    = module.NewBasicManager(keepers.AppModuleBasics...)
 )
 
 var (
