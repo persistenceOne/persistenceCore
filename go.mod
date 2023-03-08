@@ -162,9 +162,9 @@ require (
 
 replace github.com/confio/ics23/go => github.com/cosmos/cosmos-sdk/ics23/go v0.8.0
 
-replace github.com/persistenceOne/persistence-sdk => github.com/aerius-labs/persistence-sdk v0.0.0-20230222040606-afd2f502e229
+replace github.com/persistenceOne/persistence-sdk => github.com/aerius-labs/persistence-sdk v0.0.0-20230307205251-521a3a831a77
 
-replace github.com/persistenceOne/pstake-native => github.com/aerius-labs/pstake-native v0.0.0-20230222072257-6473bae27590
+replace github.com/persistenceOne/pstake-native => github.com/aerius-labs/pstake-native v0.0.0-20230307214536-1f6de2513f4f
 
 replace google.golang.org/grpc => google.golang.org/grpc v1.52.3
 
