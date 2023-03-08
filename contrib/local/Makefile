@@ -21,8 +21,10 @@ setup: setup-cosmovisor
 	$(MAKE) .bash SCRIPT_FILE=setup.sh
 
 setup-cosmovisor:
-	go install github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor@v1.0.0
+ifeq (, $(shell which cosmovisor))
+	go install github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor@v1.4.0
 	sudo cp $(GOBIN)/cosmovisor /usr/local/bin/cosmovisor
+endif
 	mkdir -p $(CHAIN_DIR)/$(CHAIN_DATA_DIR)/cosmovisor/genesis/bin/
 	mkdir -p $(CHAIN_DIR)/$(CHAIN_DATA_DIR)/cosmovisor/upgrades/
 	cp $(CHAIN_BIN) $(CHAIN_DIR)/$(CHAIN_DATA_DIR)/cosmovisor/genesis/bin/
