@@ -3,19 +3,18 @@ package wasmbindings
 import (
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	oraclekeeper "github.com/persistenceOne/persistence-sdk/v2/x/oracle/keeper"
+	"github.com/cosmos/cosmos-sdk/baseapp"
+	"github.com/cosmos/cosmos-sdk/codec"
 )
 
-func RegisterCustomPlugins(
-	oracleKeeper *oraclekeeper.Keeper,
+// RegisterStargateQueries returns wasm options for the stargate querier.
+func RegisterStargateQueries(
+	queryRouter baseapp.GRPCQueryRouter, codec codec.Codec,
 ) []wasmkeeper.Option {
-	wasmQueryPlugin := NewQueryPlugin(oracleKeeper)
-
 	queryPluginOpt := wasmkeeper.WithQueryPlugins(&wasmkeeper.QueryPlugins{
-		Custom: customQuerier(wasmQueryPlugin),
+		Stargate: stargateQuerier(queryRouter, codec),
 	})
 
-	// TODO: Add more custom plugins based on the contract requirement
 	return []wasm.Option{
 		queryPluginOpt,
 	}
