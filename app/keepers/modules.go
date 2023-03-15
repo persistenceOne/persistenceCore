@@ -31,6 +31,7 @@ import (
 	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
 	"github.com/persistenceOne/persistence-sdk/v2/x/ibchooker"
 	"github.com/persistenceOne/persistence-sdk/v2/x/interchainquery"
+	"github.com/persistenceOne/persistence-sdk/v2/x/oracle"
 	"github.com/persistenceOne/pstake-native/v2/x/lscosmos"
 	lscosmosclient "github.com/persistenceOne/pstake-native/v2/x/lscosmos/client"
 )
@@ -78,4 +79,5 @@ var AppModuleBasics = []module.AppModuleBasic{
 	interchainquery.AppModuleBasic{},
 	ibchooker.AppModuleBasic{},
 	lscosmos.AppModuleBasic{},
+	oracle.AppModuleBasic{},
 }

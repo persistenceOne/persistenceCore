@@ -69,6 +69,10 @@ import (
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 	tmos "github.com/tendermint/tendermint/libs/os"
 
+	oraclekeeper "github.com/persistenceOne/persistence-sdk/v2/x/oracle/keeper"
+	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
+	"github.com/persistenceOne/persistenceCore/v7/wasmbindings"
+
 	// unnamed import of statik for swagger UI support
 	_ "github.com/cosmos/cosmos-sdk/client/docs/statik"
 )
@@ -98,6 +102,7 @@ type AppKeepers struct {
 	HalvingKeeper         *halving.Keeper
 	WasmKeeper            *wasm.Keeper
 	EpochsKeeper          *epochskeeper.Keeper
+	OracleKeeper          *oraclekeeper.Keeper
 	ICAControllerKeeper   *icacontrollerkeeper.Keeper
 	LSCosmosKeeper        *lscosmoskeeper.Keeper
 	InterchainQueryKeeper *interchainquerykeeper.Keeper
@@ -288,6 +293,18 @@ func NewAppKeeper(
 	)
 	appKeepers.TransferKeeper = &transferKeeper
 
+	oracleKeeper := oraclekeeper.NewKeeper(
+		appCodec,
+		appKeepers.keys[oracletypes.ModuleName],
+		appKeepers.GetSubspace(oracletypes.ModuleName),
+		appKeepers.AccountKeeper,
+		appKeepers.BankKeeper,
+		appKeepers.DistributionKeeper,
+		&stakingKeeper,
+		distributiontypes.ModuleName,
+	)
+	appKeepers.OracleKeeper = &oracleKeeper
+
 	appKeepers.TransferModule = transfer.NewAppModule(*appKeepers.TransferKeeper)
 	appKeepers.TransferIBCModule = transfer.NewIBCModule(*appKeepers.TransferKeeper)
 
@@ -374,7 +391,8 @@ func NewAppKeeper(
 
 	// The last arguments can contain custom message handlers, and custom query handlers,
 	// if we want to allow any custom callbacks
-	supportedFeatures := "iterator,staking,stargate"
+	supportedFeatures := "iterator,stargate"
+	wasmOpts = append(wasmbindings.RegisterStargateQueries(*bApp.GRPCQueryRouter(), appCodec), wasmOpts...)
 	wasmKeeper := wasm.NewKeeper(
 		appCodec,
 		appKeepers.keys[wasm.StoreKey],
@@ -476,6 +494,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
 	paramsKeeper.Subspace(lscosmostypes.ModuleName)
 	paramsKeeper.Subspace(interchainquerytypes.ModuleName)
+	paramsKeeper.Subspace(oracletypes.ModuleName)
 
 	return paramsKeeper
 }
