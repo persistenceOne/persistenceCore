@@ -15,6 +15,7 @@ type HandlerOptions struct {
 	ante.HandlerOptions
 	IBCKeeper         *ibckeeper.Keeper
 	WasmConfig        *wasmtypes.WasmConfig
+	OracleKeeper      OracleKeeper
 	TXCounterStoreKey storetypes.StoreKey
 }
 
