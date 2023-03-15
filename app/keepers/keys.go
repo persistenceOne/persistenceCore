@@ -25,6 +25,7 @@ import (
 	distributiontypes "github.com/persistenceOne/persistence-sdk/v2/x/lsnative/distribution/types"
 	slashingtypes "github.com/persistenceOne/persistence-sdk/v2/x/lsnative/slashing/types"
 	stakingtypes "github.com/persistenceOne/persistence-sdk/v2/x/lsnative/staking/types"
+	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 )
 
@@ -38,7 +39,7 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
 		feegrant.StoreKey, authzkeeper.StoreKey, icahosttypes.StoreKey, halving.StoreKey, wasm.StoreKey,
 		icacontrollertypes.StoreKey, epochstypes.StoreKey, lscosmostypes.StoreKey, interchainquerytypes.StoreKey,
-		ibcfeetypes.StoreKey,
+		ibcfeetypes.StoreKey, oracletypes.StoreKey,
 	)
 
 	// Define transient store keys

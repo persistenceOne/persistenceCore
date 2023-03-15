@@ -50,6 +50,8 @@ import (
 	stakingtypes "github.com/persistenceOne/persistence-sdk/v2/x/lsnative/staking/types"
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 
+	"github.com/persistenceOne/persistence-sdk/v2/x/oracle"
+	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
 	appparams "github.com/persistenceOne/persistenceCore/v7/app/params"
 )
 
@@ -70,6 +72,7 @@ var ModuleAccountPermissions = map[string][]string{
 	lscosmostypes.RewardModuleAccount:        nil,
 	lscosmostypes.UndelegationModuleAccount:  nil,
 	lscosmostypes.RewardBoosterModuleAccount: nil,
+	oracletypes.ModuleName:                   nil,
 }
 
 func appModules(
@@ -108,6 +111,7 @@ func appModules(
 		epochs.NewAppModule(*app.EpochsKeeper),
 		app.InterchainQueryModule,
 		app.LSCosmosModule,
+		oracle.NewAppModule(appCodec, *app.OracleKeeper, app.AccountKeeper, app.BankKeeper),
 		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants), // always be last to make sure that it checks for all invariants and not only part of them
 	}
 }
@@ -167,6 +171,7 @@ func orderBeginBlockers() []string {
 		wasm.ModuleName,
 		ibchookertypes.ModuleName,
 		interchainquerytypes.ModuleName,
+		oracletypes.ModuleName,
 		lscosmostypes.ModuleName,
 	}
 }
@@ -198,6 +203,7 @@ func orderEndBlockers() []string {
 		epochstypes.ModuleName,
 		ibchookertypes.ModuleName,
 		interchainquerytypes.ModuleName,
+		oracletypes.ModuleName,
 		lscosmostypes.ModuleName,
 	}
 }
@@ -235,6 +241,7 @@ func orderInitGenesis() []string {
 		epochstypes.ModuleName,
 		ibchookertypes.ModuleName,
 		interchainquerytypes.ModuleName,
+		oracletypes.ModuleName,
 		lscosmostypes.ModuleName,
 	}
 }

@@ -32,6 +32,7 @@ import (
 	"github.com/persistenceOne/persistence-sdk/v2/x/lsnative/genutil"
 	"github.com/persistenceOne/persistence-sdk/v2/x/lsnative/slashing"
 	"github.com/persistenceOne/persistence-sdk/v2/x/lsnative/staking"
+	"github.com/persistenceOne/persistence-sdk/v2/x/oracle"
 	"github.com/persistenceOne/pstake-native/v2/x/lscosmos"
 	lscosmosclient "github.com/persistenceOne/pstake-native/v2/x/lscosmos/client"
 )
@@ -79,4 +80,5 @@ var AppModuleBasics = []module.AppModuleBasic{
 	ibchooker.AppModuleBasic{},
 	lscosmos.AppModuleBasic{},
 	ibcfee.AppModuleBasic{},
+	oracle.AppModuleBasic{},
 }
