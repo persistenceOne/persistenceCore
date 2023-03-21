@@ -57,6 +57,11 @@ run-wasm-cw20-govinit:
 run-upgrade:
 	$(MAKE) .bash SCRIPT_FILE=upgrade.sh
 
+run-oracle-update-params:
+	# update oracle asset params in persistenceCore chain to dummy asset
+
+	$(MAKE) .bash SCRIPT_FILE=oracle/update_params.sh
+
 ###############################################################################
 ###                              Docker commands                            ###
 ###############################################################################
