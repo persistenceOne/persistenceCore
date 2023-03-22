@@ -20,7 +20,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	nodeservice "github.com/cosmos/cosmos-sdk/client/grpc/node"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
-	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/server/api"
@@ -31,7 +30,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
-	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
@@ -162,10 +160,7 @@ func NewApplication(
 		interfaceRegistry: interfaceRegistry,
 	}
 
-	blockedModuleAddrs := make(map[string]bool)
-	for moduleAccount := range moduleAccountPermissions {
-		blockedModuleAddrs[authtypes.NewModuleAddress(moduleAccount).String()] = true
-	}
+	// these blocked address will be used in distribution keeper as well
 	sendCoinBlockedAddrs := make(map[string]bool)
 	for acc := range moduleAccountPermissions {
 		sendCoinBlockedAddrs[authtypes.NewModuleAddress(acc).String()] = !receiveAllowedMAcc[acc]
@@ -184,7 +179,6 @@ func NewApplication(
 		legacyAmino,
 		moduleAccountPermissions,
 		sendCoinBlockedAddrs,
-		blockedModuleAddrs,
 		skipUpgradeHeights,
 		home,
 		invCheckPeriod,
@@ -192,6 +186,7 @@ func NewApplication(
 		wasmDir,
 		enabledProposals,
 		wasmOpts,
+		Bech32MainPrefix,
 	)
 	app.AppKeepers = appKeepers
 
@@ -245,6 +240,9 @@ func NewApplication(
 	app.BaseApp.SetInitChainer(app.InitChainer)
 	app.BaseApp.SetBeginBlocker(app.moduleManager.BeginBlock)
 	app.BaseApp.SetEndBlocker(app.moduleManager.EndBlock)
+
+	// setup postHandler in this method
+	// app.setupPostHandler()
 
 	// must be before Loading version
 	// requires the snapshot store to be created and registered as a BaseAppOption
@@ -505,17 +503,13 @@ func (app *Application) RegisterGRPCServer(server grpc.Server) {
 
 func (app *Application) RegisterAPIRoutes(apiServer *api.Server, apiConfig config.APIConfig) {
 	clientCtx := apiServer.ClientCtx
-	rpc.RegisterRoutes(clientCtx, apiServer.Router)
-	// Register legacy tx routes.
-	authrest.RegisterTxRoutes(clientCtx, apiServer.Router)
 	// Register new tx routes from grpc-gateway.
 	authtx.RegisterGRPCGatewayRoutes(clientCtx, apiServer.GRPCGatewayRouter)
 	// Register new tendermint queries routes from grpc-gateway.
 	tmservice.RegisterGRPCGatewayRoutes(clientCtx, apiServer.GRPCGatewayRouter)
 	// Register node gRPC service for grpc-gateway.
 	nodeservice.RegisterGRPCGatewayRoutes(clientCtx, apiServer.GRPCGatewayRouter)
-	// Register legacy and grpc-gateway routes for all modules.
-	ModuleBasics.RegisterRESTRoutes(clientCtx, apiServer.Router)
+	// Register grpc-gateway routes for all modules.
 	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiServer.GRPCGatewayRouter)
 
 	// register swagger API from root so that other applications can override easily
@@ -555,6 +549,22 @@ func (app *Application) setupUpgradeStoreLoaders() {
 	}
 }
 
+// PostHandlers are like AnteHandlers (they have the same signature), but they are run after runMsgs.
+// One use case for PostHandlers is transaction tips,
+// but other use cases like unused gas refund can also be enabled by PostHandlers.
+//
+// In baseapp, postHandlers are run in the same store branch as `runMsgs`,
+// meaning that both `runMsgs` and `postHandler` state will be committed if
+// both are successful, and both will be reverted if any of the two fails.
+func (app *Application) setupPostHandler() {
+	postDecorators := []sdk.AnteDecorator{
+		// posthandler.NewTipDecorator(app.BankKeeper),
+		// ... add more decorators as needed
+	}
+	postHandler := sdk.ChainAnteDecorators(postDecorators...)
+	app.SetPostHandler(postHandler)
+}
+
 func RegisterSwaggerAPI(rtr *mux.Router) {
 	statikFS, err := fs.New()
 	if err != nil {
@@ -570,7 +580,7 @@ func (app *Application) RegisterTxService(clientContect client.Context) {
 }
 
 func (app *Application) RegisterTendermintService(clientCtx client.Context) {
-	tmservice.RegisterTendermintService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.interfaceRegistry)
+	tmservice.RegisterTendermintService(clientCtx, app.BaseApp.GRPCQueryRouter(), app.interfaceRegistry, app.Query)
 }
 func (app *Application) RegisterNodeService(clientCtx client.Context) {
 	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter())

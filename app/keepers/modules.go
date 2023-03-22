@@ -23,10 +23,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
-	ica "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts"
-	"github.com/cosmos/ibc-go/v4/modules/apps/transfer"
-	ibc "github.com/cosmos/ibc-go/v4/modules/core"
-	ibcclient "github.com/cosmos/ibc-go/v4/modules/core/02-client/client"
+	ica "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts"
+	"github.com/cosmos/ibc-go/v6/modules/apps/transfer"
+	ibc "github.com/cosmos/ibc-go/v6/modules/core"
+	ibcclient "github.com/cosmos/ibc-go/v6/modules/core/02-client/client"
 	"github.com/persistenceOne/persistence-sdk/v2/x/epochs"
 	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
 	"github.com/persistenceOne/persistence-sdk/v2/x/ibchooker"
@@ -51,15 +51,14 @@ var AppModuleBasics = []module.AppModuleBasic{
 			wasmclient.ProposalHandlers,
 			paramsclient.ProposalHandler,
 			distributionclient.ProposalHandler,
-			upgradeclient.ProposalHandler,
-			upgradeclient.CancelProposalHandler,
+			upgradeclient.LegacyProposalHandler,
+			upgradeclient.LegacyCancelProposalHandler,
 			ibcclient.UpdateClientProposalHandler,
 			ibcclient.UpgradeProposalHandler,
-			lscosmosclient.RegisterHostChainProposalHandler,
 			lscosmosclient.MinDepositAndFeeChangeProposalHandler,
 			lscosmosclient.PstakeFeeAddressChangeProposalHandler,
 			lscosmosclient.AllowListValidatorSetChangeProposalHandler,
-		)...,
+		),
 	),
 	params.AppModuleBasic{},
 	crisis.AppModuleBasic{},
