@@ -6,6 +6,7 @@ CHAIN_DIR ?= /tmp/trash
 CHAIN_BIN ?= ./../../build/persistenceCore
 CHAIN_DATA_DIR ?= .persistenceCore
 WASM_PERMISSIONLESS ?= false
+ASSET ?= DUMMY
 
 all: docker-clean clean setup start
 
@@ -15,6 +16,7 @@ all: docker-clean clean setup start
 	CHAIN_BIN=$(CHAIN_BIN) \
 	WASM_PERMISSIONLESS=$(WASM_PERMISSIONLESS) \
 	CHAIN_DATA_DIR=$(CHAIN_DATA_DIR) \
+	ASSET=$(ASSET) \
 	/bin/bash $(SCRIPT_FILE)
 
 setup: setup-cosmovisor
@@ -57,14 +59,21 @@ run-wasm-cw20-govinit:
 run-upgrade:
 	$(MAKE) .bash SCRIPT_FILE=upgrade.sh
 
+
 run-oracle-feeder:
+	rm -rf $(CHAIN_DIR)/oracle-feeder
+
 	## clone & run oracle-feeder
 	$(MAKE) .bash SCRIPT_FILE=oracle/feeder.sh
 
 run-oracle-update-params:
-	# update oracle asset params in persistenceCore chain to dummy asset
-
+	# update oracle asset params in persistenceCore chain to "DUMMY" asset
 	$(MAKE) .bash SCRIPT_FILE=oracle/update_params.sh
+
+run-oracle-contract:
+	# deploy oracle contract in persistenceCore chain
+
+	$(MAKE) .bash SCRIPT_FILE=oracle/contract.sh
 
 ###############################################################################
 ###                              Docker commands                            ###

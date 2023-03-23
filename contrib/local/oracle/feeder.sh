@@ -7,15 +7,14 @@ mkdir -p $DIR
 # Move into the repo directory
 cd $DIR
 
-# git clone git@github.com:persistenceOne/oracle-feeder.git
-cp -r /Users/arijitdas/go/src/github.com/persistenceOne/oracle-feeder $DIR/oracle-feeder
+## Clone the oracle-feeder repo.
+git clone git@github.com:persistenceOne/oracle-feeder.git
 
 # Move into the oracle feeder directory
 cd $DIR/oracle-feeder
 
 # Checkout specific branch and build the binary
-#git checkout ft-price-feeder &&
-go install
+git checkout tikaryan/add-mock-provider && go install
 
 # initialize oracle-feeder configuration
 touch $DIR/oracle-feeder/config.toml
