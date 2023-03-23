@@ -57,6 +57,10 @@ run-wasm-cw20-govinit:
 run-upgrade:
 	$(MAKE) .bash SCRIPT_FILE=upgrade.sh
 
+run-oracle-feeder:
+	## clone & run oracle-feeder
+	$(MAKE) .bash SCRIPT_FILE=oracle/feeder.sh
+
 run-oracle-update-params:
 	# update oracle asset params in persistenceCore chain to dummy asset
 
