@@ -556,6 +556,7 @@ func (app *Application) setupUpgradeStoreLoaders() {
 // In baseapp, postHandlers are run in the same store branch as `runMsgs`,
 // meaning that both `runMsgs` and `postHandler` state will be committed if
 // both are successful, and both will be reverted if any of the two fails.
+// nolint:unused // post handle is not used for now (as there is no requirement of it)
 func (app *Application) setupPostHandler() {
 	postDecorators := []sdk.AnteDecorator{
 		// posthandler.NewTipDecorator(app.BankKeeper),

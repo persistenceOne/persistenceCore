@@ -24,6 +24,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 	ica "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts"
+	ibcfee "github.com/cosmos/ibc-go/v6/modules/apps/29-fee"
 	"github.com/cosmos/ibc-go/v6/modules/apps/transfer"
 	ibc "github.com/cosmos/ibc-go/v6/modules/core"
 	ibcclient "github.com/cosmos/ibc-go/v6/modules/core/02-client/client"
@@ -77,4 +78,5 @@ var AppModuleBasics = []module.AppModuleBasic{
 	interchainquery.AppModuleBasic{},
 	ibchooker.AppModuleBasic{},
 	lscosmos.AppModuleBasic{},
+	ibcfee.AppModuleBasic{},
 }

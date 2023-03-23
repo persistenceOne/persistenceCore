@@ -38,6 +38,8 @@ import (
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	ica "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts"
 	icatypes "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/types"
+	ibcfee "github.com/cosmos/ibc-go/v6/modules/apps/29-fee"
+	ibcfeetypes "github.com/cosmos/ibc-go/v6/modules/apps/29-fee/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v6/modules/core"
 	ibchost "github.com/cosmos/ibc-go/v6/modules/core/24-host"
@@ -60,6 +62,7 @@ var ModuleAccountPermissions = map[string][]string{
 	stakingtypes.NotBondedPoolName:           {authtypes.Burner, authtypes.Staking},
 	govtypes.ModuleName:                      {authtypes.Burner},
 	ibctransfertypes.ModuleName:              {authtypes.Minter, authtypes.Burner},
+	ibcfeetypes.ModuleName:                   nil,
 	wasm.ModuleName:                          {authtypes.Burner},
 	lscosmostypes.ModuleName:                 {authtypes.Minter, authtypes.Burner},
 	lscosmostypes.DepositModuleAccount:       nil,
@@ -95,6 +98,7 @@ func appModules(
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, *app.FeegrantKeeper, app.interfaceRegistry),
 		authzmodule.NewAppModule(appCodec, *app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		ibc.NewAppModule(app.IBCKeeper),
+		ibcfee.NewAppModule(*app.IBCFeeKeeper),
 		params.NewAppModule(*app.ParamsKeeper),
 		halving.NewAppModule(appCodec, *app.HalvingKeeper),
 		app.TransferModule,
@@ -129,6 +133,7 @@ func simulationModules(
 		authzmodule.NewAppModule(appCodec, *app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, *app.FeegrantKeeper, app.interfaceRegistry),
 		ibc.NewAppModule(app.IBCKeeper),
+		ibcfee.NewAppModule(*app.IBCFeeKeeper),
 		app.TransferModule,
 		app.InterchainQueryModule,
 		app.LSCosmosModule,
@@ -146,6 +151,7 @@ func orderBeginBlockers() []string {
 		ibctransfertypes.ModuleName,
 		ibchost.ModuleName,
 		icatypes.ModuleName,
+		ibcfeetypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
 		distributiontypes.ModuleName,
@@ -173,6 +179,7 @@ func orderEndBlockers() []string {
 		ibctransfertypes.ModuleName,
 		ibchost.ModuleName,
 		icatypes.ModuleName,
+		ibcfeetypes.ModuleName,
 		feegrant.ModuleName,
 		authz.ModuleName,
 		capabilitytypes.ModuleName,
@@ -214,6 +221,7 @@ func orderInitGenesis() []string {
 		ibctransfertypes.ModuleName,
 		ibchost.ModuleName,
 		icatypes.ModuleName,
+		ibcfeetypes.ModuleName,
 		evidencetypes.ModuleName,
 		feegrant.ModuleName,
 		authz.ModuleName,
