@@ -54,3 +54,24 @@ Commands we can run with permissionless wasm are
 * `make run-contract`
 * `make run-gov-contract`
 * `make run-cw20-base`
+
+## Test Dummy asset price
+
+In order test the DUMMY asset price feed and test the oracle follow the steps below:
+Currently the dummy asset price feed is only available in local-net.
+
+```bash
+# Start the chain in separate terminal with permissionless
+WASM_PERMISSIONLESS=true make
+
+make run-oracle-update-params
+
+# Wait for the above command to finish.
+# This will update the oracle params in the chain so it can accept the price feed for DUMMY asset
+
+# Start the feeder in separate terminal
+make run-oracle-feeder
+
+# Deploy the oracle dummy contract for DUMMY asset.
+ASSET="DUMMY" make run-oracle-contract
+```
