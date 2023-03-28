@@ -1,0 +1,18 @@
+{
+    "title": "Oracle Param Change",
+    "description": "Update accept list to introduce dummy asset",
+    "changes": [
+        {
+            "subspace": "oracle",
+            "key": "AcceptList",
+            "value": [
+                {
+                    "base_denom": "27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
+                    "symbol_denom": "DUMMY",
+                    "exponent": 6
+                }
+            ]
+        }
+    ],
+    "deposit": "1000uxprt"
+}
