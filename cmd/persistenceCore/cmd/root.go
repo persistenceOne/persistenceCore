@@ -15,6 +15,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/pruning"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/server"
+	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
@@ -73,7 +74,9 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			}
 
 			tmConfig := tmcfg.DefaultConfig()
-			return server.InterceptConfigsPreRunHandler(cmd, "", nil, tmConfig)
+			customConfigTemplate, customAppConfig := initAppConfig()
+
+			return server.InterceptConfigsPreRunHandler(cmd, customConfigTemplate, customAppConfig, tmConfig)
 		},
 	}
 
@@ -93,6 +96,14 @@ func setConfig() {
 	cfg.SetPurpose(app.Purpose)
 
 	cfg.Seal()
+}
+
+func initAppConfig() (string, interface{}) {
+	srvCfg := serverconfig.DefaultConfig()
+	srvCfg.MinGasPrices = "0uxprt"
+	return params.CustomConfigTemplate, params.CustomAppConfig{
+		Config: *srvCfg,
+	}
 }
 
 func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
