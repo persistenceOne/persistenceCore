@@ -179,6 +179,8 @@ replace (
 	// TODO Remove it: https://github.com/cosmos/cosmos-sdk/issues/10409
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.7.7
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
+	// use persistence-sdk branch with LSM module
+	github.com/persistenceOne/persistence-sdk/v2 => github.com/persistenceOne/persistence-sdk/v2 v2.0.1-0.20230403194140-3773b08f31a1
 	// use cometbft
 	github.com/tendermint/tendermint => github.com/cometbft/cometbft v0.34.27
 )

@@ -35,12 +35,13 @@ import (
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
-	"github.com/cosmos/cosmos-sdk/x/staking"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	sdkstakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/gogo/protobuf/grpc"
 	"github.com/gorilla/mux"
+	slashingtypes "github.com/persistenceOne/persistence-sdk/v2/x/lsnative/slashing/types"
+	"github.com/persistenceOne/persistence-sdk/v2/x/lsnative/staking"
+	stakingtypes "github.com/persistenceOne/persistence-sdk/v2/x/lsnative/staking/types"
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 	"github.com/rakyll/statik/fs"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
@@ -206,8 +207,9 @@ func NewApplication(
 	app.moduleManager.SetOrderInitGenesis(orderInitGenesis()...)
 
 	app.moduleManager.RegisterInvariants(app.CrisisKeeper)
-	app.moduleManager.RegisterRoutes(app.BaseApp.Router(), app.BaseApp.QueryRouter(), encodingConfiguration.Amino)
-	app.configurator = module.NewConfigurator(app.applicationCodec, app.BaseApp.MsgServiceRouter(), app.BaseApp.GRPCQueryRouter())
+	app.moduleManager.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfiguration.Amino)
+
+	app.configurator = module.NewConfigurator(app.applicationCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
 	app.moduleManager.RegisterServices(app.configurator)
 
 	simulationManager := module.NewSimulationManager(simulationModules(app, encodingConfiguration, skipGenesisInvariants)...)
@@ -336,7 +338,7 @@ func (app *Application) ExportAppStateAndValidators(forZeroHeight bool, jailWhit
 
 		app.CrisisKeeper.AssertInvariants(context)
 
-		app.StakingKeeper.IterateValidators(context, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
+		app.StakingKeeper.IterateValidators(context, func(_ int64, val sdkstakingtypes.ValidatorI) (stop bool) {
 			_, _ = app.DistributionKeeper.WithdrawValidatorCommission(context, val.GetOperator())
 			return false
 		})
@@ -363,7 +365,7 @@ func (app *Application) ExportAppStateAndValidators(forZeroHeight bool, jailWhit
 		height := context.BlockHeight()
 		context = context.WithBlockHeight(0)
 
-		app.StakingKeeper.IterateValidators(context, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
+		app.StakingKeeper.IterateValidators(context, func(_ int64, val sdkstakingtypes.ValidatorI) (stop bool) {
 
 			scraps := app.DistributionKeeper.GetValidatorOutstandingRewardsCoins(context, val.GetOperator())
 			feePool := app.DistributionKeeper.GetFeePool(context)
@@ -413,7 +415,7 @@ func (app *Application) ExportAppStateAndValidators(forZeroHeight bool, jailWhit
 
 		for ; kvStoreReversePrefixIterator.Valid(); kvStoreReversePrefixIterator.Next() {
 			addr := sdk.ValAddress(kvStoreReversePrefixIterator.Key()[1:])
-			validator, found := app.StakingKeeper.GetValidator(context, addr)
+			validator, found := app.StakingKeeper.GetLiquidValidator(context, addr)
 
 			if !found {
 				panic("Validator not found!")
