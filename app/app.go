@@ -32,6 +32,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
@@ -52,12 +53,12 @@ import (
 	"github.com/persistenceOne/persistenceCore/v7/app/keepers"
 	appparams "github.com/persistenceOne/persistenceCore/v7/app/params"
 	"github.com/persistenceOne/persistenceCore/v7/app/upgrades"
-	v7 "github.com/persistenceOne/persistenceCore/v7/app/upgrades/v7"
+	v8 "github.com/persistenceOne/persistenceCore/v7/app/upgrades/v8"
 )
 
 var (
 	DefaultNodeHome string
-	Upgrades        = []upgrades.Upgrade{v7.Upgrade}
+	Upgrades        = []upgrades.Upgrade{v8.Upgrade}
 	ModuleBasics    = module.NewBasicManager(keepers.AppModuleBasics...)
 )
 
@@ -241,9 +242,6 @@ func NewApplication(
 	app.BaseApp.SetBeginBlocker(app.moduleManager.BeginBlock)
 	app.BaseApp.SetEndBlocker(app.moduleManager.EndBlock)
 
-	// setup postHandler in this method
-	// app.setupPostHandler()
-
 	// must be before Loading version
 	// requires the snapshot store to be created and registered as a BaseAppOption
 	// see cmd/wasmd/root.go: 206 - 214 approx
@@ -256,6 +254,8 @@ func NewApplication(
 		}
 	}
 
+	// setup postHandler in this method
+	// app.setupPostHandler()
 	app.setupUpgradeHandlers()
 	app.setupUpgradeStoreLoaders()
 
@@ -522,11 +522,14 @@ func (app *Application) setupUpgradeHandlers() {
 	for _, upgrade := range Upgrades {
 		app.UpgradeKeeper.SetUpgradeHandler(
 			upgrade.UpgradeName,
-			upgrade.CreateUpgradeHandler(
-				app.moduleManager,
-				app.configurator,
-				&app.AppKeepers,
-			),
+			upgrade.CreateUpgradeHandler(upgrades.UpgradeHandlerArgs{
+				ModuleManager:      app.moduleManager,
+				Configurator:       app.configurator,
+				Keepers:            &app.AppKeepers,
+				Codec:              app.applicationCodec,
+				CapabilityStoreKey: app.GetKVStoreKey()[capabilitytypes.StoreKey],
+				CapabilityKeeper:   app.CapabilityKeeper,
+			}),
 		)
 	}
 }
