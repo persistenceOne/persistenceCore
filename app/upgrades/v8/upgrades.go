@@ -19,6 +19,9 @@ func setInitialMinCommissionRate(ctx sdk.Context, keepers *keepers.AppKeepers) {
 
 func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
+		ctx.Logger().Info("running upgrade handler")
+
+		ctx.Logger().Info("migrating ics27 channel capability")
 		err := icaMigrations.MigrateICS27ChannelCapability(
 			ctx,
 			args.Codec,
@@ -31,11 +34,16 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 			return nil, err
 		}
 
+		ctx.Logger().Info("running module migrations")
+		newVm, err := args.ModuleManager.RunMigrations(ctx, args.Configurator, vm)
+		if err != nil {
+			return newVm, err
+		}
+
+		ctx.Logger().Info("setting min commission rate to 5%")
 		setInitialMinCommissionRate(ctx, args.Keepers)
 
 		// force set validator (if mcr < 5)
-
-		ctx.Logger().Info("start to run module migrations...")
-		return args.ModuleManager.RunMigrations(ctx, args.Configurator, vm)
+		return newVm, err
 	}
 }
