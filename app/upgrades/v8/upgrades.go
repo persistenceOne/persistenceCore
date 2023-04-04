@@ -15,6 +15,24 @@ func setInitialMinCommissionRate(ctx sdk.Context, keepers *keepers.AppKeepers) {
 	stakingParams := keepers.StakingKeeper.GetParams(ctx)
 	stakingParams.MinCommissionRate = sdk.NewDecWithPrec(5, 2)
 	keepers.StakingKeeper.SetParams(ctx, stakingParams)
+
+	// Force update validator commission rate if it is lower than the minimum rate
+	validators := keepers.StakingKeeper.GetAllValidators(ctx)
+	for _, v := range validators {
+		if v.Commission.Rate.LT(stakingParams.MinCommissionRate) {
+			if v.Commission.MaxRate.LT(stakingParams.MinCommissionRate) {
+				v.Commission.MaxRate = stakingParams.MinCommissionRate
+			}
+
+			v.Commission.Rate = stakingParams.MinCommissionRate
+			v.Commission.UpdateTime = ctx.BlockHeader().Time
+
+			v.Commission.UpdateTime = v.Commission.UpdateTime.AddDate(0, 0, -2) // TODO: remove this after testing
+			// call the before-modification hook since we're about to update the commission
+			keepers.StakingKeeper.BeforeValidatorModified(ctx, v.GetOperator())
+			keepers.StakingKeeper.SetValidator(ctx, v)
+		}
+	}
 }
 
 func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.UpgradeHandler {
@@ -43,7 +61,6 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 		ctx.Logger().Info("setting min commission rate to 5%")
 		setInitialMinCommissionRate(ctx, args.Keepers)
 
-		// force set validator (if mcr < 5)
 		return newVm, err
 	}
 }
