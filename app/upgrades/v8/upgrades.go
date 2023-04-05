@@ -27,7 +27,6 @@ func setInitialMinCommissionRate(ctx sdk.Context, keepers *keepers.AppKeepers) {
 			v.Commission.Rate = stakingParams.MinCommissionRate
 			v.Commission.UpdateTime = ctx.BlockHeader().Time
 
-			v.Commission.UpdateTime = v.Commission.UpdateTime.AddDate(0, 0, -2) // TODO: remove this after testing
 			// call the before-modification hook since we're about to update the commission
 			keepers.StakingKeeper.BeforeValidatorModified(ctx, v.GetOperator())
 			keepers.StakingKeeper.SetValidator(ctx, v)
