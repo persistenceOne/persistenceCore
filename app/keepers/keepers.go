@@ -422,7 +422,6 @@ func NewAppKeeper(
 	// RecvPacket, message that originates from core IBC and goes down to app, the flow is
 	// channel.RecvPacket -> fee.OnRecvPacket -> ibchooker.OnRecvPacket -> transfer.OnRecvPacket
 	transferStack := ibcfee.NewIBCMiddleware(appKeepers.IBCTransferHooksMiddleware, *appKeepers.IBCFeeKeeper)
-	icaControllerStack := ibcfee.NewIBCMiddleware(icaControllerIBCModule, *appKeepers.IBCFeeKeeper)
 
 	var wasmStack ibctypes.IBCModule
 	wasmStack = wasm.NewIBCHandler(appKeepers.WasmKeeper, appKeepers.IBCKeeper.ChannelKeeper, appKeepers.IBCFeeKeeper)
@@ -432,8 +431,8 @@ func NewAppKeeper(
 	ibcRouter := ibctypes.NewRouter()
 	ibcRouter.AddRoute(icahosttypes.SubModuleName, icaHostStack).
 		AddRoute(ibctransfertypes.ModuleName, transferStack).
-		AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
-		AddRoute(lscosmostypes.ModuleName, icaControllerStack).
+		AddRoute(icacontrollertypes.SubModuleName, icaControllerIBCModule).
+		AddRoute(lscosmostypes.ModuleName, icaControllerIBCModule).
 		AddRoute(wasm.ModuleName, wasmStack)
 	appKeepers.IBCKeeper.SetRouter(ibcRouter)
 
