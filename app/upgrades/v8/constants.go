@@ -3,6 +3,7 @@ package v8
 import (
 	store "github.com/cosmos/cosmos-sdk/store/types"
 	ibcfeetypes "github.com/cosmos/ibc-go/v6/modules/apps/29-fee/types"
+	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
 
 	"github.com/persistenceOne/persistenceCore/v7/app/upgrades"
 )
@@ -18,6 +19,7 @@ var Upgrade = upgrades.Upgrade{
 	StoreUpgrades: store.StoreUpgrades{
 		Added: []string{
 			ibcfeetypes.ModuleName,
+			oracletypes.ModuleName,
 		},
 	},
 }
