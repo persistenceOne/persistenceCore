@@ -8,8 +8,8 @@ require (
 	github.com/cosmos/ibc-go/v6 v6.1.0
 	github.com/gogo/protobuf v1.3.3
 	github.com/gorilla/mux v1.8.0
-	github.com/persistenceOne/persistence-sdk/v2 v2.0.1-0.20230403162901-f024b9e9aef3
-	github.com/persistenceOne/pstake-native/v2 v2.0.1-0.20230404112411-2fee937fa1d7
+	github.com/persistenceOne/persistence-sdk/v2 v2.0.1-0.20230327070142-6729695d795d
+	github.com/persistenceOne/pstake-native/v2 v2.0.0
 	github.com/prometheus/client_golang v1.14.0
 	github.com/rakyll/statik v0.1.7
 	github.com/spf13/cast v1.5.0
@@ -179,8 +179,10 @@ replace (
 	// TODO Remove it: https://github.com/cosmos/cosmos-sdk/issues/10409
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.7.7
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	// use persistence-sdk branch with LSM module
-	github.com/persistenceOne/persistence-sdk/v2 => github.com/persistenceOne/persistence-sdk/v2 v2.0.1-0.20230403194140-3773b08f31a1
+	// use persistence-sdk branch with LSM module & Oracle module
+	github.com/persistenceOne/persistence-sdk/v2 => github.com/persistenceOne/persistence-sdk/v2 v2.0.1-0.20230414130614-ac343b9f7a34
+	// use pstake-native branch with sdk v46 changes
+	github.com/persistenceOne/pstake-native/v2 => github.com/persistenceOne/pstake-native/v2 v2.0.1-0.20230404112411-2fee937fa1d7
 	// use cometbft
 	github.com/tendermint/tendermint => github.com/cometbft/cometbft v0.34.27
 )
