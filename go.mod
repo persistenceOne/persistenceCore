@@ -180,7 +180,7 @@ replace (
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.7.7
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	// use persistence-sdk branch with LSM module & Oracle module
-	github.com/persistenceOne/persistence-sdk/v2 => github.com/persistenceOne/persistence-sdk/v2 v2.0.1-0.20230414130614-ac343b9f7a34
+	github.com/persistenceOne/persistence-sdk/v2 => github.com/persistenceOne/persistence-sdk/v2 v2.0.1-0.20230418163938-83a82c01fb98
 	// use pstake-native branch with sdk v46 changes
 	github.com/persistenceOne/pstake-native/v2 => github.com/persistenceOne/pstake-native/v2 v2.0.1-0.20230404112411-2fee937fa1d7
 	// use cometbft
