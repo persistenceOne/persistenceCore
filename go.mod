@@ -9,7 +9,7 @@ require (
 	github.com/cosmos/ibc-go/v6 v6.1.0
 	github.com/gogo/protobuf v1.3.3
 	github.com/gorilla/mux v1.8.0
-	github.com/persistenceOne/persistence-sdk/v2 v2.1.0-rc0
+	github.com/persistenceOne/persistence-sdk/v2 v2.1.0-rc1
 	github.com/persistenceOne/pstake-native/v2 v2.1.0-rc0
 	github.com/prometheus/client_golang v1.14.0
 	github.com/rakyll/statik v0.1.7
