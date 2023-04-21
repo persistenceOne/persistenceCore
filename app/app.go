@@ -20,7 +20,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	nodeservice "github.com/cosmos/cosmos-sdk/client/grpc/node"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
-	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/server/api"
@@ -31,17 +30,18 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
-	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
-	"github.com/cosmos/cosmos-sdk/x/staking"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	sdkstakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/gogo/protobuf/grpc"
 	"github.com/gorilla/mux"
+	slashingtypes "github.com/persistenceOne/persistence-sdk/v2/x/lsnative/slashing/types"
+	"github.com/persistenceOne/persistence-sdk/v2/x/lsnative/staking"
+	stakingtypes "github.com/persistenceOne/persistence-sdk/v2/x/lsnative/staking/types"
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 	"github.com/rakyll/statik/fs"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
@@ -54,12 +54,12 @@ import (
 	"github.com/persistenceOne/persistenceCore/v7/app/keepers"
 	appparams "github.com/persistenceOne/persistenceCore/v7/app/params"
 	"github.com/persistenceOne/persistenceCore/v7/app/upgrades"
-	v7 "github.com/persistenceOne/persistenceCore/v7/app/upgrades/v7"
+	v8 "github.com/persistenceOne/persistenceCore/v7/app/upgrades/v8"
 )
 
 var (
 	DefaultNodeHome string
-	Upgrades        = []upgrades.Upgrade{v7.Upgrade}
+	Upgrades        = []upgrades.Upgrade{v8.Upgrade}
 	ModuleBasics    = module.NewBasicManager(keepers.AppModuleBasics...)
 )
 
@@ -162,10 +162,7 @@ func NewApplication(
 		interfaceRegistry: interfaceRegistry,
 	}
 
-	blockedModuleAddrs := make(map[string]bool)
-	for moduleAccount := range moduleAccountPermissions {
-		blockedModuleAddrs[authtypes.NewModuleAddress(moduleAccount).String()] = true
-	}
+	// these blocked address will be used in distribution keeper as well
 	sendCoinBlockedAddrs := make(map[string]bool)
 	for acc := range moduleAccountPermissions {
 		sendCoinBlockedAddrs[authtypes.NewModuleAddress(acc).String()] = !receiveAllowedMAcc[acc]
@@ -184,7 +181,6 @@ func NewApplication(
 		legacyAmino,
 		moduleAccountPermissions,
 		sendCoinBlockedAddrs,
-		blockedModuleAddrs,
 		skipUpgradeHeights,
 		home,
 		invCheckPeriod,
@@ -192,6 +188,7 @@ func NewApplication(
 		wasmDir,
 		enabledProposals,
 		wasmOpts,
+		Bech32MainPrefix,
 	)
 	app.AppKeepers = appKeepers
 
@@ -210,8 +207,9 @@ func NewApplication(
 	app.moduleManager.SetOrderInitGenesis(orderInitGenesis()...)
 
 	app.moduleManager.RegisterInvariants(app.CrisisKeeper)
-	app.moduleManager.RegisterRoutes(app.BaseApp.Router(), app.BaseApp.QueryRouter(), encodingConfiguration.Amino)
-	app.configurator = module.NewConfigurator(app.applicationCodec, app.BaseApp.MsgServiceRouter(), app.BaseApp.GRPCQueryRouter())
+	app.moduleManager.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfiguration.Amino)
+
+	app.configurator = module.NewConfigurator(app.applicationCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
 	app.moduleManager.RegisterServices(app.configurator)
 
 	simulationManager := module.NewSimulationManager(simulationModules(app, encodingConfiguration, skipGenesisInvariants)...)
@@ -258,6 +256,8 @@ func NewApplication(
 		}
 	}
 
+	// setup postHandler in this method
+	// app.setupPostHandler()
 	app.setupUpgradeHandlers()
 	app.setupUpgradeStoreLoaders()
 
@@ -274,13 +274,6 @@ func NewApplication(
 	}
 
 	return app
-}
-
-func (app *Application) CreateUpgradeHandler(mm *module.Manager, configurator module.Configurator) upgradetypes.UpgradeHandler {
-	return func(ctx sdk.Context, _ upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
-
-		return mm.RunMigrations(ctx, configurator, vm)
-	}
 }
 
 func (app *Application) ApplicationCodec() codec.Codec {
@@ -338,7 +331,7 @@ func (app *Application) ExportAppStateAndValidators(forZeroHeight bool, jailWhit
 
 		app.CrisisKeeper.AssertInvariants(context)
 
-		app.StakingKeeper.IterateValidators(context, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
+		app.StakingKeeper.IterateValidators(context, func(_ int64, val sdkstakingtypes.ValidatorI) (stop bool) {
 			_, _ = app.DistributionKeeper.WithdrawValidatorCommission(context, val.GetOperator())
 			return false
 		})
@@ -365,7 +358,7 @@ func (app *Application) ExportAppStateAndValidators(forZeroHeight bool, jailWhit
 		height := context.BlockHeight()
 		context = context.WithBlockHeight(0)
 
-		app.StakingKeeper.IterateValidators(context, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
+		app.StakingKeeper.IterateValidators(context, func(_ int64, val sdkstakingtypes.ValidatorI) (stop bool) {
 
 			scraps := app.DistributionKeeper.GetValidatorOutstandingRewardsCoins(context, val.GetOperator())
 			feePool := app.DistributionKeeper.GetFeePool(context)
@@ -415,7 +408,7 @@ func (app *Application) ExportAppStateAndValidators(forZeroHeight bool, jailWhit
 
 		for ; kvStoreReversePrefixIterator.Valid(); kvStoreReversePrefixIterator.Next() {
 			addr := sdk.ValAddress(kvStoreReversePrefixIterator.Key()[1:])
-			validator, found := app.StakingKeeper.GetValidator(context, addr)
+			validator, found := app.StakingKeeper.GetLiquidValidator(context, addr)
 
 			if !found {
 				panic("Validator not found!")
@@ -505,17 +498,13 @@ func (app *Application) RegisterGRPCServer(server grpc.Server) {
 
 func (app *Application) RegisterAPIRoutes(apiServer *api.Server, apiConfig config.APIConfig) {
 	clientCtx := apiServer.ClientCtx
-	rpc.RegisterRoutes(clientCtx, apiServer.Router)
-	// Register legacy tx routes.
-	authrest.RegisterTxRoutes(clientCtx, apiServer.Router)
 	// Register new tx routes from grpc-gateway.
 	authtx.RegisterGRPCGatewayRoutes(clientCtx, apiServer.GRPCGatewayRouter)
 	// Register new tendermint queries routes from grpc-gateway.
 	tmservice.RegisterGRPCGatewayRoutes(clientCtx, apiServer.GRPCGatewayRouter)
 	// Register node gRPC service for grpc-gateway.
 	nodeservice.RegisterGRPCGatewayRoutes(clientCtx, apiServer.GRPCGatewayRouter)
-	// Register legacy and grpc-gateway routes for all modules.
-	ModuleBasics.RegisterRESTRoutes(clientCtx, apiServer.Router)
+	// Register grpc-gateway routes for all modules.
 	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiServer.GRPCGatewayRouter)
 
 	// register swagger API from root so that other applications can override easily
@@ -528,11 +517,14 @@ func (app *Application) setupUpgradeHandlers() {
 	for _, upgrade := range Upgrades {
 		app.UpgradeKeeper.SetUpgradeHandler(
 			upgrade.UpgradeName,
-			upgrade.CreateUpgradeHandler(
-				app.moduleManager,
-				app.configurator,
-				&app.AppKeepers,
-			),
+			upgrade.CreateUpgradeHandler(upgrades.UpgradeHandlerArgs{
+				ModuleManager:      app.moduleManager,
+				Configurator:       app.configurator,
+				Keepers:            &app.AppKeepers,
+				Codec:              app.applicationCodec,
+				CapabilityStoreKey: app.GetKVStoreKey()[capabilitytypes.StoreKey],
+				CapabilityKeeper:   app.CapabilityKeeper,
+			}),
 		)
 	}
 }
@@ -555,6 +547,23 @@ func (app *Application) setupUpgradeStoreLoaders() {
 	}
 }
 
+// PostHandlers are like AnteHandlers (they have the same signature), but they are run after runMsgs.
+// One use case for PostHandlers is transaction tips,
+// but other use cases like unused gas refund can also be enabled by PostHandlers.
+//
+// In baseapp, postHandlers are run in the same store branch as `runMsgs`,
+// meaning that both `runMsgs` and `postHandler` state will be committed if
+// both are successful, and both will be reverted if any of the two fails.
+// nolint:unused // post handle is not used for now (as there is no requirement of it)
+func (app *Application) setupPostHandler() {
+	postDecorators := []sdk.AnteDecorator{
+		// posthandler.NewTipDecorator(app.BankKeeper),
+		// ... add more decorators as needed
+	}
+	postHandler := sdk.ChainAnteDecorators(postDecorators...)
+	app.SetPostHandler(postHandler)
+}
+
 func RegisterSwaggerAPI(rtr *mux.Router) {
 	statikFS, err := fs.New()
 	if err != nil {
@@ -570,7 +579,7 @@ func (app *Application) RegisterTxService(clientContect client.Context) {
 }
 
 func (app *Application) RegisterTendermintService(clientCtx client.Context) {
-	tmservice.RegisterTendermintService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.interfaceRegistry)
+	tmservice.RegisterTendermintService(clientCtx, app.BaseApp.GRPCQueryRouter(), app.interfaceRegistry, app.Query)
 }
 func (app *Application) RegisterNodeService(clientCtx client.Context) {
 	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter())

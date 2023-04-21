@@ -19,8 +19,8 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	authvesting "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/cosmos/cosmos-sdk/x/genutil"
-	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	"github.com/persistenceOne/persistence-sdk/v2/x/lsnative/genutil"
+	genutiltypes "github.com/persistenceOne/persistence-sdk/v2/x/lsnative/genutil/types"
 	"github.com/spf13/cobra"
 )
 
@@ -58,7 +58,7 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 				}
 
 				// attempt to lookup address from Keybase if no address was provided
-				kb, err := keyring.New(sdk.KeyringServiceName(), keyringBackend, clientCtx.HomeDir, inBuf)
+				kb, err := keyring.New(sdk.KeyringServiceName(), keyringBackend, clientCtx.HomeDir, inBuf, clientCtx.Codec)
 				if err != nil {
 					return err
 				}
@@ -68,7 +68,10 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 					return fmt.Errorf("failed to get address from Keybase: %w", err)
 				}
 
-				addr = info.GetAddress()
+				addr, err = info.GetAddress()
+				if err != nil {
+					return err
+				}
 			}
 
 			coins, err := sdk.ParseCoinsNormalized(args[1])

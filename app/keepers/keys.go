@@ -8,22 +8,24 @@ import (
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
-	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
 	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	icacontrollertypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/controller/types"
-	icahosttypes "github.com/cosmos/ibc-go/v4/modules/apps/27-interchain-accounts/host/types"
-	ibctransfertypes "github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
-	ibchost "github.com/cosmos/ibc-go/v4/modules/core/24-host"
+	icacontrollertypes "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/controller/types"
+	icahosttypes "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/host/types"
+	ibcfeetypes "github.com/cosmos/ibc-go/v6/modules/apps/29-fee/types"
+	ibctransfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
+	ibchost "github.com/cosmos/ibc-go/v6/modules/core/24-host"
 	epochstypes "github.com/persistenceOne/persistence-sdk/v2/x/epochs/types"
 	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
 	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/types"
+	distributiontypes "github.com/persistenceOne/persistence-sdk/v2/x/lsnative/distribution/types"
+	slashingtypes "github.com/persistenceOne/persistence-sdk/v2/x/lsnative/slashing/types"
+	stakingtypes "github.com/persistenceOne/persistence-sdk/v2/x/lsnative/staking/types"
+	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 )
 
@@ -37,6 +39,7 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
 		feegrant.StoreKey, authzkeeper.StoreKey, icahosttypes.StoreKey, halving.StoreKey, wasm.StoreKey,
 		icacontrollertypes.StoreKey, epochstypes.StoreKey, lscosmostypes.StoreKey, interchainquerytypes.StoreKey,
+		ibcfeetypes.StoreKey, oracletypes.StoreKey,
 	)
 
 	// Define transient store keys

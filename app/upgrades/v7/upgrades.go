@@ -5,17 +5,13 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
-	"github.com/persistenceOne/persistenceCore/v7/app/keepers"
+	"github.com/persistenceOne/persistenceCore/v7/app/upgrades"
 )
 
-func CreateUpgradeHandler(
-	mm *module.Manager,
-	configurator module.Configurator,
-	keepers *keepers.AppKeepers,
-) upgradetypes.UpgradeHandler {
+func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
 		ctx.Logger().Info("start to run module migrations...")
 
-		return mm.RunMigrations(ctx, configurator, vm)
+		return args.ModuleManager.RunMigrations(ctx, args.Configurator, vm)
 	}
 }
