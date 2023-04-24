@@ -5,7 +5,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	icaMigrations "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/controller/migrations/v6"
-	"github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
+	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 
 	"github.com/persistenceOne/persistenceCore/v8/app/keepers"
@@ -37,7 +37,7 @@ func setInitialMinCommissionRate(ctx sdk.Context, keepers *keepers.AppKeepers) {
 
 func setOraclePairListEmpty(ctx sdk.Context, keepers *keepers.AppKeepers) {
 	oracleParams := keepers.OracleKeeper.GetParams(ctx)
-	oracleParams.AcceptList = types.DenomList{}
+	oracleParams.AcceptList = oracletypes.DenomList{}
 	keepers.OracleKeeper.SetParams(ctx, oracleParams)
 }
 
