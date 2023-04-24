@@ -5,6 +5,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	icaMigrations "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/controller/migrations/v6"
+	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 
 	"github.com/persistenceOne/persistenceCore/v8/app/keepers"
@@ -34,6 +35,12 @@ func setInitialMinCommissionRate(ctx sdk.Context, keepers *keepers.AppKeepers) {
 	}
 }
 
+func setOraclePairListEmpty(ctx sdk.Context, keepers *keepers.AppKeepers) {
+	oracleParams := keepers.OracleKeeper.GetParams(ctx)
+	oracleParams.AcceptList = oracletypes.DenomList{}
+	keepers.OracleKeeper.SetParams(ctx, oracleParams)
+}
+
 func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
 		ctx.Logger().Info("running upgrade handler")
@@ -59,6 +66,9 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 
 		ctx.Logger().Info("setting min commission rate to 5%")
 		setInitialMinCommissionRate(ctx, args.Keepers)
+
+		ctx.Logger().Info("setting acceptList to empty in oracle params")
+		setOraclePairListEmpty(ctx, args.Keepers)
 
 		return newVm, err
 	}
