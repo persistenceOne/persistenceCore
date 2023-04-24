@@ -52,7 +52,7 @@ import (
 
 	"github.com/persistenceOne/persistence-sdk/v2/x/oracle"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
-	appparams "github.com/persistenceOne/persistenceCore/v7/app/params"
+	appparams "github.com/persistenceOne/persistenceCore/v8/app/params"
 )
 
 var ModuleAccountPermissions = map[string][]string{

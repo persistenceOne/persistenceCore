@@ -75,7 +75,7 @@ import (
 
 	oraclekeeper "github.com/persistenceOne/persistence-sdk/v2/x/oracle/keeper"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
-	"github.com/persistenceOne/persistenceCore/v7/wasmbindings"
+	"github.com/persistenceOne/persistenceCore/v8/wasmbindings"
 
 	// unnamed import of statik for swagger UI support
 	_ "github.com/cosmos/cosmos-sdk/client/docs/statik"

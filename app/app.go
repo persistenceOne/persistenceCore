@@ -51,10 +51,10 @@ import (
 	tendermintproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tendermintdb "github.com/tendermint/tm-db"
 
-	"github.com/persistenceOne/persistenceCore/v7/app/keepers"
-	appparams "github.com/persistenceOne/persistenceCore/v7/app/params"
-	"github.com/persistenceOne/persistenceCore/v7/app/upgrades"
-	v8 "github.com/persistenceOne/persistenceCore/v7/app/upgrades/v8"
+	"github.com/persistenceOne/persistenceCore/v8/app/keepers"
+	appparams "github.com/persistenceOne/persistenceCore/v8/app/params"
+	"github.com/persistenceOne/persistenceCore/v8/app/upgrades"
+	v8 "github.com/persistenceOne/persistenceCore/v8/app/upgrades/v8"
 )
 
 var (

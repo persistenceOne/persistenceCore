@@ -7,8 +7,8 @@ import (
 	icaMigrations "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/controller/migrations/v6"
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 
-	"github.com/persistenceOne/persistenceCore/v7/app/keepers"
-	"github.com/persistenceOne/persistenceCore/v7/app/upgrades"
+	"github.com/persistenceOne/persistenceCore/v8/app/keepers"
+	"github.com/persistenceOne/persistenceCore/v8/app/upgrades"
 )
 
 func setInitialMinCommissionRate(ctx sdk.Context, keepers *keepers.AppKeepers) {
