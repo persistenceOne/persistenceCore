@@ -67,6 +67,7 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 		ctx.Logger().Info("setting min commission rate to 5%")
 		setInitialMinCommissionRate(ctx, args.Keepers)
 
+		ctx.Logger().Info("setting acceptList to empty in oracle params")
 		setOraclePairListEmpty(ctx, args.Keepers)
 
 		return newVm, err
