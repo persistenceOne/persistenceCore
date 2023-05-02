@@ -146,6 +146,8 @@ require (
 )
 
 replace (
+	// CosmWasm cherry security patch - https://github.com/CosmWasm/advisories/blob/main/CWAs/CWA-2023-002.md
+	github.com/CosmWasm/wasmvm => github.com/CosmWasm/wasmvm v1.1.2
 	github.com/confio/ics23/go => github.com/confio/ics23/go v0.9.0
 	github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk v0.45.14
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.7.7
