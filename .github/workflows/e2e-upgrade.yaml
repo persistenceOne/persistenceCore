@@ -25,6 +25,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.19
+        id: go
+
       # Starship Infra setup
       # - Connects to k8s cluster with kubeconfig (digital ocean)
       # - Creates a new namespace based on the name (deleted in next step)
@@ -42,7 +48,8 @@ jobs:
 
       - name: Run Tests
         run:
-          cd starship/v7v8
+          cd starship/v7v8/
+          go mod tidy
           make test
 
       # Starship resource cleanup on cluster
