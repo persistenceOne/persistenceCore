@@ -1,0 +1,57 @@
+name: E2E Upgrade tests
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - starship/**
+  pull_request:
+    branches:
+      - main
+    paths:
+      - starship/**
+
+jobs:
+  e2e-v7v8-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      # Starship Infra setup
+      # - Connects to k8s cluster with kubeconfig (digital ocean)
+      # - Creates a new namespace based on the name (deleted in next step)
+      # - Spins up the infra with the given config file
+      # - Waits till all nodes are running (timeout 30m)
+      # - Port forward all ports to localhost for next steps to connect
+      - name: Setup Test infra
+        id: starship-action
+        uses: cosmology-tech/starship-action@0.2.8
+        with:
+          values: starship/v7v8/config.yaml
+          port-forward: true
+          version: 0.1.23
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+
+      - name: Run Tests
+        run:
+          cd starship/v7v8
+          make test
+
+      # Starship resource cleanup on cluster
+      # todo(@anmol1696): change this to be post step of the action
+      - name: Cleanup cluster
+        if: always()
+        run: |
+          helm delete $DEVNET_NAME --debug --namespace $DEVNET_NAMESPACE --wait || true
+          kubectl delete namespace $DEVNET_NAMESPACE --wait=true || true
+        env:
+          DEVNET_NAME: ${{ steps.starship-action.outputs.name }}
+          DEVNET_NAMESPACE: ${{ steps.starship-action.outputs.namespace }}
