@@ -31,6 +31,13 @@ jobs:
           go-version: ^1.19
         id: go
 
+      - name: Set namespace
+        id: set-namespace
+        run: |
+          namespace="ci-${{ github.repository_owner }}-${{ github.workflow }}-${{ github.ref }}"
+          echo "Setting namespace to $namespace"
+          echo "namespace=$namespace" >> $GITHUB_OUTPUT
+
       # Starship Infra setup
       # - Connects to k8s cluster with kubeconfig (digital ocean)
       # - Creates a new namespace based on the name (deleted in next step)
@@ -39,12 +46,13 @@ jobs:
       # - Port forward all ports to localhost for next steps to connect
       - name: Setup Test infra
         id: starship-action
-        uses: cosmology-tech/starship-action@0.2.8
+        uses: cosmology-tech/starship-action@0.2.9
         with:
           values: starship/v7v8/config.yaml
           port-forward: true
           version: 0.1.23
           kubeconfig: ${{ secrets.KUBECONFIG }}
+          namespace: ${{ steps.set-namespace.outputs.namespace }}
 
       - name: Run Tests
         run:
