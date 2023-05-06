@@ -55,8 +55,8 @@ jobs:
           namespace: ${{ steps.set-namespace.outputs.namespace }}
 
       - name: Run Tests
-        run:
-          cd starship/v7v8/
+        run: |
+          cd starship/v7v8/ 
           go mod tidy
           make test
 
