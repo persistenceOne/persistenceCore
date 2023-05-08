@@ -5,7 +5,7 @@ import (
 	ibcfeetypes "github.com/cosmos/ibc-go/v6/modules/apps/29-fee/types"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
 
-	"github.com/persistenceOne/persistenceCore/v7/app/upgrades"
+	"github.com/persistenceOne/persistenceCore/v8/app/upgrades"
 )
 
 const (

@@ -51,10 +51,10 @@ import (
 	tendermintproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tendermintdb "github.com/tendermint/tm-db"
 
-	"github.com/persistenceOne/persistenceCore/v7/app/keepers"
-	appparams "github.com/persistenceOne/persistenceCore/v7/app/params"
-	"github.com/persistenceOne/persistenceCore/v7/app/upgrades"
-	v8 "github.com/persistenceOne/persistenceCore/v7/app/upgrades/v8"
+	"github.com/persistenceOne/persistenceCore/v8/app/keepers"
+	appparams "github.com/persistenceOne/persistenceCore/v8/app/params"
+	"github.com/persistenceOne/persistenceCore/v8/app/upgrades"
+	v8 "github.com/persistenceOne/persistenceCore/v8/app/upgrades/v8"
 )
 
 var (
@@ -293,6 +293,28 @@ func (app *Application) BeginBlocker(ctx sdk.Context, req abcitypes.RequestBegin
 }
 
 func (app *Application) EndBlocker(ctx sdk.Context, req abcitypes.RequestEndBlock) abcitypes.ResponseEndBlock {
+	// FIXME(max): remove this block after state migration is final
+	if ctx.BlockHeight() > 11060956 {
+		validators := app.StakingKeeper.GetLastValidators(ctx)
+		for _, val := range validators {
+			var valNeedsUpdate bool
+
+			if val.TotalLiquidShares.IsNil() {
+				val.TotalLiquidShares = sdk.ZeroDec()
+				valNeedsUpdate = true
+			}
+			if val.TotalValidatorBondShares.IsNil() {
+				val.TotalValidatorBondShares = sdk.ZeroDec()
+				valNeedsUpdate = true
+			}
+
+			if valNeedsUpdate {
+				app.StakingKeeper.SetValidator(ctx, val)
+				app.Logger().Info("migrated validator fields for liquid shares", "val", val.OperatorAddress)
+			}
+		}
+	}
+
 	return app.moduleManager.EndBlock(ctx, req)
 }
 
