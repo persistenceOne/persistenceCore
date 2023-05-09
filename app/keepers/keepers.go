@@ -410,7 +410,7 @@ func NewAppKeeper(
 
 	// The last arguments can contain custom message handlers, and custom query handlers,
 	// if we want to allow any custom callbacks
-	supportedFeatures := "iterator,stargate"
+	supportedFeatures := "iterator,staking,stargate"
 	wasmOpts = append(wasmbindings.RegisterStargateQueries(*bApp.GRPCQueryRouter(), appCodec), wasmOpts...)
 	wasmKeeper := wasm.NewKeeper(
 		appCodec,
