@@ -5,10 +5,10 @@ go 1.19
 require (
 	github.com/CosmWasm/wasmd v0.30.0
 	github.com/cosmos/cosmos-sdk v0.45.14
-	github.com/cosmos/ibc-go/v4 v4.3.0
+	github.com/cosmos/ibc-go/v4 v4.3.1
 	github.com/gogo/protobuf v1.3.3
 	github.com/gorilla/mux v1.8.0
-	github.com/persistenceOne/persistence-sdk/v2 v2.0.0
+	github.com/persistenceOne/persistence-sdk/v2 v2.0.1
 	github.com/persistenceOne/pstake-native/v2 v2.0.0
 	github.com/prometheus/client_golang v1.14.0
 	github.com/rakyll/statik v0.1.7
