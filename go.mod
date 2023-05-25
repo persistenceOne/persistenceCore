@@ -6,7 +6,7 @@ require (
 	github.com/CosmWasm/wasmd v0.30.0
 	github.com/CosmWasm/wasmvm v1.1.2
 	github.com/cosmos/cosmos-sdk v0.46.11
-	github.com/cosmos/ibc-go/v6 v6.1.0
+	github.com/cosmos/ibc-go/v6 v6.1.1
 	github.com/gogo/protobuf v1.3.3
 	github.com/gorilla/mux v1.8.0
 	github.com/persistenceOne/persistence-sdk/v2 v2.1.0-rc3
