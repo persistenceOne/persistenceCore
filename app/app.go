@@ -387,7 +387,10 @@ func (app *Application) ExportAppStateAndValidators(forZeroHeight bool, jailWhit
 			feePool.CommunityPool = feePool.CommunityPool.Add(scraps...)
 			app.DistributionKeeper.SetFeePool(context, feePool)
 
-			app.DistributionKeeper.Hooks().AfterValidatorCreated(context, val.GetOperator())
+			if err := app.DistributionKeeper.Hooks().AfterValidatorCreated(context, val.GetOperator()); err != nil {
+				panic(err)
+			}
+
 			return false
 		})
 
@@ -402,8 +405,15 @@ func (app *Application) ExportAppStateAndValidators(forZeroHeight bool, jailWhit
 				panic(Error)
 			}
 
-			app.DistributionKeeper.Hooks().BeforeDelegationCreated(context, delegatorAddress, validatorAddress)
-			app.DistributionKeeper.Hooks().AfterDelegationModified(context, delegatorAddress, validatorAddress)
+			if err := app.DistributionKeeper.Hooks().BeforeDelegationCreated(context, delegatorAddress, validatorAddress); err != nil {
+				// never called as BeforeDelegationCreated always returns nil
+				panic(fmt.Errorf("error while incrementing period: %w", err))
+			}
+
+			if err := app.DistributionKeeper.Hooks().AfterDelegationModified(context, delegatorAddress, validatorAddress); err != nil {
+				// never called as AfterDelegationModified always returns nil
+				panic(fmt.Errorf("error while creating a new delegation period record: %w", err))
+			}
 		}
 
 		context = context.WithBlockHeight(height)
