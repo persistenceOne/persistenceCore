@@ -14,41 +14,46 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/capability"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
+	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
+	"github.com/cosmos/cosmos-sdk/x/distribution"
+	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/cosmos/cosmos-sdk/x/evidence"
 	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
 	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	feegrantmodule "github.com/cosmos/cosmos-sdk/x/feegrant/module"
+	"github.com/cosmos/cosmos-sdk/x/genutil"
+	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/cosmos/cosmos-sdk/x/mint"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	"github.com/cosmos/cosmos-sdk/x/slashing"
+	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
+	"github.com/cosmos/cosmos-sdk/x/staking"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	ica "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts"
-	icatypes "github.com/cosmos/ibc-go/v6/modules/apps/27-interchain-accounts/types"
-	ibcfee "github.com/cosmos/ibc-go/v6/modules/apps/29-fee"
-	ibcfeetypes "github.com/cosmos/ibc-go/v6/modules/apps/29-fee/types"
-	ibctransfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
-	ibc "github.com/cosmos/ibc-go/v6/modules/core"
-	ibchost "github.com/cosmos/ibc-go/v6/modules/core/24-host"
+	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
+	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
+	ibcfee "github.com/cosmos/ibc-go/v7/modules/apps/29-fee"
+	ibcfeetypes "github.com/cosmos/ibc-go/v7/modules/apps/29-fee/types"
+	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
+	ibc "github.com/cosmos/ibc-go/v7/modules/core"
+	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	"github.com/persistenceOne/persistence-sdk/v2/x/epochs"
 	epochstypes "github.com/persistenceOne/persistence-sdk/v2/x/epochs/types"
 	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
 	ibchookertypes "github.com/persistenceOne/persistence-sdk/v2/x/ibchooker/types"
 	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/types"
-	"github.com/persistenceOne/persistence-sdk/v2/x/lsnative/distribution"
-	distributiontypes "github.com/persistenceOne/persistence-sdk/v2/x/lsnative/distribution/types"
-	"github.com/persistenceOne/persistence-sdk/v2/x/lsnative/genutil"
-	genutiltypes "github.com/persistenceOne/persistence-sdk/v2/x/lsnative/genutil/types"
-	"github.com/persistenceOne/persistence-sdk/v2/x/lsnative/slashing"
-	slashingtypes "github.com/persistenceOne/persistence-sdk/v2/x/lsnative/slashing/types"
-	"github.com/persistenceOne/persistence-sdk/v2/x/lsnative/staking"
-	stakingtypes "github.com/persistenceOne/persistence-sdk/v2/x/lsnative/staking/types"
+	"github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc"
+	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
+	lspersistence "github.com/persistenceOne/pstake-native/v2/x/lspersistence"
+	lspersistencetypes "github.com/persistenceOne/pstake-native/v2/x/lspersistence/types"
 
 	"github.com/persistenceOne/persistence-sdk/v2/x/oracle"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
@@ -56,23 +61,34 @@ import (
 )
 
 var ModuleAccountPermissions = map[string][]string{
-	authtypes.FeeCollectorName:               nil,
-	distributiontypes.ModuleName:             nil,
-	icatypes.ModuleName:                      nil,
-	minttypes.ModuleName:                     {authtypes.Minter},
-	stakingtypes.BondedPoolName:              {authtypes.Burner, authtypes.Staking},
-	stakingtypes.NotBondedPoolName:           {authtypes.Burner, authtypes.Staking},
-	govtypes.ModuleName:                      {authtypes.Burner},
-	ibctransfertypes.ModuleName:              {authtypes.Minter, authtypes.Burner},
-	ibcfeetypes.ModuleName:                   nil,
-	wasm.ModuleName:                          {authtypes.Burner},
-	lscosmostypes.ModuleName:                 {authtypes.Minter, authtypes.Burner},
-	lscosmostypes.DepositModuleAccount:       nil,
-	lscosmostypes.DelegationModuleAccount:    nil,
-	lscosmostypes.RewardModuleAccount:        nil,
-	lscosmostypes.UndelegationModuleAccount:  nil,
-	lscosmostypes.RewardBoosterModuleAccount: nil,
-	oracletypes.ModuleName:                   nil,
+	authtypes.FeeCollectorName:                    nil,
+	distributiontypes.ModuleName:                  nil,
+	icatypes.ModuleName:                           nil,
+	minttypes.ModuleName:                          {authtypes.Minter},
+	stakingtypes.BondedPoolName:                   {authtypes.Burner, authtypes.Staking},
+	stakingtypes.NotBondedPoolName:                {authtypes.Burner, authtypes.Staking},
+	govtypes.ModuleName:                           {authtypes.Burner},
+	ibctransfertypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
+	ibcfeetypes.ModuleName:                        nil,
+	wasm.ModuleName:                               {authtypes.Burner},
+	lscosmostypes.ModuleName:                      {authtypes.Minter, authtypes.Burner},
+	lscosmostypes.DepositModuleAccount:            nil,
+	lscosmostypes.DelegationModuleAccount:         nil,
+	lscosmostypes.RewardModuleAccount:             nil,
+	lscosmostypes.UndelegationModuleAccount:       nil,
+	lscosmostypes.RewardBoosterModuleAccount:      nil,
+	oracletypes.ModuleName:                        nil,
+	liquidstakeibctypes.ModuleName:                {authtypes.Minter, authtypes.Burner},
+	liquidstakeibctypes.DepositModuleAccount:      nil,
+	liquidstakeibctypes.UndelegationModuleAccount: {authtypes.Burner},
+	lspersistencetypes.ModuleName:                 {authtypes.Minter, authtypes.Burner},
+}
+
+var receiveAllowedMAcc = map[string]bool{
+	lscosmostypes.UndelegationModuleAccount:       true,
+	lscosmostypes.DelegationModuleAccount:         true,
+	liquidstakeibctypes.DepositModuleAccount:      true,
+	liquidstakeibctypes.UndelegationModuleAccount: true,
 }
 
 func appModules(
@@ -87,16 +103,16 @@ func appModules(
 			app.AccountKeeper, app.StakingKeeper, app.BaseApp.DeliverTx,
 			encodingConfig.TransactionConfig,
 		),
-		auth.NewAppModule(appCodec, *app.AccountKeeper, nil),
+		auth.NewAppModule(appCodec, *app.AccountKeeper, authsimulation.RandomGenesisAccounts, app.GetSubspace(authtypes.ModuleName)),
 		vesting.NewAppModule(*app.AccountKeeper, app.BankKeeper),
-		bank.NewAppModule(appCodec, *app.BankKeeper, app.AccountKeeper),
-		capability.NewAppModule(appCodec, *app.CapabilityKeeper),
-		gov.NewAppModule(appCodec, *app.GovKeeper, app.AccountKeeper, app.BankKeeper),
-		mint.NewAppModule(appCodec, *app.MintKeeper, app.AccountKeeper, nil), // nil -> SDK's default inflation function.
-		slashing.NewAppModule(appCodec, *app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, *app.StakingKeeper),
-		distribution.NewAppModule(appCodec, *app.DistributionKeeper, app.AccountKeeper, app.BankKeeper, *app.StakingKeeper),
-		staking.NewAppModule(appCodec, *app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
-		upgrade.NewAppModule(*app.UpgradeKeeper),
+		bank.NewAppModule(appCodec, *app.BankKeeper, app.AccountKeeper, app.GetSubspace(banktypes.ModuleName)),
+		capability.NewAppModule(appCodec, *app.CapabilityKeeper, false),
+		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(govtypes.ModuleName)),
+		mint.NewAppModule(appCodec, *app.MintKeeper, app.AccountKeeper, nil, app.GetSubspace(minttypes.ModuleName)), // nil -> SDK's default inflation function.
+		slashing.NewAppModule(appCodec, *app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, *app.StakingKeeper, app.GetSubspace(slashingtypes.ModuleName)),
+		distribution.NewAppModule(appCodec, *app.DistributionKeeper, app.AccountKeeper, app.BankKeeper, *app.StakingKeeper, app.GetSubspace(distributiontypes.ModuleName)),
+		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(stakingtypes.ModuleName)),
+		upgrade.NewAppModule(app.UpgradeKeeper),
 		evidence.NewAppModule(*app.EvidenceKeeper),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, *app.FeegrantKeeper, app.interfaceRegistry),
 		authzmodule.NewAppModule(appCodec, *app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
@@ -107,40 +123,26 @@ func appModules(
 		app.TransferModule,
 		app.IBCTransferHooksMiddleware,
 		ica.NewAppModule(app.ICAControllerKeeper, app.ICAHostKeeper),
-		wasm.NewAppModule(appCodec, app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
+		wasm.NewAppModule(appCodec, app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasm.ModuleName)),
 		epochs.NewAppModule(*app.EpochsKeeper),
 		app.InterchainQueryModule,
 		app.LSCosmosModule,
+		liquidstakeibc.NewAppModule(*app.LiquidStakeIBCKeeper),
+		lspersistence.NewAppModule(appCodec, *app.LSPersistenceKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		oracle.NewAppModule(appCodec, *app.OracleKeeper, app.AccountKeeper, app.BankKeeper),
-		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants), // always be last to make sure that it checks for all invariants and not only part of them
+		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)), // always be last to make sure that it checks for all invariants and not only part of them
 	}
 }
 
-func simulationModules(
+func overrideSimulationModules(
 	app *Application,
 	encodingConfig appparams.EncodingConfig,
 	_ bool,
-) []module.AppModuleSimulation {
+) map[string]module.AppModuleSimulation {
 	appCodec := encodingConfig.Marshaler
 
-	return []module.AppModuleSimulation{
-		auth.NewAppModule(appCodec, *app.AccountKeeper, authsimulation.RandomGenesisAccounts),
-		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper),
-		capability.NewAppModule(appCodec, *app.CapabilityKeeper),
-		gov.NewAppModule(appCodec, *app.GovKeeper, app.AccountKeeper, app.BankKeeper),
-		mint.NewAppModule(appCodec, *app.MintKeeper, app.AccountKeeper, nil), // nil -> SDK's default inflation function.
-		staking.NewAppModule(appCodec, *app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
-		distribution.NewAppModule(appCodec, *app.DistributionKeeper, app.AccountKeeper, app.BankKeeper, *app.StakingKeeper),
-		slashing.NewAppModule(appCodec, *app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, *app.StakingKeeper),
-		params.NewAppModule(*app.ParamsKeeper),
-		halving.NewAppModule(appCodec, *app.HalvingKeeper),
-		authzmodule.NewAppModule(appCodec, *app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
-		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, *app.FeegrantKeeper, app.interfaceRegistry),
-		ibc.NewAppModule(app.IBCKeeper),
-		ibcfee.NewAppModule(*app.IBCFeeKeeper),
-		app.TransferModule,
-		app.InterchainQueryModule,
-		app.LSCosmosModule,
+	return map[string]module.AppModuleSimulation{
+		authtypes.ModuleName: auth.NewAppModule(appCodec, *app.AccountKeeper, authsimulation.RandomGenesisAccounts, app.GetSubspace(authtypes.ModuleName)),
 	}
 }
 
@@ -153,7 +155,7 @@ func orderBeginBlockers() []string {
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
 		ibctransfertypes.ModuleName,
-		ibchost.ModuleName,
+		ibcexported.ModuleName,
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
 		authtypes.ModuleName,
@@ -167,10 +169,13 @@ func orderBeginBlockers() []string {
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
 		vestingtypes.ModuleName,
+		consensusparamtypes.ModuleName,
 		halving.ModuleName,
 		wasm.ModuleName,
 		ibchookertypes.ModuleName,
 		interchainquerytypes.ModuleName,
+		liquidstakeibctypes.ModuleName,
+		lspersistencetypes.ModuleName,
 		oracletypes.ModuleName,
 		lscosmostypes.ModuleName,
 	}
@@ -182,7 +187,7 @@ func orderEndBlockers() []string {
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
 		ibctransfertypes.ModuleName,
-		ibchost.ModuleName,
+		ibcexported.ModuleName,
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
 		feegrant.ModuleName,
@@ -198,11 +203,14 @@ func orderEndBlockers() []string {
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
 		vestingtypes.ModuleName,
+		consensusparamtypes.ModuleName,
 		halving.ModuleName,
 		wasm.ModuleName,
 		epochstypes.ModuleName,
 		ibchookertypes.ModuleName,
 		interchainquerytypes.ModuleName,
+		liquidstakeibctypes.ModuleName,
+		lspersistencetypes.ModuleName,
 		oracletypes.ModuleName,
 		lscosmostypes.ModuleName,
 	}
@@ -225,7 +233,7 @@ func orderInitGenesis() []string {
 		minttypes.ModuleName,
 		crisistypes.ModuleName,
 		ibctransfertypes.ModuleName,
-		ibchost.ModuleName,
+		ibcexported.ModuleName,
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
 		evidencetypes.ModuleName,
@@ -236,11 +244,14 @@ func orderInitGenesis() []string {
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
 		vestingtypes.ModuleName,
+		consensusparamtypes.ModuleName,
 		halving.ModuleName,
 		wasm.ModuleName,
 		epochstypes.ModuleName,
 		ibchookertypes.ModuleName,
 		interchainquerytypes.ModuleName,
+		liquidstakeibctypes.ModuleName,
+		lspersistencetypes.ModuleName,
 		oracletypes.ModuleName,
 		lscosmostypes.ModuleName,
 	}

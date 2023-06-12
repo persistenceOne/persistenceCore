@@ -7,6 +7,10 @@ import (
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	dbm "github.com/cometbft/cometbft-db"
+	tmcfg "github.com/cometbft/cometbft/config"
+	tendermintclient "github.com/cometbft/cometbft/libs/cli"
+	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/cosmos/cosmos-sdk/client/debug"
@@ -23,14 +27,10 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
-	genutilcli "github.com/persistenceOne/persistence-sdk/v2/x/lsnative/genutil/client/cli"
+	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
-	tmcfg "github.com/tendermint/tendermint/config"
-	tendermintclient "github.com/tendermint/tendermint/libs/cli"
-	"github.com/tendermint/tendermint/libs/log"
-	dbm "github.com/tendermint/tm-db"
 
 	"github.com/persistenceOne/persistenceCore/v8/app"
 	"github.com/persistenceOne/persistenceCore/v8/app/params"
@@ -49,7 +49,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		WithLegacyAmino(encodingConfig.Amino).
 		WithInput(os.Stdin).
 		WithAccountRetriever(authtypes.AccountRetriever{}).
-		WithBroadcastMode(flags.BroadcastBlock).
+		WithBroadcastMode(flags.BroadcastSync).
 		WithHomeDir(app.DefaultNodeHome).
 		WithViper("")
 
@@ -73,10 +73,10 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 				return err
 			}
 
-			tmConfig := tmcfg.DefaultConfig()
+			customTMConfig := initTendermintConfig()
 			customConfigTemplate, customAppConfig := initAppConfig()
 
-			return server.InterceptConfigsPreRunHandler(cmd, customConfigTemplate, customAppConfig, tmConfig)
+			return server.InterceptConfigsPreRunHandler(cmd, customConfigTemplate, customAppConfig, customTMConfig)
 		},
 	}
 
@@ -98,6 +98,16 @@ func setConfig() {
 	cfg.Seal()
 }
 
+func initTendermintConfig() *tmcfg.Config {
+	cfg := tmcfg.DefaultConfig()
+
+	// these values put a higher strain on node memory
+	// cfg.P2P.MaxNumInboundPeers = 100
+	// cfg.P2P.MaxNumOutboundPeers = 40
+
+	return cfg
+}
+
 func initAppConfig() (string, interface{}) {
 	srvCfg := serverconfig.DefaultConfig()
 	srvCfg.MinGasPrices = "0uxprt"
@@ -109,23 +119,14 @@ func initAppConfig() (string, interface{}) {
 func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 	setConfig()
 
-	ac := appCreator{
-		encCfg: encodingConfig,
-	}
-
 	rootCmd.AddCommand(
 		genutilcli.InitCmd(app.ModuleBasics, app.DefaultNodeHome),
-		genutilcli.CollectGenTxsCmd(banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
-		genutilcli.MigrateGenesisCmd(),
-		genutilcli.GenTxCmd(app.ModuleBasics, encodingConfig.TransactionConfig, banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
-		genutilcli.ValidateGenesisCmd(app.ModuleBasics),
-		AddGenesisAccountCommand(app.DefaultNodeHome),
 		tendermintclient.NewCompletionCmd(rootCmd, true),
 		debug.Cmd(),
 		version.NewVersionCommand(),
 		config.Cmd(),
-		pruning.PruningCmd(ac.newApp),
-		TestnetCmd(app.ModuleBasics, banktypes.GenesisBalancesIterator{}),
+		pruning.PruningCmd(newApp),
+		NewTestnetCmd(app.ModuleBasics, banktypes.GenesisBalancesIterator{}),
 	)
 
 	rootCmd.PersistentFlags().UintVar(
@@ -135,11 +136,12 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		"Assert registered invariants every N blocks",
 	)
 
-	server.AddCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
+	server.AddCommands(rootCmd, app.DefaultNodeHome, newApp, appExport, addModuleInitFlags)
 
 	// add keybase, auxiliary RPC, query, and tx child commands
 	rootCmd.AddCommand(
 		rpc.StatusCommand(),
+		genutilcli.GenesisCoreCommand(encodingConfig.TransactionConfig, app.ModuleBasics, app.DefaultNodeHome),
 		queryCommand(),
 		txCommand(),
 		keys.Commands(app.DefaultNodeHome),
@@ -148,6 +150,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 
 func addModuleInitFlags(startCmd *cobra.Command) {
 	crisis.AddModuleInitFlags(startCmd)
+	wasm.AddModuleInitFlags(startCmd)
 }
 
 func queryCommand() *cobra.Command {
@@ -202,11 +205,7 @@ func txCommand() *cobra.Command {
 	return cmd
 }
 
-type appCreator struct {
-	encCfg params.EncodingConfig
-}
-
-func (ac appCreator) newApp(
+func newApp(
 	logger log.Logger,
 	db dbm.DB,
 	traceStore io.Writer,
@@ -224,16 +223,10 @@ func (ac appCreator) newApp(
 
 	baseappOpts := server.DefaultBaseappOptions(appOpts)
 	return app.NewApplication(
-		app.Name,
-		ac.encCfg,
-		app.ModuleAccountPermissions,
 		logger,
 		db,
 		traceStore,
 		true,
-		invalidCheckPeriod,
-		skipUpgradeHeights,
-		cast.ToString(appOpts.Get(flags.FlagHome)),
 		app.GetEnabledProposals(),
 		appOpts,
 		wasmOpts,
@@ -241,7 +234,7 @@ func (ac appCreator) newApp(
 	)
 }
 
-func (ac appCreator) appExport(
+func appExport(
 	logger log.Logger,
 	db dbm.DB,
 	traceStore io.Writer,
@@ -249,29 +242,20 @@ func (ac appCreator) appExport(
 	forZeroHeight bool,
 	jailAllowedAddrs []string,
 	appOpts servertypes.AppOptions,
+	modulesToExport []string,
 ) (servertypes.ExportedApp, error) {
-
 	homePath, ok := appOpts.Get(flags.FlagHome).(string)
 	if !ok || homePath == "" {
 		return servertypes.ExportedApp{}, errors.New("application home is not set")
 	}
 
-	var loadLatest bool
-	if height == -1 {
-		loadLatest = true
-	}
+	loadLatest := height == -1
 	var emptyWasmOpts []wasm.Option
 	persistenceApp := app.NewApplication(
-		app.Name,
-		ac.encCfg,
-		app.ModuleAccountPermissions,
 		logger,
 		db,
 		traceStore,
 		loadLatest,
-		uint(1),
-		map[int64]bool{},
-		homePath,
 		app.GetEnabledProposals(),
 		appOpts,
 		emptyWasmOpts,
@@ -283,5 +267,5 @@ func (ac appCreator) appExport(
 		}
 	}
 
-	return persistenceApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs)
+	return persistenceApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
 }

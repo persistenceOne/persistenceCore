@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	Name             = "PersistenceCore"
+	AppName          = "PersistenceCore"
 	Bech32MainPrefix = "persistence"
 	CoinType         = 118
 	Purpose          = 44
