@@ -38,7 +38,6 @@ import (
 	"github.com/persistenceOne/persistence-sdk/v2/x/oracle"
 	"github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc"
 	"github.com/persistenceOne/pstake-native/v2/x/lscosmos"
-	lscosmosclient "github.com/persistenceOne/pstake-native/v2/x/lscosmos/client"
 	"github.com/persistenceOne/pstake-native/v2/x/lspersistence"
 )
 
@@ -60,9 +59,6 @@ var AppModuleBasics = []module.AppModuleBasic{
 			upgradeclient.LegacyCancelProposalHandler,
 			ibcclient.UpdateClientProposalHandler,
 			ibcclient.UpgradeProposalHandler,
-			lscosmosclient.MinDepositAndFeeChangeProposalHandler,
-			lscosmosclient.PstakeFeeAddressChangeProposalHandler,
-			lscosmosclient.AllowListValidatorSetChangeProposalHandler,
 		},
 	),
 	params.AppModuleBasic{},

@@ -73,7 +73,7 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 	appKeepers.tkeys = sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 
 	// MemKeys are for information that is stored only in RAM.
-	appKeepers.memKeys = sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
+	appKeepers.memKeys = sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, lscosmostypes.MemStoreKey)
 }
 
 func (appKeepers *AppKeepers) GetKVStoreKey() map[string]*storetypes.KVStoreKey {

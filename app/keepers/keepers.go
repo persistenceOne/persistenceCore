@@ -462,7 +462,6 @@ func NewAppKeeper(
 
 	appKeepers.EpochsKeeper.SetHooks(
 		epochstypes.NewMultiEpochHooks(
-			appKeepers.LSCosmosKeeper.NewEpochHooks(),
 			appKeepers.LiquidStakeIBCKeeper.NewEpochHooks(),
 		),
 	)
@@ -470,7 +469,6 @@ func NewAppKeeper(
 	ibcTransferHooksKeeper := ibchookerkeeper.NewKeeper()
 	appKeepers.TransferHooksKeeper = ibcTransferHooksKeeper.SetHooks(
 		ibchookertypes.NewMultiStakingHooks(
-			appKeepers.LSCosmosKeeper.NewIBCTransferHooks(),
 			appKeepers.LiquidStakeIBCKeeper.NewIBCTransferHooks(),
 		),
 	)
@@ -524,7 +522,7 @@ func NewAppKeeper(
 	transferStack := ibcfee.NewIBCMiddleware(appKeepers.IBCTransferHooksMiddleware, *appKeepers.IBCFeeKeeper)
 
 	// Information will flow: ibc-port -> icaController -> lscosmos.
-	var icaControllerStack ibctypes.IBCModule = appKeepers.LSCosmosModule
+	var icaControllerStack ibctypes.IBCModule = liquidStakeIBCModule
 	icaControllerStack = icacontroller.NewIBCMiddleware(icaControllerStack, *appKeepers.ICAControllerKeeper)
 	icaControllerStack = ibcfee.NewIBCMiddleware(icaControllerStack, *appKeepers.IBCFeeKeeper)
 
@@ -537,7 +535,7 @@ func NewAppKeeper(
 	ibcRouter.AddRoute(icahosttypes.SubModuleName, icaHostStack).
 		AddRoute(ibctransfertypes.ModuleName, transferStack).
 		AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
-		AddRoute(lscosmostypes.ModuleName, icaControllerStack).
+		AddRoute(liquidstakeibctypes.ModuleName, icaControllerStack).
 		AddRoute(wasm.ModuleName, wasmStack)
 	appKeepers.IBCKeeper.SetRouter(ibcRouter)
 
@@ -546,8 +544,7 @@ func NewAppKeeper(
 		AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
 		AddRoute(paramsproposal.RouterKey, params.NewParamChangeProposalHandler(*appKeepers.ParamsKeeper)).
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(appKeepers.UpgradeKeeper)).
-		AddRoute(ibcclienttypes.RouterKey, ibccoreclient.NewClientProposalHandler(appKeepers.IBCKeeper.ClientKeeper)).
-		AddRoute(lscosmostypes.RouterKey, lscosmos.NewLSCosmosProposalHandler(*appKeepers.LSCosmosKeeper))
+		AddRoute(ibcclienttypes.RouterKey, ibccoreclient.NewClientProposalHandler(appKeepers.IBCKeeper.ClientKeeper))
 
 	if len(wasmEnabledProposals) != 0 {
 		govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(appKeepers.WasmKeeper, wasmEnabledProposals))
@@ -606,10 +603,8 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
 	paramsKeeper.Subspace(lscosmostypes.ModuleName)
 	paramsKeeper.Subspace(interchainquerytypes.ModuleName)
-	paramsKeeper.Subspace(liquidstakeibctypes.ModuleName)
 	paramsKeeper.Subspace(oracletypes.ModuleName)
 	paramsKeeper.Subspace(group.ModuleName)
-	// TODO: add lspersistence module??
 
 	return paramsKeeper
 }
