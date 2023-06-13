@@ -4,19 +4,16 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	"github.com/persistenceOne/persistenceCore/v8/app/keepers"
 )
 
 type UpgradeHandlerArgs struct {
-	ModuleManager      *module.Manager
-	Configurator       module.Configurator
-	Keepers            *keepers.AppKeepers
-	Codec              codec.BinaryCodec
-	CapabilityStoreKey *storetypes.KVStoreKey
-	CapabilityKeeper   *capabilitykeeper.Keeper
+	ModuleManager *module.Manager
+	Configurator  module.Configurator
+	Keepers       *keepers.AppKeepers
+	Codec         codec.BinaryCodec
 }
 
 // Upgrade defines a struct containing necessary fields that a SoftwareUpgradeProposal

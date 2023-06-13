@@ -46,7 +46,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
@@ -363,12 +362,10 @@ func (app *Application) setupUpgradeHandlers() {
 		app.UpgradeKeeper.SetUpgradeHandler(
 			upgrade.UpgradeName,
 			upgrade.CreateUpgradeHandler(upgrades.UpgradeHandlerArgs{
-				ModuleManager:      app.moduleManager,
-				Configurator:       app.configurator,
-				Keepers:            app.AppKeepers,
-				Codec:              app.applicationCodec,
-				CapabilityStoreKey: app.GetKVStoreKey()[capabilitytypes.StoreKey],
-				CapabilityKeeper:   app.CapabilityKeeper,
+				ModuleManager: app.moduleManager,
+				Configurator:  app.configurator,
+				Keepers:       app.AppKeepers,
+				Codec:         app.applicationCodec,
 			}),
 		)
 	}

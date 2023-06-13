@@ -4,6 +4,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	icaMigrations "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/migrations/v6"
 	ibctmmigrations "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint/migrations"
@@ -57,8 +58,8 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 		err := icaMigrations.MigrateICS27ChannelCapability(
 			ctx,
 			args.Codec,
-			args.CapabilityStoreKey,
-			args.CapabilityKeeper,
+			args.Keepers.GetKey(capabilitytypes.StoreKey),
+			args.Keepers.CapabilityKeeper,
 			lscosmostypes.ModuleName,
 		)
 		if err != nil {
@@ -88,7 +89,7 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 		ctx.Logger().Info("running module migrations")
 		newVm, err := args.ModuleManager.RunMigrations(ctx, args.Configurator, vm)
 		if err != nil {
-			return newVm, err
+			return nil, err
 		}
 
 		ctx.Logger().Info("setting min commission rate to 5%")
@@ -97,6 +98,6 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 		ctx.Logger().Info("setting acceptList to empty in oracle params")
 		setOraclePairListEmpty(ctx, args.Keepers)
 
-		return newVm, err
+		return newVm, nil
 	}
 }
