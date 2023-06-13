@@ -27,6 +27,8 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	group "github.com/cosmos/cosmos-sdk/x/group"
+	groupmodule "github.com/cosmos/cosmos-sdk/x/group/module"
 	"github.com/cosmos/cosmos-sdk/x/mint"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
@@ -116,6 +118,7 @@ func appModules(
 		evidence.NewAppModule(*app.EvidenceKeeper),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, *app.FeegrantKeeper, app.interfaceRegistry),
 		authzmodule.NewAppModule(appCodec, *app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
+		groupmodule.NewAppModule(appCodec, *app.GroupKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		ibc.NewAppModule(app.IBCKeeper),
 		ibcfee.NewAppModule(*app.IBCFeeKeeper),
 		params.NewAppModule(*app.ParamsKeeper),
@@ -167,6 +170,7 @@ func orderBeginBlockers() []string {
 		evidencetypes.ModuleName,
 		authz.ModuleName,
 		feegrant.ModuleName,
+		group.ModuleName,
 		paramstypes.ModuleName,
 		vestingtypes.ModuleName,
 		consensusparamtypes.ModuleName,
@@ -192,6 +196,7 @@ func orderEndBlockers() []string {
 		ibcfeetypes.ModuleName,
 		feegrant.ModuleName,
 		authz.ModuleName,
+		group.ModuleName,
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
@@ -239,6 +244,7 @@ func orderInitGenesis() []string {
 		evidencetypes.ModuleName,
 		feegrant.ModuleName,
 		authz.ModuleName,
+		group.ModuleName,
 		authtypes.ModuleName,
 		genutiltypes.ModuleName,
 		paramstypes.ModuleName,

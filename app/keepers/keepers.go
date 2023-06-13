@@ -33,6 +33,8 @@ import (
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+	group "github.com/cosmos/cosmos-sdk/x/group"
+	groupkeeper "github.com/cosmos/cosmos-sdk/x/group/keeper"
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
@@ -124,6 +126,7 @@ type AppKeepers struct {
 	LiquidStakeIBCKeeper  *liquidstakeibckeeper.Keeper
 	LSPersistenceKeeper   *lspersistencekeeper.Keeper
 	ConsensusParamsKeeper *consensusparamskeeper.Keeper
+	GroupKeeper           *groupkeeper.Keeper
 
 	// Modules
 	TransferModule             transfer.AppModule
@@ -217,6 +220,20 @@ func NewAppKeeper(
 		*appKeepers.AccountKeeper,
 	)
 	appKeepers.AuthzKeeper = &authzKeeper
+
+	groupConfig := group.DefaultConfig()
+	/*
+		Example of setting group params:
+		groupConfig.MaxMetadataLen = 1000
+	*/
+	groupKeeper := groupkeeper.NewKeeper(
+		appKeepers.keys[group.StoreKey],
+		appCodec,
+		bApp.MsgServiceRouter(),
+		appKeepers.AccountKeeper,
+		groupConfig,
+	)
+	appKeepers.GroupKeeper = &groupKeeper
 
 	feegrantKeeper := feegrantkeeper.NewKeeper(
 		appCodec,
@@ -576,7 +593,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(slashingtypes.ModuleName)
 	paramsKeeper.Subspace(crisistypes.ModuleName)
 	paramsKeeper.Subspace(halving.DefaultParamspace)
-	paramsKeeper.Subspace(govtypes.ModuleName) // TODO: verify this
+	paramsKeeper.Subspace(govtypes.ModuleName)
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(ibcexported.ModuleName)
 	paramsKeeper.Subspace(icahosttypes.SubModuleName)
@@ -586,6 +603,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(interchainquerytypes.ModuleName)
 	paramsKeeper.Subspace(liquidstakeibctypes.ModuleName)
 	paramsKeeper.Subspace(oracletypes.ModuleName)
+	paramsKeeper.Subspace(group.ModuleName)
 	// TODO: add lspersistence module??
 
 	return paramsKeeper

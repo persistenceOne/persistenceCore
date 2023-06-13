@@ -14,6 +14,7 @@ import (
 	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
 	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	"github.com/cosmos/cosmos-sdk/x/group"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
@@ -37,14 +38,35 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 	// Define what keys will be used in the cosmos-sdk key/value store.
 	// Cosmos-SDK modules each have a "key" that allows the application to reference what they've stored on the chain.
 	appKeepers.keys = sdk.NewKVStoreKeys(
-		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey,
-		minttypes.StoreKey, distributiontypes.StoreKey, slashingtypes.StoreKey,
-		govtypes.StoreKey, paramstypes.StoreKey, ibcexported.StoreKey, upgradetypes.StoreKey,
-		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
-		feegrant.StoreKey, authzkeeper.StoreKey, icahosttypes.StoreKey, halving.StoreKey, wasm.StoreKey,
-		icacontrollertypes.StoreKey, epochstypes.StoreKey, lscosmostypes.StoreKey, interchainquerytypes.StoreKey,
-		ibcfeetypes.StoreKey, oracletypes.StoreKey, liquidstakeibctypes.StoreKey,
-		lspersistencetypes.StoreKey, crisistypes.StoreKey, consensusparamstypes.StoreKey,
+		authtypes.StoreKey,
+		authzkeeper.StoreKey,
+		banktypes.StoreKey,
+		capabilitytypes.StoreKey,
+		consensusparamstypes.StoreKey,
+		crisistypes.StoreKey,
+		distributiontypes.StoreKey,
+		epochstypes.StoreKey,
+		evidencetypes.StoreKey,
+		feegrant.StoreKey,
+		govtypes.StoreKey,
+		group.StoreKey,
+		halving.StoreKey,
+		ibcexported.StoreKey,
+		ibcfeetypes.StoreKey,
+		ibctransfertypes.StoreKey,
+		icacontrollertypes.StoreKey,
+		icahosttypes.StoreKey,
+		interchainquerytypes.StoreKey,
+		liquidstakeibctypes.StoreKey,
+		lscosmostypes.StoreKey,
+		lspersistencetypes.StoreKey,
+		minttypes.StoreKey,
+		oracletypes.StoreKey,
+		paramstypes.StoreKey,
+		slashingtypes.StoreKey,
+		stakingtypes.StoreKey,
+		upgradetypes.StoreKey,
+		wasm.StoreKey,
 	)
 
 	// Define transient store keys

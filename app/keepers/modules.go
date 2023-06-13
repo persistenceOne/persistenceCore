@@ -16,6 +16,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
+	groupmodule "github.com/cosmos/cosmos-sdk/x/group/module"
 	"github.com/cosmos/cosmos-sdk/x/mint"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
@@ -86,4 +87,5 @@ var AppModuleBasics = []module.AppModuleBasic{
 	liquidstakeibc.AppModuleBasic{},
 	lspersistence.AppModuleBasic{},
 	consensus.AppModuleBasic{},
+	groupmodule.AppModuleBasic{},
 }
