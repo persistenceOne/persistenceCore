@@ -10,11 +10,11 @@ require (
 	github.com/CosmWasm/wasmvm v1.2.4
 	github.com/cometbft/cometbft v0.37.1
 	github.com/cometbft/cometbft-db v0.8.0
-	github.com/cosmos/cosmos-sdk v0.47.2
-	github.com/cosmos/ibc-go/v7 v7.0.2
+	github.com/cosmos/cosmos-sdk v0.47.3
+	github.com/cosmos/ibc-go/v7 v7.1.0
 	github.com/gorilla/mux v1.8.0
-	github.com/persistenceOne/persistence-sdk/v2 v2.1.0-rc3.0.20230525110528-c7fd4f45316c
-	github.com/persistenceOne/pstake-native/v2 v2.1.0-rc0.0.20230608094822-c719bc9dbc6e
+	github.com/persistenceOne/persistence-sdk/v2 v2.1.0-rc3.0.20230613005335-2f5959f4c5ee
+	github.com/persistenceOne/pstake-native/v2 v2.1.0-rc0.0.20230608171207-38ecbab02d8d
 	github.com/prometheus/client_golang v1.15.0
 	github.com/rakyll/statik v0.1.7
 	github.com/spf13/cast v1.5.1
@@ -32,6 +32,7 @@ require (
 	cloud.google.com/go/storage v1.29.0 // indirect
 	cosmossdk.io/core v0.5.1 // indirect
 	cosmossdk.io/depinject v1.0.0-alpha.3 // indirect
+	cosmossdk.io/log v1.1.0 // indirect
 	cosmossdk.io/tools/rosetta v0.2.1 // indirect
 	filippo.io/edwards25519 v1.0.0 // indirect
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
@@ -56,7 +57,7 @@ require (
 	github.com/cosmos/gogogateway v1.2.0 // indirect
 	github.com/cosmos/gogoproto v1.4.10 // indirect
 	github.com/cosmos/iavl v0.20.0 // indirect
-	github.com/cosmos/ics23/go v0.9.1-0.20221207100636-b1abd8678aab // indirect
+	github.com/cosmos/ics23/go v0.10.0 // indirect
 	github.com/cosmos/ledger-cosmos-go v0.12.2 // indirect
 	github.com/cosmos/rosetta-sdk-go v0.10.0 // indirect
 	github.com/creachadair/taskgroup v0.4.2 // indirect
@@ -119,7 +120,8 @@ require (
 	github.com/linxGnu/grocksdb v1.7.16 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/manifoldco/promptui v0.9.0 // indirect
-	github.com/mattn/go-isatty v0.0.17 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.18 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/mimoo/StrobeGo v0.0.0-20210601165009-122bf33a46e0 // indirect
 	github.com/minio/highwayhash v1.0.2 // indirect
@@ -129,7 +131,7 @@ require (
 	github.com/mtibben/percent v0.2.1 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
-	github.com/petermattis/goid v0.0.0-20221215004737-a150e88a970d // indirect
+	github.com/petermattis/goid v0.0.0-20230317030725-371a4b8eda08 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_model v0.3.0 // indirect
@@ -137,6 +139,7 @@ require (
 	github.com/prometheus/procfs v0.9.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/rs/cors v1.8.3 // indirect
+	github.com/rs/zerolog v1.29.1 // indirect
 	github.com/sasha-s/go-deadlock v0.3.1 // indirect
 	github.com/spf13/afero v1.9.5 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
@@ -150,7 +153,7 @@ require (
 	go.etcd.io/bbolt v1.3.7 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/crypto v0.9.0 // indirect
-	golang.org/x/exp v0.0.0-20230510235704-dd950f8aeaea // indirect
+	golang.org/x/exp v0.0.0-20230515195305-f3d0a9c9a5cc // indirect
 	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
 	golang.org/x/sys v0.8.0 // indirect
@@ -182,6 +185,6 @@ replace (
 
 // use persistence's forks with LSM implemented
 replace (
-	github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk v0.0.0-20230522093856-adff0f98bc21
-	github.com/cosmos/ibc-go/v7 => github.com/persistenceOne/ibc-go/v7 v7.0.1-0.20230522100128-2a1f18e3d8a9
+	github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk v0.0.0-20230611231946-790aaf168429
+	github.com/cosmos/ibc-go/v7 => github.com/persistenceOne/ibc-go/v7 v7.0.0-rc0.0.20230612095033-b776ca4647aa
 )

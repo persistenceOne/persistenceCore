@@ -403,7 +403,6 @@ func NewAppKeeper(
 	lspKeeper := lspersistencekeeper.NewKeeper(
 		appCodec,
 		appKeepers.keys[lspersistencetypes.StoreKey],
-		appKeepers.GetSubspace(lscosmostypes.ModuleName),
 		appKeepers.AccountKeeper,
 		appKeepers.BankKeeper,
 		appKeepers.StakingKeeper,
