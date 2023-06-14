@@ -27,11 +27,6 @@ relayers:
       - gaia-4
       - core-1
 
-explorer:
-  enabled: true
-  ports:
-    rest: 8080
-
 registry:
   enabled: true
   ports:
