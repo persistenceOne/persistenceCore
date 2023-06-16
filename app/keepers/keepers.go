@@ -455,11 +455,6 @@ func NewAppKeeper(
 	appKeepers.LSCosmosKeeper = &lsCosmosKeeper
 	appKeepers.LSCosmosModule = lscosmos.NewAppModule(appCodec, liquidStakeIBCModule, *appKeepers.LSCosmosKeeper, appKeepers.AccountKeeper, appKeepers.BankKeeper)
 
-	err = appKeepers.InterchainQueryKeeper.SetCallbackHandler(lscosmostypes.ModuleName, appKeepers.LSCosmosKeeper.CallbackHandler())
-	if err != nil {
-		panic(err)
-	}
-
 	appKeepers.EpochsKeeper.SetHooks(
 		epochstypes.NewMultiEpochHooks(
 			appKeepers.LiquidStakeIBCKeeper.NewEpochHooks(),
