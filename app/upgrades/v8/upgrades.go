@@ -86,10 +86,13 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 		// You can include x/gov proposal migration documented in [UPGRADING.md](https://github.com/cosmos/cosmos-sdk/blob/main/UPGRADING.md)
 		// TODO(ajeet): do we need this optional migration?
 
-		ctx.Logger().Info("migrating lscsomos module")
-		err = args.Keepers.LSCosmosKeeper.Migrate(ctx)
-		if err != nil {
-			return nil, err
+		enabled := args.Keepers.LSCosmosKeeper.GetModuleState(ctx)
+		if enabled {
+			ctx.Logger().Info("migrating lscsomos module")
+			err = args.Keepers.LSCosmosKeeper.Migrate(ctx)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		ctx.Logger().Info("running module migrations")
