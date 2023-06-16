@@ -98,7 +98,7 @@ func appModules(
 	encodingConfig appparams.EncodingConfig,
 	skipGenesisInvariants bool,
 ) []module.AppModule {
-	appCodec := encodingConfig.Marshaler
+	appCodec := encodingConfig.Codec
 
 	return []module.AppModule{
 		genutil.NewAppModule(
@@ -142,7 +142,7 @@ func overrideSimulationModules(
 	encodingConfig appparams.EncodingConfig,
 	_ bool,
 ) map[string]module.AppModuleSimulation {
-	appCodec := encodingConfig.Marshaler
+	appCodec := encodingConfig.Codec
 
 	return map[string]module.AppModuleSimulation{
 		authtypes.ModuleName: auth.NewAppModule(appCodec, *app.AccountKeeper, authsimulation.RandomGenesisAccounts, app.GetSubspace(authtypes.ModuleName)),

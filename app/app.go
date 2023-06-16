@@ -129,7 +129,7 @@ func NewApplication(
 ) *Application {
 	encodingConfiguration := MakeEncodingConfig()
 
-	applicationCodec := encodingConfiguration.Marshaler
+	applicationCodec := encodingConfiguration.Codec
 	legacyAmino := encodingConfiguration.Amino
 	interfaceRegistry := encodingConfiguration.InterfaceRegistry
 	txConfig := encodingConfiguration.TransactionConfig
