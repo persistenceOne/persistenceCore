@@ -15,6 +15,13 @@ chains:
       upgrades:
         - name: v8
           version: v8.0.0-rc3
+    resources:
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+      requests:
+        cpu: "1"
+        memory: "1Gi"
     ports:
       rpc: 26657
       rest: 1317
@@ -26,11 +33,6 @@ relayers:
     chains:
       - gaia-4
       - core-1
-
-explorer:
-  enabled: true
-  ports:
-    rest: 8080
 
 registry:
   enabled: true

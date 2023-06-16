@@ -46,17 +46,17 @@ jobs:
       # - Port forward all ports to localhost for next steps to connect
       - name: Setup Test infra
         id: starship-action
-        uses: cosmology-tech/starship-action@0.2.9
+        uses: cosmology-tech/starship-action@0.2.12
         with:
           values: starship/v7v8/config.yaml
           port-forward: true
-          version: 0.1.23
+          version: 0.1.32
           kubeconfig: ${{ secrets.KUBECONFIG }}
           namespace: ${{ steps.set-namespace.outputs.namespace }}
 
       - name: Run Tests
         run: |
-          cd starship/v7v8/ 
+          cd starship/v7v8/
           go mod tidy
           make test
 
