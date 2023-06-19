@@ -1,6 +1,8 @@
 package v8
 
 import (
+	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
@@ -29,7 +31,9 @@ func setInitialMinCommissionRate(ctx sdk.Context, keepers *keepers.AppKeepers) {
 			v.Commission.UpdateTime = ctx.BlockHeader().Time
 
 			// call the before-modification hook since we're about to update the commission
-			keepers.StakingKeeper.BeforeValidatorModified(ctx, v.GetOperator())
+			if err := keepers.StakingKeeper.BeforeValidatorModified(ctx, v.GetOperator()); err != nil {
+				ctx.Logger().Info(fmt.Sprintf("BeforeValidatorModified failed with: %s", err.Error()))
+			}
 			keepers.StakingKeeper.SetValidator(ctx, v)
 		}
 	}
