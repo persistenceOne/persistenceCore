@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cast"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	tmos "github.com/cometbft/cometbft/libs/os"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -57,7 +58,7 @@ import (
 	ibcfee "github.com/cosmos/ibc-go/v7/modules/apps/29-fee"
 	ibcfeekeeper "github.com/cosmos/ibc-go/v7/modules/apps/29-fee/keeper"
 	ibcfeetypes "github.com/cosmos/ibc-go/v7/modules/apps/29-fee/types"
-	"github.com/cosmos/ibc-go/v7/modules/apps/transfer"
+	ibctransfer "github.com/cosmos/ibc-go/v7/modules/apps/transfer"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v7/modules/apps/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	ibccoreclient "github.com/cosmos/ibc-go/v7/modules/core/02-client"
@@ -68,9 +69,9 @@ import (
 	epochskeeper "github.com/persistenceOne/persistence-sdk/v2/x/epochs/keeper"
 	epochstypes "github.com/persistenceOne/persistence-sdk/v2/x/epochs/types"
 	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
-	"github.com/persistenceOne/persistence-sdk/v2/x/ibchooker"
-	ibchookerkeeper "github.com/persistenceOne/persistence-sdk/v2/x/ibchooker/keeper"
-	ibchookertypes "github.com/persistenceOne/persistence-sdk/v2/x/ibchooker/types"
+	ibchooks "github.com/persistenceOne/persistence-sdk/v2/x/ibc-hooks"
+	ibchookskeeper "github.com/persistenceOne/persistence-sdk/v2/x/ibc-hooks/keeper"
+	ibchookstypes "github.com/persistenceOne/persistence-sdk/v2/x/ibc-hooks/types"
 	"github.com/persistenceOne/persistence-sdk/v2/x/interchainquery"
 	interchainquerykeeper "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/keeper"
 	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/types"
@@ -82,6 +83,8 @@ import (
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 	lspersistencekeeper "github.com/persistenceOne/pstake-native/v2/x/lspersistence/keeper"
 	lspersistencetypes "github.com/persistenceOne/pstake-native/v2/x/lspersistence/types"
+	routerkeeper "github.com/strangelove-ventures/packet-forward-middleware/v7/router/keeper"
+	routertypes "github.com/strangelove-ventures/packet-forward-middleware/v7/router/types"
 
 	oraclekeeper "github.com/persistenceOne/persistence-sdk/v2/x/oracle/keeper"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
@@ -122,18 +125,21 @@ type AppKeepers struct {
 	ICAControllerKeeper   *icacontrollerkeeper.Keeper
 	LSCosmosKeeper        *lscosmoskeeper.Keeper
 	InterchainQueryKeeper *interchainquerykeeper.Keeper
-	TransferHooksKeeper   *ibchookerkeeper.Keeper
 	LiquidStakeIBCKeeper  *liquidstakeibckeeper.Keeper
 	LSPersistenceKeeper   *lspersistencekeeper.Keeper
 	ConsensusParamsKeeper *consensusparamskeeper.Keeper
 	GroupKeeper           *groupkeeper.Keeper
+	RouterKeeper          *routerkeeper.Keeper
 
 	// Modules
-	TransferModule             transfer.AppModule
-	TransferIBCModule          ibctypes.IBCModule
-	InterchainQueryModule      interchainquery.AppModule
-	LSCosmosModule             lscosmos.AppModule
-	IBCTransferHooksMiddleware ibchooker.AppModule
+	TransferModule        ibctransfer.AppModule
+	InterchainQueryModule interchainquery.AppModule
+	LSCosmosModule        lscosmos.AppModule
+
+	// IBC hooks
+	IBCHooksKeeper   *ibchookskeeper.Keeper
+	ICS20WasmHooks   *ibchooks.WasmHooks
+	HooksICS4Wrapper *ibchooks.ICS4Middleware
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
@@ -364,8 +370,7 @@ func NewAppKeeper(
 	)
 	appKeepers.OracleKeeper = &oracleKeeper
 
-	appKeepers.TransferModule = transfer.NewAppModule(*appKeepers.TransferKeeper)
-	appKeepers.TransferIBCModule = transfer.NewIBCModule(*appKeepers.TransferKeeper)
+	appKeepers.TransferModule = ibctransfer.NewAppModule(*appKeepers.TransferKeeper)
 
 	icaHostKeeper := icahostkeeper.NewKeeper(
 		appCodec,
@@ -461,14 +466,6 @@ func NewAppKeeper(
 		),
 	)
 
-	ibcTransferHooksKeeper := ibchookerkeeper.NewKeeper()
-	appKeepers.TransferHooksKeeper = ibcTransferHooksKeeper.SetHooks(
-		ibchookertypes.NewMultiStakingHooks(
-			appKeepers.LiquidStakeIBCKeeper.NewIBCTransferHooks(),
-		),
-	)
-	appKeepers.IBCTransferHooksMiddleware = ibchooker.NewAppModule(*appKeepers.TransferHooksKeeper, appKeepers.TransferIBCModule)
-
 	evidenceKeeper := evidencekeeper.NewKeeper(
 		appCodec,
 		appKeepers.keys[evidencetypes.StoreKey],
@@ -508,13 +505,39 @@ func NewAppKeeper(
 	)
 	appKeepers.WasmKeeper = &wasmKeeper
 
+	// Configure the hooks keeper
+	hooksKeeper := ibchookskeeper.NewKeeper(appKeepers.keys[ibchookstypes.StoreKey])
+	appKeepers.IBCHooksKeeper = &hooksKeeper
+
+	contractKeeper := wasmkeeper.NewDefaultPermissionKeeper(wasmKeeper)
+	wasmHooks := ibchooks.NewWasmHooks(&hooksKeeper, contractKeeper, bech32Prefix)
+	appKeepers.ICS20WasmHooks = &wasmHooks
+
+	hooksICS4Wrapper := ibchooks.NewICS4Middleware(
+		appKeepers.IBCKeeper.ChannelKeeper,
+		appKeepers.ICS20WasmHooks,
+	)
+	appKeepers.HooksICS4Wrapper = &hooksICS4Wrapper
+
+	appKeepers.RouterKeeper = routerkeeper.NewKeeper(
+		appCodec,
+		appKeepers.keys[routertypes.StoreKey],
+		appKeepers.GetSubspace(routertypes.ModuleName),
+		appKeepers.TransferKeeper,
+		appKeepers.IBCKeeper.ChannelKeeper,
+		appKeepers.DistributionKeeper,
+		appKeepers.BankKeeper,
+		appKeepers.IBCKeeper.ChannelKeeper,
+	)
+
 	var icaHostStack ibctypes.IBCModule
 	icaHostStack = icahost.NewIBCModule(*appKeepers.ICAHostKeeper)
 	icaHostStack = ibcfee.NewIBCMiddleware(icaHostStack, *appKeepers.IBCFeeKeeper)
 
-	// RecvPacket, message that originates from core IBC and goes down to app, the flow is
-	// channel.RecvPacket -> fee.OnRecvPacket -> ibchooker.OnRecvPacket -> transfer.OnRecvPacket
-	transferStack := ibcfee.NewIBCMiddleware(appKeepers.IBCTransferHooksMiddleware, *appKeepers.IBCFeeKeeper)
+	var transferStack ibctypes.IBCModule
+	transferStack = ibctransfer.NewIBCModule(*appKeepers.TransferKeeper)
+	transferStack = ibchooks.NewIBCMiddleware(transferStack, appKeepers.HooksICS4Wrapper)
+	transferStack = ibcfee.NewIBCMiddleware(transferStack, *appKeepers.IBCFeeKeeper)
 
 	// Information will flow: ibc-port -> icaController -> lscosmos.
 	var icaControllerStack ibctypes.IBCModule = liquidStakeIBCModule
@@ -600,6 +623,8 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(interchainquerytypes.ModuleName)
 	paramsKeeper.Subspace(oracletypes.ModuleName)
 	paramsKeeper.Subspace(group.ModuleName)
+	paramsKeeper.Subspace(ibchookstypes.ModuleName)
+	paramsKeeper.Subspace(routertypes.ModuleName)
 
 	return paramsKeeper
 }

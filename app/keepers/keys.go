@@ -27,11 +27,13 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	epochstypes "github.com/persistenceOne/persistence-sdk/v2/x/epochs/types"
 	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
+	ibchookstypes "github.com/persistenceOne/persistence-sdk/v2/x/ibc-hooks/types"
 	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/types"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 	lspersistencetypes "github.com/persistenceOne/pstake-native/v2/x/lspersistence/types"
+	routertypes "github.com/strangelove-ventures/packet-forward-middleware/v7/router/types"
 )
 
 func (appKeepers *AppKeepers) GenerateKeys() {
@@ -53,6 +55,7 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 		halving.StoreKey,
 		ibcexported.StoreKey,
 		ibcfeetypes.StoreKey,
+		ibchookstypes.StoreKey,
 		ibctransfertypes.StoreKey,
 		icacontrollertypes.StoreKey,
 		icahosttypes.StoreKey,
@@ -63,6 +66,7 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 		minttypes.StoreKey,
 		oracletypes.StoreKey,
 		paramstypes.StoreKey,
+		routertypes.StoreKey,
 		slashingtypes.StoreKey,
 		stakingtypes.StoreKey,
 		upgradetypes.StoreKey,

@@ -49,16 +49,19 @@ import (
 	"github.com/persistenceOne/persistence-sdk/v2/x/epochs"
 	epochstypes "github.com/persistenceOne/persistence-sdk/v2/x/epochs/types"
 	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
-	ibchookertypes "github.com/persistenceOne/persistence-sdk/v2/x/ibchooker/types"
+	ibchooks "github.com/persistenceOne/persistence-sdk/v2/x/ibc-hooks"
+	ibchookstypes "github.com/persistenceOne/persistence-sdk/v2/x/ibc-hooks/types"
 	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/types"
+	"github.com/persistenceOne/persistence-sdk/v2/x/oracle"
+	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
 	"github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc"
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 	lspersistence "github.com/persistenceOne/pstake-native/v2/x/lspersistence"
 	lspersistencetypes "github.com/persistenceOne/pstake-native/v2/x/lspersistence/types"
+	"github.com/strangelove-ventures/packet-forward-middleware/v7/router"
+	routertypes "github.com/strangelove-ventures/packet-forward-middleware/v7/router/types"
 
-	"github.com/persistenceOne/persistence-sdk/v2/x/oracle"
-	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
 	appparams "github.com/persistenceOne/persistenceCore/v8/app/params"
 )
 
@@ -121,10 +124,11 @@ func appModules(
 		groupmodule.NewAppModule(appCodec, *app.GroupKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		ibc.NewAppModule(app.IBCKeeper),
 		ibcfee.NewAppModule(*app.IBCFeeKeeper),
+		router.NewAppModule(app.RouterKeeper),
 		params.NewAppModule(*app.ParamsKeeper),
 		halving.NewAppModule(appCodec, *app.HalvingKeeper),
 		app.TransferModule,
-		app.IBCTransferHooksMiddleware,
+		ibchooks.NewAppModule(*app.AccountKeeper),
 		ica.NewAppModule(app.ICAControllerKeeper, app.ICAHostKeeper),
 		wasm.NewAppModule(appCodec, app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasm.ModuleName)),
 		epochs.NewAppModule(*app.EpochsKeeper),
@@ -175,8 +179,9 @@ func orderBeginBlockers() []string {
 		vestingtypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		halving.ModuleName,
+		ibchookstypes.ModuleName,
+		routertypes.ModuleName,
 		wasm.ModuleName,
-		ibchookertypes.ModuleName,
 		interchainquerytypes.ModuleName,
 		liquidstakeibctypes.ModuleName,
 		lspersistencetypes.ModuleName,
@@ -210,9 +215,10 @@ func orderEndBlockers() []string {
 		vestingtypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		halving.ModuleName,
+		ibchookstypes.ModuleName,
+		routertypes.ModuleName,
 		wasm.ModuleName,
 		epochstypes.ModuleName,
-		ibchookertypes.ModuleName,
 		interchainquerytypes.ModuleName,
 		liquidstakeibctypes.ModuleName,
 		lspersistencetypes.ModuleName,
@@ -252,9 +258,10 @@ func orderInitGenesis() []string {
 		vestingtypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		halving.ModuleName,
+		ibchookstypes.ModuleName,
+		routertypes.ModuleName,
 		wasm.ModuleName,
 		epochstypes.ModuleName,
-		ibchookertypes.ModuleName,
 		interchainquerytypes.ModuleName,
 		liquidstakeibctypes.ModuleName,
 		lspersistencetypes.ModuleName,

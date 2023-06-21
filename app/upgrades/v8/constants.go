@@ -6,9 +6,12 @@ import (
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	group "github.com/cosmos/cosmos-sdk/x/group"
 	ibcfeetypes "github.com/cosmos/ibc-go/v7/modules/apps/29-fee/types"
+	ibchookstypes "github.com/persistenceOne/persistence-sdk/v2/x/ibc-hooks/types"
+	ibchookertypes "github.com/persistenceOne/persistence-sdk/v2/x/ibchooker/types"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
 	lspersistencetypes "github.com/persistenceOne/pstake-native/v2/x/lspersistence/types"
+	routertypes "github.com/strangelove-ventures/packet-forward-middleware/v7/router/types"
 
 	"github.com/persistenceOne/persistenceCore/v8/app/upgrades"
 )
@@ -30,6 +33,11 @@ var Upgrade = upgrades.Upgrade{
 			liquidstakeibctypes.ModuleName,
 			lspersistencetypes.ModuleName,
 			consensusparamstypes.ModuleName,
+			ibchookstypes.StoreKey,
+			routertypes.ModuleName,
+		},
+		Deleted: []string{
+			ibchookertypes.ModuleName,
 		},
 	},
 }

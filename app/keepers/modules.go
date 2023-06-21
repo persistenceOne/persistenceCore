@@ -33,12 +33,13 @@ import (
 	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 	"github.com/persistenceOne/persistence-sdk/v2/x/epochs"
 	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
-	"github.com/persistenceOne/persistence-sdk/v2/x/ibchooker"
+	ibchooks "github.com/persistenceOne/persistence-sdk/v2/x/ibc-hooks"
 	"github.com/persistenceOne/persistence-sdk/v2/x/interchainquery"
 	"github.com/persistenceOne/persistence-sdk/v2/x/oracle"
 	"github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc"
 	"github.com/persistenceOne/pstake-native/v2/x/lscosmos"
 	"github.com/persistenceOne/pstake-native/v2/x/lspersistence"
+	"github.com/strangelove-ventures/packet-forward-middleware/v7/router"
 )
 
 // AppModuleBasics defines the module BasicManager is in charge of setting up basic,
@@ -77,7 +78,6 @@ var AppModuleBasics = []module.AppModuleBasic{
 	ica.AppModuleBasic{},
 	epochs.AppModuleBasic{},
 	interchainquery.AppModuleBasic{},
-	ibchooker.AppModuleBasic{},
 	lscosmos.AppModuleBasic{},
 	ibcfee.AppModuleBasic{},
 	oracle.AppModuleBasic{},
@@ -85,4 +85,6 @@ var AppModuleBasics = []module.AppModuleBasic{
 	lspersistence.AppModuleBasic{},
 	consensus.AppModuleBasic{},
 	groupmodule.AppModuleBasic{},
+	ibchooks.AppModuleBasic{},
+	router.AppModuleBasic{},
 }
