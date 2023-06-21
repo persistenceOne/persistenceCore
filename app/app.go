@@ -109,7 +109,8 @@ type Application struct {
 	*keepers.AppKeepers
 
 	legacyAmino       *codec.LegacyAmino
-	applicationCodec  codec.Codec
+	appCodec          codec.Codec
+	txConfig          client.TxConfig
 	interfaceRegistry types.InterfaceRegistry
 
 	moduleManager     *module.Manager
@@ -129,10 +130,10 @@ func NewApplication(
 ) *Application {
 	encodingConfiguration := MakeEncodingConfig()
 
-	applicationCodec := encodingConfiguration.Codec
+	appCodec := encodingConfiguration.Codec
 	legacyAmino := encodingConfiguration.Amino
 	interfaceRegistry := encodingConfiguration.InterfaceRegistry
-	txConfig := encodingConfiguration.TransactionConfig
+	txConfig := encodingConfiguration.TxConfig
 
 	baseApp := baseapp.NewBaseApp(
 		AppName,
@@ -156,13 +157,14 @@ func NewApplication(
 	app := &Application{
 		BaseApp:           baseApp,
 		legacyAmino:       legacyAmino,
-		applicationCodec:  applicationCodec,
+		appCodec:          appCodec,
+		txConfig:          txConfig,
 		interfaceRegistry: interfaceRegistry,
 	}
 
 	// Setup keepers
 	app.AppKeepers = keepers.NewAppKeeper(
-		applicationCodec,
+		appCodec,
 		baseApp,
 		legacyAmino,
 		ModuleAccountPermissions,
@@ -186,7 +188,7 @@ func NewApplication(
 	app.moduleManager.SetOrderExportGenesis(orderInitGenesis()...)
 
 	app.moduleManager.RegisterInvariants(app.CrisisKeeper)
-	app.configurator = module.NewConfigurator(app.applicationCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
+	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
 	app.moduleManager.RegisterServices(app.configurator)
 
 	app.simulationManager = module.NewSimulationManagerFromAppModules(
@@ -201,7 +203,7 @@ func NewApplication(
 	app.MountTransientStores(app.GetTransientStoreKey())
 	app.MountMemoryStores(app.GetMemoryStoreKey())
 
-	app.setAnteHandler(encodingConfiguration.TransactionConfig, wasmConfig)
+	app.setAnteHandler(txConfig, wasmConfig)
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
@@ -269,12 +271,22 @@ func (app *Application) registerGRPCServices() {
 	reflectionv1.RegisterReflectionServiceServer(app.GRPCQueryRouter(), reflectionSvc)
 }
 
-func (app *Application) ApplicationCodec() codec.Codec {
-	return app.applicationCodec
-}
-
 func (app *Application) Name() string {
 	return app.BaseApp.Name()
+}
+
+func (app *Application) AppCodec() codec.Codec {
+	return app.appCodec
+}
+
+// InterfaceRegistry returns Application's InterfaceRegistry
+func (app *Application) InterfaceRegistry() types.InterfaceRegistry {
+	return app.interfaceRegistry
+}
+
+// TxConfig returns Application's TxConfig
+func (app *Application) TxConfig() client.TxConfig {
+	return app.txConfig
 }
 
 func (app *Application) LegacyAmino() *codec.LegacyAmino {
@@ -319,7 +331,7 @@ func (app *Application) InitChainer(ctx sdk.Context, req abcitypes.RequestInitCh
 
 	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.moduleManager.GetVersionMap())
 
-	return app.moduleManager.InitGenesis(ctx, app.applicationCodec, genesisState)
+	return app.moduleManager.InitGenesis(ctx, app.appCodec, genesisState)
 }
 
 func (app *Application) ModuleAccountAddrs() map[string]bool {
@@ -365,7 +377,7 @@ func (app *Application) setupUpgradeHandlers() {
 				ModuleManager: app.moduleManager,
 				Configurator:  app.configurator,
 				Keepers:       app.AppKeepers,
-				Codec:         app.applicationCodec,
+				Codec:         app.appCodec,
 			}),
 		)
 	}
@@ -432,7 +444,7 @@ func (app *Application) LoadHeight(height int64) error {
 
 // DefaultGenesis returns a default genesis from the registered AppModuleBasic's.
 func (app *Application) DefaultGenesis() map[string]json.RawMessage {
-	return ModuleBasics.DefaultGenesis(app.applicationCodec)
+	return ModuleBasics.DefaultGenesis(app.appCodec)
 }
 
 func SendCoinBlockedAddrs() map[string]bool {

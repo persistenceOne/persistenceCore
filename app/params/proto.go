@@ -21,7 +21,7 @@ func MakeEncodingConfig() EncodingConfig {
 	return EncodingConfig{
 		InterfaceRegistry: interfaceRegistry,
 		Codec:             codec,
-		TransactionConfig: txCfg,
+		TxConfig:          txCfg,
 		Amino:             amino,
 	}
 }

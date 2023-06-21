@@ -16,6 +16,6 @@ import (
 type EncodingConfig struct {
 	InterfaceRegistry types.InterfaceRegistry
 	Codec             codec.Codec
-	TransactionConfig client.TxConfig
+	TxConfig          client.TxConfig
 	Amino             *codec.LegacyAmino
 }

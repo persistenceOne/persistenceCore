@@ -21,7 +21,7 @@ func (app *Application) ExportAppStateAndValidators(forZeroHeight bool, jailWhit
 		app.prepForZeroHeightGenesis(context, jailWhiteList)
 	}
 
-	genesisState := app.moduleManager.ExportGenesisForModules(context, app.applicationCodec, modulesToExport)
+	genesisState := app.moduleManager.ExportGenesisForModules(context, app.appCodec, modulesToExport)
 	applicationState, Error := codec.MarshalJSONIndent(app.legacyAmino, genesisState)
 
 	if Error != nil {

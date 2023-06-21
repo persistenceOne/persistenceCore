@@ -51,12 +51,12 @@ func BenchmarkFullAppSimulation(b *testing.B) {
 		b,
 		os.Stdout,
 		app.BaseApp,
-		simtestutil.AppStateFn(app.ApplicationCodec(), app.SimulationManager(), app.DefaultGenesis()),
+		simtestutil.AppStateFn(app.AppCodec(), app.SimulationManager(), app.DefaultGenesis()),
 		simtypes.RandomAccounts, // Replace with own random account function if using keys other than secp256k1
-		simtestutil.SimulationOperations(app, app.ApplicationCodec(), config),
+		simtestutil.SimulationOperations(app, app.AppCodec(), config),
 		SendCoinBlockedAddrs(),
 		config,
-		app.ApplicationCodec(),
+		app.AppCodec(),
 	)
 
 	// export state and simParams before the simulation error is checked
@@ -106,12 +106,12 @@ func BenchmarkInvariants(b *testing.B) {
 		b,
 		os.Stdout,
 		app.BaseApp,
-		simtestutil.AppStateFn(app.ApplicationCodec(), app.SimulationManager(), app.DefaultGenesis()),
+		simtestutil.AppStateFn(app.AppCodec(), app.SimulationManager(), app.DefaultGenesis()),
 		simtypes.RandomAccounts, // Replace with own random account function if using keys other than secp256k1
-		simtestutil.SimulationOperations(app, app.ApplicationCodec(), config),
+		simtestutil.SimulationOperations(app, app.AppCodec(), config),
 		SendCoinBlockedAddrs(),
 		config,
-		app.ApplicationCodec(),
+		app.AppCodec(),
 	)
 
 	// export state and simParams before the simulation error is checked
