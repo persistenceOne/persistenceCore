@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	stdlog "log"
 
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
@@ -90,7 +91,10 @@ func (app *Application) prepForZeroHeightGenesis(context sdk.Context, jailWhiteL
 		feePool.CommunityPool = feePool.CommunityPool.Add(scraps...)
 		app.DistributionKeeper.SetFeePool(context, feePool)
 
-		app.DistributionKeeper.Hooks().AfterValidatorCreated(context, val.GetOperator())
+		if err := app.DistributionKeeper.Hooks().AfterValidatorCreated(context, val.GetOperator()); err != nil {
+			// never called as AfterValidatorCreated always returns nil
+			panic(err)
+		}
 		return false
 	})
 
@@ -105,8 +109,15 @@ func (app *Application) prepForZeroHeightGenesis(context sdk.Context, jailWhiteL
 			panic(err)
 		}
 
-		app.DistributionKeeper.Hooks().BeforeDelegationCreated(context, delegatorAddress, validatorAddress)
-		app.DistributionKeeper.Hooks().AfterDelegationModified(context, delegatorAddress, validatorAddress)
+		if err := app.DistributionKeeper.Hooks().BeforeDelegationCreated(context, delegatorAddress, validatorAddress); err != nil {
+			// never called as BeforeDelegationCreated always returns nil
+			panic(fmt.Errorf("error while incrementing period: %w", err))
+		}
+
+		if err := app.DistributionKeeper.Hooks().AfterDelegationModified(context, delegatorAddress, validatorAddress); err != nil {
+			// never called as AfterDelegationModified always returns nil
+			panic(fmt.Errorf("error while creating a new delegation period record: %w", err))
+		}
 	}
 
 	context = context.WithBlockHeight(height)
