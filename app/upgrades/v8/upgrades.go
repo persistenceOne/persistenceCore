@@ -17,10 +17,12 @@ import (
 	"github.com/persistenceOne/persistenceCore/v8/app/upgrades"
 )
 
-func setInitialMinCommissionRate(ctx sdk.Context, keepers *keepers.AppKeepers) {
+func setInitialMinCommissionRate(ctx sdk.Context, keepers *keepers.AppKeepers) error {
 	stakingParams := keepers.StakingKeeper.GetParams(ctx)
 	stakingParams.MinCommissionRate = sdk.NewDecWithPrec(5, 2)
-	keepers.StakingKeeper.SetParams(ctx, stakingParams)
+	if err := keepers.StakingKeeper.SetParams(ctx, stakingParams); err != nil {
+		return fmt.Errorf("failed to set MinCommissionRate to 5%%: %w", err)
+	}
 
 	// Force update validator commission rate if it is lower than the minimum rate
 	validators := keepers.StakingKeeper.GetAllValidators(ctx)
@@ -35,11 +37,13 @@ func setInitialMinCommissionRate(ctx sdk.Context, keepers *keepers.AppKeepers) {
 
 			// call the before-modification hook since we're about to update the commission
 			if err := keepers.StakingKeeper.Hooks().BeforeValidatorModified(ctx, v.GetOperator()); err != nil {
-				ctx.Logger().Info(fmt.Sprintf("BeforeValidatorModified failed with: %s", err.Error()))
+				return fmt.Errorf("BeforeValidatorModified failed with: %w", err)
 			}
 			keepers.StakingKeeper.SetValidator(ctx, v)
 		}
 	}
+
+	return nil
 }
 
 func setOraclePairListEmpty(ctx sdk.Context, keepers *keepers.AppKeepers) {
@@ -105,7 +109,9 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 		}
 
 		ctx.Logger().Info("setting min commission rate to 5%")
-		setInitialMinCommissionRate(ctx, args.Keepers)
+		if err = setInitialMinCommissionRate(ctx, args.Keepers); err != nil {
+			return nil, err
+		}
 
 		ctx.Logger().Info("setting acceptList to empty in oracle params")
 		setOraclePairListEmpty(ctx, args.Keepers)
