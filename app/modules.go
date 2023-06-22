@@ -57,8 +57,6 @@ import (
 	"github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc"
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
-	lspersistence "github.com/persistenceOne/pstake-native/v2/x/lspersistence"
-	lspersistencetypes "github.com/persistenceOne/pstake-native/v2/x/lspersistence/types"
 	"github.com/strangelove-ventures/packet-forward-middleware/v7/router"
 	routertypes "github.com/strangelove-ventures/packet-forward-middleware/v7/router/types"
 
@@ -86,7 +84,6 @@ var ModuleAccountPermissions = map[string][]string{
 	liquidstakeibctypes.ModuleName:                {authtypes.Minter, authtypes.Burner},
 	liquidstakeibctypes.DepositModuleAccount:      nil,
 	liquidstakeibctypes.UndelegationModuleAccount: {authtypes.Burner},
-	lspersistencetypes.ModuleName:                 {authtypes.Minter, authtypes.Burner},
 }
 
 var receiveAllowedMAcc = map[string]bool{
@@ -135,7 +132,6 @@ func appModules(
 		app.InterchainQueryModule,
 		app.LSCosmosModule,
 		liquidstakeibc.NewAppModule(*app.LiquidStakeIBCKeeper),
-		lspersistence.NewAppModule(appCodec, *app.LSPersistenceKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		oracle.NewAppModule(appCodec, *app.OracleKeeper, app.AccountKeeper, app.BankKeeper),
 		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)), // always be last to make sure that it checks for all invariants and not only part of them
 	}
@@ -184,7 +180,6 @@ func orderBeginBlockers() []string {
 		wasm.ModuleName,
 		interchainquerytypes.ModuleName,
 		liquidstakeibctypes.ModuleName,
-		lspersistencetypes.ModuleName,
 		oracletypes.ModuleName,
 		lscosmostypes.ModuleName,
 	}
@@ -221,7 +216,6 @@ func orderEndBlockers() []string {
 		epochstypes.ModuleName,
 		interchainquerytypes.ModuleName,
 		liquidstakeibctypes.ModuleName,
-		lspersistencetypes.ModuleName,
 		oracletypes.ModuleName,
 		lscosmostypes.ModuleName,
 	}
@@ -264,7 +258,6 @@ func orderInitGenesis() []string {
 		epochstypes.ModuleName,
 		interchainquerytypes.ModuleName,
 		liquidstakeibctypes.ModuleName,
-		lspersistencetypes.ModuleName,
 		oracletypes.ModuleName,
 		lscosmostypes.ModuleName,
 	}

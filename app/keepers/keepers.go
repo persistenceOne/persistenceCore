@@ -81,8 +81,6 @@ import (
 	"github.com/persistenceOne/pstake-native/v2/x/lscosmos"
 	lscosmoskeeper "github.com/persistenceOne/pstake-native/v2/x/lscosmos/keeper"
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
-	lspersistencekeeper "github.com/persistenceOne/pstake-native/v2/x/lspersistence/keeper"
-	lspersistencetypes "github.com/persistenceOne/pstake-native/v2/x/lspersistence/types"
 	routerkeeper "github.com/strangelove-ventures/packet-forward-middleware/v7/router/keeper"
 	routertypes "github.com/strangelove-ventures/packet-forward-middleware/v7/router/types"
 
@@ -126,7 +124,6 @@ type AppKeepers struct {
 	LSCosmosKeeper        *lscosmoskeeper.Keeper
 	InterchainQueryKeeper *interchainquerykeeper.Keeper
 	LiquidStakeIBCKeeper  *liquidstakeibckeeper.Keeper
-	LSPersistenceKeeper   *lspersistencekeeper.Keeper
 	ConsensusParamsKeeper *consensusparamskeeper.Keeper
 	GroupKeeper           *groupkeeper.Keeper
 	RouterKeeper          *routerkeeper.Keeper
@@ -405,18 +402,6 @@ func NewAppKeeper(
 	appKeepers.InterchainQueryKeeper = &interchainQueryKeeper
 	appKeepers.InterchainQueryModule = interchainquery.NewAppModule(appCodec, *appKeepers.InterchainQueryKeeper)
 
-	lspKeeper := lspersistencekeeper.NewKeeper(
-		appCodec,
-		appKeepers.keys[lspersistencetypes.StoreKey],
-		appKeepers.AccountKeeper,
-		appKeepers.BankKeeper,
-		appKeepers.StakingKeeper,
-		appKeepers.DistributionKeeper,
-		appKeepers.SlashingKeeper,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-	)
-	appKeepers.LSPersistenceKeeper = &lspKeeper
-
 	liquidStakeIBCKeeper := liquidstakeibckeeper.NewKeeper(
 		appCodec,
 		appKeepers.keys[liquidstakeibctypes.StoreKey],
@@ -625,6 +610,8 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(group.ModuleName)
 	paramsKeeper.Subspace(ibchookstypes.ModuleName)
 	paramsKeeper.Subspace(routertypes.ModuleName)
+
+	// TODO: check if we need to set ParamKeyTable for all these in upgrade handler
 
 	return paramsKeeper
 }

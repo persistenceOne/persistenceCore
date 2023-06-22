@@ -38,7 +38,6 @@ import (
 	"github.com/persistenceOne/persistence-sdk/v2/x/oracle"
 	"github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc"
 	"github.com/persistenceOne/pstake-native/v2/x/lscosmos"
-	"github.com/persistenceOne/pstake-native/v2/x/lspersistence"
 	"github.com/strangelove-ventures/packet-forward-middleware/v7/router"
 )
 
@@ -82,7 +81,6 @@ var AppModuleBasics = []module.AppModuleBasic{
 	ibcfee.AppModuleBasic{},
 	oracle.AppModuleBasic{},
 	liquidstakeibc.AppModuleBasic{},
-	lspersistence.AppModuleBasic{},
 	consensus.AppModuleBasic{},
 	groupmodule.AppModuleBasic{},
 	ibchooks.AppModuleBasic{},
