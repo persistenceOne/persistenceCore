@@ -1,4 +1,4 @@
-package app
+package app_test
 
 import (
 	"fmt"
@@ -18,6 +18,8 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 	simcli "github.com/cosmos/cosmos-sdk/x/simulation/client/cli"
+
+	"github.com/persistenceOne/persistenceCore/v8/app"
 )
 
 // Profile with:
@@ -67,15 +69,15 @@ func BenchmarkInvariants(b *testing.B) {
 		require.NoError(b, os.RemoveAll(dir))
 	}()
 
-	app := benchInitAndSimulateApp(b, logger, db, config)
+	pApp := benchInitAndSimulateApp(b, logger, db, config)
 
-	ctx := app.NewContext(true, tmproto.Header{Height: app.LastBlockHeight() + 1})
+	ctx := pApp.NewContext(true, tmproto.Header{Height: pApp.LastBlockHeight() + 1})
 
 	// 3. Benchmark each invariant separately
 	//
 	// NOTE: We use the crisis keeper as it has all the invariants registered with
 	// their respective metadata which makes it useful for testing/benchmarking.
-	for _, cr := range app.CrisisKeeper.Routes() {
+	for _, cr := range pApp.CrisisKeeper.Routes() {
 		cr := cr
 		b.Run(fmt.Sprintf("%s/%s", cr.ModuleName, cr.Route), func(b *testing.B) {
 			if res, stop := cr.Invar(ctx); stop {
@@ -88,30 +90,30 @@ func BenchmarkInvariants(b *testing.B) {
 	}
 }
 
-func benchInitAndSimulateApp(b *testing.B, logger tmlog.Logger, db tmdb.DB, config simtypes.Config) *Application {
+func benchInitAndSimulateApp(b *testing.B, logger tmlog.Logger, db tmdb.DB, config simtypes.Config) *app.Application {
 	b.Helper()
 
 	appOptions := make(simtestutil.AppOptionsMap, 0)
-	appOptions[flags.FlagHome] = DefaultNodeHome
+	appOptions[flags.FlagHome] = app.DefaultNodeHome
 	appOptions[server.FlagInvCheckPeriod] = simcli.FlagPeriodValue
 
-	app := NewApplication(logger, db, nil, true, []wasmtypes.ProposalType{}, appOptions, []wasm.Option{}, interBlockCacheOpt())
+	pApp := app.NewApplication(logger, db, nil, true, []wasmtypes.ProposalType{}, appOptions, []wasm.Option{}, interBlockCacheOpt())
 
 	// run randomized simulation
 	_, simParams, simErr := simulation.SimulateFromSeed(
 		b,
 		os.Stdout,
-		app.BaseApp,
-		simtestutil.AppStateFn(app.AppCodec(), app.SimulationManager(), app.DefaultGenesis()),
+		pApp.BaseApp,
+		simtestutil.AppStateFn(pApp.AppCodec(), pApp.SimulationManager(), pApp.DefaultGenesis()),
 		simtypes.RandomAccounts, // Replace with own random account function if using keys other than secp256k1
-		simtestutil.SimulationOperations(app, app.AppCodec(), config),
-		SendCoinBlockedAddrs(),
+		simtestutil.SimulationOperations(pApp, pApp.AppCodec(), config),
+		app.SendCoinBlockedAddrs(),
 		config,
-		app.AppCodec(),
+		pApp.AppCodec(),
 	)
 
 	// export state and simParams before the simulation error is checked
-	if err := simtestutil.CheckExportSimulation(app, config, simParams); err != nil {
+	if err := simtestutil.CheckExportSimulation(pApp, config, simParams); err != nil {
 		b.Fatal(err)
 	}
 
@@ -123,5 +125,5 @@ func benchInitAndSimulateApp(b *testing.B, logger tmlog.Logger, db tmdb.DB, conf
 		simtestutil.PrintStats(db)
 	}
 
-	return app
+	return pApp
 }

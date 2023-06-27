@@ -348,6 +348,10 @@ func (app *Application) GetSubspace(moduleName string) paramstypes.Subspace {
 	return subspace
 }
 
+func (app *Application) ModuleManager() *module.Manager {
+	return app.moduleManager
+}
+
 func (app *Application) SimulationManager() *module.SimulationManager {
 	return app.simulationManager
 }
