@@ -7,6 +7,8 @@ import (
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	tmdb "github.com/cometbft/cometbft-db"
+	tmlog "github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/stretchr/testify/require"
 
@@ -40,37 +42,7 @@ func BenchmarkFullAppSimulation(b *testing.B) {
 		require.NoError(b, os.RemoveAll(dir))
 	}()
 
-	appOptions := make(simtestutil.AppOptionsMap, 0)
-	appOptions[flags.FlagHome] = DefaultNodeHome
-	appOptions[server.FlagInvCheckPeriod] = simcli.FlagPeriodValue
-
-	app := NewApplication(logger, db, nil, true, []wasmtypes.ProposalType{}, appOptions, []wasm.Option{}, interBlockCacheOpt())
-
-	// run randomized simulation
-	_, simParams, simErr := simulation.SimulateFromSeed(
-		b,
-		os.Stdout,
-		app.BaseApp,
-		simtestutil.AppStateFn(app.AppCodec(), app.SimulationManager(), app.DefaultGenesis()),
-		simtypes.RandomAccounts, // Replace with own random account function if using keys other than secp256k1
-		simtestutil.SimulationOperations(app, app.AppCodec(), config),
-		SendCoinBlockedAddrs(),
-		config,
-		app.AppCodec(),
-	)
-
-	// export state and simParams before the simulation error is checked
-	if err = simtestutil.CheckExportSimulation(app, config, simParams); err != nil {
-		b.Fatal(err)
-	}
-
-	if simErr != nil {
-		b.Fatal(simErr)
-	}
-
-	if config.Commit {
-		simtestutil.PrintStats(db)
-	}
+	benchInitAndSimulateApp(b, logger, db, config)
 }
 
 func BenchmarkInvariants(b *testing.B) {
@@ -95,6 +67,30 @@ func BenchmarkInvariants(b *testing.B) {
 		require.NoError(b, os.RemoveAll(dir))
 	}()
 
+	app := benchInitAndSimulateApp(b, logger, db, config)
+
+	ctx := app.NewContext(true, tmproto.Header{Height: app.LastBlockHeight() + 1})
+
+	// 3. Benchmark each invariant separately
+	//
+	// NOTE: We use the crisis keeper as it has all the invariants registered with
+	// their respective metadata which makes it useful for testing/benchmarking.
+	for _, cr := range app.CrisisKeeper.Routes() {
+		cr := cr
+		b.Run(fmt.Sprintf("%s/%s", cr.ModuleName, cr.Route), func(b *testing.B) {
+			if res, stop := cr.Invar(ctx); stop {
+				b.Fatalf(
+					"broken invariant at block %d of %d\n%s",
+					ctx.BlockHeight()-1, config.NumBlocks, res,
+				)
+			}
+		})
+	}
+}
+
+func benchInitAndSimulateApp(b *testing.B, logger tmlog.Logger, db tmdb.DB, config simtypes.Config) *Application {
+	b.Helper()
+
 	appOptions := make(simtestutil.AppOptionsMap, 0)
 	appOptions[flags.FlagHome] = DefaultNodeHome
 	appOptions[server.FlagInvCheckPeriod] = simcli.FlagPeriodValue
@@ -115,7 +111,7 @@ func BenchmarkInvariants(b *testing.B) {
 	)
 
 	// export state and simParams before the simulation error is checked
-	if err = simtestutil.CheckExportSimulation(app, config, simParams); err != nil {
+	if err := simtestutil.CheckExportSimulation(app, config, simParams); err != nil {
 		b.Fatal(err)
 	}
 
@@ -127,21 +123,5 @@ func BenchmarkInvariants(b *testing.B) {
 		simtestutil.PrintStats(db)
 	}
 
-	ctx := app.NewContext(true, tmproto.Header{Height: app.LastBlockHeight() + 1})
-
-	// 3. Benchmark each invariant separately
-	//
-	// NOTE: We use the crisis keeper as it has all the invariants registered with
-	// their respective metadata which makes it useful for testing/benchmarking.
-	for _, cr := range app.CrisisKeeper.Routes() {
-		cr := cr
-		b.Run(fmt.Sprintf("%s/%s", cr.ModuleName, cr.Route), func(b *testing.B) {
-			if res, stop := cr.Invar(ctx); stop {
-				b.Fatalf(
-					"broken invariant at block %d of %d\n%s",
-					ctx.BlockHeight()-1, config.NumBlocks, res,
-				)
-			}
-		})
-	}
+	return app
 }
