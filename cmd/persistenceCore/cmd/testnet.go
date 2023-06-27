@@ -212,7 +212,7 @@ func initTestnetFiles(
 	mbm module.BasicManager,
 	genBalIterator banktypes.GenesisBalancesIterator,
 	args initArgs,
-) error {
+) error { //NOSONAR
 	if args.chainID == "" {
 		args.chainID = "chain-" + tmrand.Str(6)
 	}

@@ -255,7 +255,7 @@ func appExport(
 	jailAllowedAddrs []string,
 	appOpts servertypes.AppOptions,
 	modulesToExport []string,
-) (servertypes.ExportedApp, error) {
+) (servertypes.ExportedApp, error) { //NOSONAR
 	homePath, ok := appOpts.Get(flags.FlagHome).(string)
 	if !ok || homePath == "" {
 		return servertypes.ExportedApp{}, errors.New("application home is not set")
