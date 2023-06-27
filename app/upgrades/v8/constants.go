@@ -9,6 +9,7 @@ import (
 	ibchookstypes "github.com/persistenceOne/persistence-sdk/v2/x/ibc-hooks/types"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
+	buildertypes "github.com/skip-mev/pob/x/builder/types"
 	routertypes "github.com/strangelove-ventures/packet-forward-middleware/v7/router/types"
 
 	"github.com/persistenceOne/persistenceCore/v8/app/upgrades"
@@ -32,6 +33,7 @@ var Upgrade = upgrades.Upgrade{
 			consensusparamstypes.ModuleName,
 			ibchookstypes.StoreKey,
 			routertypes.ModuleName,
+			buildertypes.ModuleName,
 		},
 	},
 }

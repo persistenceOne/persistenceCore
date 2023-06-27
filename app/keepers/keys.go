@@ -32,6 +32,7 @@ import (
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
+	buildertypes "github.com/skip-mev/pob/x/builder/types"
 	routertypes "github.com/strangelove-ventures/packet-forward-middleware/v7/router/types"
 )
 
@@ -42,6 +43,7 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 		authtypes.StoreKey,
 		authzkeeper.StoreKey,
 		banktypes.StoreKey,
+		buildertypes.StoreKey,
 		capabilitytypes.StoreKey,
 		consensusparamstypes.StoreKey,
 		crisistypes.StoreKey,

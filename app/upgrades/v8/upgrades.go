@@ -53,6 +53,16 @@ func setOraclePairListEmpty(ctx sdk.Context, keepers *keepers.AppKeepers) {
 	keepers.OracleKeeper.SetParams(ctx, oracleParams)
 }
 
+func disableMEVAuction(ctx sdk.Context, keepers *keepers.AppKeepers) error {
+	builderParams, err := keepers.BuilderKeeper.GetParams(ctx)
+	if err != nil {
+		return err
+	}
+	// Setting MaxBundleSize to 0 means no auction txs will be accepted
+	builderParams.MaxBundleSize = 0
+	return keepers.BuilderKeeper.SetParams(ctx, builderParams)
+}
+
 func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.UpgradeHandler {
 	baseAppLegacySS := getLegacySubspaces(args.Keepers.ParamsKeeper)
 
@@ -123,6 +133,11 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 
 		ctx.Logger().Info("setting acceptList to empty in oracle params")
 		setOraclePairListEmpty(ctx, args.Keepers)
+
+		ctx.Logger().Info("disable auction for MEV")
+		if err = disableMEVAuction(ctx, args.Keepers); err != nil {
+			return nil, err
+		}
 
 		// TODO(ajeet): do we need to set gov -> MinInitialDepositRatio? (default is 0 -> disabled)
 

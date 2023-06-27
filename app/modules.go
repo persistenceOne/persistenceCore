@@ -58,6 +58,8 @@ import (
 	"github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc"
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
+	"github.com/skip-mev/pob/x/builder"
+	buildertypes "github.com/skip-mev/pob/x/builder/types"
 	"github.com/strangelove-ventures/packet-forward-middleware/v7/router"
 	routertypes "github.com/strangelove-ventures/packet-forward-middleware/v7/router/types"
 
@@ -85,6 +87,7 @@ var ModuleAccountPermissions = map[string][]string{
 	liquidstakeibctypes.ModuleName:                {authtypes.Minter, authtypes.Burner},
 	liquidstakeibctypes.DepositModuleAccount:      nil,
 	liquidstakeibctypes.UndelegationModuleAccount: {authtypes.Burner},
+	buildertypes.ModuleName:                       nil,
 }
 
 var receiveAllowedMAcc = map[string]bool{
@@ -135,6 +138,7 @@ func appModules(
 		app.LSCosmosModule,
 		liquidstakeibc.NewAppModule(*app.LiquidStakeIBCKeeper),
 		oracle.NewAppModule(appCodec, *app.OracleKeeper, app.AccountKeeper, app.BankKeeper),
+		builder.NewAppModule(appCodec, *app.BuilderKeeper),
 		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)), // always be last to make sure that it checks for all invariants and not only part of them
 	}
 }
@@ -175,6 +179,7 @@ func orderBeginBlockers() []string {
 		group.ModuleName,
 		paramstypes.ModuleName,
 		vestingtypes.ModuleName,
+		buildertypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		halving.ModuleName,
 		ibchookstypes.ModuleName,
@@ -222,6 +227,7 @@ func orderEndBlockers() []string {
 		liquidstakeibctypes.ModuleName,
 		oracletypes.ModuleName,
 		lscosmostypes.ModuleName,
+		buildertypes.ModuleName,
 	}
 }
 
@@ -265,5 +271,6 @@ func orderInitGenesis() []string {
 		liquidstakeibctypes.ModuleName,
 		oracletypes.ModuleName,
 		lscosmostypes.ModuleName,
+		buildertypes.ModuleName,
 	}
 }

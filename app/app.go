@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
@@ -51,6 +52,8 @@ import (
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
+	pobabci "github.com/skip-mev/pob/abci"
+	"github.com/skip-mev/pob/mempool"
 
 	"github.com/persistenceOne/persistenceCore/v8/app/keepers"
 	"github.com/persistenceOne/persistenceCore/v8/app/upgrades"
@@ -116,6 +119,9 @@ type Application struct {
 	moduleManager     *module.Manager
 	configurator      module.Configurator
 	simulationManager *module.SimulationManager
+
+	// override handler for CheckTx for POB
+	checkTxHandler pobabci.CheckTx
 }
 
 func NewApplication(
@@ -203,7 +209,7 @@ func NewApplication(
 	app.MountTransientStores(app.GetTransientStoreKey())
 	app.MountMemoryStores(app.GetMemoryStoreKey())
 
-	app.setAnteHandler(txConfig, wasmConfig)
+	app.setupPOBAndAnteHandler(wasmConfig)
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
@@ -240,25 +246,58 @@ func NewApplication(
 	return app
 }
 
-func (app *Application) setAnteHandler(txConfig client.TxConfig, wasmConfig wasmtypes.WasmConfig) {
-	anteHandler, err := NewAnteHandler(
-		HandlerOptions{
-			HandlerOptions: ante.HandlerOptions{
-				AccountKeeper:   app.AccountKeeper,
-				BankKeeper:      app.BankKeeper,
-				FeegrantKeeper:  app.FeegrantKeeper,
-				SignModeHandler: txConfig.SignModeHandler(),
-				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
-			},
-			IBCKeeper:         app.IBCKeeper,
-			WasmConfig:        &wasmConfig,
-			TXCounterStoreKey: app.GetKVStoreKey()[wasm.StoreKey],
+func (app *Application) setupPOBAndAnteHandler(wasmConfig wasmtypes.WasmConfig) {
+	// Set POB's mempool into the app.
+	mempool := mempool.NewAuctionMempool(app.txConfig.TxDecoder(), app.txConfig.TxEncoder(), 0, mempool.NewDefaultAuctionFactory(app.txConfig.TxDecoder()))
+	app.BaseApp.SetMempool(mempool)
+
+	anteOptions := HandlerOptions{
+		HandlerOptions: ante.HandlerOptions{
+			AccountKeeper:   app.AccountKeeper,
+			BankKeeper:      app.BankKeeper,
+			FeegrantKeeper:  app.FeegrantKeeper,
+			SignModeHandler: app.txConfig.SignModeHandler(),
+			SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
 		},
-	)
+		IBCKeeper:         app.IBCKeeper,
+		WasmConfig:        &wasmConfig,
+		TXCounterStoreKey: app.GetKVStoreKey()[wasm.StoreKey],
+
+		BuilderKeeper: app.BuilderKeeper,
+		Mempool:       mempool,
+		TxDecoder:     app.txConfig.TxDecoder(),
+		TxEncoder:     app.txConfig.TxEncoder(),
+	}
+	anteHandler, err := NewAnteHandler(anteOptions)
 	if err != nil {
 		panic(fmt.Errorf("failed to create AnteHandler: %s", err))
 	}
-	app.SetAnteHandler(anteHandler)
+
+	// Set the proposal handlers on the BaseApp along with the custom antehandler.
+	proposalHandlers := pobabci.NewProposalHandler(
+		mempool,
+		app.BaseApp.Logger(),
+		anteHandler,
+		anteOptions.TxEncoder,
+		anteOptions.TxDecoder,
+	)
+	app.BaseApp.SetPrepareProposal(proposalHandlers.PrepareProposalHandler())
+	app.BaseApp.SetProcessProposal(proposalHandlers.ProcessProposalHandler())
+	app.BaseApp.SetAnteHandler(anteHandler)
+
+	chainID := app.ChainID()
+	app.BaseApp.Logger().Info("using BaseApp chainID for POB ABCI", "chainID", chainID)
+
+	// Set the custom CheckTx handler on BaseApp.
+	checkTxHandler := pobabci.NewCheckTxHandler(
+		app.BaseApp,
+		app.txConfig.TxDecoder(),
+		mempool,
+		anteHandler,
+		chainID,
+	)
+
+	app.SetCheckTx(checkTxHandler.CheckTx())
 }
 
 func (app *Application) registerGRPCServices() {
@@ -269,6 +308,26 @@ func (app *Application) registerGRPCServices() {
 		panic(err)
 	}
 	reflectionv1.RegisterReflectionServiceServer(app.GRPCQueryRouter(), reflectionSvc)
+}
+
+// ChainID gets chainID from private fields of BaseApp
+// Should be removed once SDK 0.50.x will be adopted
+func (app *Application) ChainID() string {
+	field := reflect.ValueOf(app.BaseApp).Elem().FieldByName("chainID")
+	return field.String()
+}
+
+// CheckTx will check the transaction with the provided checkTxHandler. We override the default
+// handler so that we can verify bid transactions before they are inserted into the mempool.
+// With the POB CheckTx, we can verify the bid transaction and all of the bundled transactions
+// before inserting the bid transaction into the mempool.
+func (app *Application) CheckTx(req abcitypes.RequestCheckTx) abcitypes.ResponseCheckTx {
+	return app.checkTxHandler(req)
+}
+
+// SetCheckTx sets the checkTxHandler for the app.
+func (app *Application) SetCheckTx(handler pobabci.CheckTx) {
+	app.checkTxHandler = handler
 }
 
 func (app *Application) Name() string {
