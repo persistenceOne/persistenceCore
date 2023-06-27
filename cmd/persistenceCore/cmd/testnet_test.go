@@ -19,17 +19,17 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 
-	"github.com/persistenceOne/persistence-sdk/v2/simapp"
+	"github.com/persistenceOne/persistenceCore/v8/app"
 )
 
-func Test_TestnetCmd(t *testing.T) {
+func TestTestnetCmd(t *testing.T) {
 	home := t.TempDir()
 	encodingConfig := moduletestutil.MakeTestEncodingConfig(staking.AppModuleBasic{}, auth.AppModuleBasic{})
 	logger := log.NewNopLogger()
 	cfg, err := genutiltest.CreateDefaultTendermintConfig(home)
 	require.NoError(t, err)
 
-	err = genutiltest.ExecInitCmd(simapp.ModuleBasics, home, encodingConfig.Codec)
+	err = genutiltest.ExecInitCmd(app.ModuleBasics, home, encodingConfig.Codec)
 	require.NoError(t, err)
 
 	serverCtx := server.NewContext(viper.New(), cfg, logger)
@@ -41,7 +41,7 @@ func Test_TestnetCmd(t *testing.T) {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, server.ServerContextKey, serverCtx)
 	ctx = context.WithValue(ctx, client.ClientContextKey, &clientCtx)
-	cmd := testnetInitFilesCmd(simapp.ModuleBasics, banktypes.GenesisBalancesIterator{})
+	cmd := testnetInitFilesCmd(app.ModuleBasics, banktypes.GenesisBalancesIterator{})
 	cmd.SetArgs([]string{fmt.Sprintf("--%s=test", flags.FlagKeyringBackend), fmt.Sprintf("--output-dir=%s", home)})
 	err = cmd.ExecuteContext(ctx)
 	require.NoError(t, err)
