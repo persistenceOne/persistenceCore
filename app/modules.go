@@ -51,6 +51,7 @@ import (
 	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
 	ibchooks "github.com/persistenceOne/persistence-sdk/v2/x/ibc-hooks"
 	ibchookstypes "github.com/persistenceOne/persistence-sdk/v2/x/ibc-hooks/types"
+	ibchookertypes "github.com/persistenceOne/persistence-sdk/v2/x/ibchooker/types"
 	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/types"
 	"github.com/persistenceOne/persistence-sdk/v2/x/oracle"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
@@ -125,6 +126,7 @@ func appModules(
 		params.NewAppModule(*app.ParamsKeeper),
 		halving.NewAppModule(appCodec, *app.HalvingKeeper),
 		app.TransferModule,
+		app.IBCTransferHooksMiddleware,
 		ibchooks.NewAppModule(*app.AccountKeeper),
 		ica.NewAppModule(app.ICAControllerKeeper, app.ICAHostKeeper),
 		wasm.NewAppModule(appCodec, app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasm.ModuleName)),
@@ -178,6 +180,7 @@ func orderBeginBlockers() []string {
 		ibchookstypes.ModuleName,
 		routertypes.ModuleName,
 		wasm.ModuleName,
+		ibchookertypes.ModuleName,
 		interchainquerytypes.ModuleName,
 		liquidstakeibctypes.ModuleName,
 		oracletypes.ModuleName,
@@ -214,6 +217,7 @@ func orderEndBlockers() []string {
 		routertypes.ModuleName,
 		wasm.ModuleName,
 		epochstypes.ModuleName,
+		ibchookertypes.ModuleName,
 		interchainquerytypes.ModuleName,
 		liquidstakeibctypes.ModuleName,
 		oracletypes.ModuleName,
@@ -256,6 +260,7 @@ func orderInitGenesis() []string {
 		routertypes.ModuleName,
 		wasm.ModuleName,
 		epochstypes.ModuleName,
+		ibchookertypes.ModuleName,
 		interchainquerytypes.ModuleName,
 		liquidstakeibctypes.ModuleName,
 		oracletypes.ModuleName,

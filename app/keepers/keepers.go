@@ -72,6 +72,9 @@ import (
 	ibchooks "github.com/persistenceOne/persistence-sdk/v2/x/ibc-hooks"
 	ibchookskeeper "github.com/persistenceOne/persistence-sdk/v2/x/ibc-hooks/keeper"
 	ibchookstypes "github.com/persistenceOne/persistence-sdk/v2/x/ibc-hooks/types"
+	"github.com/persistenceOne/persistence-sdk/v2/x/ibchooker"
+	ibchookerkeeper "github.com/persistenceOne/persistence-sdk/v2/x/ibchooker/keeper"
+	ibchookertypes "github.com/persistenceOne/persistence-sdk/v2/x/ibchooker/types"
 	"github.com/persistenceOne/persistence-sdk/v2/x/interchainquery"
 	interchainquerykeeper "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/keeper"
 	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/types"
@@ -123,15 +126,17 @@ type AppKeepers struct {
 	ICAControllerKeeper   *icacontrollerkeeper.Keeper
 	LSCosmosKeeper        *lscosmoskeeper.Keeper
 	InterchainQueryKeeper *interchainquerykeeper.Keeper
+	TransferHooksKeeper   *ibchookerkeeper.Keeper
 	LiquidStakeIBCKeeper  *liquidstakeibckeeper.Keeper
 	ConsensusParamsKeeper *consensusparamskeeper.Keeper
 	GroupKeeper           *groupkeeper.Keeper
 	RouterKeeper          *routerkeeper.Keeper
 
 	// Modules
-	TransferModule        ibctransfer.AppModule
-	InterchainQueryModule interchainquery.AppModule
-	LSCosmosModule        lscosmos.AppModule
+	TransferModule             ibctransfer.AppModule
+	InterchainQueryModule      interchainquery.AppModule
+	LSCosmosModule             lscosmos.AppModule
+	IBCTransferHooksMiddleware ibchooker.AppModule
 
 	// IBC hooks
 	IBCHooksKeeper   *ibchookskeeper.Keeper
@@ -354,6 +359,7 @@ func NewAppKeeper(
 		appKeepers.ScopedTransferKeeper,
 	)
 	appKeepers.TransferKeeper = &transferKeeper
+	appKeepers.TransferModule = ibctransfer.NewAppModule(*appKeepers.TransferKeeper)
 
 	oracleKeeper := oraclekeeper.NewKeeper(
 		appCodec,
@@ -366,8 +372,6 @@ func NewAppKeeper(
 		distributiontypes.ModuleName,
 	)
 	appKeepers.OracleKeeper = &oracleKeeper
-
-	appKeepers.TransferModule = ibctransfer.NewAppModule(*appKeepers.TransferKeeper)
 
 	icaHostKeeper := icahostkeeper.NewKeeper(
 		appCodec,
@@ -451,6 +455,16 @@ func NewAppKeeper(
 		),
 	)
 
+	ibcTransferHooksKeeper := ibchookerkeeper.NewKeeper()
+	appKeepers.TransferHooksKeeper = ibcTransferHooksKeeper.SetHooks(
+		ibchookertypes.NewMultiStakingHooks(
+			appKeepers.LiquidStakeIBCKeeper.NewIBCTransferHooks(),
+		),
+	)
+
+	transferIBCModule := ibctransfer.NewIBCModule(*appKeepers.TransferKeeper)
+	appKeepers.IBCTransferHooksMiddleware = ibchooker.NewAppModule(*appKeepers.TransferHooksKeeper, transferIBCModule)
+
 	evidenceKeeper := evidencekeeper.NewKeeper(
 		appCodec,
 		appKeepers.keys[evidencetypes.StoreKey],
@@ -519,8 +533,7 @@ func NewAppKeeper(
 	icaHostStack = icahost.NewIBCModule(*appKeepers.ICAHostKeeper)
 	icaHostStack = ibcfee.NewIBCMiddleware(icaHostStack, *appKeepers.IBCFeeKeeper)
 
-	var transferStack ibctypes.IBCModule
-	transferStack = ibctransfer.NewIBCModule(*appKeepers.TransferKeeper)
+	var transferStack ibctypes.IBCModule = appKeepers.IBCTransferHooksMiddleware
 	transferStack = ibchooks.NewIBCMiddleware(transferStack, appKeepers.HooksICS4Wrapper)
 	transferStack = ibcfee.NewIBCMiddleware(transferStack, *appKeepers.IBCFeeKeeper)
 

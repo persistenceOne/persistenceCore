@@ -34,6 +34,7 @@ import (
 	"github.com/persistenceOne/persistence-sdk/v2/x/epochs"
 	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
 	ibchooks "github.com/persistenceOne/persistence-sdk/v2/x/ibc-hooks"
+	"github.com/persistenceOne/persistence-sdk/v2/x/ibchooker"
 	"github.com/persistenceOne/persistence-sdk/v2/x/interchainquery"
 	"github.com/persistenceOne/persistence-sdk/v2/x/oracle"
 	"github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc"
@@ -77,6 +78,7 @@ var AppModuleBasics = []module.AppModuleBasic{
 	ica.AppModuleBasic{},
 	epochs.AppModuleBasic{},
 	interchainquery.AppModuleBasic{},
+	ibchooker.AppModuleBasic{},
 	lscosmos.AppModuleBasic{},
 	ibcfee.AppModuleBasic{},
 	oracle.AppModuleBasic{},

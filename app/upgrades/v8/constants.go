@@ -7,7 +7,6 @@ import (
 	group "github.com/cosmos/cosmos-sdk/x/group"
 	ibcfeetypes "github.com/cosmos/ibc-go/v7/modules/apps/29-fee/types"
 	ibchookstypes "github.com/persistenceOne/persistence-sdk/v2/x/ibc-hooks/types"
-	ibchookertypes "github.com/persistenceOne/persistence-sdk/v2/x/ibchooker/types"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
 	routertypes "github.com/strangelove-ventures/packet-forward-middleware/v7/router/types"
@@ -33,9 +32,6 @@ var Upgrade = upgrades.Upgrade{
 			consensusparamstypes.ModuleName,
 			ibchookstypes.StoreKey,
 			routertypes.ModuleName,
-		},
-		Deleted: []string{
-			ibchookertypes.ModuleName,
 		},
 	},
 }
