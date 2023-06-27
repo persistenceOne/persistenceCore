@@ -43,8 +43,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// SimAppChainID hardcoded chainID for simulation
-const SimAppChainID = "simulation-app"
+const (
+	// SimAppChainID hardcoded chainID for simulation
+	SimAppChainID = "simulation-app"
+
+	SimDirPrefix = "leveldb-app-sim"
+	SimDBName    = "Simulation"
+
+	setupFailedMsg = "simulation setup failed"
+)
 
 // Get flags every time the simulator is run
 func init() {
@@ -73,11 +80,11 @@ func TestFullAppSimulation(t *testing.T) {
 	config := simcli.NewConfigFromFlags()
 	config.ChainID = SimAppChainID
 
-	db, dir, logger, skip, err := simtestutil.SetupSimulation(config, "leveldb-app-sim", "Simulation", simcli.FlagVerboseValue, simcli.FlagEnabledValue)
+	db, dir, logger, skip, err := simtestutil.SetupSimulation(config, SimDirPrefix, SimDBName, simcli.FlagVerboseValue, simcli.FlagEnabledValue)
 	if skip {
 		t.Skip("skipping application simulation")
 	}
-	require.NoError(t, err, "simulation setup failed")
+	require.NoError(t, err, setupFailedMsg)
 
 	defer func() {
 		require.NoError(t, db.Close())
@@ -118,11 +125,11 @@ func TestAppImportExport(t *testing.T) {
 	config := simcli.NewConfigFromFlags()
 	config.ChainID = SimAppChainID
 
-	db, dir, logger, skip, err := simtestutil.SetupSimulation(config, "leveldb-app-sim", "Simulation", simcli.FlagVerboseValue, simcli.FlagEnabledValue)
+	db, dir, logger, skip, err := simtestutil.SetupSimulation(config, SimDirPrefix, SimDBName, simcli.FlagVerboseValue, simcli.FlagEnabledValue)
 	if skip {
 		t.Skip("skipping application import/export simulation")
 	}
-	require.NoError(t, err, "simulation setup failed")
+	require.NoError(t, err, setupFailedMsg)
 
 	defer func() {
 		require.NoError(t, db.Close())
@@ -166,7 +173,7 @@ func TestAppImportExport(t *testing.T) {
 	fmt.Printf("importing genesis...\n")
 
 	newDB, newDir, _, _, err := simtestutil.SetupSimulation(config, "leveldb-app-sim-2", "Simulation-2", simcli.FlagVerboseValue, simcli.FlagEnabledValue)
-	require.NoError(t, err, "simulation setup failed")
+	require.NoError(t, err, setupFailedMsg)
 
 	defer func() {
 		require.NoError(t, newDB.Close())
@@ -234,11 +241,11 @@ func TestAppSimulationAfterImport(t *testing.T) {
 	config := simcli.NewConfigFromFlags()
 	config.ChainID = SimAppChainID
 
-	db, dir, logger, skip, err := simtestutil.SetupSimulation(config, "leveldb-app-sim", "Simulation", simcli.FlagVerboseValue, simcli.FlagEnabledValue)
+	db, dir, logger, skip, err := simtestutil.SetupSimulation(config, SimDirPrefix, SimDBName, simcli.FlagVerboseValue, simcli.FlagEnabledValue)
 	if skip {
 		t.Skip("skipping application simulation after import")
 	}
-	require.NoError(t, err, "simulation setup failed")
+	require.NoError(t, err, setupFailedMsg)
 
 	defer func() {
 		require.NoError(t, db.Close())
@@ -287,7 +294,7 @@ func TestAppSimulationAfterImport(t *testing.T) {
 	fmt.Printf("importing genesis...\n")
 
 	newDB, newDir, _, _, err := simtestutil.SetupSimulation(config, "leveldb-app-sim-2", "Simulation-2", simcli.FlagVerboseValue, simcli.FlagEnabledValue)
-	require.NoError(t, err, "simulation setup failed")
+	require.NoError(t, err, setupFailedMsg)
 
 	defer func() {
 		require.NoError(t, newDB.Close())
@@ -316,8 +323,6 @@ func TestAppSimulationAfterImport(t *testing.T) {
 	require.NoError(t, err)
 }
 
-// TODO: Make another test for the fuzzer itself, which just has noOp txs
-// and doesn't depend on the application.
 func TestAppStateDeterminism(t *testing.T) {
 	if !simcli.FlagEnabledValue {
 		t.Skip("skipping application simulation")

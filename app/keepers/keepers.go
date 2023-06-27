@@ -624,7 +624,5 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(ibchookstypes.ModuleName)
 	paramsKeeper.Subspace(routertypes.ModuleName)
 
-	// TODO: check if we need to set ParamKeyTable for all these in upgrade handler
-
 	return paramsKeeper
 }
