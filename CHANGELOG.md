@@ -9,7 +9,7 @@
 - Upgrades ibc-go from `v4.3.1` to `v7.1.0` LSM fork including [huckleberry](https://forum.cosmos.network/t/ibc-security-advisory-huckleberry/10731) security fix
 - Upgrades wasmd from `v0.30.0` to `v0.40.2` LSM fork & wasmvm to `1.2.4` including [cherry](https://github.com/CosmWasm/advisories/blob/main/CWAs/CWA-2023-002.md) bugfix
 - Some SDK 47 things to keep in mind:
-  - The SDK version includes some key store migration for the CLI. Make sure you backup your private keys before testing this! You can not switch back to v45
+  - The SDK version includes some key store migration for the CLI. Make sure you backup your private keys before testing this! You can not switch back to v45 keys
   - CLI: `add-genesis-account`, `gentx`, `add-genesis-account`, `collect-gentxs` and others are now under `genesis` command as parent
   - CLI: `--broadcast-mode block` was removed. You need to query the result for a TX with `persistenceCore q tx <hash>` instead
   - ...add more?
@@ -18,7 +18,6 @@
   - adds IBC hooks
   - adds PFM module
   - adds Oracle module (not in use for now)
-  - removes ibchooker
 - Upgrades pstake-native from `v2.0.0` to `vx.x.x` which
   - adds new module liquidstakeibc
   - deprecates lscosmos module
