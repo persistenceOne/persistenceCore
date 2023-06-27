@@ -9,6 +9,7 @@ import (
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	icaMigrations "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/migrations/v6"
+	exported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	ibctmmigrations "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint/migrations"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
@@ -82,6 +83,13 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 			return nil, err
 		}
 
+		// ibc v7-to-v7.1
+		// explicitly update the IBC 02-client params, adding the localhost client type
+		ctx.Logger().Info("adding localhost client to IBC params")
+		params := args.Keepers.IBCKeeper.ClientKeeper.GetParams(ctx)
+		params.AllowedClients = append(params.AllowedClients, exported.Localhost)
+		args.Keepers.IBCKeeper.ClientKeeper.SetParams(ctx, params)
+
 		// sdk v45-to-v46
 		// -- nothing --
 
@@ -115,6 +123,8 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 
 		ctx.Logger().Info("setting acceptList to empty in oracle params")
 		setOraclePairListEmpty(ctx, args.Keepers)
+
+		// TODO(ajeet): do we need to set gov -> MinInitialDepositRatio? (default is 0 -> disabled)
 
 		return newVm, nil
 	}
