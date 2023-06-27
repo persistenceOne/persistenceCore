@@ -18,6 +18,7 @@ require (
 	github.com/persistenceOne/pstake-native/v2 v2.2.0-rc3
 	github.com/prometheus/client_golang v1.15.0
 	github.com/rakyll/statik v0.1.7
+	github.com/skip-mev/pob v1.0.0
 	github.com/spf13/cast v1.5.1
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
@@ -148,7 +149,6 @@ require (
 	github.com/rs/cors v1.8.3 // indirect
 	github.com/rs/zerolog v1.29.1 // indirect
 	github.com/sasha-s/go-deadlock v0.3.1 // indirect
-	github.com/skip-mev/pob v1.0.0 // indirect
 	github.com/spf13/afero v1.9.5 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/subosito/gotenv v1.4.2 // indirect
@@ -196,4 +196,5 @@ replace (
 	github.com/CosmWasm/wasmd => github.com/persistenceOne/wasmd v0.0.0-20230615215703-e2229415de74
 	github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk v0.0.0-20230611231946-790aaf168429
 	github.com/cosmos/ibc-go/v7 => github.com/persistenceOne/ibc-go/v7 v7.0.0-rc0.0.20230612095033-b776ca4647aa
+	github.com/skip-mev/pob => github.com/persistenceOne/pob v1.0.0-lsm
 )

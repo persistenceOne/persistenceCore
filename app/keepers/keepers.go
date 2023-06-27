@@ -84,6 +84,8 @@ import (
 	"github.com/persistenceOne/pstake-native/v2/x/lscosmos"
 	lscosmoskeeper "github.com/persistenceOne/pstake-native/v2/x/lscosmos/keeper"
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
+	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
+	buildertypes "github.com/skip-mev/pob/x/builder/types"
 	routerkeeper "github.com/strangelove-ventures/packet-forward-middleware/v7/router/keeper"
 	routertypes "github.com/strangelove-ventures/packet-forward-middleware/v7/router/types"
 
@@ -131,6 +133,7 @@ type AppKeepers struct {
 	ConsensusParamsKeeper *consensusparamskeeper.Keeper
 	GroupKeeper           *groupkeeper.Keeper
 	RouterKeeper          *routerkeeper.Keeper
+	BuilderKeeper         *builderkeeper.Keeper
 
 	// Modules
 	TransferModule             ibctransfer.AppModule
@@ -529,6 +532,17 @@ func NewAppKeeper(
 		appKeepers.IBCKeeper.ChannelKeeper,
 	)
 
+	builderKeeper := builderkeeper.NewKeeper(
+		appCodec,
+		appKeepers.keys[buildertypes.StoreKey],
+		appKeepers.AccountKeeper,
+		appKeepers.BankKeeper,
+		appKeepers.DistributionKeeper,
+		appKeepers.StakingKeeper,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+	appKeepers.BuilderKeeper = &builderKeeper
+
 	var icaHostStack ibctypes.IBCModule
 	icaHostStack = icahost.NewIBCModule(*appKeepers.ICAHostKeeper)
 	icaHostStack = ibcfee.NewIBCMiddleware(icaHostStack, *appKeepers.IBCFeeKeeper)
@@ -623,6 +637,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(group.ModuleName)
 	paramsKeeper.Subspace(ibchookstypes.ModuleName)
 	paramsKeeper.Subspace(routertypes.ModuleName)
+	paramsKeeper.Subspace(buildertypes.ModuleName)
 
 	return paramsKeeper
 }
