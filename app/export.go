@@ -40,30 +40,57 @@ func (app *Application) ExportAppStateAndValidators(forZeroHeight bool, jailWhit
 }
 
 func (app *Application) prepForZeroHeightGenesis(context sdk.Context, jailWhiteList []string) {
-	applyWhiteList := false
-
-	if len(jailWhiteList) > 0 {
-		applyWhiteList = true
-	}
-
-	whiteListMap := make(map[string]bool)
-
-	for _, address := range jailWhiteList {
-		if _, err := sdk.ValAddressFromBech32(address); err != nil {
-			panic(err)
-		}
-
-		whiteListMap[address] = true
-	}
-
+	/* Just to be safe, assert the invariants on current state. */
 	app.CrisisKeeper.AssertInvariants(context)
 
+	/* Handle fee distribution state. */
+
+	// withdraw all validator commission
 	app.StakingKeeper.IterateValidators(context, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
 		_, _ = app.DistributionKeeper.WithdrawValidatorCommission(context, val.GetOperator())
 		return false
 	})
 
 	delegations := app.StakingKeeper.GetAllDelegations(context)
+	app.withdrawDelegationRewards(context, delegations)
+
+	app.DistributionKeeper.DeleteAllValidatorSlashEvents(context)
+	app.DistributionKeeper.DeleteAllValidatorHistoricalRewards(context)
+
+	// set context height to zero
+	height := context.BlockHeight()
+	context = context.WithBlockHeight(0)
+
+	app.reinitializeValidators(context)
+	app.reinitializeDelegations(context, delegations)
+
+	// reset context height
+	context = context.WithBlockHeight(height)
+
+	/* Handle staking state. */
+
+	// reset creation height for redelegations & unbonding delegations
+	app.resetCreationHeightForDelEntries(context)
+
+	if err := app.resetValidatorBondHeights(context, jailWhiteList); err != nil {
+		app.Logger().Error(err.Error())
+		return
+	}
+
+	/* Handle slashing state. */
+
+	// reset start height on signing infos
+	app.SlashingKeeper.IterateValidatorSigningInfos(
+		context,
+		func(validatorConsAddress sdk.ConsAddress, validatorSigningInfo slashingtypes.ValidatorSigningInfo) (stop bool) {
+			validatorSigningInfo.StartHeight = 0
+			app.SlashingKeeper.SetValidatorSigningInfo(context, validatorConsAddress, validatorSigningInfo)
+			return false
+		},
+	)
+}
+
+func (app *Application) withdrawDelegationRewards(context sdk.Context, delegations []stakingtypes.Delegation) {
 	for _, delegation := range delegations {
 		validatorAddress, err := sdk.ValAddressFromBech32(delegation.ValidatorAddress)
 		if err != nil {
@@ -75,16 +102,14 @@ func (app *Application) prepForZeroHeightGenesis(context sdk.Context, jailWhiteL
 			panic(err)
 		}
 
-		_, _ = app.DistributionKeeper.WithdrawDelegationRewards(context, delegatorAddress, validatorAddress)
+		_, err = app.DistributionKeeper.WithdrawDelegationRewards(context, delegatorAddress, validatorAddress)
+		if err != nil {
+			panic(err)
+		}
 	}
+}
 
-	app.DistributionKeeper.DeleteAllValidatorSlashEvents(context)
-
-	app.DistributionKeeper.DeleteAllValidatorHistoricalRewards(context)
-
-	height := context.BlockHeight()
-	context = context.WithBlockHeight(0)
-
+func (app *Application) reinitializeValidators(context sdk.Context) {
 	app.StakingKeeper.IterateValidators(context, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
 		scraps := app.DistributionKeeper.GetValidatorOutstandingRewardsCoins(context, val.GetOperator())
 		feePool := app.DistributionKeeper.GetFeePool(context)
@@ -97,7 +122,9 @@ func (app *Application) prepForZeroHeightGenesis(context sdk.Context, jailWhiteL
 		}
 		return false
 	})
+}
 
+func (app *Application) reinitializeDelegations(context sdk.Context, delegations []stakingtypes.Delegation) {
 	for _, delegation := range delegations {
 		validatorAddress, err := sdk.ValAddressFromBech32(delegation.ValidatorAddress)
 		if err != nil {
@@ -119,9 +146,10 @@ func (app *Application) prepForZeroHeightGenesis(context sdk.Context, jailWhiteL
 			panic(fmt.Errorf("error while creating a new delegation period record: %w", err))
 		}
 	}
+}
 
-	context = context.WithBlockHeight(height)
-
+func (app *Application) resetCreationHeightForDelEntries(context sdk.Context) {
+	// iterate through redelegations, reset creation height
 	app.StakingKeeper.IterateRedelegations(context, func(_ int64, redelegation stakingtypes.Redelegation) (stop bool) {
 		for i := range redelegation.Entries {
 			redelegation.Entries[i].CreationHeight = 0
@@ -130,6 +158,7 @@ func (app *Application) prepForZeroHeightGenesis(context sdk.Context, jailWhiteL
 		return false
 	})
 
+	// iterate through unbonding delegations, reset creation height
 	app.StakingKeeper.IterateUnbondingDelegations(context, func(_ int64, unbondingDelegation stakingtypes.UnbondingDelegation) (stop bool) {
 		for i := range unbondingDelegation.Entries {
 			unbondingDelegation.Entries[i].CreationHeight = 0
@@ -137,7 +166,14 @@ func (app *Application) prepForZeroHeightGenesis(context sdk.Context, jailWhiteL
 		app.StakingKeeper.SetUnbondingDelegation(context, unbondingDelegation)
 		return false
 	})
+}
 
+func (app *Application) resetValidatorBondHeights(context sdk.Context, jailWhiteList []string) error {
+	applyWhiteList := len(jailWhiteList) > 0
+	whiteListMap := getWhilteListMap(jailWhiteList)
+
+	// Iterate through validators by power descending, reset bond heights, and
+	// update bond intra-tx counters.
 	store := context.KVStore(app.GetKVStoreKey()[stakingtypes.StoreKey])
 	iter := sdk.KVStoreReversePrefixIterator(store, stakingtypes.ValidatorsKey)
 	counter := int16(0)
@@ -160,8 +196,7 @@ func (app *Application) prepForZeroHeightGenesis(context sdk.Context, jailWhiteL
 	}
 
 	if err := iter.Close(); err != nil {
-		app.Logger().Error("error while closing the key-value store reverse prefix iterator: ", err)
-		return
+		return fmt.Errorf("error while closing the key-value store reverse prefix iterator: %w", err)
 	}
 
 	_, err := app.StakingKeeper.ApplyAndReturnValidatorSetUpdates(context)
@@ -169,12 +204,18 @@ func (app *Application) prepForZeroHeightGenesis(context sdk.Context, jailWhiteL
 		stdlog.Fatal(err)
 	}
 
-	app.SlashingKeeper.IterateValidatorSigningInfos(
-		context,
-		func(validatorConsAddress sdk.ConsAddress, validatorSigningInfo slashingtypes.ValidatorSigningInfo) (stop bool) {
-			validatorSigningInfo.StartHeight = 0
-			app.SlashingKeeper.SetValidatorSigningInfo(context, validatorConsAddress, validatorSigningInfo)
-			return false
-		},
-	)
+	return nil
+}
+
+func getWhilteListMap(jailWhiteList []string) map[string]bool {
+	whiteListMap := make(map[string]bool)
+
+	for _, address := range jailWhiteList {
+		if _, err := sdk.ValAddressFromBech32(address); err != nil {
+			panic(err)
+		}
+
+		whiteListMap[address] = true
+	}
+	return whiteListMap
 }
