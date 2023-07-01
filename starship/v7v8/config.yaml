@@ -1,20 +1,20 @@
 chains:
-  - name: gaia-4
+  - name: test-gaia-1
     type: cosmos
     numValidators: 1
     ports:
-      rpc: 26653
+      rpc: 26557
       rest: 1313
-  - name: core-1
+  - name: test-core-1
     type: persistencecore
-    numValidators: 3
+    numValidators: 1
     upgrade:
       enabled: true
       type: build
-      genesis: v7.0.0
+      genesis: v7.0.3
       upgrades:
         - name: v8
-          version: v8.0.0-rc3
+          version: ajeet/sdk-v47
     resources:
       limits:
         cpu: "1"
@@ -31,8 +31,14 @@ relayers:
     type: hermes
     replicas: 1
     chains:
-      - gaia-4
-      - core-1
+      - test-core-1
+      - test-gaia-1
+  - name: persistence-gaia
+    type: icq
+    replicas: 1
+    chains:
+      - test-core-1
+      - test-gaia-1
 
 registry:
   enabled: true

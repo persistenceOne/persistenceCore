@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - ajeet/sdk-v47-e2e-upgrade
     paths:
       - starship/**
   pull_request:
@@ -11,6 +12,7 @@ on:
       - main
     paths:
       - starship/**
+      - ajeet/sdk-v47-e2e-upgrade
 
 jobs:
   e2e-v7v8-test:
@@ -53,6 +55,7 @@ jobs:
           version: 0.1.32
           kubeconfig: ${{ secrets.KUBECONFIG }}
           namespace: ${{ steps.set-namespace.outputs.namespace }}
+          repo: https://raw.githubusercontent.com/persistenceOne/starship/ajeet/sdk-v47/helm_repo
 
       - name: Run Tests
         run: |

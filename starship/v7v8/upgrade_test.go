@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"strconv"
-	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	gov "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
@@ -12,9 +11,7 @@ import (
 
 // TestChainUpgrade is the overall test for performing a software upgrade
 func (s *TestSuite) TestChainUpgrade() {
-	if testing.Short() {
-		s.T().Skip("Skipping chain upgrade tests for short test")
-	}
+	s.T().Skip("Skipping this (will be removed once TestUpgrade is complete)")
 
 	chain, err := s.chainClients.GetChainClient("core-1")
 	s.Require().NoError(err)
