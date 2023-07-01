@@ -52,7 +52,7 @@ jobs:
         with:
           values: starship/v7v8/config.yaml
           port-forward: true
-          version: 0.1.32
+          version: 0.1.37
           kubeconfig: ${{ secrets.KUBECONFIG }}
           namespace: ${{ steps.set-namespace.outputs.namespace }}
           repo: https://raw.githubusercontent.com/persistenceOne/starship/ajeet/sdk-v47/helm_repo
