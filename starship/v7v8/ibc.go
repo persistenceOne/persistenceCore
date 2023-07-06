@@ -19,39 +19,36 @@ import (
 func (s *TestSuite) RunIBCTokenTransferTests() {
 	persistence := s.GetChainClient("test-core-1")
 	gaia := s.GetChainClient("test-gaia-1")
-	uatom := gaia.MustGetChainDenom()
-	amt := 10000000    // 10 ATOMs
-	amtBack := 1000000 // 1 ATOM
+	uxprt := persistence.MustGetChainDenom()
+	amt := 10000000    // 10 XPRTs
+	amtBack := 1000000 // 1 XPRT
 
-	randAddr, err := persistence.CreateRandWallet("test-ibc-transfer")
-	s.Require().NoError(err)
-
-	c := s.GetTransferChannel(persistence, gaia.ChainID)
+	c := s.GetTransferChannel(gaia, persistence.ChainID)
 	port, channel := c.PortId, c.ChannelId
 
-	// ibc atom denom would be empty if there are no traces of this uatom yet
-	ibcAtom := s.GetIBCDenom(persistence, port, channel, uatom)
-	balBefore := s.GetBalance(persistence, persistence.Address, ibcAtom)
+	// ibc atom denom would be empty if there are no traces of this uxprt yet
+	ibcXPRT := s.GetIBCDenom(gaia, port, channel, uxprt)
+	balBefore := s.GetBalance(gaia, gaia.Address, ibcXPRT)
 
-	s.T().Logf("transferring %d%s to persistence address", amt, uatom)
-	seq := s.IBCTransferTokens(gaia, gaia.Address, randAddr, port, channel, uatom, amt)
-	s.WaitForIBCPacketAck(persistence, port, channel, seq)
+	s.T().Logf("transferring %d%s to gaia address", amt, uxprt)
+	seq := s.IBCTransferTokens(persistence, gaia.Address, port, channel, uxprt, amt)
+	s.WaitForIBCPacketAck(gaia, port, channel, seq)
 
-	ibcAtom = s.GetIBCDenom(persistence, port, channel, uatom)
-	balAfter := s.GetBalance(persistence, persistence.Address, ibcAtom)
+	ibcXPRT = s.GetIBCDenom(gaia, port, channel, uxprt)
+	balAfter := s.GetBalance(gaia, gaia.Address, ibcXPRT)
 
 	s.T().Log("check balance after ibc transfer")
 	s.Require().Equal(balBefore.Amount.Add(sdk.NewInt(int64(amt))), balAfter.Amount)
 
-	s.T().Logf("transferring back %d%s back to gaia address (in ibc denoms)", amtBack, uatom)
+	s.T().Logf("transferring %d%s back to persistence address (in ibc denoms)", amtBack, uxprt)
 	port, channel = c.Counterparty.PortId, c.Counterparty.ChannelId
-	gaiaBalBefore := s.GetBalance(gaia, gaia.Address, uatom)
-	seq = s.IBCTransferTokens(persistence, randAddr, gaia.Address, port, channel, ibcAtom, amtBack)
+	balBefore = s.GetBalance(persistence, persistence.Address, uxprt)
+	seq = s.IBCTransferTokens(gaia, persistence.Address, port, channel, ibcXPRT, amtBack)
 	s.WaitForIBCPacketAck(persistence, port, channel, seq)
 
-	gaiaBalAfter := s.GetBalance(gaia, gaia.Address, uatom)
+	balAfter = s.GetBalance(persistence, persistence.Address, uxprt)
 	s.T().Log("check balance after transferring back ibc token")
-	s.Require().Equal(gaiaBalBefore.AddAmount(sdk.NewInt(int64(amtBack))), gaiaBalAfter)
+	s.Require().Equal(balBefore.AddAmount(sdk.NewInt(int64(amtBack))), balAfter)
 }
 
 func (s *TestSuite) GetIBCDenom(chain *starship.ChainClient, port, channel, denom string) string {
@@ -67,7 +64,7 @@ func (s *TestSuite) GetIBCDenom(chain *starship.ChainClient, port, channel, deno
 	return fmt.Sprintf("ibc/%s", res.Hash)
 }
 
-func (s *TestSuite) IBCTransferTokens(chain *starship.ChainClient, sender, receiver, port, channel, denom string, amount int) string {
+func (s *TestSuite) IBCTransferTokens(chain *starship.ChainClient, receiver, port, channel, denom string, amount int) string {
 	coin, err := sdk.ParseCoinNormalized(fmt.Sprintf("%d%s", amount, denom))
 	s.Require().NoError(err)
 
@@ -76,7 +73,7 @@ func (s *TestSuite) IBCTransferTokens(chain *starship.ChainClient, sender, recei
 		SourcePort:    port,
 		SourceChannel: channel,
 		Token:         coin,
-		Sender:        sender,
+		Sender:        chain.Address,
 		Receiver:      receiver,
 		TimeoutHeight: ibcclienttypes.Height{
 			RevisionNumber: lh.GetRevisionNumber(),
@@ -133,7 +130,7 @@ func (s *TestSuite) GetChannelClientChainID(chain *starship.ChainClient, port, c
 }
 
 func (s *TestSuite) WaitForIBCPacketAck(chain *starship.ChainClient, port, channel, seq string) {
-	s.T().Logf("wait for packet act; port: %s, channel: %s, seq: %s", port, channel, seq)
+	s.T().Logf("wait for packet ack; port: %s, channel: %s, seq: %s", port, channel, seq)
 	seqInt, err := strconv.Atoi(seq)
 	s.Require().NoError(err)
 	s.Require().Eventuallyf(

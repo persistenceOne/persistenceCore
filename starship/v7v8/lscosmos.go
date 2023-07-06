@@ -24,7 +24,7 @@ func (s *TestSuite) RunLSCosmosTests() {
 	s.JumpStart(persistence, gaia, c)
 
 	s.T().Log("transferring 100 ATOMs to persistence address")
-	s.IBCTransferTokens(gaia, gaia.Address, persistence.Address, c.PortId, c.ChannelId, uatom, 100000000)
+	s.IBCTransferTokens(gaia, persistence.Address, c.PortId, c.ChannelId, uatom, 100000000)
 
 	// Liquid stake
 	s.T().Log("liquid staking 50 ATOMs")
