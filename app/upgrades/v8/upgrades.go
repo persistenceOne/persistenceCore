@@ -19,23 +19,29 @@ import (
 )
 
 func setInitialMinCommissionRate(ctx sdk.Context, keepers *keepers.AppKeepers) error {
+	minRate := sdk.NewDecWithPrec(5, 2)
+	minMaxRate := sdk.NewDecWithPrec(1, 1)
+
 	stakingParams := keepers.StakingKeeper.GetParams(ctx)
-	stakingParams.MinCommissionRate = sdk.NewDecWithPrec(5, 2)
+	stakingParams.MinCommissionRate = minRate
 	if err := keepers.StakingKeeper.SetParams(ctx, stakingParams); err != nil {
 		return fmt.Errorf("failed to set MinCommissionRate to 5%%: %w", err)
 	}
 
-	// Force update validator commission rate if it is lower than the minimum rate
+	// Force update validator commission & max rate if it is lower than the minRate & minMaxRate respectively
 	validators := keepers.StakingKeeper.GetAllValidators(ctx)
 	for _, v := range validators {
-		if v.Commission.Rate.LT(stakingParams.MinCommissionRate) {
-			if v.Commission.MaxRate.LT(stakingParams.MinCommissionRate) {
-				v.Commission.MaxRate = stakingParams.MinCommissionRate
-			}
-
-			v.Commission.Rate = stakingParams.MinCommissionRate
+		valUpdated := false
+		if v.Commission.Rate.LT(minRate) {
+			v.Commission.Rate = minRate
+			valUpdated = true
+		}
+		if v.Commission.MaxRate.LT(minMaxRate) {
+			v.Commission.MaxRate = minMaxRate
+			valUpdated = true
+		}
+		if valUpdated {
 			v.Commission.UpdateTime = ctx.BlockHeader().Time
-
 			// call the before-modification hook since we're about to update the commission
 			if err := keepers.StakingKeeper.Hooks().BeforeValidatorModified(ctx, v.GetOperator()); err != nil {
 				return fmt.Errorf("BeforeValidatorModified failed with: %w", err)
