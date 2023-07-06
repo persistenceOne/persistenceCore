@@ -30,8 +30,10 @@ func (s *TestSuite) Upgrade() {
 	proposalID := s.SubmitAndVoteProposal(persistence, content, "upgrade to v8")
 	s.T().Logf("proposal submitted: %d", proposalID)
 
-	expectedTimeToUpgradeHeight := time.Duration(upgradeHeight-currHeight-5) * time.Second // keeping margin for 5 blocks
-	// sleeping here because WaitForHeight hits status api every second to check height
+	// timeout_commit is set to 800ms
+	blockTime := 800 * time.Millisecond
+	expectedTimeToUpgradeHeight := time.Duration(upgradeHeight-currHeight-5) * blockTime // keeping margin for 5 blocks
+	// sleeping here because WaitForHeight hits status rest api every second to check height
 	// and gets this error after many repetitive calls
 	// post failed: Post "http://localhost:26657": EOF
 	s.T().Logf("Wating for %d seconds", expectedTimeToUpgradeHeight)
