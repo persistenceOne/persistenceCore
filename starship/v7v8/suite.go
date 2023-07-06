@@ -155,10 +155,10 @@ func (s *TestSuite) FindEventAttr(res *coretypes.ResultTx, event, attr string) s
 		if txEvent.Type == event {
 			for _, txAttr := range txEvent.Attributes {
 				key, err := base64.StdEncoding.DecodeString(txAttr.Key)
-				s.Require().NoError(err)
+				s.Require().NoError(err, "failed to decode key: %s", txAttr.Key)
 				if string(key) == attr {
 					val, err := base64.StdEncoding.DecodeString(txAttr.Value)
-					s.Require().NoError(err)
+					s.Require().NoError(err, "failed to decode value: %s", txAttr.Value)
 					return string(val)
 				}
 			}
