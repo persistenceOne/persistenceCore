@@ -23,6 +23,9 @@ func (s *TestSuite) RunIBCTokenTransferTests() {
 	amt := 10000000    // 10 ATOMs
 	amtBack := 1000000 // 1 ATOM
 
+	randAddr, err := persistence.CreateRandWallet("test-ibc-transfer")
+	s.Require().NoError(err)
+
 	c := s.GetTransferChannel(persistence, gaia.ChainID)
 	port, channel := c.PortId, c.ChannelId
 
@@ -31,7 +34,7 @@ func (s *TestSuite) RunIBCTokenTransferTests() {
 	balBefore := s.GetBalance(persistence, persistence.Address, ibcAtom)
 
 	s.T().Logf("transferring %d%s to persistence address", amt, uatom)
-	seq := s.IBCTransferTokens(gaia, persistence.Address, port, channel, uatom, amt)
+	seq := s.IBCTransferTokens(gaia, gaia.Address, randAddr, port, channel, uatom, amt)
 	s.WaitForIBCPacketAck(persistence, port, channel, seq)
 
 	ibcAtom = s.GetIBCDenom(persistence, port, channel, uatom)
@@ -43,7 +46,7 @@ func (s *TestSuite) RunIBCTokenTransferTests() {
 	s.T().Logf("transferring back %d%s back to gaia address (in ibc denoms)", amtBack, uatom)
 	port, channel = c.Counterparty.PortId, c.Counterparty.ChannelId
 	gaiaBalBefore := s.GetBalance(gaia, gaia.Address, uatom)
-	seq = s.IBCTransferTokens(persistence, gaia.Address, port, channel, ibcAtom, amtBack)
+	seq = s.IBCTransferTokens(persistence, randAddr, gaia.Address, port, channel, ibcAtom, amtBack)
 	s.WaitForIBCPacketAck(persistence, port, channel, seq)
 
 	gaiaBalAfter := s.GetBalance(gaia, gaia.Address, uatom)
@@ -64,7 +67,7 @@ func (s *TestSuite) GetIBCDenom(chain *starship.ChainClient, port, channel, deno
 	return fmt.Sprintf("ibc/%s", res.Hash)
 }
 
-func (s *TestSuite) IBCTransferTokens(chain *starship.ChainClient, receiver, port, channel, denom string, amount int) string {
+func (s *TestSuite) IBCTransferTokens(chain *starship.ChainClient, sender, receiver, port, channel, denom string, amount int) string {
 	coin, err := sdk.ParseCoinNormalized(fmt.Sprintf("%d%s", amount, denom))
 	s.Require().NoError(err)
 
@@ -73,7 +76,7 @@ func (s *TestSuite) IBCTransferTokens(chain *starship.ChainClient, receiver, por
 		SourcePort:    port,
 		SourceChannel: channel,
 		Token:         coin,
-		Sender:        chain.Address,
+		Sender:        sender,
 		Receiver:      receiver,
 		TimeoutHeight: ibcclienttypes.Height{
 			RevisionNumber: lh.GetRevisionNumber(),
