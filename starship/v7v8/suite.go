@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"os"
 	"strconv"
@@ -58,14 +57,15 @@ func (s *TestSuite) GetChainClient(chainID string) *starship.ChainClient {
 	return chain
 }
 
-func (s *TestSuite) SendMsgAndWait(chain *starship.ChainClient, msg sdk.Msg, memo string) *coretypes.ResultTx {
+func (s *TestSuite) SendMsgAndWait(chain *starship.ChainClient, msg sdk.Msg, memo string) *sdk.TxResponse {
 	res, err := chain.Client.SendMsg(context.Background(), msg, memo)
 	s.Require().NoError(err)
-	return s.WaitForTx(chain, res.TxHash)
+	s.WaitForTx(chain, res.TxHash)
+	return res
 }
 
 // WaitForTx will wait for the tx to complete, fail if not able to find tx
-func (s *TestSuite) WaitForTx(chain *starship.ChainClient, txHex string) *coretypes.ResultTx {
+func (s *TestSuite) WaitForTx(chain *starship.ChainClient, txHex string) {
 	var tx *coretypes.ResultTx
 	var err error
 	s.Require().Eventuallyf(
@@ -84,7 +84,6 @@ func (s *TestSuite) WaitForTx(chain *starship.ChainClient, txHex string) *corety
 		"waited for too long, still txn not successfull",
 	)
 	s.Assert().NotNil(tx)
-	return tx
 }
 
 // WaitForHeight will wait till the chain reaches the block height
@@ -150,16 +149,12 @@ func (s *TestSuite) SubmitAndPassProposal(chain *starship.ChainClient, content g
 	s.WaitForProposalToPass(chain, proposalID)
 }
 
-func (s *TestSuite) FindEventAttr(res *coretypes.ResultTx, event, attr string) string {
-	for _, txEvent := range res.TxResult.Events {
+func (s *TestSuite) FindEventAttr(res *sdk.TxResponse, event, attr string) string {
+	for _, txEvent := range res.Logs[0].Events {
 		if txEvent.Type == event {
 			for _, txAttr := range txEvent.Attributes {
-				key, err := base64.StdEncoding.DecodeString(txAttr.Key)
-				s.Require().NoError(err, "failed to decode key: %s", txAttr.Key)
-				if string(key) == attr {
-					val, err := base64.StdEncoding.DecodeString(txAttr.Value)
-					s.Require().NoError(err, "failed to decode value: %s", txAttr.Value)
-					return string(val)
+				if txAttr.Key == attr {
+					return txAttr.Value
 				}
 			}
 		}
