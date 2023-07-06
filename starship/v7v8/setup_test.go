@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
 	"testing"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -35,9 +38,22 @@ func (s *TestSuite) TestUpgrade() {
 	s.RunLSCosmosTests()
 
 	/* Upgrade */
-	// s.Upgrade()
+	s.Upgrade()
 
 	/* Post upgrade tests */
-	// s.PostUpgradeTest1()
-	// s.PostUpgradeTest2()
+	s.VerifyParams()
+	s.VerifyValidatorCommissionRates()
+	s.RunLiquidstakeibcTests()
+}
+
+func (s *TestSuite) VerifyValidatorCommissionRates() {
+	minRate := sdk.NewDecWithPrec(5, 2)
+	minMaxRate := sdk.NewDecWithPrec(1, 1)
+	client := s.GetChainClient("test-core-1").Client
+	vals, err := stakingtypes.NewQueryClient(client).Validators(context.Background(), &stakingtypes.QueryValidatorsRequest{})
+	s.Require().NoError(err)
+	for _, val := range vals.Validators {
+		s.Require().True(val.Commission.Rate.GTE(minRate))
+		s.Require().True(val.Commission.MaxRate.GTE(minMaxRate))
+	}
 }

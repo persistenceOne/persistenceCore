@@ -2,14 +2,21 @@ module upgrade_test
 
 go 1.19
 
-replace github.com/cosmology-tech/starship/clients/go/client => github.com/persistenceOne/starship/clients/go/client v0.0.0-20230701141320-e70f4ea1244d
+replace (
+	github.com/cosmology-tech/starship/clients/go/client => github.com/persistenceOne/starship/clients/go/client v0.0.0-20230701141320-e70f4ea1244d
+	github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk v0.0.0-20230706104148-3466cdce6a53
+	github.com/cosmos/ibc-go/v7 => github.com/persistenceOne/ibc-go/v7 v7.0.0-rc0.0.20230612095033-b776ca4647aa
+	github.com/skip-mev/pob => github.com/persistenceOne/pob v1.0.0-lsm
+)
 
 require (
 	github.com/cometbft/cometbft v0.37.2
 	github.com/cosmology-tech/starship/clients/go/client v0.0.0-20230502175643-cec33bcb37e4
 	github.com/cosmos/cosmos-sdk v0.47.3
 	github.com/cosmos/ibc-go/v7 v7.2.0
+	github.com/persistenceOne/persistence-sdk/v2 v2.1.0-rc3.0.20230613005335-2f5959f4c5ee
 	github.com/persistenceOne/pstake-native/v2 v2.2.0-rc3
+	github.com/skip-mev/pob v1.0.0
 	github.com/stretchr/testify v1.8.4
 	go.uber.org/zap v1.24.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -131,7 +138,6 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mtibben/percent v0.2.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
-	github.com/persistenceOne/persistence-sdk/v2 v2.1.0-rc3.0.20230613005335-2f5959f4c5ee // indirect
 	github.com/petermattis/goid v0.0.0-20230317030725-371a4b8eda08 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect

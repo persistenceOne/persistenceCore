@@ -18,7 +18,6 @@ import (
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 	lscosmos "github.com/persistenceOne/pstake-native/v2/x/lscosmos"
-	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 )
 
 var configFile = "./config.yaml"
@@ -90,10 +89,11 @@ func (s *TestSuite) WaitForTx(chain *starship.ChainClient, txHex string) *corety
 
 // WaitForHeight will wait till the chain reaches the block height
 func (s *TestSuite) WaitForHeight(chain *starship.ChainClient, height int64) {
+	s.T().Logf("waiting for height: %d", height)
 	s.Require().Eventuallyf(
 		func() bool {
 			curHeight, err := chain.GetHeight()
-			s.Assert().NoError(err)
+			s.Require().NoError(err)
 			return curHeight >= height
 		},
 		300*time.Second,
@@ -123,17 +123,14 @@ func (s *TestSuite) WaitForProposalToPass(chain *starship.ChainClient, proposalI
 	)
 }
 
-func (s *TestSuite) SubmitAndPassProposal(chain *starship.ChainClient, content govv1beta1.Content, memo string) {
+func (s *TestSuite) SubmitAndVoteProposal(chain *starship.ChainClient, content govv1beta1.Content, memo string) uint64 {
 	denom := chain.MustGetChainDenom()
 	msg := &govv1beta1.MsgSubmitProposal{
 		InitialDeposit: sdk.NewCoins(sdk.NewCoin(denom, sdk.NewInt(10000000))),
 		Proposer:       chain.Address,
 	}
-	err := msg.SetContent(&lscosmostypes.PstakeFeeAddressChangeProposal{
-		Title:            "pstake fee address change proposal",
-		Description:      "pstake fee address change proposal",
-		PstakeFeeAddress: chain.Address,
-	})
+	err := msg.SetContent(content)
+	s.Require().NoError(err)
 	s.T().Logf("submitting proposal: %s", memo)
 	res := s.SendMsgAndWait(chain, msg, memo)
 
@@ -144,7 +141,13 @@ func (s *TestSuite) SubmitAndPassProposal(chain *starship.ChainClient, content g
 	s.T().Logf("submitting vote on proposal: %d | memo: %s", proposalID, memo)
 	vote := &govv1beta1.MsgVote{ProposalId: uint64(proposalID), Voter: chain.Address, Option: govv1beta1.OptionYes}
 	s.SendMsgAndWait(chain, vote, fmt.Sprintf("vote: %s", memo))
-	s.WaitForProposalToPass(chain, uint64(proposalID))
+	return uint64(proposalID)
+}
+
+func (s *TestSuite) SubmitAndPassProposal(chain *starship.ChainClient, content govv1beta1.Content, memo string) {
+	proposalID := s.SubmitAndVoteProposal(chain, content, memo)
+	s.T().Logf("waiting for proposal to pass: %d | memo: %s", proposalID, memo)
+	s.WaitForProposalToPass(chain, proposalID)
 }
 
 func (s *TestSuite) FindEventAttr(res *coretypes.ResultTx, event, attr string) string {
