@@ -12,121 +12,151 @@ ifeq (,$(VERSION))
   endif
 endif
 
+BUILDDIR ?= $(CURDIR)/build
 PACKAGES_SIMTEST=$(shell go list ./... | grep '/simulation')
 LEDGER_ENABLED ?= true
 SDK_PACK := $(shell go list -m github.com/cosmos/cosmos-sdk | sed  's/ /\@/g')
 TM_VERSION := $(shell go list -m github.com/tendermint/tendermint | sed 's:.* ::') # grab everything after the space in "github.com/tendermint/tendermint v0.34.7"
-BUILDDIR ?= $(CURDIR)/build
-
-export GO111MODULE = on
-
-include sims.mk
 
 # process build tags
 build_tags = netgo
 ifeq ($(LEDGER_ENABLED),true)
-  ifeq ($(OS),Windows_NT)
-    GCCEXE = $(shell where gcc.exe 2> NUL)
-    ifeq ($(GCCEXE),)
-      $(error gcc.exe not installed for ledger support, please install or set LEDGER_ENABLED=false)
-    else
-      build_tags += ledger
-    endif
-  else
-    UNAME_S = $(shell uname -s)
-    ifeq ($(UNAME_S),OpenBSD)
-      $(warning OpenBSD detected, disabling ledger support (https://github.com/cosmos/cosmos-sdk/issues/1988))
-    else
-      GCC = $(shell command -v gcc 2> /dev/null)
-      ifeq ($(GCC),)
-        $(error gcc not installed for ledger support, please install or set LEDGER_ENABLED=false)
-      else
-        build_tags += ledger
-      endif
-    endif
-  endif
+	ifeq ($(OS),Windows_NT)
+	GCCEXE = $(shell where gcc.exe 2> NUL)
+	ifeq ($(GCCEXE),)
+		$(error gcc.exe not installed for ledger support, please install or set LEDGER_ENABLED=false)
+	else
+		build_tags += ledger
+	endif
+	else
+	UNAME_S = $(shell uname -s)
+	ifeq ($(UNAME_S),OpenBSD)
+		$(warning OpenBSD detected, disabling ledger support (https://github.com/cosmos/cosmos-sdk/issues/1988))
+	else
+		GCC = $(shell command -v gcc 2> /dev/null)
+		ifeq ($(GCC),)
+			$(error gcc not installed for ledger support, please install or set LEDGER_ENABLED=false)
+		else
+			build_tags += ledger
+		endif
+	endif
+	endif
 endif
 
-build_tags += $(BUILD_TAGS)
-build_tags := $(strip $(build_tags))
-
-whitespace := $(subst ,, )
+whitespace :=
+whitespace += $(whitespace)
 comma := ,
 build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 
 # process linker flags
+
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=persistenceCore \
 		  -X github.com/cosmos/cosmos-sdk/version.AppName=persistenceCore \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
-		  -X github.com/tendermint/tendermint/version.TMCoreSemVer=$(TM_VERSION) \
-		  -X github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)
+		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)" \
+		  -X github.com/tendermint/tendermint/version.TMCoreSemVer=$(TM_VERSION)
 
-ifeq (cleveldb,$(findstring cleveldb,$(build_tags)))
-  ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=cleveldb
+# DB backend selection
+ifeq (cleveldb,$(findstring cleveldb,$(CORE_BUILD_OPTIONS)))
+  build_tags += gcc
 endif
-ifeq (linkstatic,$(findstring linkstatic,$(build_tags)))
-  ldflags += -linkmode=external -extldflags "-Wl,-z,muldefs -static"
+ifeq (badgerdb,$(findstring badgerdb,$(CORE_BUILD_OPTIONS)))
+  build_tags += badgerdb
 endif
-ifeq (badgerdb,$(findstring badgerdb,$(build_tags)))
-  ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=badgerdb
-endif
-ifeq (rocksdb,$(findstring rocksdb,$(build_tags)))
+# handle rocksdb
+ifeq (rocksdb,$(findstring rocksdb,$(CORE_BUILD_OPTIONS)))
   CGO_ENABLED=1
+  build_tags += rocksdb
+endif
+# handle boltdb
+ifeq (boltdb,$(findstring boltdb,$(CORE_BUILD_OPTIONS)))
+  build_tags += boltdb
 endif
 
-BUILD_FLAGS += -ldflags '${ldflags}' -tags "${build_tags}"
+ifeq (,$(findstring nostrip,$(CORE_BUILD_OPTIONS)))
+  ldflags += -w -s
+endif
+ldflags += $(LDFLAGS)
+ldflags := $(strip $(ldflags))
+
+build_tags += $(BUILD_TAGS)
+build_tags := $(strip $(build_tags))
+
+BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)'
 # check for nostrip option
-ifeq (,$(findstring nostrip,$(BUILD_OPTIONS)))
+ifeq (,$(findstring nostrip,$(CORE_BUILD_OPTIONS)))
   BUILD_FLAGS += -trimpath
 endif
 
-GOBIN = $(shell go env GOPATH)/bin
-GOARCH = $(shell go env GOARCH)
-GOOS = $(shell go env GOOS)
+# Check for debug option
+ifeq (debug,$(findstring debug,$(CORE_BUILD_OPTIONS)))
+  BUILD_FLAGS += -gcflags "all=-N -l"
+endif
 
 # Docker variables
 DOCKER := $(shell which docker)
 
-.PHONY: all install build verify docker-run
+include sims.mk
 
 ###############################################################################
-###                              Documentation                              ###
+###                                  Build                                  ###
 ###############################################################################
 
-all: install
+all: build lint
 
-BUILD_TARGETS := build install
+install: go.sum
+	go install -mod=readonly $(BUILD_FLAGS) ./cmd/persistenceCore
 
-build: BUILD_ARGS=-o $(BUILDDIR)/
-
-$(BUILD_TARGETS): go.sum $(BUILDDIR)/
-	go $@ -mod=readonly $(BUILD_FLAGS) $(BUILD_ARGS) ./...
+build:
+	go build $(BUILD_FLAGS) -o bin/persistenceCore ./cmd/persistenceCore
 
 $(BUILDDIR)/:
 	mkdir -p $(BUILDDIR)/
 
-build-linux: go.sum
-	LEDGER_ENABLED=false GOOS=linux GOARCH=amd64 $(MAKE) build
+vulncheck: $(BUILDDIR)/
+	GOBIN=$(BUILDDIR) go install golang.org/x/vuln/cmd/govulncheck@latest
+	$(BUILDDIR)/govulncheck ./...
 
-go-mod-cache: go.sum
-	@echo "--> Download go modules to local cache"
-	@go mod download
+.PHONY: all install lint build vulncheck
+
+###############################################################################
+###                          Tools & Dependencies                           ###
+###############################################################################
 
 go.sum: go.mod
-	@echo "--> Ensure dependencies have not been modified"
-	@go mod verify
+	echo "Ensure dependencies have not been modified ..." >&2
+	go mod verify
+	go mod tidy
+
+###############################################################################
+###                                Linting                                  ###
+###############################################################################
+
+golangci_lint_cmd=golangci-lint
+golangci_version=v1.53.3
+
+lint:
+	@echo "--> Running linter"
+	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(golangci_version)
+	@$(golangci_lint_cmd) run --timeout=10m
+
+lint-fix:
+	@echo "--> Running linter"
+	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(golangci_version)
+	@$(golangci_lint_cmd) run --fix --out-format=tab --issues-exit-code=0
+
+.PHONY: lint lint-fix
+
+###############################################################################
+###                              Documentation                              ###
+###############################################################################
 
 draw-deps:
 	@# requires brew install graphviz or apt-get install graphviz
 	go get github.com/RobotsAndPencils/goviz
 	@goviz -i ./cmd/persistenceCore -d 2 | dot -Tpng -o dependency-graph.png
 
-clean:
-	rm -rf $(BUILDDIR)/ artifacts/
-
-distclean: clean
-	rm -rf vendor/
 
 ###############################################################################
 ###                              Docker                             		###
@@ -186,3 +216,21 @@ release-git:
 		--prefix "persistenceCore-$(VERSION)/" \
 		-o "release/Source code.tar.gz" \
 		HEAD
+
+
+###############################################################################
+###                   Docker Build (heighliner)                             ###
+###############################################################################
+
+get-heighliner:
+	git clone https://github.com/strangelove-ventures/heighliner.git
+	cd heighliner && go install
+
+local-image:
+ifeq (,$(shell which heighliner))
+	echo 'heighliner' binary not found. Consider running `make get-heighliner`
+else
+	heighliner build -c persistence --local -f ./chains.yaml
+endif
+
+.PHONY: get-heighliner local-image
