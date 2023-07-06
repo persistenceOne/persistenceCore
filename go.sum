@@ -976,8 +976,8 @@ github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/9
 github.com/pelletier/go-toml/v2 v2.0.8 h1:0ctb6s9mE31h0/lhu+J6OPmVeDxJn+kYnJc2jZR9tGQ=
 github.com/pelletier/go-toml/v2 v2.0.8/go.mod h1:vuYfssBdrU2XDZ9bYydBu6t+6a6PYNcZljzZR9VXg+4=
 github.com/performancecopilot/speed v3.0.0+incompatible/go.mod h1:/CLtqpZ5gBg1M9iaPbIdPPGyKcA8hKdoy6hAWba7Yac=
-github.com/persistenceOne/cosmos-sdk v0.0.0-20230611231946-790aaf168429 h1:NNYeEeGSazBGaSGISVq7+kWL9ttyyBYsqoRbc4tCSJo=
-github.com/persistenceOne/cosmos-sdk v0.0.0-20230611231946-790aaf168429/go.mod h1:wPdAkY5Za4c7lRzLbZXsATjPWnD5Pkp2keGJ+yCTFVQ=
+github.com/persistenceOne/cosmos-sdk v0.0.0-20230706104148-3466cdce6a53 h1:/YLH6XV+ZhdeMyfLEEsec4CPMFqWpE8oQO+ywbJil9Q=
+github.com/persistenceOne/cosmos-sdk v0.0.0-20230706104148-3466cdce6a53/go.mod h1:wPdAkY5Za4c7lRzLbZXsATjPWnD5Pkp2keGJ+yCTFVQ=
 github.com/persistenceOne/ibc-go/v7 v7.0.0-rc0.0.20230612095033-b776ca4647aa h1:cR2o2fUitv0hOPOihgirf1KzF/EC0cEU1r5C4YRw2HM=
 github.com/persistenceOne/ibc-go/v7 v7.0.0-rc0.0.20230612095033-b776ca4647aa/go.mod h1:DK8bzoAukxOGX1KiPSRWjx0VrDOerWP7HkWlxfoF2Js=
 github.com/persistenceOne/persistence-sdk/v2 v2.1.0-rc3.0.20230623125729-42659cad73c9 h1:TW964PN89m9GfejHjcU4kAH48rsrI5x2kKNFqj/x9qs=
