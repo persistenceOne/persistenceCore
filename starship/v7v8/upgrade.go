@@ -36,7 +36,7 @@ func (s *TestSuite) Upgrade() {
 	// sleeping here because WaitForHeight hits status rest api every second to check height
 	// and gets this error after many repetitive calls
 	// post failed: Post "http://localhost:26657": EOF
-	s.T().Logf("Wating for %d seconds", expectedTimeToUpgradeHeight)
+	s.T().Logf("Wating for %f seconds", expectedTimeToUpgradeHeight.Seconds())
 	time.Sleep(expectedTimeToUpgradeHeight)
 
 	s.T().Log("waiting for upgrade height")
