@@ -18,6 +18,9 @@ import (
 const (
 	// UpgradeName defines the on-chain upgrade name.
 	UpgradeName = "v8"
+
+	// BondDenom defines current active bond denom for testnet/mainnet.
+	BondDenom = "uxprt"
 )
 
 var Upgrade = upgrades.Upgrade{

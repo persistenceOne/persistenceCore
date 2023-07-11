@@ -317,6 +317,19 @@ func (app *Application) ChainID() string {
 	return field.String()
 }
 
+// GetChainBondDenom returns expected chain bond denom.
+func (app *Application) GetChainBondDenom() string {
+	chainID := app.ChainID()
+
+	if chainID == "core-1" {
+		return BondDenom
+	} else if chainID == "test-core-1" {
+		return BondDenom
+	}
+
+	return "stake"
+}
+
 // CheckTx will check the transaction with the provided checkTxHandler. We override the default
 // handler so that we can verify bid transactions before they are inserted into the mempool.
 // With the POB CheckTx, we can verify the bid transaction and all of the bundled transactions
