@@ -6,31 +6,27 @@ import (
 	"testing"
 
 	"github.com/docker/docker/client"
+	"github.com/persistenceOne/persistenceCore/v8/interchaintest/helpers"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/zap/zaptest"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	testutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	ibclocalhost "github.com/cosmos/ibc-go/v7/modules/light-clients/09-localhost"
-
 	interchaintest "github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
 	"github.com/strangelove-ventures/interchaintest/v7/testreporter"
-
-	"github.com/stretchr/testify/require"
-	"go.uber.org/zap/zaptest"
-
-	testutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 )
 
 var (
 	VotingPeriod     = "15s"
 	MaxDepositPeriod = "10s"
-	Denom            = "uxprt"
-	BuilderEscrowAcc = "persistence1ma4sw9m2nvtucny6lsjhh4qywvh86zdhvn67yd"
 
 	PersistenceE2ERepo = "persistenceone/persistencecore"
 
 	IBCRelayerImage   = "ghcr.io/cosmos/relayer"
-	IBCRelayerVersion = "main" // localhost ibc supported
+	IBCRelayerVersion = "main"
 
 	appRepo, appVersion = GetDockerImageInfo()
 
@@ -51,35 +47,37 @@ var (
 		},
 		{
 			Key:   "app_state.gov.params.min_deposit.0.denom",
-			Value: Denom,
+			Value: helpers.PersistenceBondDenom,
 		},
-		// {
-		// 	Key:   "app_state.builder.params.escrow_account_address",
-		// 	Value: BuilderEscrowAcc,
-		// },
-		// {
-		// 	Key:   "app_state.builder.params.reserve_fee.denom",
-		// 	Value: Denom,
-		// },
-		// {
-		// 	Key:   "app_state.builder.params.min_bid_increment.denom",
-		// 	Value: Denom,
-		// },
+		{
+			Key:   "app_state.builder.params.reserve_fee.denom",
+			Value: helpers.PersistenceBondDenom,
+		},
+		{
+			Key:   "app_state.builder.params.min_bid_increment.denom",
+			Value: helpers.PersistenceBondDenom,
+		},
+		{
+			// temporarily set escorw address for x/builder, since default panics
+			// the address is from completely random non-existent account
+			Key:   "app_state.builder.params.escrow_account_address",
+			Value: "persistence1zugz90ttzfrdl0va2kjg2rcq6t0kxuplrpnulr",
+		},
 	})
 
 	persistenceConfig = ibc.ChainConfig{
 		Type:    "cosmos",
 		Name:    "persistence",
-		ChainID: "test-core-1",
+		ChainID: "ictest-core-1",
 		Images: []ibc.DockerImage{
 			PersistenceCoreImage,
 		},
 		Bin:                    "persistenceCore",
 		Bech32Prefix:           "persistence",
-		Denom:                  Denom,
-		CoinType:               "118",
-		GasPrices:              fmt.Sprintf("0%s", Denom),
-		GasAdjustment:          2.0,
+		Denom:                  helpers.PersistenceBondDenom,
+		CoinType:               fmt.Sprintf("%d", helpers.PersistenceCoinType),
+		GasPrices:              fmt.Sprintf("0%s", helpers.PersistenceBondDenom),
+		GasAdjustment:          1.5,
 		TrustingPeriod:         "112h",
 		NoHostMount:            false,
 		ConfigFileOverrides:    nil,
@@ -101,11 +99,6 @@ func persistenceEncoding() *testutil.TestEncodingConfig {
 	wasmtypes.RegisterInterfaces(cfg.InterfaceRegistry)
 
 	return &cfg
-}
-
-// This allows for us to test
-func FundSpecificUsers() {
-
 }
 
 // Base chain, no relaying off this branch (or persistence:local if no branch is provided.)
