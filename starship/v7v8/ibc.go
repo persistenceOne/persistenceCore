@@ -135,17 +135,18 @@ func (s *TestSuite) WaitForIBCPacketAck(chain *starship.ChainClient, port, chann
 	s.Require().NoError(err)
 	s.Require().Eventuallyf(
 		func() bool {
-			_, err := ibcchanneltypes.
+			res, err := ibcchanneltypes.
 				NewQueryClient(chain.Client).
-				PacketAcknowledgement(context.Background(), &ibcchanneltypes.QueryPacketAcknowledgementRequest{
+				PacketReceipt(context.Background(), &ibcchanneltypes.QueryPacketReceiptRequest{
 					PortId:    port,
 					ChannelId: channel,
 					Sequence:  uint64(seqInt),
 				})
-			return err == nil
+			s.Require().NoError(err)
+			return res.Received
 		},
 		300*time.Second,
 		time.Second,
-		fmt.Sprintf("waited for too long, still no packet ack; port: %s, channel: %s, seq: %s", port, channel, seq),
+		fmt.Sprintf("waited for too long, still packet not received; port: %s, channel: %s, seq: %s", port, channel, seq),
 	)
 }
