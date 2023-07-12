@@ -199,5 +199,5 @@ replace (
 	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 => github.com/persistenceOne/ibc-apps/middleware/packet-forward-middleware/v7 v7.0.0-20230712081317-ebc0729e000d
 	github.com/cosmos/ibc-apps/modules/ibc-hooks/v7 => github.com/persistenceOne/ibc-apps/modules/ibc-hooks/v7 v7.0.0-20230712081317-ebc0729e000d
 	github.com/cosmos/ibc-go/v7 => github.com/persistenceOne/ibc-go/v7 v7.2.0-lsm
-	github.com/skip-mev/pob => github.com/persistenceOne/pob v1.0.1-lsm
+	github.com/skip-mev/pob => github.com/persistenceOne/pob v1.0.3-rc0-lsm
 )

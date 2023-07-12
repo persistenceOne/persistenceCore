@@ -57,12 +57,6 @@ var (
 			Key:   "app_state.builder.params.min_bid_increment.denom",
 			Value: helpers.PersistenceBondDenom,
 		},
-		{
-			// temporarily set escorw address for x/builder, since default panics
-			// the address is from completely random non-existent account
-			Key:   "app_state.builder.params.escrow_account_address",
-			Value: "persistence1zugz90ttzfrdl0va2kjg2rcq6t0kxuplrpnulr",
-		},
 	})
 
 	persistenceConfig = ibc.ChainConfig{

@@ -67,7 +67,7 @@ func setDefaultMEVParams(ctx sdk.Context, keepers *keepers.AppKeepers) error {
 	// Skip MEV (x/pob)
 	return keepers.BuilderKeeper.SetParams(ctx, buildertypes.Params{
 		MaxBundleSize:          buildertypes.DefaultMaxBundleSize,
-		EscrowAccountAddress:   authtypes.NewModuleAddress(buildertypes.ModuleName).String(),
+		EscrowAccountAddress:   authtypes.NewModuleAddress(buildertypes.ModuleName),
 		ReserveFee:             sdk.NewCoin(nativeDenom, sdk.NewInt(1)),
 		MinBidIncrement:        sdk.NewCoin(nativeDenom, sdk.NewInt(1)),
 		FrontRunningProtection: buildertypes.DefaultFrontRunningProtection,
