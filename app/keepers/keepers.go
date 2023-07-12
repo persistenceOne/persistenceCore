@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cast"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	tmos "github.com/cometbft/cometbft/libs/os"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -49,6 +48,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	packetforward "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
+	packetforwardkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/keeper"
+	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
+	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7"
+	ibchookskeeper "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/keeper"
+	ibchookstypes "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/types"
 	icacontroller "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/keeper"
 	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
@@ -69,15 +74,15 @@ import (
 	epochskeeper "github.com/persistenceOne/persistence-sdk/v2/x/epochs/keeper"
 	epochstypes "github.com/persistenceOne/persistence-sdk/v2/x/epochs/types"
 	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
-	ibchooks "github.com/persistenceOne/persistence-sdk/v2/x/ibc-hooks"
-	ibchookskeeper "github.com/persistenceOne/persistence-sdk/v2/x/ibc-hooks/keeper"
-	ibchookstypes "github.com/persistenceOne/persistence-sdk/v2/x/ibc-hooks/types"
 	"github.com/persistenceOne/persistence-sdk/v2/x/ibchooker"
 	ibchookerkeeper "github.com/persistenceOne/persistence-sdk/v2/x/ibchooker/keeper"
 	ibchookertypes "github.com/persistenceOne/persistence-sdk/v2/x/ibchooker/types"
 	"github.com/persistenceOne/persistence-sdk/v2/x/interchainquery"
 	interchainquerykeeper "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/keeper"
 	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/types"
+	oraclekeeper "github.com/persistenceOne/persistence-sdk/v2/x/oracle/keeper"
+	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
+	"github.com/persistenceOne/persistenceCore/v8/wasmbindings"
 	"github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc"
 	liquidstakeibckeeper "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/keeper"
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
@@ -86,12 +91,6 @@ import (
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
-	routerkeeper "github.com/strangelove-ventures/packet-forward-middleware/v7/router/keeper"
-	routertypes "github.com/strangelove-ventures/packet-forward-middleware/v7/router/types"
-
-	oraclekeeper "github.com/persistenceOne/persistence-sdk/v2/x/oracle/keeper"
-	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
-	"github.com/persistenceOne/persistenceCore/v8/wasmbindings"
 
 	// unnamed import of statik for swagger UI support
 	_ "github.com/cosmos/cosmos-sdk/client/docs/statik"
@@ -132,7 +131,7 @@ type AppKeepers struct {
 	LiquidStakeIBCKeeper  *liquidstakeibckeeper.Keeper
 	ConsensusParamsKeeper *consensusparamskeeper.Keeper
 	GroupKeeper           *groupkeeper.Keeper
-	RouterKeeper          *routerkeeper.Keeper
+	PacketForwardKeeper   *packetforwardkeeper.Keeper
 	BuilderKeeper         *builderkeeper.Keeper
 
 	// Modules
@@ -350,11 +349,24 @@ func NewAppKeeper(
 	)
 	appKeepers.IBCFeeKeeper = &ibcFeeKeeper
 
+	appKeepers.PacketForwardKeeper = packetforwardkeeper.NewKeeper(
+		appCodec,
+		appKeepers.keys[packetforwardtypes.StoreKey],
+		appKeepers.GetSubspace(packetforwardtypes.ModuleName),
+		appKeepers.TransferKeeper, // Will be zero-value here. Reference is set later on with SetTransferKeeper.
+		appKeepers.IBCKeeper.ChannelKeeper,
+		appKeepers.DistributionKeeper,
+		appKeepers.BankKeeper,
+		appKeepers.IBCKeeper.ChannelKeeper,
+	)
+
 	transferKeeper := ibctransferkeeper.NewKeeper(
 		appCodec,
 		appKeepers.keys[ibctransfertypes.StoreKey],
 		appKeepers.GetSubspace(ibctransfertypes.ModuleName),
-		appKeepers.IBCFeeKeeper, // ICS4 Wrapper: fee IBC middleware
+		// The ICS4Wrapper is replaced by the PacketForwardKeeper
+		// so that sending can be overridden by the middleware
+		appKeepers.PacketForwardKeeper,
 		appKeepers.IBCKeeper.ChannelKeeper,
 		&appKeepers.IBCKeeper.PortKeeper,
 		appKeepers.AccountKeeper,
@@ -363,6 +375,7 @@ func NewAppKeeper(
 	)
 	appKeepers.TransferKeeper = &transferKeeper
 	appKeepers.TransferModule = ibctransfer.NewAppModule(*appKeepers.TransferKeeper)
+	appKeepers.PacketForwardKeeper.SetTransferKeeper(*appKeepers.TransferKeeper)
 
 	oracleKeeper := oraclekeeper.NewKeeper(
 		appCodec,
@@ -511,8 +524,7 @@ func NewAppKeeper(
 	hooksKeeper := ibchookskeeper.NewKeeper(appKeepers.keys[ibchookstypes.StoreKey])
 	appKeepers.IBCHooksKeeper = &hooksKeeper
 
-	contractKeeper := wasmkeeper.NewDefaultPermissionKeeper(wasmKeeper)
-	wasmHooks := ibchooks.NewWasmHooks(&hooksKeeper, contractKeeper, bech32Prefix)
+	wasmHooks := ibchooks.NewWasmHooks(&hooksKeeper, appKeepers.WasmKeeper, bech32Prefix)
 	appKeepers.ICS20WasmHooks = &wasmHooks
 
 	hooksICS4Wrapper := ibchooks.NewICS4Middleware(
@@ -520,17 +532,6 @@ func NewAppKeeper(
 		appKeepers.ICS20WasmHooks,
 	)
 	appKeepers.HooksICS4Wrapper = &hooksICS4Wrapper
-
-	appKeepers.RouterKeeper = routerkeeper.NewKeeper(
-		appCodec,
-		appKeepers.keys[routertypes.StoreKey],
-		appKeepers.GetSubspace(routertypes.ModuleName),
-		appKeepers.TransferKeeper,
-		appKeepers.IBCKeeper.ChannelKeeper,
-		appKeepers.DistributionKeeper,
-		appKeepers.BankKeeper,
-		appKeepers.IBCKeeper.ChannelKeeper,
-	)
 
 	builderKeeper := builderkeeper.NewKeeper(
 		appCodec,
@@ -548,8 +549,15 @@ func NewAppKeeper(
 	icaHostStack = ibcfee.NewIBCMiddleware(icaHostStack, *appKeepers.IBCFeeKeeper)
 
 	var transferStack ibctypes.IBCModule = appKeepers.IBCTransferHooksMiddleware
-	transferStack = ibchooks.NewIBCMiddleware(transferStack, appKeepers.HooksICS4Wrapper)
 	transferStack = ibcfee.NewIBCMiddleware(transferStack, *appKeepers.IBCFeeKeeper)
+	transferStack = ibchooks.NewIBCMiddleware(transferStack, appKeepers.HooksICS4Wrapper)
+	transferStack = packetforward.NewIBCMiddleware(
+		transferStack,
+		appKeepers.PacketForwardKeeper,
+		0, // no retries on timeout
+		packetforwardkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
+		packetforwardkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
+	)
 
 	// Information will flow: ibc-port -> icaController -> lscosmos.
 	var icaControllerStack ibctypes.IBCModule = liquidStakeIBCModule
@@ -560,13 +568,12 @@ func NewAppKeeper(
 	wasmStack = wasm.NewIBCHandler(appKeepers.WasmKeeper, appKeepers.IBCKeeper.ChannelKeeper, appKeepers.IBCFeeKeeper)
 	wasmStack = ibcfee.NewIBCMiddleware(wasmStack, *appKeepers.IBCFeeKeeper)
 
-	// Create static IBC router, add transfer route, then set and seal it
-	ibcRouter := ibctypes.NewRouter()
-	ibcRouter.AddRoute(icahosttypes.SubModuleName, icaHostStack).
+	ibcRouter := ibctypes.NewRouter().
 		AddRoute(ibctransfertypes.ModuleName, transferStack).
+		AddRoute(wasm.ModuleName, wasmStack).
 		AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
-		AddRoute(liquidstakeibctypes.ModuleName, icaControllerStack).
-		AddRoute(wasm.ModuleName, wasmStack)
+		AddRoute(icahosttypes.SubModuleName, icaHostStack).
+		AddRoute(liquidstakeibctypes.ModuleName, icaControllerStack)
 	appKeepers.IBCKeeper.SetRouter(ibcRouter)
 
 	govRouter := govv1beta1.NewRouter()
@@ -636,7 +643,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(oracletypes.ModuleName)
 	paramsKeeper.Subspace(group.ModuleName)
 	paramsKeeper.Subspace(ibchookstypes.ModuleName)
-	paramsKeeper.Subspace(routertypes.ModuleName)
+	paramsKeeper.Subspace(packetforwardtypes.ModuleName)
 	paramsKeeper.Subspace(buildertypes.ModuleName)
 
 	return paramsKeeper

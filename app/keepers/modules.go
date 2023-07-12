@@ -33,14 +33,14 @@ import (
 	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 	"github.com/persistenceOne/persistence-sdk/v2/x/epochs"
 	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
-	ibchooks "github.com/persistenceOne/persistence-sdk/v2/x/ibc-hooks"
+	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7"
 	"github.com/persistenceOne/persistence-sdk/v2/x/ibchooker"
 	"github.com/persistenceOne/persistence-sdk/v2/x/interchainquery"
 	"github.com/persistenceOne/persistence-sdk/v2/x/oracle"
 	"github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc"
 	"github.com/persistenceOne/pstake-native/v2/x/lscosmos"
 	buildermodule "github.com/skip-mev/pob/x/builder"
-	"github.com/strangelove-ventures/packet-forward-middleware/v7/router"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
 )
 
 // AppModuleBasics defines the module BasicManager is in charge of setting up basic,
