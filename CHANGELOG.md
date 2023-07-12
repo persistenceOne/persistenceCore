@@ -24,8 +24,18 @@
   - liquidstakeibc - this deprecates `lscosmos` module
 - Integrated POB module for MEV - disabled aution txs for now.
 
+#### MinCommissionRate
+
+- `MinCommissionRate` is set to 5%, which was proposed [here](https://www.mintscan.io/persistence/proposals/18)
+
+    > **Note**  
+    > During upgrade,  
+    > Validator's `CommissionRate` will be set to 5%, if it is lower than the `MinCommissionRate` (i.e. 5%),  
+    > and Validator's `MaxCommissionRate` will be set to 10% (if lower than 10%) to give validator some margin to work with.
+
 ### Changes
 
+- ([#211](https://github.com/persistenceOne/persistenceCore/pull/211)) Enfoce minimum limit for `CommissionRate` & `MaxCommissionRate`
 - ([#207](https://github.com/persistenceOne/persistenceCore/pull/207)) adds POB module for skip-mev
 - ([#205](https://github.com/persistenceOne/persistenceCore/pull/205)) bump cosmos-sdk to `v0.47.3-lsm` and deps (includes new modules: IBC hooks, PFM, liquidstakeibc)
 - ([#198](https://github.com/persistenceOne/persistenceCore/pull/198), [#206](https://github.com/persistenceOne/persistenceCore/pull/206)) starship e2e upgrade tests

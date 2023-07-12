@@ -193,8 +193,8 @@ replace (
 
 // use persistence's forks with LSM implemented
 replace (
-	github.com/CosmWasm/wasmd => github.com/persistenceOne/wasmd v0.0.0-20230615215703-e2229415de74
-	github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk v0.0.0-20230706104148-3466cdce6a53
-	github.com/cosmos/ibc-go/v7 => github.com/persistenceOne/ibc-go/v7 v7.0.0-rc0.0.20230612095033-b776ca4647aa
-	github.com/skip-mev/pob => github.com/persistenceOne/pob v1.0.0-lsm
+	github.com/CosmWasm/wasmd => github.com/persistenceOne/wasmd v0.40.1-lsm
+	github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk v0.47.3-lsm2
+	github.com/cosmos/ibc-go/v7 => github.com/persistenceOne/ibc-go/v7 v7.2.0-lsm
+	github.com/skip-mev/pob => github.com/persistenceOne/pob v1.0.1-lsm
 )
