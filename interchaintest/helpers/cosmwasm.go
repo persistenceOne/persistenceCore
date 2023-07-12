@@ -4,20 +4,19 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
-	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 	"github.com/stretchr/testify/require"
 )
 
-func debugOutput(t *testing.T, stdout string) {
-	if true {
-		t.Log(stdout)
-	}
-}
-
-func SetupContract(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, keyname string, fileLoc string, message string) (codeId, contract string) {
+func SetupContract(
+	t *testing.T,
+	ctx context.Context,
+	chain *cosmos.CosmosChain,
+	keyname string,
+	fileLoc string,
+	message string,
+) (codeId, contract string) {
 	codeId, err := chain.StoreContract(ctx, keyname, fileLoc)
 	if err != nil {
 		t.Fatal(err)
@@ -31,57 +30,52 @@ func SetupContract(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain,
 	return codeId, contractAddr
 }
 
-func ExecuteMsgWithAmount(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, user ibc.Wallet, contractAddr, amount, message string) {
-	// amount is #utoken
-
-	// There has to be a way to do this in ictest?
-	cmd := []string{"persistenceCore", "tx", "wasm", "execute", contractAddr, message,
-		"--node", chain.GetRPCAddress(),
-		"--home", chain.HomeDir(),
-		"--chain-id", chain.Config().ChainID,
-		"--from", user.KeyName(),
+func ExecuteMsgWithAmount(
+	t *testing.T,
+	ctx context.Context,
+	chain *cosmos.CosmosChain,
+	user ibc.Wallet,
+	contractAddr, amount, message string,
+) {
+	cmd := []string{
+		"wasm", "execute", contractAddr, message,
 		"--gas", "500000",
 		"--amount", amount,
-		"--keyring-dir", chain.HomeDir(),
-		"--keyring-backend", keyring.BackendTest,
-		"-y",
 	}
-	stdout, _, err := chain.Exec(ctx, cmd, nil)
+
+	chainNode := chain.Nodes()[0]
+	txHash, err := chainNode.ExecTx(ctx, user.KeyName(), cmd...)
+	require.NoError(t, err)
+
+	stdout, _, err := chainNode.ExecQuery(ctx, "tx", txHash)
 	require.NoError(t, err)
 
 	debugOutput(t, string(stdout))
-
-	if err := testutil.WaitForBlocks(ctx, 2, chain); err != nil {
-		t.Fatal(err)
-	}
 }
 
-func ExecuteMsgWithFee(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, user ibc.Wallet, contractAddr, amount, feeCoin, message string) {
-	// amount is #utoken
-
-	// There has to be a way to do this in ictest?
-	cmd := []string{"persistenceCore", "tx", "wasm", "execute", contractAddr, message,
-		"--node", chain.GetRPCAddress(),
-		"--home", chain.HomeDir(),
-		"--chain-id", chain.Config().ChainID,
-		"--from", user.KeyName(),
-		"--gas", "500000",
+func ExecuteMsgWithFee(
+	t *testing.T,
+	ctx context.Context,
+	chain *cosmos.CosmosChain,
+	user ibc.Wallet,
+	contractAddr, amount, feeCoin, message string,
+) {
+	cmd := []string{
+		"wasm", "execute", contractAddr, message,
 		"--fees", feeCoin,
-		"--keyring-dir", chain.HomeDir(),
-		"--keyring-backend", keyring.BackendTest,
-		"-y",
+		"--gas", "500000",
 	}
 
 	if amount != "" {
 		cmd = append(cmd, "--amount", amount)
 	}
 
-	stdout, _, err := chain.Exec(ctx, cmd, nil)
+	chainNode := chain.Nodes()[0]
+	txHash, err := chainNode.ExecTx(ctx, user.KeyName(), cmd...)
+	require.NoError(t, err)
+
+	stdout, _, err := chainNode.ExecQuery(ctx, "tx", txHash)
 	require.NoError(t, err)
 
 	debugOutput(t, string(stdout))
-
-	if err := testutil.WaitForBlocks(ctx, 2, chain); err != nil {
-		t.Fatal(err)
-	}
 }

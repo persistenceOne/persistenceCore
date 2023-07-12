@@ -4,12 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
+	"github.com/persistenceOne/persistenceCore/v8/interchaintest/helpers"
 	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
@@ -40,10 +40,12 @@ func TestPacketForwardMiddlewareRouter(t *testing.T) {
 		t.Skip()
 	}
 
+	t.Parallel()
+
 	var (
 		ctx                                        = context.Background()
 		client, network                            = interchaintest.DockerSetup(t)
-		testReported                               = testreporter.NewReporter(os.Stderr)
+		testReported                               = testreporter.NewNopReporter()
 		relayerExecReporter                        = testReported.RelayerExecReporter(t)
 		chainID_A, chainID_B, chainID_C, chainID_D = "chain-a", "chain-b", "chain-c", "chain-d"
 		chainA, chainB, chainC, chainD             *cosmos.CosmosChain
@@ -59,9 +61,9 @@ func TestPacketForwardMiddlewareRouter(t *testing.T) {
 		},
 		Bin:                    "persistenceCore",
 		Bech32Prefix:           "persistence",
-		Denom:                  Denom,
-		CoinType:               "118",
-		GasPrices:              fmt.Sprintf("0%s", Denom),
+		Denom:                  helpers.PersistenceBondDenom,
+		CoinType:               fmt.Sprintf("%d", helpers.PersistenceCoinType),
+		GasPrices:              fmt.Sprintf("0%s", helpers.PersistenceBondDenom),
 		GasAdjustment:          2.0,
 		TrustingPeriod:         "112h",
 		NoHostMount:            false,

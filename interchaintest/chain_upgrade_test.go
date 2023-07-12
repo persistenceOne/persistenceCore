@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/persistenceOne/persistenceCore/v8/interchaintest/helpers"
 	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
@@ -50,7 +51,7 @@ func CosmosChainUpgradeTest(
 		},
 		{
 			Key:   "app_state.gov.deposit_params.min_deposit.0.denom",
-			Value: Denom,
+			Value: helpers.PersistenceBondDenom,
 		},
 	})
 
@@ -67,7 +68,7 @@ func CosmosChainUpgradeTest(
 						UidGid:     PersistenceCoreImage.UidGid,
 					},
 				},
-				GasPrices:     fmt.Sprintf("0%s", Denom),
+				GasPrices:     fmt.Sprintf("0%s", helpers.PersistenceBondDenom),
 				ModifyGenesis: cosmos.ModifyGenesis(genesisKVs),
 			},
 		},

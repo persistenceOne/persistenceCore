@@ -31,7 +31,7 @@ func TestPersistenceIBCHooks(t *testing.T) {
 
 	cfg2 := persistenceConfig.Clone()
 	cfg2.Name = "persistence-counterparty"
-	cfg2.ChainID = "test-core-2"
+	cfg2.ChainID = "ictest-core-2"
 
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
 		{
