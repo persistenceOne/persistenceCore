@@ -24,7 +24,8 @@ func (s *TestSuite) RunLSCosmosTests() {
 	s.JumpStart(persistence, gaia, c)
 
 	s.T().Log("transferring 100 ATOMs to persistence address")
-	s.IBCTransferTokens(gaia, persistence.Address, c.PortId, c.ChannelId, uatom, 100000000)
+	seq := s.IBCTransferTokens(gaia, persistence.Address, c.PortId, c.ChannelId, uatom, 100000000)
+	s.WaitForIBCPacketAck(persistence, c.PortId, c.ChannelId, seq)
 
 	// Liquid stake
 	s.T().Log("liquid staking 50 ATOMs")
@@ -80,6 +81,7 @@ func (s *TestSuite) JumpStart(persistence, gaia *starship.ChainClient, c *ibccha
 
 func (s *TestSuite) LiquidStake(chain *starship.ChainClient, port, channel, denom string, amt int64) {
 	ibcAtom := s.GetIBCDenom(chain, port, channel, denom)
+	s.Require().NotEmpty(ibcAtom)
 	lsAmount := sdk.NewCoin(ibcAtom, sdk.NewInt(amt))
 	s.SendMsgAndWait(chain, &lscosmostypes.MsgLiquidStake{
 		DelegatorAddress: chain.Address,
