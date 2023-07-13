@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"time"
@@ -92,6 +94,13 @@ func (s *TestSuite) WaitForHeight(chain *starship.ChainClient, height int64) {
 	s.Require().Eventuallyf(
 		func() bool {
 			curHeight, err := chain.GetHeight()
+			// retry if error is of EOF
+			// sometimes this happens with error
+			// post failed: Post "http://localhost:26657": EOF
+			if errors.Is(err, io.EOF) {
+				time.Sleep(time.Second) // add some delay in next call
+				return false
+			}
 			s.Require().NoError(err)
 			return curHeight >= height
 		},
