@@ -39,6 +39,10 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	packetforward "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
+	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
+	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7"
+	ibchookstypes "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/types"
 	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 	ibcfee "github.com/cosmos/ibc-go/v7/modules/apps/29-fee"
@@ -49,8 +53,6 @@ import (
 	"github.com/persistenceOne/persistence-sdk/v2/x/epochs"
 	epochstypes "github.com/persistenceOne/persistence-sdk/v2/x/epochs/types"
 	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
-	ibchooks "github.com/persistenceOne/persistence-sdk/v2/x/ibc-hooks"
-	ibchookstypes "github.com/persistenceOne/persistence-sdk/v2/x/ibc-hooks/types"
 	ibchookertypes "github.com/persistenceOne/persistence-sdk/v2/x/ibchooker/types"
 	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/types"
 	"github.com/persistenceOne/persistence-sdk/v2/x/oracle"
@@ -60,8 +62,6 @@ import (
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 	"github.com/skip-mev/pob/x/builder"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
-	"github.com/strangelove-ventures/packet-forward-middleware/v7/router"
-	routertypes "github.com/strangelove-ventures/packet-forward-middleware/v7/router/types"
 
 	appparams "github.com/persistenceOne/persistenceCore/v8/app/params"
 )
@@ -125,7 +125,7 @@ func appModules(
 		groupmodule.NewAppModule(appCodec, *app.GroupKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		ibc.NewAppModule(app.IBCKeeper),
 		ibcfee.NewAppModule(*app.IBCFeeKeeper),
-		router.NewAppModule(app.RouterKeeper),
+		packetforward.NewAppModule(app.PacketForwardKeeper),
 		params.NewAppModule(*app.ParamsKeeper),
 		halving.NewAppModule(appCodec, *app.HalvingKeeper),
 		app.TransferModule,
@@ -183,7 +183,7 @@ func orderBeginBlockers() []string {
 		consensusparamtypes.ModuleName,
 		halving.ModuleName,
 		ibchookstypes.ModuleName,
-		routertypes.ModuleName,
+		packetforwardtypes.ModuleName,
 		wasm.ModuleName,
 		ibchookertypes.ModuleName,
 		interchainquerytypes.ModuleName,
@@ -219,7 +219,7 @@ func orderEndBlockers() []string {
 		consensusparamtypes.ModuleName,
 		halving.ModuleName,
 		ibchookstypes.ModuleName,
-		routertypes.ModuleName,
+		packetforwardtypes.ModuleName,
 		wasm.ModuleName,
 		epochstypes.ModuleName,
 		ibchookertypes.ModuleName,
@@ -263,7 +263,7 @@ func orderInitGenesis() []string {
 		consensusparamtypes.ModuleName,
 		halving.ModuleName,
 		ibchookstypes.ModuleName,
-		routertypes.ModuleName,
+		packetforwardtypes.ModuleName,
 		wasm.ModuleName,
 		epochstypes.ModuleName,
 		ibchookertypes.ModuleName,

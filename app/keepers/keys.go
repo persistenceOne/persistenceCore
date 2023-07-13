@@ -20,6 +20,8 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
+	ibchookstypes "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/types"
 	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
 	icahosttypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/types"
 	ibcfeetypes "github.com/cosmos/ibc-go/v7/modules/apps/29-fee/types"
@@ -27,13 +29,11 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	epochstypes "github.com/persistenceOne/persistence-sdk/v2/x/epochs/types"
 	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
-	ibchookstypes "github.com/persistenceOne/persistence-sdk/v2/x/ibc-hooks/types"
 	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/types"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
-	routertypes "github.com/strangelove-ventures/packet-forward-middleware/v7/router/types"
 )
 
 func (appKeepers *AppKeepers) GenerateKeys() {
@@ -66,7 +66,7 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 		minttypes.StoreKey,
 		oracletypes.StoreKey,
 		paramstypes.StoreKey,
-		routertypes.StoreKey,
+		packetforwardtypes.StoreKey,
 		slashingtypes.StoreKey,
 		stakingtypes.StoreKey,
 		upgradetypes.StoreKey,
