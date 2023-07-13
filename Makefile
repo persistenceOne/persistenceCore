@@ -260,7 +260,11 @@ ictest-upgrade-local: local-image ictest-upgrade
 ictest-ibc: rm-testcache
 	cd interchaintest && go test -race -v -run TestPersistenceGaiaIBCTransfer .
 
+# Executes Skip's MEV auction module tests via interchaintest
+ictest-pob: rm-testcache
+	cd interchaintest && go test -race -v -run TestSkipMevAuction .
+
 rm-testcache:
 	go clean -testcache
 
-.PHONY: ictest-basic ictest-ibchooks ictest-pfm ictest-upgrade ictest-upgrade-local ictest-ibc
+.PHONY: ictest-basic ictest-ibchooks ictest-pfm ictest-upgrade ictest-upgrade-local ictest-ibc ictest-pob
