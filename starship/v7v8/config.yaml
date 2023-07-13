@@ -28,7 +28,7 @@ chains:
 
 relayers:
   - name: persistence-gaia
-    type: hermes
+    type: go-relayer
     replicas: 1
     chains:
       - test-core-1
