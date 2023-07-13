@@ -554,7 +554,6 @@ func NewAppKeeper(
 	// Information will flow: ibc-port -> icaController -> lscosmos.
 	var icaControllerStack ibctypes.IBCModule = liquidStakeIBCModule
 	icaControllerStack = icacontroller.NewIBCMiddleware(icaControllerStack, *appKeepers.ICAControllerKeeper)
-	icaControllerStack = ibcfee.NewIBCMiddleware(icaControllerStack, *appKeepers.IBCFeeKeeper)
 
 	var wasmStack ibctypes.IBCModule
 	wasmStack = wasm.NewIBCHandler(appKeepers.WasmKeeper, appKeepers.IBCKeeper.ChannelKeeper, appKeepers.IBCFeeKeeper)
