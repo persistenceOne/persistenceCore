@@ -9,7 +9,7 @@ on:
   pull_request:
     branches:
       - main
-      - 'ajeet/sdk-v47'
+      - 'ajeet/sdk-v47' # TODO(ajeet): remove this when e2e PR is merged
     paths:
       - starship/**
 
