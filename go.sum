@@ -990,8 +990,8 @@ github.com/persistenceOne/pob v1.0.3-lsm h1:72fdbbbjdY+Jn1+T6/mLl11zI7d5HYRoCBn5
 github.com/persistenceOne/pob v1.0.3-lsm/go.mod h1:039AxEENquZkMrRvF59Ra9xTv5LiAyhmSHDD6B6Zxhg=
 github.com/persistenceOne/pstake-native/v2 v2.2.0-rc3 h1:RbLIMTWQQ9R7KepV1UmUpZrQHPe8Op9abT3iz3nFb4I=
 github.com/persistenceOne/pstake-native/v2 v2.2.0-rc3/go.mod h1:t+oa6RERNcz9DzZ5NvLtX/G/xyblRaetSTHd2/PljJ0=
-github.com/persistenceOne/wasmd v0.40.1-lsm h1:YWZcRGVC9xc5VDrGrIXp2xWXd0zQD4tW1MHtuo1TABM=
-github.com/persistenceOne/wasmd v0.40.1-lsm/go.mod h1:uSKNAbF1A1GffCuR9tmR8uDXqMC5OkH7CBs3byHO8+Y=
+github.com/persistenceOne/wasmd v0.40.2-lsm h1:b40pkYQ2W+iqIGfWZcRXvahaP8UzunF6B72w9Radz9Y=
+github.com/persistenceOne/wasmd v0.40.2-lsm/go.mod h1:uSKNAbF1A1GffCuR9tmR8uDXqMC5OkH7CBs3byHO8+Y=
 github.com/peterh/liner v1.0.1-0.20180619022028-8c1271fcf47f/go.mod h1:xIteQHvHuaLYG9IFj6mSxM0fCKrs34IrEQUhOYuGPHc=
 github.com/peterh/liner v1.1.1-0.20190123174540-a2c9a5303de7/go.mod h1:CRroGNssyjTd/qIG2FyxByd2S8JEAZXBl4qUrZf8GS0=
 github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5/go.mod h1:jvVRKCrJTQWu0XVbaOlby/2lO20uSCHEMzzplHXte1o=

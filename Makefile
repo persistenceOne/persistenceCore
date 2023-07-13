@@ -236,8 +236,18 @@ endif
 .PHONY: get-heighliner local-image
 
 ###############################################################################
+###                                   testing                               ###
+###############################################################################
+test: ictest-all
+
+# TODO: add runsim and benchmarking
+
+###############################################################################
 ###                             e2e interchain test                         ###
 ###############################################################################
+
+ictest-all: rm-testcache
+	cd interchaintest && go test -v -run ./...
 
 # Executes basic chain tests via interchaintest
 ictest-basic: rm-testcache
@@ -267,4 +277,4 @@ ictest-pob: rm-testcache
 rm-testcache:
 	go clean -testcache
 
-.PHONY: ictest-basic ictest-ibchooks ictest-pfm ictest-upgrade ictest-upgrade-local ictest-ibc ictest-pob
+.PHONY: test ictest-all ictest-basic ictest-ibchooks ictest-pfm ictest-upgrade ictest-upgrade-local ictest-ibc ictest-pob
