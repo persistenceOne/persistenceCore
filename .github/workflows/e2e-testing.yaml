@@ -1,8 +1,23 @@
 ---
-name: End to End Tests
+name: E2E
 
 on:
   pull_request:
+    paths:
+      - '**.yml'
+      - '**.go'
+      - '**.mod'
+      - '**.sum'
+  push:
+    tags:
+      - '**'
+    branches:
+      - main
+    paths:
+      - '**.yml'
+      - '**.go'
+      - '**.mod'
+      - '**.sum'
 
 env:
   TAR_PATH: heighliner.tar
