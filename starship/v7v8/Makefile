@@ -3,7 +3,7 @@ HELM_FILE = config.yaml
 
 HELM_REPO = starship
 HELM_CHART = devnet
-HELM_VERSION = 0.1.32
+HELM_VERSION = 0.1.37
 
 ###############################################################################
 ###                              Staringup                                  ###
@@ -20,7 +20,7 @@ stop: stop-forward delete
 ###############################################################################
 
 setup-helm:
-	helm repo add $(HELM_REPO) https://cosmology-tech.github.io/starship/
+	helm repo add $(HELM_REPO) https://raw.githubusercontent.com/persistenceOne/starship/ajeet/sdk-v47/helm_repo
 	helm repo update
 	helm search repo $(HELM_REPO)/$(HELM_CHART) --version $(HELM_VERSION)
 

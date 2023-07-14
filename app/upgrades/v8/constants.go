@@ -2,8 +2,15 @@ package v8
 
 import (
 	store "github.com/cosmos/cosmos-sdk/store/types"
-	ibcfeetypes "github.com/cosmos/ibc-go/v6/modules/apps/29-fee/types"
+	consensusparamstypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
+	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
+	group "github.com/cosmos/cosmos-sdk/x/group"
+	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
+	ibchookstypes "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/types"
+	ibcfeetypes "github.com/cosmos/ibc-go/v7/modules/apps/29-fee/types"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
+	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
+	buildertypes "github.com/skip-mev/pob/x/builder/types"
 
 	"github.com/persistenceOne/persistenceCore/v8/app/upgrades"
 )
@@ -11,6 +18,9 @@ import (
 const (
 	// UpgradeName defines the on-chain upgrade name.
 	UpgradeName = "v8"
+
+	// BondDenom defines current active bond denom for testnet/mainnet.
+	BondDenom = "uxprt"
 )
 
 var Upgrade = upgrades.Upgrade{
@@ -20,6 +30,13 @@ var Upgrade = upgrades.Upgrade{
 		Added: []string{
 			ibcfeetypes.ModuleName,
 			oracletypes.ModuleName,
+			crisistypes.ModuleName,
+			group.ModuleName,
+			liquidstakeibctypes.ModuleName,
+			consensusparamstypes.ModuleName,
+			ibchookstypes.StoreKey,
+			packetforwardtypes.ModuleName,
+			buildertypes.ModuleName,
 		},
 	},
 }

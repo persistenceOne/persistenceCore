@@ -6,60 +6,63 @@
 package app
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	stdlog "log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
+
+	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
+	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
+	"github.com/spf13/cast"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	tendermintdb "github.com/cometbft/cometbft-db"
+	abcitypes "github.com/cometbft/cometbft/abci/types"
+	tendermintjson "github.com/cometbft/cometbft/libs/json"
+	tendermintlog "github.com/cometbft/cometbft/libs/log"
+	tendermintos "github.com/cometbft/cometbft/libs/os"
+	tendermintproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	nodeservice "github.com/cosmos/cosmos-sdk/client/grpc/node"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/runtime"
+	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
-	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	sdkstakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	"github.com/gogo/protobuf/grpc"
 	"github.com/gorilla/mux"
-	slashingtypes "github.com/persistenceOne/persistence-sdk/v2/x/lsnative/slashing/types"
-	"github.com/persistenceOne/persistence-sdk/v2/x/lsnative/staking"
-	stakingtypes "github.com/persistenceOne/persistence-sdk/v2/x/lsnative/staking/types"
-	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 	"github.com/rakyll/statik/fs"
-	abcitypes "github.com/tendermint/tendermint/abci/types"
-	tendermintjson "github.com/tendermint/tendermint/libs/json"
-	tendermintlog "github.com/tendermint/tendermint/libs/log"
-	tendermintos "github.com/tendermint/tendermint/libs/os"
-	tendermintproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	tendermintdb "github.com/tendermint/tm-db"
+	pobabci "github.com/skip-mev/pob/abci"
+	"github.com/skip-mev/pob/mempool"
 
 	"github.com/persistenceOne/persistenceCore/v8/app/keepers"
-	appparams "github.com/persistenceOne/persistenceCore/v8/app/params"
 	"github.com/persistenceOne/persistenceCore/v8/app/upgrades"
-	v8rc4 "github.com/persistenceOne/persistenceCore/v8/app/upgrades/v8rc4"
+	v8 "github.com/persistenceOne/persistenceCore/v8/app/upgrades/v8"
 )
 
 var (
 	DefaultNodeHome string
-	Upgrades        = []upgrades.Upgrade{v8rc4.Upgrade}
+	Upgrades        = []upgrades.Upgrade{v8.Upgrade}
 	ModuleBasics    = module.NewBasicManager(keepers.AppModuleBasics...)
 )
 
@@ -90,15 +93,9 @@ func GetEnabledProposals() []wasm.ProposalType {
 	return proposals
 }
 
-var receiveAllowedMAcc = map[string]bool{
-	lscosmostypes.UndelegationModuleAccount: true,
-	lscosmostypes.DelegationModuleAccount:   true,
-}
-
 var (
-	_ simapp.App                          = (*Application)(nil)
-	_ servertypes.Application             = (*Application)(nil)
-	_ servertypes.ApplicationQueryService = (*Application)(nil)
+	_ runtime.AppI            = (*Application)(nil)
+	_ servertypes.Application = (*Application)(nil)
 )
 
 func init() {
@@ -112,137 +109,115 @@ func init() {
 
 type Application struct {
 	*baseapp.BaseApp
-	keepers.AppKeepers
+	*keepers.AppKeepers
 
 	legacyAmino       *codec.LegacyAmino
-	applicationCodec  codec.Codec
+	appCodec          codec.Codec
+	txConfig          client.TxConfig
 	interfaceRegistry types.InterfaceRegistry
 
 	moduleManager     *module.Manager
 	configurator      module.Configurator
 	simulationManager *module.SimulationManager
+
+	// override handler for CheckTx for POB
+	checkTxHandler pobabci.CheckTx
 }
 
 func NewApplication(
-	applicationName string,
-	encodingConfiguration appparams.EncodingConfig,
-	moduleAccountPermissions map[string][]string,
 	logger tendermintlog.Logger,
 	db tendermintdb.DB,
 	traceStore io.Writer,
 	loadLatest bool,
-	invCheckPeriod uint,
-	skipUpgradeHeights map[int64]bool,
-	home string,
 	enabledProposals []wasm.ProposalType,
 	applicationOptions servertypes.AppOptions,
 	wasmOpts []wasm.Option,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *Application {
+	encodingConfiguration := MakeEncodingConfig()
 
-	applicationCodec := encodingConfiguration.Marshaler
+	appCodec := encodingConfiguration.Codec
 	legacyAmino := encodingConfiguration.Amino
 	interfaceRegistry := encodingConfiguration.InterfaceRegistry
+	txConfig := encodingConfiguration.TxConfig
 
 	baseApp := baseapp.NewBaseApp(
-		applicationName,
+		AppName,
 		logger,
 		db,
-		encodingConfiguration.TransactionConfig.TxDecoder(),
+		txConfig.TxDecoder(),
 		baseAppOptions...,
 	)
 	baseApp.SetCommitMultiStoreTracer(traceStore)
 	baseApp.SetVersion(version.Version)
 	baseApp.SetInterfaceRegistry(interfaceRegistry)
+	baseApp.SetTxEncoder(txConfig.TxEncoder())
 
-	app := &Application{
-		BaseApp:           baseApp,
-		legacyAmino:       legacyAmino,
-		applicationCodec:  applicationCodec,
-		interfaceRegistry: interfaceRegistry,
-	}
-
-	// these blocked address will be used in distribution keeper as well
-	sendCoinBlockedAddrs := make(map[string]bool)
-	for acc := range moduleAccountPermissions {
-		sendCoinBlockedAddrs[authtypes.NewModuleAddress(acc).String()] = !receiveAllowedMAcc[acc]
-	}
-
-	wasmDir := filepath.Join(home, "wasm")
+	homePath := cast.ToString(applicationOptions.Get(flags.FlagHome))
+	wasmDir := filepath.Join(homePath, "wasm")
 	wasmConfig, err := wasm.ReadWasmConfig(applicationOptions)
 	if err != nil {
 		panic(fmt.Sprintf("error while reading wasm config: %s", err))
 	}
 
+	app := &Application{
+		BaseApp:           baseApp,
+		legacyAmino:       legacyAmino,
+		appCodec:          appCodec,
+		txConfig:          txConfig,
+		interfaceRegistry: interfaceRegistry,
+	}
+
 	// Setup keepers
-	appKeepers := keepers.NewAppKeeper(
-		applicationCodec,
+	app.AppKeepers = keepers.NewAppKeeper(
+		appCodec,
 		baseApp,
 		legacyAmino,
-		moduleAccountPermissions,
-		sendCoinBlockedAddrs,
-		skipUpgradeHeights,
-		home,
-		invCheckPeriod,
+		ModuleAccountPermissions,
+		SendCoinBlockedAddrs(),
 		applicationOptions,
 		wasmDir,
 		enabledProposals,
 		wasmOpts,
 		Bech32MainPrefix,
 	)
-	app.AppKeepers = appKeepers
 
-	/****  Module Options ****/
-	var skipGenesisInvariants = false
-
-	opt := applicationOptions.Get(crisis.FlagSkipGenesisInvariants)
-	if opt, ok := opt.(bool); ok {
-		skipGenesisInvariants = opt
-	}
+	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
+	// we prefer to be more strict in what arguments the modules expect.
+	skipGenesisInvariants := cast.ToBool(applicationOptions.Get(crisis.FlagSkipGenesisInvariants))
 
 	app.moduleManager = module.NewManager(appModules(app, encodingConfiguration, skipGenesisInvariants)...)
 
 	app.moduleManager.SetOrderBeginBlockers(orderBeginBlockers()...)
 	app.moduleManager.SetOrderEndBlockers(orderEndBlockers()...)
 	app.moduleManager.SetOrderInitGenesis(orderInitGenesis()...)
+	app.moduleManager.SetOrderExportGenesis(orderInitGenesis()...)
 
 	app.moduleManager.RegisterInvariants(app.CrisisKeeper)
-	app.moduleManager.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfiguration.Amino)
-
-	app.configurator = module.NewConfigurator(app.applicationCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
+	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
 	app.moduleManager.RegisterServices(app.configurator)
 
-	simulationManager := module.NewSimulationManager(simulationModules(app, encodingConfiguration, skipGenesisInvariants)...)
-
-	simulationManager.RegisterStoreDecoders()
-	app.simulationManager = simulationManager
-
-	app.BaseApp.MountKVStores(app.GetKVStoreKey())
-	app.BaseApp.MountTransientStores(app.GetTransientStoreKey())
-	app.BaseApp.MountMemoryStores(app.GetMemoryStoreKey())
-
-	anteHandler, err := NewAnteHandler(
-		HandlerOptions{
-			HandlerOptions: ante.HandlerOptions{
-				AccountKeeper:   app.AccountKeeper,
-				BankKeeper:      app.BankKeeper,
-				FeegrantKeeper:  app.FeegrantKeeper,
-				SignModeHandler: encodingConfiguration.TransactionConfig.SignModeHandler(),
-				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
-			},
-			IBCKeeper:         app.IBCKeeper,
-			WasmConfig:        &wasmConfig,
-			TXCounterStoreKey: app.GetKVStoreKey()[wasm.StoreKey],
-		},
+	app.simulationManager = module.NewSimulationManagerFromAppModules(
+		app.moduleManager.Modules,
+		overrideSimulationModules(app, encodingConfiguration, skipGenesisInvariants),
 	)
-	if err != nil {
-		panic(fmt.Errorf("failed to create AnteHandler: %s", err))
-	}
+	app.simulationManager.RegisterStoreDecoders()
 
-	app.BaseApp.SetAnteHandler(anteHandler)
-	app.BaseApp.SetInitChainer(app.InitChainer)
-	app.BaseApp.SetBeginBlocker(app.moduleManager.BeginBlock)
-	app.BaseApp.SetEndBlocker(app.moduleManager.EndBlock)
+	app.registerGRPCServices()
+
+	app.MountKVStores(app.GetKVStoreKey())
+	app.MountTransientStores(app.GetTransientStoreKey())
+	app.MountMemoryStores(app.GetMemoryStoreKey())
+
+	app.setupPOBAndAnteHandler(wasmConfig)
+	app.SetInitChainer(app.InitChainer)
+	app.SetBeginBlocker(app.BeginBlocker)
+	app.SetEndBlocker(app.EndBlocker)
+
+	// setup postHandler in this method
+	// app.setupPostHandler()
+	app.setupUpgradeHandlers()
+	app.setupUpgradeStoreLoaders()
 
 	// must be before Loading version
 	// requires the snapshot store to be created and registered as a BaseAppOption
@@ -255,11 +230,6 @@ func NewApplication(
 			panic(fmt.Errorf("failed to register snapshot extension: %s", err))
 		}
 	}
-
-	// setup postHandler in this method
-	// app.setupPostHandler()
-	app.setupUpgradeHandlers()
-	app.setupUpgradeStoreLoaders()
 
 	if loadLatest {
 		if err := app.BaseApp.LoadLatestVersion(); err != nil {
@@ -276,12 +246,119 @@ func NewApplication(
 	return app
 }
 
-func (app *Application) ApplicationCodec() codec.Codec {
-	return app.applicationCodec
+func (app *Application) setupPOBAndAnteHandler(wasmConfig wasmtypes.WasmConfig) {
+	// Set POB's mempool into the app.
+	mempool := mempool.NewAuctionMempool(app.txConfig.TxDecoder(), app.txConfig.TxEncoder(), 0, mempool.NewDefaultAuctionFactory(app.txConfig.TxDecoder()))
+	app.BaseApp.SetMempool(mempool)
+
+	anteOptions := HandlerOptions{
+		HandlerOptions: ante.HandlerOptions{
+			AccountKeeper:   app.AccountKeeper,
+			BankKeeper:      app.BankKeeper,
+			FeegrantKeeper:  app.FeegrantKeeper,
+			SignModeHandler: app.txConfig.SignModeHandler(),
+			SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
+		},
+		IBCKeeper:         app.IBCKeeper,
+		WasmConfig:        &wasmConfig,
+		TXCounterStoreKey: app.GetKVStoreKey()[wasm.StoreKey],
+
+		BuilderKeeper: app.BuilderKeeper,
+		Mempool:       mempool,
+		TxDecoder:     app.txConfig.TxDecoder(),
+		TxEncoder:     app.txConfig.TxEncoder(),
+	}
+	anteHandler, err := NewAnteHandler(anteOptions)
+	if err != nil {
+		panic(fmt.Errorf("failed to create AnteHandler: %s", err))
+	}
+
+	// Set the proposal handlers on the BaseApp along with the custom antehandler.
+	proposalHandlers := pobabci.NewProposalHandler(
+		mempool,
+		app.BaseApp.Logger(),
+		anteHandler,
+		anteOptions.TxEncoder,
+		anteOptions.TxDecoder,
+	)
+	app.BaseApp.SetPrepareProposal(proposalHandlers.PrepareProposalHandler())
+	app.BaseApp.SetProcessProposal(proposalHandlers.ProcessProposalHandler())
+	app.BaseApp.SetAnteHandler(anteHandler)
+
+	chainID := app.ChainID()
+	app.BaseApp.Logger().Info("using BaseApp chainID for POB ABCI", "chainID", chainID)
+
+	// Set the custom CheckTx handler on BaseApp.
+	checkTxHandler := pobabci.NewCheckTxHandler(
+		app.BaseApp,
+		app.txConfig.TxDecoder(),
+		mempool,
+		anteHandler,
+		chainID,
+	)
+
+	app.SetCheckTx(checkTxHandler.CheckTx())
+}
+
+func (app *Application) registerGRPCServices() {
+	autocliv1.RegisterQueryServer(app.GRPCQueryRouter(), runtimeservices.NewAutoCLIQueryService(app.moduleManager.Modules))
+
+	reflectionSvc, err := runtimeservices.NewReflectionService()
+	if err != nil {
+		panic(err)
+	}
+	reflectionv1.RegisterReflectionServiceServer(app.GRPCQueryRouter(), reflectionSvc)
+}
+
+// ChainID gets chainID from private fields of BaseApp
+// Should be removed once SDK 0.50.x will be adopted
+func (app *Application) ChainID() string {
+	field := reflect.ValueOf(app.BaseApp).Elem().FieldByName("chainID")
+	return field.String()
+}
+
+// GetChainBondDenom returns expected chain bond denom.
+func (app *Application) GetChainBondDenom() string {
+	chainID := app.ChainID()
+
+	if chainID == "core-1" {
+		return BondDenom
+	} else if chainID == "test-core-1" {
+		return BondDenom
+	}
+
+	return "stake"
+}
+
+// CheckTx will check the transaction with the provided checkTxHandler. We override the default
+// handler so that we can verify bid transactions before they are inserted into the mempool.
+// With the POB CheckTx, we can verify the bid transaction and all of the bundled transactions
+// before inserting the bid transaction into the mempool.
+func (app *Application) CheckTx(req abcitypes.RequestCheckTx) abcitypes.ResponseCheckTx {
+	return app.checkTxHandler(req)
+}
+
+// SetCheckTx sets the checkTxHandler for the app.
+func (app *Application) SetCheckTx(handler pobabci.CheckTx) {
+	app.checkTxHandler = handler
 }
 
 func (app *Application) Name() string {
 	return app.BaseApp.Name()
+}
+
+func (app *Application) AppCodec() codec.Codec {
+	return app.appCodec
+}
+
+// InterfaceRegistry returns Application's InterfaceRegistry
+func (app *Application) InterfaceRegistry() types.InterfaceRegistry {
+	return app.interfaceRegistry
+}
+
+// TxConfig returns Application's TxConfig
+func (app *Application) TxConfig() client.TxConfig {
+	return app.txConfig
 }
 
 func (app *Application) LegacyAmino() *codec.LegacyAmino {
@@ -326,168 +403,7 @@ func (app *Application) InitChainer(ctx sdk.Context, req abcitypes.RequestInitCh
 
 	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.moduleManager.GetVersionMap())
 
-	return app.moduleManager.InitGenesis(ctx, app.applicationCodec, genesisState)
-}
-
-func (app *Application) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string) (servertypes.ExportedApp, error) {
-	context := app.BaseApp.NewContext(true, tendermintproto.Header{Height: app.BaseApp.LastBlockHeight()})
-
-	height := app.BaseApp.LastBlockHeight() + 1
-	if forZeroHeight {
-		height = 0
-		applyWhiteList := false
-
-		if len(jailWhiteList) > 0 {
-			applyWhiteList = true
-		}
-
-		whiteListMap := make(map[string]bool)
-
-		for _, address := range jailWhiteList {
-			if _, Error := sdk.ValAddressFromBech32(address); Error != nil {
-				panic(Error)
-			}
-
-			whiteListMap[address] = true
-		}
-
-		app.CrisisKeeper.AssertInvariants(context)
-
-		app.StakingKeeper.IterateValidators(context, func(_ int64, val sdkstakingtypes.ValidatorI) (stop bool) {
-			_, _ = app.DistributionKeeper.WithdrawValidatorCommission(context, val.GetOperator())
-			return false
-		})
-
-		delegations := app.StakingKeeper.GetAllDelegations(context)
-		for _, delegation := range delegations {
-			validatorAddress, Error := sdk.ValAddressFromBech32(delegation.ValidatorAddress)
-			if Error != nil {
-				panic(Error)
-			}
-
-			delegatorAddress, Error := sdk.AccAddressFromBech32(delegation.DelegatorAddress)
-			if Error != nil {
-				panic(Error)
-			}
-
-			_, _ = app.DistributionKeeper.WithdrawDelegationRewards(context, delegatorAddress, validatorAddress)
-		}
-
-		app.DistributionKeeper.DeleteAllValidatorSlashEvents(context)
-
-		app.DistributionKeeper.DeleteAllValidatorHistoricalRewards(context)
-
-		height := context.BlockHeight()
-		context = context.WithBlockHeight(0)
-
-		app.StakingKeeper.IterateValidators(context, func(_ int64, val sdkstakingtypes.ValidatorI) (stop bool) {
-
-			scraps := app.DistributionKeeper.GetValidatorOutstandingRewardsCoins(context, val.GetOperator())
-			feePool := app.DistributionKeeper.GetFeePool(context)
-			feePool.CommunityPool = feePool.CommunityPool.Add(scraps...)
-			app.DistributionKeeper.SetFeePool(context, feePool)
-
-			if err := app.DistributionKeeper.Hooks().AfterValidatorCreated(context, val.GetOperator()); err != nil {
-				panic(err)
-			}
-
-			return false
-		})
-
-		for _, delegation := range delegations {
-			validatorAddress, Error := sdk.ValAddressFromBech32(delegation.ValidatorAddress)
-			if Error != nil {
-				panic(Error)
-			}
-
-			delegatorAddress, Error := sdk.AccAddressFromBech32(delegation.DelegatorAddress)
-			if Error != nil {
-				panic(Error)
-			}
-
-			if err := app.DistributionKeeper.Hooks().BeforeDelegationCreated(context, delegatorAddress, validatorAddress); err != nil {
-				// never called as BeforeDelegationCreated always returns nil
-				panic(fmt.Errorf("error while incrementing period: %w", err))
-			}
-
-			if err := app.DistributionKeeper.Hooks().AfterDelegationModified(context, delegatorAddress, validatorAddress); err != nil {
-				// never called as AfterDelegationModified always returns nil
-				panic(fmt.Errorf("error while creating a new delegation period record: %w", err))
-			}
-		}
-
-		context = context.WithBlockHeight(height)
-
-		app.StakingKeeper.IterateRedelegations(context, func(_ int64, redelegation stakingtypes.Redelegation) (stop bool) {
-			for i := range redelegation.Entries {
-				redelegation.Entries[i].CreationHeight = 0
-			}
-			app.StakingKeeper.SetRedelegation(context, redelegation)
-			return false
-		})
-
-		app.StakingKeeper.IterateUnbondingDelegations(context, func(_ int64, unbondingDelegation stakingtypes.UnbondingDelegation) (stop bool) {
-			for i := range unbondingDelegation.Entries {
-				unbondingDelegation.Entries[i].CreationHeight = 0
-			}
-			app.StakingKeeper.SetUnbondingDelegation(context, unbondingDelegation)
-			return false
-		})
-
-		store := context.KVStore(app.GetKVStoreKey()[stakingtypes.StoreKey])
-		kvStoreReversePrefixIterator := sdk.KVStoreReversePrefixIterator(store, stakingtypes.ValidatorsKey)
-		counter := int16(0)
-
-		for ; kvStoreReversePrefixIterator.Valid(); kvStoreReversePrefixIterator.Next() {
-			addr := sdk.ValAddress(kvStoreReversePrefixIterator.Key()[1:])
-			validator, found := app.StakingKeeper.GetLiquidValidator(context, addr)
-
-			if !found {
-				panic("Validator not found!")
-			}
-
-			validator.UnbondingHeight = 0
-
-			if applyWhiteList && !whiteListMap[addr.String()] {
-				validator.Jailed = true
-			}
-
-			app.StakingKeeper.SetValidator(context, validator)
-			counter++
-		}
-
-		_ = kvStoreReversePrefixIterator.Close()
-
-		_, Error := app.StakingKeeper.ApplyAndReturnValidatorSetUpdates(context)
-		if Error != nil {
-			stdlog.Fatal(Error)
-		}
-
-		app.SlashingKeeper.IterateValidatorSigningInfos(
-			context,
-			func(validatorConsAddress sdk.ConsAddress, validatorSigningInfo slashingtypes.ValidatorSigningInfo) (stop bool) {
-				validatorSigningInfo.StartHeight = 0
-				app.SlashingKeeper.SetValidatorSigningInfo(context, validatorConsAddress, validatorSigningInfo)
-				return false
-			},
-		)
-	}
-
-	genesisState := app.moduleManager.ExportGenesis(context, app.applicationCodec)
-	applicationState, Error := codec.MarshalJSONIndent(app.legacyAmino, genesisState)
-
-	if Error != nil {
-		return servertypes.ExportedApp{}, Error
-	}
-
-	validators, err := staking.WriteValidators(context, *app.StakingKeeper)
-
-	return servertypes.ExportedApp{
-		AppState:        applicationState,
-		Validators:      validators,
-		Height:          height,
-		ConsensusParams: app.BaseApp.GetConsensusParams(context),
-	}, err
+	return app.moduleManager.InitGenesis(ctx, app.appCodec, genesisState)
 }
 
 func (app *Application) ModuleAccountAddrs() map[string]bool {
@@ -504,28 +420,12 @@ func (app *Application) GetSubspace(moduleName string) paramstypes.Subspace {
 	return subspace
 }
 
+func (app *Application) ModuleManager() *module.Manager {
+	return app.moduleManager
+}
+
 func (app *Application) SimulationManager() *module.SimulationManager {
 	return app.simulationManager
-}
-
-func (app *Application) ListSnapshots(snapshots abcitypes.RequestListSnapshots) abcitypes.ResponseListSnapshots {
-	return app.BaseApp.ListSnapshots(snapshots)
-}
-
-func (app *Application) OfferSnapshot(snapshot abcitypes.RequestOfferSnapshot) abcitypes.ResponseOfferSnapshot {
-	return app.BaseApp.OfferSnapshot(snapshot)
-}
-
-func (app *Application) LoadSnapshotChunk(chunk abcitypes.RequestLoadSnapshotChunk) abcitypes.ResponseLoadSnapshotChunk {
-	return app.BaseApp.LoadSnapshotChunk(chunk)
-}
-
-func (app *Application) ApplySnapshotChunk(chunk abcitypes.RequestApplySnapshotChunk) abcitypes.ResponseApplySnapshotChunk {
-	return app.BaseApp.ApplySnapshotChunk(chunk)
-}
-
-func (app *Application) RegisterGRPCServer(server grpc.Server) {
-	app.BaseApp.RegisterGRPCServer(server)
 }
 
 func (app *Application) RegisterAPIRoutes(apiServer *api.Server, apiConfig config.APIConfig) {
@@ -550,12 +450,10 @@ func (app *Application) setupUpgradeHandlers() {
 		app.UpgradeKeeper.SetUpgradeHandler(
 			upgrade.UpgradeName,
 			upgrade.CreateUpgradeHandler(upgrades.UpgradeHandlerArgs{
-				ModuleManager:      app.moduleManager,
-				Configurator:       app.configurator,
-				Keepers:            &app.AppKeepers,
-				Codec:              app.applicationCodec,
-				CapabilityStoreKey: app.GetKVStoreKey()[capabilitytypes.StoreKey],
-				CapabilityKeeper:   app.CapabilityKeeper,
+				ModuleManager: app.moduleManager,
+				Configurator:  app.configurator,
+				Keepers:       app.AppKeepers,
+				Codec:         app.appCodec,
 			}),
 		)
 	}
@@ -588,11 +486,11 @@ func (app *Application) setupUpgradeStoreLoaders() {
 // both are successful, and both will be reverted if any of the two fails.
 // nolint:unused // post handle is not used for now (as there is no requirement of it)
 func (app *Application) setupPostHandler() {
-	postDecorators := []sdk.AnteDecorator{
+	postDecorators := []sdk.PostDecorator{
 		// posthandler.NewTipDecorator(app.BankKeeper),
 		// ... add more decorators as needed
 	}
-	postHandler := sdk.ChainAnteDecorators(postDecorators...)
+	postHandler := sdk.ChainPostDecorators(postDecorators...)
 	app.SetPostHandler(postHandler)
 }
 
@@ -618,4 +516,17 @@ func (app *Application) RegisterNodeService(clientCtx client.Context) {
 }
 func (app *Application) LoadHeight(height int64) error {
 	return app.BaseApp.LoadVersion(height)
+}
+
+// DefaultGenesis returns a default genesis from the registered AppModuleBasic's.
+func (app *Application) DefaultGenesis() map[string]json.RawMessage {
+	return ModuleBasics.DefaultGenesis(app.appCodec)
+}
+
+func SendCoinBlockedAddrs() map[string]bool {
+	sendCoinBlockedAddrs := make(map[string]bool)
+	for acc := range ModuleAccountPermissions {
+		sendCoinBlockedAddrs[authtypes.NewModuleAddress(acc).String()] = !receiveAllowedMAcc[acc]
+	}
+	return sendCoinBlockedAddrs
 }
