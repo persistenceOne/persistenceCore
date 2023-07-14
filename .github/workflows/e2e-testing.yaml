@@ -3,21 +3,14 @@ name: E2E
 
 on:
   pull_request:
-    paths:
-      - '**.yml'
-      - '**.go'
-      - '**.mod'
-      - '**.sum'
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
   push:
-    tags:
-      - '**'
     branches:
       - main
-    paths:
-      - '**.yml'
-      - '**.go'
-      - '**.mod'
-      - '**.sum'
 
 env:
   TAR_PATH: heighliner.tar
@@ -56,6 +49,19 @@ jobs:
           name: persistence-docker-image
           path: ${{ env.TAR_PATH }}
 
+      - name: Setup Go with cache
+        uses: magnetikonline/action-golang-cache@v4
+        with:
+          go-version: 1.20.0
+        id: go
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Download dependencies for interchaintest
+        run: |
+          cd interchaintest && go mod download
+
   e2e-tests:
     needs: build-docker
     runs-on: ubuntu-latest
@@ -80,12 +86,14 @@ jobs:
 
       - name: Load Docker Image
         run: docker image load -i ${{ env.TAR_PATH }}
-      - name: Set up Go 1.20
-        uses: actions/setup-go@v3
+      
+      - name: Setup Go with cache
+        uses: magnetikonline/action-golang-cache@v4
         with:
           go-version: 1.20.0
+        id: go
 
-      - name: checkout chain
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: run test
