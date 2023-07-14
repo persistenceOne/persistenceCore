@@ -8,9 +8,18 @@ on:
       - synchronize
       - reopened
       - ready_for_review
+    branches-ignore:
+      - 'release/v7'
+
   push:
     branches:
       - main
+    tags-ignore:
+      - v7.*
+
+  release:
+    types:
+      - created
 
 env:
   TAR_PATH: heighliner.tar
@@ -23,6 +32,10 @@ jobs:
   build-docker:
     runs-on: ubuntu-latest
     steps:
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v7
+
       - name: Build Docker image
         uses: strangelove-ventures/heighliner-build-action@v0.0.3
         with:
@@ -30,7 +43,7 @@ jobs:
           tag: local # emulate local environment for consistency in interchaintest cases
           tar-export-path: ${{ env.TAR_PATH }} # export a tarball that can be uploaded as an artifact for the e2e jobs
           platform: linux/amd64 # test runner architecture only
-          git-ref: ${{ github.head_ref }} # source code ref
+          git-ref: ${{ steps.branch-name.outputs.current_branch }}
 
           # Heighliner chains.yaml config
           chain: persistence
