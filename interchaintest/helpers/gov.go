@@ -1,0 +1,100 @@
+package helpers
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"testing"
+	"time"
+
+	retry "github.com/avast/retry-go/v4"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
+	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
+	"github.com/stretchr/testify/require"
+)
+
+type Tally struct {
+	AbstainCount    sdk.Int `json:"abstain_count"`
+	NoCount         sdk.Int `json:"no_count"`
+	NoWithVetoCount sdk.Int `json:"no_with_veto_count"`
+	YesCount        sdk.Int `json:"yes_count"`
+}
+
+const (
+	ProposalVoteYes        = "yes"
+	ProposalVoteNo         = "no"
+	ProposalVoteNoWithVeto = "no_with_veto"
+	ProposalVoteAbstain    = "abstain"
+)
+
+// QueryProposalTally gets tally results for a proposal
+func QueryProposalTally(t *testing.T, ctx context.Context, chainNode *cosmos.ChainNode, proposalID string) Tally {
+	stdout, _, err := chainNode.ExecQuery(ctx, "gov", "tally", proposalID)
+	require.NoError(t, err)
+
+	debugOutput(t, string(stdout))
+
+	var tally Tally
+	err = json.Unmarshal([]byte(stdout), &tally)
+	require.NoError(t, err)
+
+	return tally
+}
+
+// LegacyTextProposal submits a text governance proposal to the chain.
+func LegacyTextProposal(ctx context.Context, keyName string, chainNode *cosmos.ChainNode, prop cosmos.TextProposal) (string, error) {
+	command := []string{
+		"gov", "submit-legacy-proposal",
+		"--type", "text",
+		"--title", prop.Title,
+		"--description", prop.Description,
+		"--deposit", prop.Deposit,
+	}
+	if prop.Expedited {
+		command = append(command, "--is-expedited=true")
+	}
+
+	return chainNode.ExecTx(ctx, keyName, command...)
+}
+
+// QueryProposalTx reads results of a proposal Tx, useful to get the ProposalID
+func QueryProposalTx(ctx context.Context, chainNode *cosmos.ChainNode, txHash string) (tx cosmos.TxProposal, _ error) {
+	txResp, err := getTxResponse(ctx, chainNode, txHash)
+	if err != nil {
+		return tx, fmt.Errorf("failed to get transaction %s: %w", txHash, err)
+	}
+
+	tx.Height = uint64(txResp.Height)
+	tx.TxHash = txHash
+	// In cosmos, user is charged for entire gas requested, not the actual gas used.
+	tx.GasSpent = txResp.GasWanted
+	events := txResp.Events
+
+	tx.DepositAmount, _ = tmAttributeValue(events, "proposal_deposit", "amount")
+
+	evtSubmitProp := "submit_proposal"
+	tx.ProposalID, _ = tmAttributeValue(events, evtSubmitProp, "proposal_id")
+	tx.ProposalType, _ = tmAttributeValue(events, evtSubmitProp, "proposal_type")
+
+	return tx, nil
+}
+
+func getTxResponse(ctx context.Context, chainNode *cosmos.ChainNode, txHash string) (*sdk.TxResponse, error) {
+	// Retry because sometimes the tx is not committed to state yet.
+	var txResp *sdk.TxResponse
+
+	err := retry.Do(func() error {
+		var err error
+		txResp, err = authtx.QueryTx(chainNode.CliContext(), txHash)
+		return err
+	},
+		// retry for total of 3 seconds
+		retry.Attempts(15),
+		retry.Delay(200*time.Millisecond),
+		retry.DelayType(retry.FixedDelay),
+		retry.LastErrorOnly(true),
+		retry.Context(ctx),
+	)
+	return txResp, err
+}

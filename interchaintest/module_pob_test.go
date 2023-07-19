@@ -1,6 +1,7 @@
 package interchaintest
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -23,17 +24,22 @@ func TestSkipMevAuction(t *testing.T) {
 
 	t.Parallel()
 
+	ctx, cancelFn := context.WithCancel(context.Background())
+	t.Cleanup(func() {
+		cancelFn()
+	})
+
 	// override SDK beck prefixes with chain specific
 	helpers.SetConfig()
 
-	// Base setup
-	chains := CreateThisBranchChain(t, 1, 0)
-	ic, ctx, _, _ := BuildInitialChain(t, chains)
-	chain := chains[0].(*cosmos.CosmosChain)
-	testDenom := chain.Config().Denom
-
+	// create a single chain instance with 1 validator
+	validatorsCount := 1
+	ic, chain := CreateChain(t, ctx, validatorsCount, 0)
 	require.NotNil(t, ic)
-	require.NotNil(t, ctx)
+	require.NotNil(t, chain)
+
+	chainNode := chain.Nodes()[0]
+	testDenom := chain.Config().Denom
 
 	t.Cleanup(func() {
 		_ = ic.Close()
@@ -44,8 +50,6 @@ func TestSkipMevAuction(t *testing.T) {
 	chainUserMnemonic := helpers.NewMnemonic()
 	chainUser, err := interchaintest.GetAndFundTestUserWithMnemonic(ctx, t.Name(), chainUserMnemonic, userFunds, chain)
 	require.NoError(t, err)
-
-	chainNode := chain.Nodes()[0]
 
 	paramsStdout, _, err := chainNode.ExecQuery(ctx, "builder", "params")
 	require.NoError(t, err)

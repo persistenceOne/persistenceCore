@@ -249,7 +249,7 @@ test: ictest-all
 ictest-all: rm-testcache
 	cd interchaintest && go test -v -run ./...
 
-# Executes basic chain tests via interchaintest
+# Executes basic chain test via interchaintest
 ictest-basic: rm-testcache
 	cd interchaintest && go test -race -v -run TestBasicPersistenceStart .
 
@@ -259,11 +259,11 @@ ictest-ibchooks: rm-testcache
 ictest-pfm: rm-testcache
 	cd interchaintest && go test -race -v -run TestPacketForwardMiddlewareRouter .
 
-# Executes a basic chain upgrade test via interchaintest
+# Executes a chain upgrade test via interchaintest
 ictest-upgrade: rm-testcache
 	cd interchaintest && go test -race -v -run TestBasicPersistenceUpgrade .
 
-# Executes a basic chain upgrade locally via interchaintest after compiling a local image as persistence:local
+# Executes a chain upgrade locally via interchaintest after compiling a local image as persistence:local
 ictest-upgrade-local: local-image ictest-upgrade
 
 # Executes IBC tests via interchaintest
@@ -274,7 +274,11 @@ ictest-ibc: rm-testcache
 ictest-pob: rm-testcache
 	cd interchaintest && go test -race -v -run TestSkipMevAuction .
 
+# Executes LSM tests
+ictest-lsm: rm-testcache
+	cd interchaintest && go test -race -v -run "(TestMultiTokenizeVote|TestTokenizeSendVote)" .
+
 rm-testcache:
 	go clean -testcache
 
-.PHONY: test ictest-all ictest-basic ictest-ibchooks ictest-pfm ictest-upgrade ictest-upgrade-local ictest-ibc ictest-pob
+.PHONY: test ictest-all ictest-basic ictest-ibchooks ictest-pfm ictest-upgrade ictest-upgrade-local ictest-ibc ictest-pob ictest-lsm

@@ -7,7 +7,6 @@ require (
 	github.com/cosmos/cosmos-sdk v0.47.3
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/cosmos/ibc-go/v7 v7.2.0
-	github.com/docker/docker v24.0.1+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/strangelove-ventures/interchaintest/v7 v7.0.0-20230628163313-cedf87f4624d
 	github.com/stretchr/testify v1.8.4
@@ -78,6 +77,7 @@ require (
 	github.com/dgraph-io/ristretto v0.1.1 // indirect
 	github.com/dgryski/go-farm v0.0.0-20200201041132-a6ae2369ad13 // indirect
 	github.com/docker/distribution v2.8.2+incompatible // indirect
+	github.com/docker/docker v24.0.1+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
@@ -256,7 +256,7 @@ replace (
 // use persistence's forks with LSM implemented
 replace (
 	github.com/CosmWasm/wasmd => github.com/persistenceOne/wasmd v0.40.1-lsm
-	github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk v0.47.3-lsm2
+	github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk v0.47.3-lsm2.0.20230719205731-e57af2874fff
 	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 => github.com/persistenceOne/ibc-apps/middleware/packet-forward-middleware/v7 v7.0.0-20230712081317-ebc0729e000d
 	github.com/cosmos/ibc-apps/modules/ibc-hooks/v7 => github.com/persistenceOne/ibc-apps/modules/ibc-hooks/v7 v7.0.0-20230712081317-ebc0729e000d
 	github.com/cosmos/ibc-go/v7 => github.com/persistenceOne/ibc-go/v7 v7.2.0-lsm

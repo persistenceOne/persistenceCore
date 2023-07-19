@@ -31,7 +31,7 @@ func TestPersistenceGaiaIBCTransfer(t *testing.T) {
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
 		{
 			Name:          "persistence",
-			ChainConfig:   persistenceConfig,
+			ChainConfig:   persistenceChainConfig(),
 			NumValidators: &numVals,
 			NumFullNodes:  &numFullNodes,
 		},
