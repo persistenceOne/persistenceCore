@@ -4,6 +4,7 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	exported "github.com/cosmos/ibc-go/v7/modules/core/exported"
@@ -34,4 +35,9 @@ func (s *TestSuite) VerifyParams() {
 	ibcClientParams, err := ibcclienttypes.NewQueryClient(client).ClientParams(ctx, &ibcclienttypes.QueryClientParamsRequest{})
 	s.Require().NoError(err)
 	s.Require().Contains(ibcClientParams.Params.AllowedClients, exported.Localhost)
+
+	s.T().Log("verify gov MinInitialDepositParam")
+	govParams, err := govtypes.NewQueryClient(client).Params(ctx, &govtypes.QueryParamsRequest{})
+	s.Require().NoError(err)
+	s.Require().Equal("0.25", govParams.Params.MinInitialDepositRatio)
 }

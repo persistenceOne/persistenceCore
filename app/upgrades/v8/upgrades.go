@@ -87,6 +87,12 @@ func disableMEVAuction(ctx sdk.Context, keepers *keepers.AppKeepers) error {
 	return keepers.BuilderKeeper.SetParams(ctx, builderParams)
 }
 
+func setMinInitialDepositRatio(ctx sdk.Context, keepers *keepers.AppKeepers) error {
+	govParams := keepers.GovKeeper.GetParams(ctx)
+	govParams.MinInitialDepositRatio = "0.25"
+	return keepers.GovKeeper.SetParams(ctx, govParams)
+}
+
 func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.UpgradeHandler {
 	baseAppLegacySS := getLegacySubspaces(args.Keepers.ParamsKeeper)
 
@@ -171,7 +177,10 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 			return nil, err
 		}
 
-		// TODO(ajeet): do we need to set gov -> MinInitialDepositRatio? (default is 0 -> disabled)
+		ctx.Logger().Info("setting x/gov min initial deposit ratio to 25%")
+		if err = setMinInitialDepositRatio(ctx, args.Keepers); err != nil {
+			return nil, err
+		}
 
 		return newVersionMap, nil
 	}
