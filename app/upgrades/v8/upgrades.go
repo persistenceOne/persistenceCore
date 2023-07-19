@@ -94,8 +94,6 @@ func setMinInitialDepositRatio(ctx sdk.Context, keepers *keepers.AppKeepers) err
 }
 
 func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.UpgradeHandler {
-	baseAppLegacySS := getLegacySubspaces(args.Keepers.ParamsKeeper)
-
 	return func(ctx sdk.Context, plan upgradetypes.Plan, versionMap module.VersionMap) (module.VersionMap, error) {
 		ctx.Logger().Info("running upgrade handler")
 
@@ -134,13 +132,11 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 		// -- nothing --
 
 		// sdk v46-to-v47
+		// initialize param subspaces for params migration
+		baseAppLegacySS := getLegacySubspaces(args.Keepers.ParamsKeeper)
 		// Migrate Tendermint consensus parameters from x/params module to a dedicated x/consensus module.
 		ctx.Logger().Info("migrating tendermint x/consensus params")
 		baseapp.MigrateParams(ctx, baseAppLegacySS, args.Keepers.ConsensusParamsKeeper)
-
-		// Note: this migration is optional,
-		// You can include x/gov proposal migration documented in [UPGRADING.md](https://github.com/cosmos/cosmos-sdk/blob/main/UPGRADING.md)
-		// TODO(ajeet): do we need this optional migration?
 
 		ctx.Logger().Info("running module manager migrations")
 

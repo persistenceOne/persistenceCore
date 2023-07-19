@@ -1,6 +1,8 @@
 package v8
 
 import (
+	"fmt"
+
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -14,9 +16,14 @@ import (
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router/types"
 	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
 	icahosttypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
+	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
+	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
+	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
+	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 )
 
 func getLegacySubspaces(paramsKeeper *paramskeeper.Keeper) paramstypes.Subspace {
@@ -42,18 +49,22 @@ func getLegacySubspaces(paramsKeeper *paramskeeper.Keeper) paramstypes.Subspace 
 			keyTable = govv1.ParamKeyTable() //nolint:staticcheck
 		case crisistypes.ModuleName:
 			keyTable = crisistypes.ParamKeyTable() //nolint:staticcheck
-		// ibc types
-		case ibctransfertypes.ModuleName:
-			keyTable = ibctransfertypes.ParamKeyTable()
-		case icahosttypes.SubModuleName:
-			keyTable = icahosttypes.ParamKeyTable()
-		case icacontrollertypes.SubModuleName:
-			keyTable = icacontrollertypes.ParamKeyTable()
 		// wasm
 		case wasmtypes.ModuleName:
 			keyTable = wasmtypes.ParamKeyTable() //nolint:staticcheck
-		default:
+
+		// these modules have not migrated away from x/params
+		case halving.DefaultParamspace,
+			ibcexported.ModuleName,
+			ibctransfertypes.ModuleName,
+			icacontrollertypes.SubModuleName,
+			icahosttypes.SubModuleName,
+			lscosmostypes.ModuleName,
+			oracletypes.ModuleName,
+			packetforwardtypes.ModuleName:
 			continue
+		default:
+			panic(fmt.Sprintf("param key table not set for subspace: %s", subspace.Name()))
 		}
 
 		if !subspace.HasKeyTable() {
