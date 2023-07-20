@@ -29,14 +29,14 @@ func TestPersistenceIBCHooks(t *testing.T) {
 	numVals := 1
 	numFullNodes := 0
 
-	cfg2 := persistenceConfig.Clone()
+	cfg2 := persistenceChainConfig().Clone()
 	cfg2.Name = "persistence-counterparty"
 	cfg2.ChainID = "ictest-core-2"
 
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
 		{
 			Name:          "persistence",
-			ChainConfig:   persistenceConfig,
+			ChainConfig:   persistenceChainConfig(),
 			NumValidators: &numVals,
 			NumFullNodes:  &numFullNodes,
 		},

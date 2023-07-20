@@ -82,12 +82,12 @@ jobs:
         matrix:
             # names of `make` commands to run tests
             test:
-              - "ictest-basic"
               - "ictest-pob"
               - "ictest-upgrade"
               - "ictest-ibc"
               - "ictest-ibchooks"
               - "ictest-pfm"
+              - "ictest-lsm"
         fail-fast: false
 
     steps:

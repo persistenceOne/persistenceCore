@@ -21,15 +21,31 @@ const (
 )
 
 func TestBasicPersistenceUpgrade(t *testing.T) {
-	repo, version := GetDockerImageInfo()
-	startVersion := "v7.0.4" // same as v7.0.3 but Docker image works
-	upgradeName := "v8"
-	CosmosChainUpgradeTest(t, "persistence", startVersion, version, repo, upgradeName)
+	var (
+		chainName            = "persistence"
+		upgradeRepo          = PersistenceCoreImage.Repository
+		initialVersion       = "v7.0.4" // same as v7.0.3 but Docker image works
+		upgradeBranchVersion = PersistenceCoreImage.Version
+		upgradeName          = "v8"
+	)
+
+	CosmosChainUpgradeTest(
+		t,
+		chainName,
+		upgradeRepo,
+		initialVersion,
+		upgradeBranchVersion,
+		upgradeName,
+	)
 }
 
 func CosmosChainUpgradeTest(
 	t *testing.T,
-	chainName, initialVersion, upgradeBranchVersion, upgradeRepo, upgradeName string,
+	chainName,
+	upgradeRepo,
+	initialVersion,
+	upgradeBranchVersion,
+	upgradeName string,
 ) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
@@ -39,15 +55,15 @@ func CosmosChainUpgradeTest(
 
 	t.Log(chainName, initialVersion, upgradeBranchVersion, upgradeRepo, upgradeName)
 
-	// v45 genesis params
-	genesisKVs := append([]cosmos.GenesisKV{
+	// SDK v0.45.x genesis params
+	genesisOverridesV45 := append([]cosmos.GenesisKV{
 		{
 			Key:   "app_state.gov.voting_params.voting_period",
-			Value: VotingPeriod,
+			Value: "10s",
 		},
 		{
 			Key:   "app_state.gov.deposit_params.max_deposit_period",
-			Value: MaxDepositPeriod,
+			Value: "5s",
 		},
 		{
 			Key:   "app_state.gov.deposit_params.min_deposit.0.denom",
@@ -55,24 +71,24 @@ func CosmosChainUpgradeTest(
 		},
 	})
 
-	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
-		{
+	cf := interchaintest.NewBuiltinChainFactory(
+		zaptest.NewLogger(t),
+		[]*interchaintest.ChainSpec{{
 			Name:      chainName,
 			ChainName: chainName,
 			Version:   initialVersion,
 			ChainConfig: ibc.ChainConfig{
-				Images: []ibc.DockerImage{
-					{
-						Repository: PersistenceE2ERepo,
-						Version:    initialVersion,
-						UidGid:     PersistenceCoreImage.UidGid,
-					},
-				},
+				Images: []ibc.DockerImage{{
+					Repository: PersistenceE2ERepo,
+					Version:    initialVersion,
+					UidGid:     PersistenceCoreImage.UidGid,
+				}},
+
 				GasPrices:     fmt.Sprintf("0%s", helpers.PersistenceBondDenom),
-				ModifyGenesis: cosmos.ModifyGenesis(genesisKVs),
-			},
+				ModifyGenesis: cosmos.ModifyGenesis(genesisOverridesV45),
+			}},
 		},
-	})
+	)
 
 	chains, err := cf.Chains(t.Name())
 	require.NoError(t, err)
