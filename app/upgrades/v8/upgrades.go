@@ -87,9 +87,13 @@ func disableMEVAuction(ctx sdk.Context, keepers *keepers.AppKeepers) error {
 	return keepers.BuilderKeeper.SetParams(ctx, builderParams)
 }
 
-func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.UpgradeHandler {
-	baseAppLegacySS := getLegacySubspaces(args.Keepers.ParamsKeeper)
+func setMinInitialDepositRatio(ctx sdk.Context, keepers *keepers.AppKeepers) error {
+	govParams := keepers.GovKeeper.GetParams(ctx)
+	govParams.MinInitialDepositRatio = "0.25"
+	return keepers.GovKeeper.SetParams(ctx, govParams)
+}
 
+func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, plan upgradetypes.Plan, versionMap module.VersionMap) (module.VersionMap, error) {
 		ctx.Logger().Info("running upgrade handler")
 
@@ -128,13 +132,11 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 		// -- nothing --
 
 		// sdk v46-to-v47
+		// initialize param subspaces for params migration
+		baseAppLegacySS := getLegacySubspaces(args.Keepers.ParamsKeeper)
 		// Migrate Tendermint consensus parameters from x/params module to a dedicated x/consensus module.
 		ctx.Logger().Info("migrating tendermint x/consensus params")
 		baseapp.MigrateParams(ctx, baseAppLegacySS, args.Keepers.ConsensusParamsKeeper)
-
-		// Note: this migration is optional,
-		// You can include x/gov proposal migration documented in [UPGRADING.md](https://github.com/cosmos/cosmos-sdk/blob/main/UPGRADING.md)
-		// TODO(ajeet): do we need this optional migration?
 
 		ctx.Logger().Info("running module manager migrations")
 
@@ -171,7 +173,10 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 			return nil, err
 		}
 
-		// TODO(ajeet): do we need to set gov -> MinInitialDepositRatio? (default is 0 -> disabled)
+		ctx.Logger().Info("setting x/gov min initial deposit ratio to 25%")
+		if err = setMinInitialDepositRatio(ctx, args.Keepers); err != nil {
+			return nil, err
+		}
 
 		return newVersionMap, nil
 	}
