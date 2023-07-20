@@ -16,10 +16,13 @@ func (s *TestSuite) VerifyParams() {
 	ctx := context.Background()
 	client := s.GetChainClient("test-core-1").Client
 
-	s.T().Log("verify min commission rate")
+	s.T().Log("verify min commission rate & LSM params")
 	params, err := stakingtypes.NewQueryClient(client).Params(ctx, &stakingtypes.QueryParamsRequest{})
 	s.Require().NoError(err)
 	s.Require().Equal(sdk.NewDecWithPrec(5, 2), params.Params.MinCommissionRate)
+	s.Require().Equal(sdk.NewDec(250), params.Params.ValidatorBondFactor)
+	s.Require().Equal(sdk.NewDecWithPrec(1, 1), params.Params.GlobalLiquidStakingCap)
+	s.Require().Equal(sdk.NewDecWithPrec(5, 1), params.Params.ValidatorLiquidStakingCap)
 
 	s.T().Log("verify mev aution is disabled")
 	pobParams, err := buildertypes.NewQueryClient(client).Params(ctx, &buildertypes.QueryParamsRequest{})
