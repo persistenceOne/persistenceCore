@@ -93,6 +93,14 @@ func setMinInitialDepositRatio(ctx sdk.Context, keepers *keepers.AppKeepers) err
 	return keepers.GovKeeper.SetParams(ctx, govParams)
 }
 
+func setLSMParams(ctx sdk.Context, keepers *keepers.AppKeepers) error {
+	stakingParams := keepers.StakingKeeper.GetParams(ctx)
+	stakingParams.ValidatorBondFactor = sdk.NewDec(250)
+	stakingParams.GlobalLiquidStakingCap = sdk.NewDecWithPrec(1, 1)    // 10%
+	stakingParams.ValidatorLiquidStakingCap = sdk.NewDecWithPrec(5, 1) // 50%
+	return keepers.StakingKeeper.SetParams(ctx, stakingParams)
+}
+
 func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, plan upgradetypes.Plan, versionMap module.VersionMap) (module.VersionMap, error) {
 		ctx.Logger().Info("running upgrade handler")
@@ -175,6 +183,11 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 
 		ctx.Logger().Info("setting x/gov min initial deposit ratio to 25%")
 		if err = setMinInitialDepositRatio(ctx, args.Keepers); err != nil {
+			return nil, err
+		}
+
+		ctx.Logger().Info("setting x/staking LSM params")
+		if err = setLSMParams(ctx, args.Keepers); err != nil {
 			return nil, err
 		}
 

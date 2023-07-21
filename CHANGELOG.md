@@ -16,13 +16,14 @@
 - Upgrades persistence-sdk from `v2.0.1` to `vx.x.x`
 - Upgrades pstake-native from `v2.0.0` to `vx.x.x`
 - Adds wasm-bindings
-- Modules integrated from `persistence-sdk`
-  - IBC hooks
-  - PFM
-  - Oracle
-- Modules integrated from `pstake-native`
-  - liquidstakeibc - this deprecates `lscosmos` module
-- Integrated POB module for MEV - disabled aution txs for now.
+
+#### New Modules
+
+- IBC hooks
+- PFM (Packet forwarding middleware)
+- oracle - disabled for now
+- liquidstakeibc - this deprecates `lscosmos` module
+- POB for MEV - disabled auction txs for now
 
 #### MinCommissionRate
 
@@ -30,11 +31,23 @@
 
     > **Note**  
     > During upgrade,  
-    > Validator's `CommissionRate` will be set to 5%, if it is lower than the `MinCommissionRate` (i.e. 5%),  
-    > and Validator's `MaxCommissionRate` will be set to 10% (if lower than 10%) to give validator some margin to work with.
+    > Validator's `CommissionRate` will be set to `5%`, if it is lower than the `MinCommissionRate` (i.e. 5%),  
+    > and Validator's `MaxCommissionRate` will be set to `10%` (if lower than 10%) to give validator some margin to work with.
+
+#### MinInitialDepositRatio
+
+- `MinInitialDepositRatio` is set to `25%`, which means a proposal cannot be submitted with deposit lower than `25%` of `MinInitialDeposit`
+
+#### LSM Params
+
+- `ValidatorBondFactor` is set to `250`
+- `GlobalLiquidStakingCap` is set to `10%`
+- `ValidatorLiquidStakingCap` is set to `50%`
 
 ### Changes
 
+- ([#221](https://github.com/persistenceOne/persistenceCore/pull/221)) set LSM params
+- ([#219](https://github.com/persistenceOne/persistenceCore/pull/219)) set MinInitialDepositRatio to 25% + cleanup param subspaces
 - ([#211](https://github.com/persistenceOne/persistenceCore/pull/211)) Enfoce minimum limit for `CommissionRate` & `MaxCommissionRate`
 - ([#207](https://github.com/persistenceOne/persistenceCore/pull/207)) adds POB module for skip-mev
 - ([#205](https://github.com/persistenceOne/persistenceCore/pull/205)) bump cosmos-sdk to `v0.47.3-lsm` and deps (includes new modules: IBC hooks, PFM, liquidstakeibc)
