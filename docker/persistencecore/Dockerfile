@@ -27,11 +27,11 @@ COPY . .
 # Force it to use static lib (from above) not standard libgo_cosmwasm.so file
 RUN LEDGER_ENABLED=false BUILD_TAGS="muslc linkstatic" make build
 RUN echo "Ensuring binary is statically linked ..." \
-  && (file /usr/local/app/build/persistenceCore | grep "statically linked")
+  && (file /usr/local/app/bin/persistenceCore | grep "statically linked")
 
 FROM alpine:3.16
 
-COPY --from=go-builder /usr/local/app/build/persistenceCore /usr/bin/persistenceCore
+COPY --from=go-builder /usr/local/app/bin/persistenceCore /usr/bin/persistenceCore
 
 COPY contrib/local/ /opt/
 RUN chmod +x /opt/*.sh

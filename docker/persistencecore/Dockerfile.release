@@ -25,6 +25,6 @@ WORKDIR /usr/local/app
 COPY . .
 
 # Force it to use static lib (from above) not standard libgo_cosmwasm.so file
-RUN LEDGER_ENABLED=true BUILD_TAGS="muslc linkstatic" make build
+RUN LEDGER_ENABLED=true BUILD_TAGS="muslc linkstatic" LDFLAGS='-linkmode external -extldflags "-static"' make build
 RUN echo "Ensuring binary is statically linked ..." \
-  && (file /usr/local/app/build/persistenceCore | grep "statically linked")
+  && (file /usr/local/app/bin/persistenceCore | grep "statically linked")
