@@ -12,7 +12,7 @@ import (
 )
 
 func (s *TestSuite) RunLSCosmosTests() {
-	persistence := s.GetChainClient("test-core-1")
+	persistence := s.GetChainClient("test-core-2")
 	gaia := s.GetChainClient("test-gaia-1")
 	uatom := gaia.MustGetChainDenom()
 	c := s.GetTransferChannel(persistence, gaia.ChainID)

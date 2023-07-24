@@ -26,7 +26,7 @@ RESP=$(persistenceCore tx gov submit-proposal wasm-store "<path/to/the/compiled/
   --instantiate-nobody "true" \
   --keyring-backend test \
   --from $TEST_KEY --gas auto --fees 10000uxprt -y \
-  --chain-id test-core-1 \
+  --chain-id test-core-2 \
   -b block -o json --gas-adjustment 1.1)
   
 echo $RESP 
@@ -37,7 +37,7 @@ Now `$RESP` has the proposalID, extract the proposal_ID and vote on it
 ```
 PROPOSAL_ID=$(echo "$RESP" | jq -r '.logs[0].events[] | select(.type == "submit_proposal") | .attributes[] | select(.key == "proposal_id") | .value')
 
-persistenceCore tx gov vote $PROPOSAL_ID yes --from $TEST_KEY --yes --chain-id test-core-1 \
+persistenceCore tx gov vote $PROPOSAL_ID yes --from $TEST_KEY --yes --chain-id test-core-2 \
     --fees 500uxprt --gas auto --gas-adjustment 1.1 -b block --keyring-backend test -o json | jq
 ```
 The contract is instantiated via a gov-proposal 
@@ -55,7 +55,7 @@ RESP=$(persistenceCore tx gov submit-proposal instantiate-contract $CODE_ID "$IN
   --fees "10000uxprt" \
   --gas "auto" \
   --run-as $TEST_KEY \
-  -y --chain-id test-core-1 -b block -o json)
+  -y --chain-id test-core-2 -b block -o json)
 ```
 The `$TEST_KEY` can be any valid persistenceAddress. Make sure it has some test tokens.
 

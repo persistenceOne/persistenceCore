@@ -14,7 +14,7 @@ import (
 
 func (s *TestSuite) VerifyParams() {
 	ctx := context.Background()
-	client := s.GetChainClient("test-core-1").Client
+	client := s.GetChainClient("test-core-2").Client
 
 	s.T().Log("verify min commission rate & LSM params")
 	params, err := stakingtypes.NewQueryClient(client).Params(ctx, &stakingtypes.QueryParamsRequest{})

@@ -10,7 +10,7 @@ import (
 )
 
 func (s *TestSuite) RunTokenTransferTests() {
-	persistence := s.GetChainClient("test-core-1")
+	persistence := s.GetChainClient("test-core-2")
 	uxprt := persistence.MustGetChainDenom()
 
 	address, err := persistence.CreateRandWallet("test-transfer")

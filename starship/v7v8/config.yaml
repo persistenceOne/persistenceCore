@@ -5,7 +5,7 @@ chains:
     ports:
       rpc: 26557
       rest: 1313
-  - name: test-core-1
+  - name: test-core-2
     type: persistencecore
     numValidators: 1
     upgrade:
@@ -31,13 +31,13 @@ relayers:
     type: go-relayer
     replicas: 1
     chains:
-      - test-core-1
+      - test-core-2
       - test-gaia-1
   - name: persistence-gaia
     type: icq
     replicas: 1
     chains:
-      - test-core-1
+      - test-core-2
       - test-gaia-1
 
 registry:

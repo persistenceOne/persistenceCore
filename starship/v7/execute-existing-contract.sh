@@ -2,7 +2,7 @@
 set -o errexit -o nounset -o pipefail -eu
 
 CHAIN_BIN="persistenceCore"
-CHAIN_ID="test-core-1"
+CHAIN_ID="test-core-2"
 SHOW_KEY="persistenceCore keys show --keyring-backend test -a"
 
 CODE_ID=$($CHAIN_BIN q wasm list-code --chain-id $CHAIN_ID -o json | jq -r '.code_infos[-1].code_id')

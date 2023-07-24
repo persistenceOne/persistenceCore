@@ -2,6 +2,7 @@ package v8
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -197,9 +198,9 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 
 // getChainBondDenom returns expected bond denom based on chainID.
 func getChainBondDenom(chainID string) string {
-	if chainID == "core-1" {
+	if strings.HasPrefix(chainID, "core-") {
 		return BondDenom
-	} else if chainID == "test-core-" {
+	} else if strings.HasPrefix(chainID, "test-core-") {
 		return BondDenom
 	}
 

@@ -10,7 +10,7 @@ import (
 )
 
 func (s *TestSuite) RunLiquidstakeibcTests() {
-	persistence := s.GetChainClient("test-core-1")
+	persistence := s.GetChainClient("test-core-2")
 
 	s.VerifyMigratedState(persistence)
 }

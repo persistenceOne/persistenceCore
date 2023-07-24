@@ -17,7 +17,7 @@ import (
 )
 
 func (s *TestSuite) RunIBCTokenTransferTests() {
-	persistence := s.GetChainClient("test-core-1")
+	persistence := s.GetChainClient("test-core-2")
 	gaia := s.GetChainClient("test-gaia-1")
 	uxprt := persistence.MustGetChainDenom()
 	amt := 10000000    // 10 XPRTs

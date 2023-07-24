@@ -1,5 +1,5 @@
 chains:
-  - name: test-core-1
+  - name: test-core-2
     type: persistencecore
     numValidators: 2
     upgrade:
@@ -34,7 +34,7 @@ relayers:
     type: hermes
     replicas: 1
     chains:
-      - test-core-1
+      - test-core-2
       - test-gaia-1
 
 # :8080
