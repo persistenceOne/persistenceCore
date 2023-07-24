@@ -6,7 +6,7 @@ UPGRADE_NAME="${UPGRADE_NAME}"
 CHAIN_BIN="${CHAIN_BIN:=persistenceCore}"
 DENOM="${DENOM:=uxprt}"
 CHAIN_DATA_DIR="${CHAIN_DATA_DIR:=.persistenceCore}"
-CHAIN_ID="${CHAIN_ID:=test-core-1}"
+CHAIN_ID="${CHAIN_ID:=test-core-2}"
 
 set -o errexit -o nounset -o pipefail -eu
 

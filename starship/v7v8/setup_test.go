@@ -49,7 +49,7 @@ func (s *TestSuite) TestUpgrade() {
 func (s *TestSuite) VerifyValidatorCommissionRates() {
 	minRate := sdk.NewDecWithPrec(5, 2)
 	minMaxRate := sdk.NewDecWithPrec(1, 1)
-	client := s.GetChainClient("test-core-1").Client
+	client := s.GetChainClient("test-core-2").Client
 	vals, err := stakingtypes.NewQueryClient(client).Validators(context.Background(), &stakingtypes.QueryValidatorsRequest{})
 	s.Require().NoError(err)
 	for _, val := range vals.Validators {

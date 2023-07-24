@@ -2,7 +2,7 @@
 set -o errexit -o nounset -o pipefail -eu
 
 CHAIN_BIN="persistenceCore"
-CHAIN_ID="test-core-1"
+CHAIN_ID="test-core-2"
 SHOW_KEY="persistenceCore keys show --keyring-backend test -a"
 
 DIRNAME="$(dirname $(realpath ${BASH_SOURCE[0]}))"

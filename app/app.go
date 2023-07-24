@@ -321,9 +321,9 @@ func (app *Application) ChainID() string {
 func (app *Application) GetChainBondDenom() string {
 	chainID := app.ChainID()
 
-	if chainID == "core-1" {
+	if strings.HasPrefix(chainID, "core-") {
 		return BondDenom
-	} else if chainID == "test-core-1" {
+	} else if strings.HasPrefix(chainID, "test-core-") {
 		return BondDenom
 	}
 

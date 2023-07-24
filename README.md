@@ -136,7 +136,7 @@ persistenceCore version
 
 ## Test-nets
 
-* [test-core-1](https://github.com/persistenceOne/genesisTransactions/tree/master/test-core-1)
+* [test-core-2](https://github.com/persistenceOne/genesisTransactions/tree/master/test-core-2)
 
 ## Main-net
 

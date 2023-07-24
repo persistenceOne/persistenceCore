@@ -9,7 +9,7 @@ import (
 )
 
 func (s *TestSuite) Upgrade() {
-	persistence := s.GetChainClient("test-core-1")
+	persistence := s.GetChainClient("test-core-2")
 
 	currHeight, err := persistence.GetHeight()
 	s.Require().NoError(err)
