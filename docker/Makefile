@@ -23,6 +23,7 @@ _DOCKER_ARGS=\
 # Command for dockerization
 docker-build:
 	$(DOCKER) buildx build . \
+		--progress=plain \
 		$(DOCKER_BUILD_ARGS) \
 		-f docker/$(PROCESS)/$(DOCKER_FILE) \
 		-t $(DOCKER_IMAGE_NAME):$(DOCKER_TAG_NAME)
