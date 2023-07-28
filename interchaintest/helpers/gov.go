@@ -5,11 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
-	"time"
 
-	retry "github.com/avast/retry-go/v4"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/stretchr/testify/require"
 )
@@ -78,23 +75,4 @@ func QueryProposalTx(ctx context.Context, chainNode *cosmos.ChainNode, txHash st
 	tx.ProposalType, _ = tmAttributeValue(events, evtSubmitProp, "proposal_type")
 
 	return tx, nil
-}
-
-func getTxResponse(ctx context.Context, chainNode *cosmos.ChainNode, txHash string) (*sdk.TxResponse, error) {
-	// Retry because sometimes the tx is not committed to state yet.
-	var txResp *sdk.TxResponse
-
-	err := retry.Do(func() error {
-		var err error
-		txResp, err = authtx.QueryTx(chainNode.CliContext(), txHash)
-		return err
-	},
-		// retry for total of 3 seconds
-		retry.Attempts(15),
-		retry.Delay(200*time.Millisecond),
-		retry.DelayType(retry.FixedDelay),
-		retry.LastErrorOnly(true),
-		retry.Context(ctx),
-	)
-	return txResp, err
 }
