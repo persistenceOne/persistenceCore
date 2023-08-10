@@ -2,7 +2,6 @@ package interchaintest
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -117,9 +116,6 @@ func TestBondTokenize(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, tokenizeCoins.Amount.Int64(), sharesBalance, "shares balance must match tokenized amount")
 
-	validator = helpers.QueryValidator(t, ctx, chainNode, validators[0].OperatorAddress)
-	fmt.Printf("current validator state: BondShares: %s, LiquidShares: %s\n", validator.ValidatorBondShares, validator.LiquidShares)
-
 	// Try to tokenize more shares from first user, it will not work because of small bond
 	txHash, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
 		"staking", "tokenize-share", validators[0].OperatorAddress, tokenizeCoins.String(), firstUser.FormattedAddress(),
@@ -141,34 +137,9 @@ func TestBondTokenize(t *testing.T) {
 	require.NoError(t, err)
 
 	delegation = helpers.QueryDelegation(t, ctx, chainNode, secondUser.FormattedAddress(), validators[0].OperatorAddress)
-	fmt.Printf("current delegation state: Shares: %s, ValidatorBond: %v\n", delegation.Shares, delegation.ValidatorBond)
-
-	validator = helpers.QueryValidator(t, ctx, chainNode, validators[0].OperatorAddress)
-	fmt.Printf("current validator state: BondShares: %s, LiquidShares: %s\n", validator.ValidatorBondShares, validator.LiquidShares)
-
-	// Mark second user bond as validator bond, again (will update the bond value)
-	txHash, err = chainNode.ExecTx(ctx, secondUser.KeyName(),
-		"staking", "validator-bond", validators[0].OperatorAddress,
-		"--gas=500000",
-	)
-	require.NoError(t, err)
-
-	_, err = helpers.QueryTx(ctx, chainNode, txHash)
-	require.NoError(t, err)
-
-	fmt.Println("KAWABNGA! Second validator-bond Tx success")
-
-	delegation = helpers.QueryDelegation(t, ctx, chainNode, secondUser.FormattedAddress(), validators[0].OperatorAddress)
-	fmt.Printf("current delegation state: Shares: %s, ValidatorBond: %v\n", delegation.Shares, delegation.ValidatorBond)
-
-	validator = helpers.QueryValidator(t, ctx, chainNode, validators[0].OperatorAddress)
-	fmt.Printf("current validator state: BondShares: %s, LiquidShares: %s\n", validator.ValidatorBondShares, validator.LiquidShares)
-
-	// 	require.Equal(t,
-	// 	secondUserDelegationAmount.Int64(),
-	// 	validator.ValidatorBondShares.TruncateInt().Int64(),
-	// 	"validator bond shares must match bonded amount",
-	// )
+	secondUserDelegationCoinsDouble := sdk.NewDecFromInt(secondUserDelegationCoins.Amount).MulInt64(2)
+	require.Equal(t, secondUserDelegationCoinsDouble, delegation.Shares, "expected updated delegation")
+	require.True(t, delegation.ValidatorBond)
 
 	// Try to tokenize more shares from first user, it must work now
 	txHash, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
@@ -180,10 +151,11 @@ func TestBondTokenize(t *testing.T) {
 	_, err = helpers.QueryTx(ctx, chainNode, txHash)
 	require.NoError(t, err)
 
-	sharesBalance, err = chain.GetBalance(ctx, firstUser.FormattedAddress(), validators[0].OperatorAddress+"/1")
+	sharesBalance, err = chain.GetBalance(ctx, firstUser.FormattedAddress(), validators[0].OperatorAddress+"/2")
 	require.NoError(t, err)
-	require.Equal(t, tokenizeCoins.Amount.Int64()*2, sharesBalance, "shares balance must match tokenized amount (x2)")
+	require.Equal(t, tokenizeCoins.Amount.Int64(), sharesBalance, "shares balance must match tokenized amount")
 
 	validator = helpers.QueryValidator(t, ctx, chainNode, validators[0].OperatorAddress)
-	fmt.Printf("current validator state: BondShares: %s, LiquidShares: %s\n", validator.ValidatorBondShares, validator.LiquidShares)
+	doubleTokenizedAmount := sdk.NewDecFromInt(tokenizeCoins.Amount.MulRaw(2))
+	require.Equal(t, doubleTokenizedAmount, validator.LiquidShares, "validator's liquid shares amount must match tokenized amount x2")
 }

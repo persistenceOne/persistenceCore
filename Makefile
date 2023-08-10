@@ -276,7 +276,7 @@ ictest-pob: rm-testcache
 
 # Executes LSM tests
 ictest-lsm: rm-testcache
-	cd interchaintest && go test -race -v -run "(TestMultiTokenizeVote|TestTokenizeSendVote)" .
+	cd interchaintest && go test -race -v -run "(TestMultiTokenizeVote|TestTokenizeSendVote|TestBondTokenize)" .
 
 rm-testcache:
 	go clean -testcache
