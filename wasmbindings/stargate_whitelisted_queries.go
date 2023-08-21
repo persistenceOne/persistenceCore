@@ -7,6 +7,7 @@ import (
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
+	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
 )
 
 // StargateQueries is a map of stargate queries registered for the contract
@@ -15,6 +16,9 @@ var stargateWhitelistQueries sync.Map
 func init() {
 	// stargate queries available for the contract
 	setStargateWhitelistQuery("/persistence.oracle.v1beta1.Query/ExchangeRate", &types.QueryExchangeRateResponse{})
+	setStargateWhitelistQuery("/pstake.liquidstakeibc.v1beta1.Query/ExchangeRate", &liquidstakeibctypes.QueryExchangeRateResponse{})
+	setStargateWhitelistQuery("/pstake.liquidstakeibc.v1beta1.Query/HostChain", &liquidstakeibctypes.QueryExchangeRateResponse{})
+	setStargateWhitelistQuery("/pstake.liquidstakeibc.v1beta1.Query/HostChains", &liquidstakeibctypes.QueryExchangeRateResponse{})
 }
 
 // setStargateWhitelistQuery stores the stargate queries.
