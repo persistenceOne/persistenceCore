@@ -5,7 +5,7 @@ go 1.19
 require (
 	cosmossdk.io/api v0.3.1
 	cosmossdk.io/errors v1.0.0
-	cosmossdk.io/math v1.0.1
+	cosmossdk.io/math v1.1.2
 	cosmossdk.io/tools/rosetta v0.2.1
 	github.com/CosmWasm/wasmd v0.40.2
 	github.com/CosmWasm/wasmvm v1.2.4
@@ -17,7 +17,7 @@ require (
 	github.com/cosmos/ibc-go/v7 v7.1.0
 	github.com/gorilla/mux v1.8.0
 	github.com/persistenceOne/persistence-sdk/v2 v2.1.0
-	github.com/persistenceOne/pstake-native/v2 v2.2.0
+	github.com/persistenceOne/pstake-native/v2 v2.2.2-0.20230822154647-52ffa80d298c
 	github.com/prometheus/client_golang v1.15.0
 	github.com/rakyll/statik v0.1.7
 	github.com/skip-mev/pob v1.0.1
@@ -163,6 +163,7 @@ require (
 	golang.org/x/exp v0.0.0-20230515195305-f3d0a9c9a5cc // indirect
 	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/oauth2 v0.8.0 // indirect
+	golang.org/x/sync v0.2.0 // indirect
 	golang.org/x/sys v0.10.0 // indirect
 	golang.org/x/term v0.10.0 // indirect
 	golang.org/x/text v0.11.0 // indirect
@@ -172,7 +173,7 @@ require (
 	google.golang.org/genproto v0.0.0-20230706204954-ccb25ca9f130 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20230629202037-9506855d4529 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230711160842-782d3b101e98 // indirect
-	google.golang.org/grpc v1.56.2 // indirect
+	google.golang.org/grpc v1.57.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
