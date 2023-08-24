@@ -90,15 +90,14 @@ func CosmosChainUpgradeTest(
 	chains, err := cf.Chains(t.Name())
 	require.NoError(t, err)
 
-	// this also sets chain val in PreGenesis callback
 	chain := chains[0].(*cosmos.CosmosChain)
 
 	ic := interchaintest.NewInterchain().
 		AddChain(chain)
 
+	ctx := context.Background()
 	client, network := interchaintest.DockerSetup(t)
 
-	ctx := context.Background()
 	err = ic.Build(ctx, nil, interchaintest.InterchainBuildOptions{
 		TestName:         t.Name(),
 		Client:           client,
@@ -178,6 +177,7 @@ func CosmosChainUpgradeTest(
 	require.Equal(t, haltHeight, height, "height is not equal to halt height")
 
 	// bring down nodes to prepare for upgrade
+	t.Log("stopping node(s)")
 	err = chain.StopAllNodes(ctx)
 	require.NoError(t, err, "error stopping node(s)")
 
