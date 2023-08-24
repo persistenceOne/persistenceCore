@@ -49,7 +49,7 @@ func TestBondTokenize(t *testing.T) {
 
 	// Get list of validators
 	validators := helpers.QueryAllValidators(t, ctx, chainNode)
-	require.Len(t, validators, validatorsCount, "valudator returned must match count of validators created")
+	require.Len(t, validators, validatorsCount, "validator returned must match count of validators created")
 
 	// Delegate from first user
 	firstUserDelegationAmount := sdk.NewInt(1_000_000_000)
