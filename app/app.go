@@ -58,7 +58,7 @@ import (
 	"github.com/persistenceOne/persistenceCore/v8/app/keepers"
 	"github.com/persistenceOne/persistenceCore/v8/app/upgrades"
 	v8 "github.com/persistenceOne/persistenceCore/v8/app/upgrades/v8"
-	v8_1_0 "github.com/persistenceOne/persistenceCore/v8/app/upgrades/v8"
+	v8_1_0 "github.com/persistenceOne/persistenceCore/v8/app/upgrades/v8.1.0"
 )
 
 var (
