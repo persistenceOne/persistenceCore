@@ -261,7 +261,7 @@ ictest-pfm: rm-testcache
 
 # Executes a chain upgrade test via interchaintest
 ictest-upgrade: rm-testcache
-	cd interchaintest && go test -race -v -run TestBasicPersistenceUpgrade .
+	cd interchaintest && go test -race -v -run "(TestPersistenceUpgradeBasic|TestPersistenceUpgradeV45)" .
 
 # Executes a chain upgrade locally via interchaintest after compiling a local image as persistence:local
 ictest-upgrade-local: local-image ictest-upgrade

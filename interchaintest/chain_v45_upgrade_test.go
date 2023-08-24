@@ -15,16 +15,21 @@ import (
 	"go.uber.org/zap/zaptest"
 )
 
-func TestPersistenceUpgradeBasic(t *testing.T) {
+const (
+	haltHeightDelta    = uint64(10) // will propose upgrade this many blocks in the future
+	blocksAfterUpgrade = uint64(7)
+)
+
+func TestPersistenceUpgradeV45(t *testing.T) {
 	var (
 		chainName            = "persistence"
 		upgradeRepo          = PersistenceCoreImage.Repository
-		initialVersion       = "v8.0.0"
+		initialVersion       = "v7.0.4" // same as v7.0.3 but Docker image works
 		upgradeBranchVersion = PersistenceCoreImage.Version
-		upgradeName          = "v8.1.0"
+		upgradeName          = "v8"
 	)
 
-	CosmosChainUpgradeTest(
+	CosmosChainUpgradeTestV45(
 		t,
 		chainName,
 		upgradeRepo,
@@ -34,7 +39,7 @@ func TestPersistenceUpgradeBasic(t *testing.T) {
 	)
 }
 
-func CosmosChainUpgradeTest(
+func CosmosChainUpgradeTestV45(
 	t *testing.T,
 	chainName,
 	upgradeRepo,
@@ -50,6 +55,22 @@ func CosmosChainUpgradeTest(
 
 	t.Log(chainName, initialVersion, upgradeBranchVersion, upgradeRepo, upgradeName)
 
+	// SDK v0.45.x genesis params
+	genesisOverridesV45 := append([]cosmos.GenesisKV{
+		{
+			Key:   "app_state.gov.voting_params.voting_period",
+			Value: "10s",
+		},
+		{
+			Key:   "app_state.gov.deposit_params.max_deposit_period",
+			Value: "5s",
+		},
+		{
+			Key:   "app_state.gov.deposit_params.min_deposit.0.denom",
+			Value: helpers.PersistenceBondDenom,
+		},
+	})
+
 	cf := interchaintest.NewBuiltinChainFactory(
 		zaptest.NewLogger(t),
 		[]*interchaintest.ChainSpec{{
@@ -63,9 +84,8 @@ func CosmosChainUpgradeTest(
 					UidGid:     PersistenceCoreImage.UidGid,
 				}},
 
-				UsingNewGenesisCommand: true,
-				GasPrices:              fmt.Sprintf("0%s", helpers.PersistenceBondDenom),
-				ModifyGenesis:          cosmos.ModifyGenesis(defaultGenesisOverridesKV),
+				GasPrices:     fmt.Sprintf("0%s", helpers.PersistenceBondDenom),
+				ModifyGenesis: cosmos.ModifyGenesis(genesisOverridesV45),
 			}},
 		},
 	)

@@ -8,7 +8,7 @@ import (
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName = "v8-rc4"
+	UpgradeName = "v8.1.0"
 )
 
 var Upgrade = upgrades.Upgrade{
