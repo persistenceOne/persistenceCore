@@ -16,8 +16,8 @@ require (
 	github.com/cosmos/ibc-apps/modules/ibc-hooks/v7 v7.0.0-20230706221116-a1e480497c12
 	github.com/cosmos/ibc-go/v7 v7.1.0
 	github.com/gorilla/mux v1.8.0
-	github.com/persistenceOne/persistence-sdk/v2 v2.1.0
-	github.com/persistenceOne/pstake-native/v2 v2.2.0
+	github.com/persistenceOne/persistence-sdk/v2 v2.1.1
+	github.com/persistenceOne/pstake-native/v2 v2.2.3
 	github.com/prometheus/client_golang v1.15.0
 	github.com/rakyll/statik v0.1.7
 	github.com/skip-mev/pob v1.0.1
@@ -169,6 +169,7 @@ require (
 	golang.org/x/exp v0.0.0-20230711153332-06a737ee72cb // indirect
 	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/oauth2 v0.8.0 // indirect
+	golang.org/x/sync v0.2.0 // indirect
 	golang.org/x/sys v0.11.0 // indirect
 	golang.org/x/term v0.10.0 // indirect
 	golang.org/x/text v0.12.0 // indirect
@@ -178,7 +179,7 @@ require (
 	google.golang.org/genproto v0.0.0-20230706204954-ccb25ca9f130 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20230629202037-9506855d4529 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230711160842-782d3b101e98 // indirect
-	google.golang.org/grpc v1.56.2 // indirect
+	google.golang.org/grpc v1.57.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
@@ -200,10 +201,10 @@ replace (
 
 // use persistence's forks with LSM implemented
 replace (
-	github.com/CosmWasm/wasmd => github.com/persistenceOne/wasmd v0.40.2-lsm2
-	github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk v0.47.3-lsm3.0.20230824153621-68d97a067d5d
-	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 => github.com/persistenceOne/ibc-apps/middleware/packet-forward-middleware/v7 v7.0.0-20230724145737-357bc7e720fb
-	github.com/cosmos/ibc-apps/modules/ibc-hooks/v7 => github.com/persistenceOne/ibc-apps/modules/ibc-hooks/v7 v7.0.0-20230724145737-357bc7e720fb
-	github.com/cosmos/ibc-go/v7 => github.com/persistenceOne/ibc-go/v7 v7.2.0-lsm2
-	github.com/skip-mev/pob => github.com/persistenceOne/pob v1.0.3-lsm2
+	github.com/CosmWasm/wasmd => github.com/persistenceOne/wasmd v0.40.2-lsm3
+	github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk v0.47.3-lsm4
+	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 => github.com/persistenceOne/ibc-apps/middleware/packet-forward-middleware/v7 v7.0.0-20230824193127-59068e7c7cfe
+	github.com/cosmos/ibc-apps/modules/ibc-hooks/v7 => github.com/persistenceOne/ibc-apps/modules/ibc-hooks/v7 v7.0.0-20230824193127-59068e7c7cfe
+	github.com/cosmos/ibc-go/v7 => github.com/persistenceOne/ibc-go/v7 v7.2.0-lsm3
+	github.com/skip-mev/pob => github.com/persistenceOne/pob v1.0.3-lsm3
 )

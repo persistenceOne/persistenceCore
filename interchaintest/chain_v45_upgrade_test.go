@@ -6,11 +6,6 @@ import (
 	"testing"
 	"time"
 
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/persistenceOne/persistenceCore/v8/interchaintest/helpers"
 	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
@@ -20,16 +15,21 @@ import (
 	"go.uber.org/zap/zaptest"
 )
 
-func TestPersistenceUpgradeBasic(t *testing.T) {
+const (
+	haltHeightDelta    = uint64(10) // will propose upgrade this many blocks in the future
+	blocksAfterUpgrade = uint64(7)
+)
+
+func TestPersistenceUpgradeV45(t *testing.T) {
 	var (
 		chainName            = "persistence"
 		upgradeRepo          = PersistenceCoreImage.Repository
-		initialVersion       = "v8.0.0"
+		initialVersion       = "v7.0.4" // same as v7.0.3 but Docker image works
 		upgradeBranchVersion = PersistenceCoreImage.Version
-		upgradeName          = "v8.1.0"
+		upgradeName          = "v8"
 	)
 
-	CosmosChainUpgradeTest(
+	CosmosChainUpgradeTestV45(
 		t,
 		chainName,
 		upgradeRepo,
@@ -39,7 +39,7 @@ func TestPersistenceUpgradeBasic(t *testing.T) {
 	)
 }
 
-func CosmosChainUpgradeTest(
+func CosmosChainUpgradeTestV45(
 	t *testing.T,
 	chainName,
 	upgradeRepo,
@@ -55,36 +55,39 @@ func CosmosChainUpgradeTest(
 
 	t.Log(chainName, initialVersion, upgradeBranchVersion, upgradeRepo, upgradeName)
 
-	// override SDK beck prefixes with chain specific
-	helpers.SetConfig()
-
-	chainCfg := ibc.ChainConfig{
-		Type:         "cosmos",
-		Name:         "persistence",
-		ChainID:      "ictest-core-1",
-		Bin:          "persistenceCore",
-		Bech32Prefix: "persistence",
-
-		Images: []ibc.DockerImage{{
-			Repository: PersistenceE2ERepo,
-			Version:    initialVersion,
-			UidGid:     PersistenceCoreImage.UidGid,
-		}},
-
-		UsingNewGenesisCommand: true,
-		GasPrices:              fmt.Sprintf("0%s", helpers.PersistenceBondDenom),
-		EncodingConfig:         persistenceEncoding(),
-		ModifyGenesis:          cosmos.ModifyGenesis(defaultGenesisOverridesKV),
-	}
+	// SDK v0.45.x genesis params
+	genesisOverridesV45 := append([]cosmos.GenesisKV{
+		{
+			Key:   "app_state.gov.voting_params.voting_period",
+			Value: "10s",
+		},
+		{
+			Key:   "app_state.gov.deposit_params.max_deposit_period",
+			Value: "5s",
+		},
+		{
+			Key:   "app_state.gov.deposit_params.min_deposit.0.denom",
+			Value: helpers.PersistenceBondDenom,
+		},
+	})
 
 	cf := interchaintest.NewBuiltinChainFactory(
 		zaptest.NewLogger(t),
 		[]*interchaintest.ChainSpec{{
-			Name:        chainName,
-			ChainName:   chainName,
-			Version:     initialVersion,
-			ChainConfig: chainCfg,
-		}},
+			Name:      chainName,
+			ChainName: chainName,
+			Version:   initialVersion,
+			ChainConfig: ibc.ChainConfig{
+				Images: []ibc.DockerImage{{
+					Repository: PersistenceE2ERepo,
+					Version:    initialVersion,
+					UidGid:     PersistenceCoreImage.UidGid,
+				}},
+
+				GasPrices:     fmt.Sprintf("0%s", helpers.PersistenceBondDenom),
+				ModifyGenesis: cosmos.ModifyGenesis(genesisOverridesV45),
+			}},
+		},
 	)
 
 	chains, err := cf.Chains(t.Name())
@@ -116,50 +119,28 @@ func CosmosChainUpgradeTest(
 
 	// TODO: pre-check state migrations
 
+	// upgrade
 	height, err := chain.Height(ctx)
 	require.NoError(t, err, "error fetching height before submit upgrade proposal")
 
 	haltHeight := height + haltHeightDelta
 
-	msgSoftwareUpgrade, err := codectypes.NewAnyWithValue(&upgradetypes.MsgSoftwareUpgrade{
-		Authority: authtypes.NewModuleAddress("gov").String(),
-		Plan: upgradetypes.Plan{
-			Name:   upgradeName,
-			Height: int64(haltHeight),
-			Info:   upgradeName + " chain upgrade",
-		},
-	})
+	proposal := cosmos.SoftwareUpgradeProposal{
+		Deposit:     "500000000" + chain.Config().Denom, // greater than min deposit
+		Title:       "Chain Upgrade 1",
+		Name:        upgradeName,
+		Description: "First chain software upgrade",
+		Height:      haltHeight,
+	}
 
-	require.NoError(t, err, "failed to pack upgradetypes.SoftwareUpgradeProposal")
-
-	broadcaster := cosmos.NewBroadcaster(t, chain)
-	txResp, err := cosmos.BroadcastTx(
-		ctx,
-		broadcaster,
-		chainUser,
-		&govv1.MsgSubmitProposal{
-			InitialDeposit: []sdk.Coin{sdk.NewCoin(chain.Config().Denom, sdk.NewInt(500_000_000))},
-			Proposer:       chainUser.FormattedAddress(),
-			Title:          "Chain Upgrade 1",
-			Summary:        "First chain software upgrade",
-			Messages:       []*codectypes.Any{msgSoftwareUpgrade},
-		},
-	)
-	require.NoError(t, err, "error submitting software upgrade tx")
-
-	upgradeTx, err := helpers.QueryProposalTx(context.Background(), chain.Nodes()[0], txResp.TxHash)
-	require.NoError(t, err, "error checking software upgrade tx")
+	upgradeTx, err := chain.UpgradeProposal(ctx, chainUser.KeyName(), proposal)
+	require.NoError(t, err, "error submitting software upgrade proposal tx")
 
 	err = chain.VoteOnProposalAllValidators(ctx, upgradeTx.ProposalID, cosmos.ProposalVoteYes)
 	require.NoError(t, err, "failed to submit votes")
 
 	_, err = cosmos.PollForProposalStatus(ctx, chain, height, height+haltHeightDelta, upgradeTx.ProposalID, cosmos.ProposalStatusPassed)
 	require.NoError(t, err, "proposal status did not change to passed in expected number of blocks")
-
-	stdout, stderr, err := chain.Validators[0].ExecQuery(ctx, "upgrade", "plan")
-	require.NoError(t, err, "error querying upgrade plan")
-
-	t.Log("Upgrade", "plan_stdout:", string(stdout), "plan_stderr:", string(stderr))
 
 	timeoutCtx, timeoutCtxCancel := context.WithTimeout(ctx, time.Second*45)
 	defer timeoutCtxCancel()
@@ -168,7 +149,7 @@ func CosmosChainUpgradeTest(
 	require.NoError(t, err, "error fetching height before upgrade")
 
 	// this should timeout due to chain halt at upgrade height.
-	_ = testutil.WaitForBlocks(timeoutCtx, int(haltHeight-height)+1, chain)
+	_ = testutil.WaitForBlocks(timeoutCtx, int(haltHeight-height), chain)
 
 	height, err = chain.Height(ctx)
 	require.NoError(t, err, "error fetching height after chain should have halted")
