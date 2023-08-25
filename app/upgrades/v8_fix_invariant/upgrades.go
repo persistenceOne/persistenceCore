@@ -28,10 +28,8 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 
 		dels := args.Keepers.StakingKeeper.GetAllDelegations(ctx)
 		for _, del := range dels {
-			if del.ValidatorAddress == ValidatorAddress || del.DelegatorAddress == DelegatorAddress {
+			if del.ValidatorAddress == ValidatorAddress {
 				args.Keepers.StakingKeeper.RemoveDelegation(ctx, del)
-				validator, _ := args.Keepers.StakingKeeper.GetValidator(ctx, del.GetValidatorAddr())
-				args.Keepers.StakingKeeper.RemoveValidatorTokensAndShares(ctx, validator, del.Shares)
 			}
 		}
 
