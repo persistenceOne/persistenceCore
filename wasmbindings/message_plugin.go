@@ -47,9 +47,9 @@ func (m *CustomMessenger) DispatchMsg(ctx sdk.Context, contractAddr sdk.AccAddre
 }
 
 type PstakeMsg struct {
-	LiquidStake    *liquidstakeibctypes.MsgLiquidStake
-	RedeemStake    *liquidstakeibctypes.MsgRedeem
-	LiquidStakeLSM *liquidstakeibctypes.MsgLiquidStakeLSM
+	LiquidStake    *liquidstakeibctypes.MsgLiquidStake    `json:"msg_liquid_stake,omitempty"`
+	RedeemStake    *liquidstakeibctypes.MsgRedeem         `json:"msg_redeem_stake,omitempty"`
+	LiquidStakeLSM *liquidstakeibctypes.MsgLiquidStakeLSM `json:"msg_liquid_stake_lsm,omitempty"`
 }
 
 func (msg PstakeMsg) Process(liquidStakeIBCKeeper *liquidstakeibckeeper.Keeper, ctx sdk.Context, contractAddr sdk.AccAddress) ([]sdk.Event, [][]byte, error) {
