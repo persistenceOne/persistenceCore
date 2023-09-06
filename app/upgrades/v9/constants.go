@@ -8,7 +8,7 @@ import (
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName = "v9.0.0"
+	UpgradeName = "v9"
 
 	LSCosmosStoreKey = "lscosmos"
 )
