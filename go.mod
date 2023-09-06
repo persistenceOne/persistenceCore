@@ -1,6 +1,6 @@
 module github.com/persistenceOne/persistenceCore/v9
 
-go 1.19
+go 1.21
 
 require (
 	cosmossdk.io/api v0.3.1
