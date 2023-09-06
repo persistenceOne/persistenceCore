@@ -19,7 +19,7 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 
-	"github.com/persistenceOne/persistenceCore/v8/app"
+	"github.com/persistenceOne/persistenceCore/v9/app"
 )
 
 func TestTestnetCmd(t *testing.T) {

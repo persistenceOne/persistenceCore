@@ -13,7 +13,7 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 
-	"github.com/persistenceOne/persistenceCore/v8/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v9/interchaintest/helpers"
 )
 
 // TestSkipMevAuction tests that x/builder corretly wired and allows to make auctions to prioritise txns

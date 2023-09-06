@@ -14,11 +14,11 @@ import (
 	exported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	ibctmmigrations "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint/migrations"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
-	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
+	//lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
 
-	"github.com/persistenceOne/persistenceCore/v8/app/keepers"
-	"github.com/persistenceOne/persistenceCore/v8/app/upgrades"
+	"github.com/persistenceOne/persistenceCore/v9/app/keepers"
+	"github.com/persistenceOne/persistenceCore/v9/app/upgrades"
 )
 
 func setInitialMinCommissionRate(ctx sdk.Context, keepers *keepers.AppKeepers) error {
@@ -116,7 +116,7 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 			args.Codec,
 			args.Keepers.GetKey(capabilitytypes.StoreKey),
 			args.Keepers.CapabilityKeeper,
-			lscosmostypes.ModuleName,
+			"lscosmos", //lscosmostypes.ModuleName,
 		)
 		if err != nil {
 			return nil, err
@@ -156,13 +156,13 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 		}
 		ctx.Logger().Info(fmt.Sprintf("[MM] post migrate version map: %v", newVersionMap))
 
-		enabled := args.Keepers.LSCosmosKeeper.GetModuleState(ctx)
-		if enabled {
-			ctx.Logger().Info("migrating x/lscsomos module")
-			if err = args.Keepers.LSCosmosKeeper.Migrate(ctx); err != nil {
-				return nil, err
-			}
-		}
+		//enabled := args.Keepers.LSCosmosKeeper.GetModuleState(ctx)
+		//if enabled {
+		//	ctx.Logger().Info("migrating x/lscsomos module")
+		//	if err = args.Keepers.LSCosmosKeeper.Migrate(ctx); err != nil {
+		//		return nil, err
+		//	}
+		//}
 
 		ctx.Logger().Info("setting x/staking min commission rate to 5%")
 		if err = setInitialMinCommissionRate(ctx, args.Keepers); err != nil {

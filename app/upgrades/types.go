@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
-	"github.com/persistenceOne/persistenceCore/v8/app/keepers"
+	"github.com/persistenceOne/persistenceCore/v9/app/keepers"
 )
 
 type UpgradeHandlerArgs struct {

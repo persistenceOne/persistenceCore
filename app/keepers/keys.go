@@ -32,7 +32,6 @@ import (
 	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/types"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
-	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
 )
 
@@ -62,7 +61,6 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 		icahosttypes.StoreKey,
 		interchainquerytypes.StoreKey,
 		liquidstakeibctypes.StoreKey,
-		lscosmostypes.StoreKey,
 		minttypes.StoreKey,
 		oracletypes.StoreKey,
 		paramstypes.StoreKey,
@@ -77,7 +75,7 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 	appKeepers.tkeys = sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 
 	// MemKeys are for information that is stored only in RAM.
-	appKeepers.memKeys = sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, lscosmostypes.MemStoreKey)
+	appKeepers.memKeys = sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
 }
 
 func (appKeepers *AppKeepers) GetKVStoreKey() map[string]*storetypes.KVStoreKey {

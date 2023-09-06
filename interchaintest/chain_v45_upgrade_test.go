@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/persistenceOne/persistenceCore/v8/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v9/interchaintest/helpers"
 	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"

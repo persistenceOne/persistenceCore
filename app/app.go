@@ -55,15 +55,14 @@ import (
 	pobabci "github.com/skip-mev/pob/abci"
 	"github.com/skip-mev/pob/mempool"
 
-	"github.com/persistenceOne/persistenceCore/v8/app/keepers"
-	"github.com/persistenceOne/persistenceCore/v8/app/upgrades"
-	v8 "github.com/persistenceOne/persistenceCore/v8/app/upgrades/v8"
-	v8_1_0 "github.com/persistenceOne/persistenceCore/v8/app/upgrades/v8.1.0"
+	"github.com/persistenceOne/persistenceCore/v9/app/keepers"
+	"github.com/persistenceOne/persistenceCore/v9/app/upgrades"
+	v9 "github.com/persistenceOne/persistenceCore/v9/app/upgrades/v9"
 )
 
 var (
 	DefaultNodeHome string
-	Upgrades        = []upgrades.Upgrade{v8.Upgrade, v8_1_0.Upgrade}
+	Upgrades        = []upgrades.Upgrade{v9.Upgrade}
 	ModuleBasics    = module.NewBasicManager(keepers.AppModuleBasics...)
 )
 

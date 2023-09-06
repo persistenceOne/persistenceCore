@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/persistenceOne/persistenceCore/v8/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v9/interchaintest/helpers"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 

@@ -25,6 +25,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
+	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7"
 	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
 	ibcfee "github.com/cosmos/ibc-go/v7/modules/apps/29-fee"
 	"github.com/cosmos/ibc-go/v7/modules/apps/transfer"
@@ -33,14 +35,11 @@ import (
 	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 	"github.com/persistenceOne/persistence-sdk/v2/x/epochs"
 	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
-	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7"
 	"github.com/persistenceOne/persistence-sdk/v2/x/ibchooker"
 	"github.com/persistenceOne/persistence-sdk/v2/x/interchainquery"
 	"github.com/persistenceOne/persistence-sdk/v2/x/oracle"
 	"github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc"
-	"github.com/persistenceOne/pstake-native/v2/x/lscosmos"
 	buildermodule "github.com/skip-mev/pob/x/builder"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
 )
 
 // AppModuleBasics defines the module BasicManager is in charge of setting up basic,
@@ -80,7 +79,6 @@ var AppModuleBasics = []module.AppModuleBasic{
 	epochs.AppModuleBasic{},
 	interchainquery.AppModuleBasic{},
 	ibchooker.AppModuleBasic{},
-	lscosmos.AppModuleBasic{},
 	ibcfee.AppModuleBasic{},
 	oracle.AppModuleBasic{},
 	liquidstakeibc.AppModuleBasic{},
