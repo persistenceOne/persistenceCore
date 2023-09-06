@@ -1,4 +1,4 @@
-module github.com/persistenceOne/persistenceCore/v8
+module github.com/persistenceOne/persistenceCore/v9
 
 go 1.19
 
@@ -17,7 +17,7 @@ require (
 	github.com/cosmos/ibc-go/v7 v7.1.0
 	github.com/gorilla/mux v1.8.0
 	github.com/persistenceOne/persistence-sdk/v2 v2.1.1
-	github.com/persistenceOne/pstake-native/v2 v2.2.3
+	github.com/persistenceOne/pstake-native/v2 v2.3.0
 	github.com/prometheus/client_golang v1.15.0
 	github.com/rakyll/statik v0.1.7
 	github.com/skip-mev/pob v1.0.1

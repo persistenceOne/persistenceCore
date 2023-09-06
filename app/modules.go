@@ -59,11 +59,10 @@ import (
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
 	"github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc"
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
-	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 	"github.com/skip-mev/pob/x/builder"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
 
-	appparams "github.com/persistenceOne/persistenceCore/v8/app/params"
+	appparams "github.com/persistenceOne/persistenceCore/v9/app/params"
 )
 
 var ModuleAccountPermissions = map[string][]string{
@@ -77,12 +76,6 @@ var ModuleAccountPermissions = map[string][]string{
 	ibctransfertypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
 	ibcfeetypes.ModuleName:                        nil,
 	wasm.ModuleName:                               {authtypes.Burner},
-	lscosmostypes.ModuleName:                      {authtypes.Minter, authtypes.Burner},
-	lscosmostypes.DepositModuleAccount:            nil,
-	lscosmostypes.DelegationModuleAccount:         nil,
-	lscosmostypes.RewardModuleAccount:             nil,
-	lscosmostypes.UndelegationModuleAccount:       nil,
-	lscosmostypes.RewardBoosterModuleAccount:      nil,
 	oracletypes.ModuleName:                        nil,
 	liquidstakeibctypes.ModuleName:                {authtypes.Minter, authtypes.Burner},
 	liquidstakeibctypes.DepositModuleAccount:      nil,
@@ -91,8 +84,6 @@ var ModuleAccountPermissions = map[string][]string{
 }
 
 var receiveAllowedMAcc = map[string]bool{
-	lscosmostypes.UndelegationModuleAccount:       true,
-	lscosmostypes.DelegationModuleAccount:         true,
 	liquidstakeibctypes.DepositModuleAccount:      true,
 	liquidstakeibctypes.UndelegationModuleAccount: true,
 }
@@ -135,7 +126,6 @@ func appModules(
 		wasm.NewAppModule(appCodec, app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasm.ModuleName)),
 		epochs.NewAppModule(*app.EpochsKeeper),
 		app.InterchainQueryModule,
-		app.LSCosmosModule,
 		liquidstakeibc.NewAppModule(*app.LiquidStakeIBCKeeper),
 		oracle.NewAppModule(appCodec, *app.OracleKeeper, app.AccountKeeper, app.BankKeeper),
 		builder.NewAppModule(appCodec, *app.BuilderKeeper),
@@ -189,7 +179,6 @@ func orderBeginBlockers() []string {
 		interchainquerytypes.ModuleName,
 		liquidstakeibctypes.ModuleName,
 		oracletypes.ModuleName,
-		lscosmostypes.ModuleName,
 	}
 }
 
@@ -226,7 +215,6 @@ func orderEndBlockers() []string {
 		interchainquerytypes.ModuleName,
 		liquidstakeibctypes.ModuleName,
 		oracletypes.ModuleName,
-		lscosmostypes.ModuleName,
 		buildertypes.ModuleName,
 	}
 }
@@ -270,7 +258,6 @@ func orderInitGenesis() []string {
 		interchainquerytypes.ModuleName,
 		liquidstakeibctypes.ModuleName,
 		oracletypes.ModuleName,
-		lscosmostypes.ModuleName,
 		buildertypes.ModuleName,
 	}
 }

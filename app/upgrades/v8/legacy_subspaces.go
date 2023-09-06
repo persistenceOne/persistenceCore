@@ -23,7 +23,6 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
-	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 )
 
 func getLegacySubspaces(paramsKeeper *paramskeeper.Keeper) paramstypes.Subspace {
@@ -59,7 +58,6 @@ func getLegacySubspaces(paramsKeeper *paramskeeper.Keeper) paramstypes.Subspace 
 			ibctransfertypes.ModuleName,
 			icacontrollertypes.SubModuleName,
 			icahosttypes.SubModuleName,
-			lscosmostypes.ModuleName,
 			oracletypes.ModuleName,
 			packetforwardtypes.ModuleName:
 			continue

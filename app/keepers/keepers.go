@@ -82,13 +82,10 @@ import (
 	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/types"
 	oraclekeeper "github.com/persistenceOne/persistence-sdk/v2/x/oracle/keeper"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
-	"github.com/persistenceOne/persistenceCore/v8/wasmbindings"
+	"github.com/persistenceOne/persistenceCore/v9/wasmbindings"
 	"github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc"
 	liquidstakeibckeeper "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/keeper"
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
-	"github.com/persistenceOne/pstake-native/v2/x/lscosmos"
-	lscosmoskeeper "github.com/persistenceOne/pstake-native/v2/x/lscosmos/keeper"
-	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
 
@@ -125,7 +122,6 @@ type AppKeepers struct {
 	EpochsKeeper          *epochskeeper.Keeper
 	OracleKeeper          *oraclekeeper.Keeper
 	ICAControllerKeeper   *icacontrollerkeeper.Keeper
-	LSCosmosKeeper        *lscosmoskeeper.Keeper
 	InterchainQueryKeeper *interchainquerykeeper.Keeper
 	TransferHooksKeeper   *ibchookerkeeper.Keeper
 	LiquidStakeIBCKeeper  *liquidstakeibckeeper.Keeper
@@ -137,7 +133,6 @@ type AppKeepers struct {
 	// Modules
 	TransferModule             ibctransfer.AppModule
 	InterchainQueryModule      interchainquery.AppModule
-	LSCosmosModule             lscosmos.AppModule
 	IBCTransferHooksMiddleware ibchooker.AppModule
 
 	// IBC hooks
@@ -201,7 +196,6 @@ func NewAppKeeper(
 	appKeepers.ScopedTransferKeeper = appKeepers.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
 	appKeepers.ScopedWasmKeeper = appKeepers.CapabilityKeeper.ScopeToModule(wasm.ModuleName)
 	appKeepers.ScopedICAControllerKeeper = appKeepers.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
-	appKeepers.ScopedLSCosmosKeeper = appKeepers.CapabilityKeeper.ScopeToModule(lscosmostypes.ModuleName)
 	appKeepers.CapabilityKeeper.Seal()
 
 	accountKeeper := authkeeper.NewAccountKeeper(
@@ -430,6 +424,7 @@ func NewAppKeeper(
 		appKeepers.EpochsKeeper,
 		appKeepers.ICAControllerKeeper,
 		appKeepers.IBCKeeper,
+		appKeepers.TransferKeeper,
 		appKeepers.InterchainQueryKeeper,
 		appKeepers.GetSubspace(liquidstakeibctypes.ModuleName),
 		bApp.MsgServiceRouter(),
@@ -443,27 +438,6 @@ func NewAppKeeper(
 	}
 
 	liquidStakeIBCModule := liquidstakeibc.NewIBCModule(*appKeepers.LiquidStakeIBCKeeper)
-
-	lsCosmosKeeper := lscosmoskeeper.NewKeeper(
-		appCodec,
-		appKeepers.keys[lscosmostypes.StoreKey],
-		appKeepers.memKeys[lscosmostypes.MemStoreKey],
-		appKeepers.GetSubspace(lscosmostypes.ModuleName),
-		appKeepers.BankKeeper,
-		appKeepers.AccountKeeper,
-		appKeepers.EpochsKeeper,
-		appKeepers.IBCKeeper.ChannelKeeper,
-		appKeepers.IBCKeeper.ChannelKeeper,
-		&appKeepers.IBCKeeper.PortKeeper,
-		appKeepers.TransferKeeper,
-		appKeepers.ICAControllerKeeper,
-		appKeepers.InterchainQueryKeeper,
-		appKeepers.LiquidStakeIBCKeeper,
-		appKeepers.ScopedLSCosmosKeeper,
-		bApp.MsgServiceRouter(),
-	)
-	appKeepers.LSCosmosKeeper = &lsCosmosKeeper
-	appKeepers.LSCosmosModule = lscosmos.NewAppModule(appCodec, liquidStakeIBCModule, *appKeepers.LSCosmosKeeper, appKeepers.AccountKeeper, appKeepers.BankKeeper)
 
 	appKeepers.EpochsKeeper.SetHooks(
 		epochstypes.NewMultiEpochHooks(
@@ -637,7 +611,6 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(icahosttypes.SubModuleName)
 	paramsKeeper.Subspace(wasm.ModuleName)
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
-	paramsKeeper.Subspace(lscosmostypes.ModuleName)
 	paramsKeeper.Subspace(oracletypes.ModuleName)
 	paramsKeeper.Subspace(packetforwardtypes.ModuleName)
 

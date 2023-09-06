@@ -1,4 +1,4 @@
-package v7
+package v9
 
 import (
 	store "github.com/cosmos/cosmos-sdk/store/types"
@@ -8,13 +8,16 @@ import (
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName = "v7"
+	UpgradeName = "v9.0.0"
+
+	LSCosmosStoreKey = "lscosmos"
 )
 
 var Upgrade = upgrades.Upgrade{
 	UpgradeName:          UpgradeName,
 	CreateUpgradeHandler: CreateUpgradeHandler,
 	StoreUpgrades: store.StoreUpgrades{
-		Added: []string{},
+		Added:   []string{},
+		Deleted: []string{LSCosmosStoreKey},
 	},
 }

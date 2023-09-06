@@ -33,8 +33,8 @@ import (
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 
-	"github.com/persistenceOne/persistenceCore/v8/app"
-	"github.com/persistenceOne/persistenceCore/v8/app/params"
+	"github.com/persistenceOne/persistenceCore/v9/app"
+	"github.com/persistenceOne/persistenceCore/v9/app/params"
 )
 
 const flagInvalidCheckPeriod = "invalid-check-period"
