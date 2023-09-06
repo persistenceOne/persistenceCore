@@ -20,13 +20,18 @@ import (
 	"go.uber.org/zap/zaptest"
 )
 
+const (
+	haltHeightDelta    = uint64(10) // will propose upgrade this many blocks in the future
+	blocksAfterUpgrade = uint64(7)
+)
+
 func TestPersistenceUpgradeBasic(t *testing.T) {
 	var (
 		chainName            = "persistence"
 		upgradeRepo          = PersistenceCoreImage.Repository
-		initialVersion       = "v8.0.0"
+		initialVersion       = "v8.1.0"
 		upgradeBranchVersion = PersistenceCoreImage.Version
-		upgradeName          = "v8.1.0"
+		upgradeName          = "v9"
 	)
 
 	CosmosChainUpgradeTest(
