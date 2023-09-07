@@ -2,6 +2,7 @@ package v9
 
 import (
 	store "github.com/cosmos/cosmos-sdk/store/types"
+	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 
 	"github.com/persistenceOne/persistenceCore/v9/app/upgrades"
 )
@@ -9,8 +10,6 @@ import (
 const (
 	// UpgradeName defines the on-chain upgrade name.
 	UpgradeName = "v9"
-
-	LSCosmosStoreKey = "lscosmos"
 )
 
 var Upgrade = upgrades.Upgrade{
@@ -18,6 +17,6 @@ var Upgrade = upgrades.Upgrade{
 	CreateUpgradeHandler: CreateUpgradeHandler,
 	StoreUpgrades: store.StoreUpgrades{
 		Added:   []string{},
-		Deleted: []string{LSCosmosStoreKey},
+		Deleted: []string{lscosmostypes.StoreKey},
 	},
 }

@@ -39,6 +39,7 @@ import (
 	"github.com/persistenceOne/persistence-sdk/v2/x/interchainquery"
 	"github.com/persistenceOne/persistence-sdk/v2/x/oracle"
 	"github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc"
+	"github.com/persistenceOne/pstake-native/v2/x/lscosmos"
 	buildermodule "github.com/skip-mev/pob/x/builder"
 )
 
@@ -81,6 +82,7 @@ var AppModuleBasics = []module.AppModuleBasic{
 	ibchooker.AppModuleBasic{},
 	ibcfee.AppModuleBasic{},
 	oracle.AppModuleBasic{},
+	lscosmos.AppModuleBasic{},
 	liquidstakeibc.AppModuleBasic{},
 	consensus.AppModuleBasic{},
 	groupmodule.AppModuleBasic{},
