@@ -14,7 +14,7 @@ import (
 	exported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	ibctmmigrations "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint/migrations"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
-	//lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
+	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
 
 	"github.com/persistenceOne/persistenceCore/v9/app/keepers"
@@ -116,7 +116,7 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 			args.Codec,
 			args.Keepers.GetKey(capabilitytypes.StoreKey),
 			args.Keepers.CapabilityKeeper,
-			"lscosmos", //lscosmostypes.ModuleName,
+			lscosmostypes.ModuleName,
 		)
 		if err != nil {
 			return nil, err
