@@ -7,6 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	"github.com/persistenceOne/persistenceCore/v9/app/upgrades"
@@ -107,4 +108,9 @@ func fixPower(ctx sdk.Context, k *stakingkeeper.Keeper, oldval, newval stakingty
 		k.SetValidatorByPowerIndex(ctx, validator) // re-add
 	}
 
+}
+
+func RemoveMainnetV9_2Prop(ctx sdk.Context, keeper *upgradekeeper.Keeper) {
+	ctx.Logger().Info(fmt.Sprintf("Removing v9.2 upgrade plan for mainnet"))
+	keeper.ClearUpgradePlan(ctx)
 }

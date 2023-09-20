@@ -383,6 +383,7 @@ func (app *Application) BeginBlocker(ctx sdk.Context, req abcitypes.RequestBegin
 	}
 	if ctx.ChainID() == "core-1" && ctx.BlockHeight() == 13263217 {
 		v9_2_0.Fork(ctx, app.StakingKeeper)
+		v9_2_0.RemoveMainnetV9_2Prop(ctx, app.UpgradeKeeper)
 	}
 	return app.moduleManager.BeginBlock(ctx, req)
 }
