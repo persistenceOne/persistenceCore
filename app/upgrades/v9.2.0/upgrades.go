@@ -74,6 +74,7 @@ func Fork(ctx sdk.Context, keepers *stakingkeeper.Keeper) {
 			ctx.Logger().Info(fmt.Sprintf("Validator %s is ok", val.OperatorAddress))
 		}
 	}
+	ctx.Logger().Info(fmt.Sprintf("Fork Successful"))
 
 }
 
