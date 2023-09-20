@@ -248,7 +248,6 @@ func orderInitGenesis() []string {
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
 		vestingtypes.ModuleName,
-		consensusparamtypes.ModuleName,
 		halving.ModuleName,
 		ibchookstypes.ModuleName,
 		packetforwardtypes.ModuleName,
