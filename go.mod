@@ -213,6 +213,6 @@ replace (
 
 // firehose support
 replace (
-	github.com/cometbft/cometbft => github.com/persistenceOne/cometbft v0.37.2-fh
+	github.com/cometbft/cometbft => github.com/persistenceOne/cometbft v0.37.2-fh.2
 	github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk v0.47.3-lsm4-fh
 )

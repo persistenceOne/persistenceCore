@@ -1010,8 +1010,8 @@ github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/9
 github.com/pelletier/go-toml/v2 v2.0.8 h1:0ctb6s9mE31h0/lhu+J6OPmVeDxJn+kYnJc2jZR9tGQ=
 github.com/pelletier/go-toml/v2 v2.0.8/go.mod h1:vuYfssBdrU2XDZ9bYydBu6t+6a6PYNcZljzZR9VXg+4=
 github.com/performancecopilot/speed v3.0.0+incompatible/go.mod h1:/CLtqpZ5gBg1M9iaPbIdPPGyKcA8hKdoy6hAWba7Yac=
-github.com/persistenceOne/cometbft v0.37.2-fh h1:iWlrbPjS/rnI+wCM3gEMsAS/3bD7G4fvef4CwqKyuMI=
-github.com/persistenceOne/cometbft v0.37.2-fh/go.mod h1:l9Da28jCpsd7KOjiFMhRafMRAsAuEKndnwRykjZypL0=
+github.com/persistenceOne/cometbft v0.37.2-fh.2 h1:C5671exeufwtwWsHexPaEvHnj433yU3W19u9OM537RA=
+github.com/persistenceOne/cometbft v0.37.2-fh.2/go.mod h1:l9Da28jCpsd7KOjiFMhRafMRAsAuEKndnwRykjZypL0=
 github.com/persistenceOne/cosmos-sdk v0.47.3-lsm4-fh h1:9lYRiPVmKKnI4OWtIVxWHOzC1oSFP94P/AdxKYOcDMo=
 github.com/persistenceOne/cosmos-sdk v0.47.3-lsm4-fh/go.mod h1:4oxikyyHyEe1wlYQFMGITfW/r01wYtfj8yjwru7bSWE=
 github.com/persistenceOne/ibc-apps/middleware/packet-forward-middleware/v7 v7.0.0-20230824193127-59068e7c7cfe h1:i5xLtQElut6KYwvg9jMRJH7wnRA5NmMqQoLcmsN7858=
