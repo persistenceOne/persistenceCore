@@ -31,16 +31,18 @@ func Fork(ctx sdk.Context, keepers *stakingkeeper.Keeper) {
 	for _, del := range alldels {
 		validator, ok := valShareMap[del.ValidatorAddress]
 		if !ok {
-			validator, found := keepers.GetValidator(ctx, del.GetValidatorAddr())
+			queried_validator, found := keepers.GetValidator(ctx, del.GetValidatorAddr())
 			if !found {
 				panic("Validator not found" + del.ValidatorAddress)
 			}
-			validator.Tokens = sdk.ZeroInt()
-			validator.DelegatorShares = sdk.ZeroDec()
-			validator.ValidatorBondShares = sdk.ZeroDec()
-			//validator.LiquidShares = sdk.ZeroDec() //Will be refreshed
-			valShareMap[del.ValidatorAddress] = validator
+			queried_validator.Tokens = sdk.ZeroInt()
+			queried_validator.DelegatorShares = sdk.ZeroDec()
+			queried_validator.ValidatorBondShares = sdk.ZeroDec()
+			//queried_validator.LiquidShares = sdk.ZeroDec() //Will be refreshed
+			valShareMap[del.ValidatorAddress] = queried_validator
 		}
+		validator = valShareMap[del.ValidatorAddress]
+
 		validator.DelegatorShares = validator.DelegatorShares.Add(del.Shares)
 		if del.ValidatorBond {
 			validator.ValidatorBondShares = validator.ValidatorBondShares.Add(del.Shares)
@@ -94,11 +96,11 @@ func fixPower(ctx sdk.Context, k *stakingkeeper.Keeper, oldval, newval stakingty
 
 	for i, key := range keys {
 		validator, found := k.GetValidator(ctx, values[i])
-		k.DeleteValidatorByPowerIndexUsingKey(ctx, key) //no op if key already deleted
-		k.DeleteValidatorByPowerIndex(ctx, validator)   // no op if validator not found
+		k.DeleteStoreEntry(ctx, key)                  //no op if key already deleted
+		k.DeleteValidatorByPowerIndex(ctx, validator) // no op if validator not found
 
 		if !found {
-			panic("validator not foudn while changing power" + values[i].String())
+			panic("validator not found while changing power" + values[i].String())
 		}
 		//create using new key
 		k.SetValidatorByPowerIndex(ctx, validator) // re-add

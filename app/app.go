@@ -366,6 +366,12 @@ func (app *Application) LegacyAmino() *codec.LegacyAmino {
 }
 
 func (app *Application) BeginBlocker(ctx sdk.Context, req abcitypes.RequestBeginBlock) abcitypes.ResponseBeginBlock {
+	if ctx.ChainID() == "test-core-2" && ctx.BlockHeight() == 1728710 {
+		v9_2_0.Fork(ctx, app.StakingKeeper)
+	}
+	if ctx.ChainID() == "core-1" && ctx.BlockHeight() == 13263217 {
+		v9_2_0.Fork(ctx, app.StakingKeeper)
+	}
 	return app.moduleManager.BeginBlock(ctx, req)
 }
 
