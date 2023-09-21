@@ -1008,8 +1008,8 @@ github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/9
 github.com/pelletier/go-toml/v2 v2.0.8 h1:0ctb6s9mE31h0/lhu+J6OPmVeDxJn+kYnJc2jZR9tGQ=
 github.com/pelletier/go-toml/v2 v2.0.8/go.mod h1:vuYfssBdrU2XDZ9bYydBu6t+6a6PYNcZljzZR9VXg+4=
 github.com/performancecopilot/speed v3.0.0+incompatible/go.mod h1:/CLtqpZ5gBg1M9iaPbIdPPGyKcA8hKdoy6hAWba7Yac=
-github.com/persistenceOne/cosmos-sdk v0.47.3-lsm4 h1:HyoRiPw30IOFdNyhrXFOrU20fR1UKgtv7PsTBeVpsMU=
-github.com/persistenceOne/cosmos-sdk v0.47.3-lsm4/go.mod h1:4oxikyyHyEe1wlYQFMGITfW/r01wYtfj8yjwru7bSWE=
+github.com/persistenceOne/cosmos-sdk v0.47.3-lsm5 h1:z5k9M81ogHgaMyLck7GVzfdNYvn03ZTXsCpQDzy69eQ=
+github.com/persistenceOne/cosmos-sdk v0.47.3-lsm5/go.mod h1:4oxikyyHyEe1wlYQFMGITfW/r01wYtfj8yjwru7bSWE=
 github.com/persistenceOne/ibc-apps/middleware/packet-forward-middleware/v7 v7.0.0-20230824193127-59068e7c7cfe h1:i5xLtQElut6KYwvg9jMRJH7wnRA5NmMqQoLcmsN7858=
 github.com/persistenceOne/ibc-apps/middleware/packet-forward-middleware/v7 v7.0.0-20230824193127-59068e7c7cfe/go.mod h1:v+x4hTcShRZylXZNsK5zXFQ8QMV448rbIY4e9HDXBkY=
 github.com/persistenceOne/ibc-apps/modules/ibc-hooks/v7 v7.0.0-20230824193127-59068e7c7cfe h1:3XkkoRsIIccJQ4fI6+7f1XRsrEPFf3DjixXTe7LeXsk=
