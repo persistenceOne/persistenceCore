@@ -114,7 +114,7 @@ func TestBondTokenize(t *testing.T) {
 
 	sharesBalance, err := chain.GetBalance(ctx, firstUser.FormattedAddress(), validators[0].OperatorAddress+"/1")
 	require.NoError(t, err)
-	require.Equal(t, tokenizeCoins.Amount.Int64(), sharesBalance, "shares balance must match tokenized amount")
+	require.Equal(t, tokenizeCoins.Amount, sharesBalance, "shares balance must match tokenized amount")
 
 	// Try to tokenize more shares from first user, it will not work because of small bond
 	txHash, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
@@ -153,7 +153,7 @@ func TestBondTokenize(t *testing.T) {
 
 	sharesBalance, err = chain.GetBalance(ctx, firstUser.FormattedAddress(), validators[0].OperatorAddress+"/2")
 	require.NoError(t, err)
-	require.Equal(t, tokenizeCoins.Amount.Int64(), sharesBalance, "shares balance must match tokenized amount")
+	require.Equal(t, tokenizeCoins.Amount, sharesBalance, "shares balance must match tokenized amount")
 
 	validator = helpers.QueryValidator(t, ctx, chainNode, validators[0].OperatorAddress)
 	doubleTokenizedAmount := sdk.NewDecFromInt(tokenizeCoins.Amount.MulRaw(2))

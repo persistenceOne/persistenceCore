@@ -69,7 +69,7 @@ func TestTokenizeSendVote(t *testing.T) {
 
 	sharesBalance, err := chain.GetBalance(ctx, firstUser.FormattedAddress(), validators[0].OperatorAddress+"/1")
 	require.NoError(t, err)
-	require.Equal(t, firstUserBondAmount.Int64(), sharesBalance, "shares balance must match initially bonded amount")
+	require.Equal(t, firstUserBondAmount, sharesBalance, "shares balance must match initially bonded amount")
 
 	// Send tokenized shares from first user to second user (only 1stake in tokenized denom)
 
@@ -113,7 +113,7 @@ func TestTokenizeSendVote(t *testing.T) {
 
 	// The vote is not being reflected in the tally for now
 	tally := helpers.QueryProposalTally(t, ctx, chainNode, proposalTx.ProposalID)
-	require.Equal(t, sdk.ZeroInt(), tally.YesCount, "second user's tokenized shares don't count in tally")
+	require.Equal(t, math.ZeroInt(), tally.YesCount, "second user's tokenized shares don't count in tally")
 
 	// Redeem all shares - second user
 	redeemCoints := sdk.NewCoin(validators[0].OperatorAddress+"/1", sharesBalance)
@@ -125,12 +125,12 @@ func TestTokenizeSendVote(t *testing.T) {
 
 	sharesBalance, err = chain.GetBalance(ctx, secondUser.FormattedAddress(), validators[0].OperatorAddress+"/1")
 	require.NoError(t, err)
-	require.Equal(t, int64(0), sharesBalance, "second user's shares balance must be 0")
+	require.Equal(t, math.ZeroInt(), sharesBalance, "second user's shares balance must be 0")
 	secondUserBondCoins := sdk.NewCoin(testDenom, sharesToSend.Amount)
 
 	// The vote will be reflected in the tally (on behalf of second user - their shares were just bonded)
 	tally = helpers.QueryProposalTally(t, ctx, chainNode, proposalTx.ProposalID)
-	require.Equal(t, sharesToSend.Amount, tally.YesCount.Int64(), "second user's bonded amount counted towards Yes")
+	require.Equal(t, sharesToSend.Amount, tally.YesCount, "second user's bonded amount counted towards Yes")
 
 	// Tokenize all shares - second user
 	_, err = chainNode.ExecTx(ctx, secondUser.KeyName(),
@@ -141,11 +141,11 @@ func TestTokenizeSendVote(t *testing.T) {
 
 	sharesBalance, err = chain.GetBalance(ctx, secondUser.FormattedAddress(), validators[0].OperatorAddress+"/2")
 	require.NoError(t, err)
-	require.Equal(t, secondUserBondCoins.Amount.Int64(), sharesBalance, "shares balance must match initially bonded amount")
+	require.Equal(t, secondUserBondCoins.Amount, sharesBalance, "shares balance must match initially bonded amount")
 
 	// Tokenized amount has been cleared up from the tally (second user now has liquid shares with his own denom)
 	tally = helpers.QueryProposalTally(t, ctx, chainNode, proposalTx.ProposalID)
-	require.Equal(t, sdk.ZeroInt(), tally.YesCount, "second user's bonded amount not shown in tally")
+	require.Equal(t, math.ZeroInt(), tally.YesCount, "second user's bonded amount not shown in tally")
 
 	// First user tries to vote with No and larger bond (still as liquid shares)
 	err = chainNode.VoteOnProposal(ctx, firstUser.KeyName(), proposalTx.ProposalID, helpers.ProposalVoteNoWithVeto)
@@ -153,8 +153,8 @@ func TestTokenizeSendVote(t *testing.T) {
 
 	// His vote is not reflected in the tally (has no bond but liquid shares)
 	tally = helpers.QueryProposalTally(t, ctx, chainNode, proposalTx.ProposalID)
-	require.Equal(t, sdk.ZeroInt(), tally.YesCount, "second user's bonded amount not shown in tally")
-	require.Equal(t, sdk.ZeroInt(), tally.NoWithVetoCount, "first user's bonded amount not counted towards NoWithVeto (since it's liquid)")
+	require.Equal(t, math.ZeroInt(), tally.YesCount, "second user's bonded amount not shown in tally")
+	require.Equal(t, math.ZeroInt(), tally.NoWithVetoCount, "first user's bonded amount not counted towards NoWithVeto (since it's liquid)")
 
 	// Redeem all shares - first user
 	firstUserSharesLeftAmount := firstUserBondAmount.Sub(sharesToSend.Amount)
@@ -167,11 +167,11 @@ func TestTokenizeSendVote(t *testing.T) {
 
 	sharesBalance, err = chain.GetBalance(ctx, firstUser.FormattedAddress(), validators[0].OperatorAddress+"/1")
 	require.NoError(t, err)
-	require.Equal(t, int64(0), sharesBalance, "first user's shares balance must be 0")
+	require.Equal(t, math.ZeroInt(), sharesBalance, "first user's shares balance must be 0")
 
 	// Votes from the first user now sucessfully reflected in the tally towards NoWithVeto
 	tally = helpers.QueryProposalTally(t, ctx, chainNode, proposalTx.ProposalID)
-	require.Equal(t, sdk.ZeroInt(), tally.YesCount, "second user's bonded amount not shown in tally")
+	require.Equal(t, math.ZeroInt(), tally.YesCount, "second user's bonded amount not shown in tally")
 	require.Equal(t, firstUserSharesLeftAmount, tally.NoWithVetoCount, "first user's bonded amount counted towards NoWithVeto now")
 
 	// Redeem all shares - second user
@@ -184,7 +184,7 @@ func TestTokenizeSendVote(t *testing.T) {
 
 	sharesBalance, err = chain.GetBalance(ctx, secondUser.FormattedAddress(), validators[0].OperatorAddress+"/2")
 	require.NoError(t, err)
-	require.Equal(t, int64(0), sharesBalance, "second user's shares balance must be 0")
+	require.Equal(t, math.ZeroInt(), sharesBalance, "second user's shares balance must be 0")
 
 	// Votes from both users should now be reflected in the tally according to their vote options
 	tally = helpers.QueryProposalTally(t, ctx, chainNode, proposalTx.ProposalID)
