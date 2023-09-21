@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"cosmossdk.io/math"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
@@ -117,7 +118,7 @@ func TestPersistenceGaiaIBCTransfer(t *testing.T) {
 	require.Equal(t, genesisWalletAmount, gaiaOrigBal)
 
 	// Compose an IBC transfer and send from Persistence -> Gaia
-	const transferAmount = int64(1_000)
+	var transferAmount = math.NewInt(1_000)
 	transfer := ibc.WalletAmount{
 		Address: gaiaUserAddr,
 		Denom:   persistenceChain.Config().Denom,
@@ -159,7 +160,7 @@ func TestPersistenceGaiaIBCTransfer(t *testing.T) {
 	// Assert that the funds are no longer present in user acc on Persistence and are in the user acc on Gaia
 	persistenceUpdateBal, err := persistenceChain.GetBalance(ctx, persistenceUserAddr, persistenceChain.Config().Denom)
 	require.NoError(t, err)
-	require.Equal(t, persistenceOrigBal-transferAmount, persistenceUpdateBal)
+	require.Equal(t, persistenceOrigBal.Sub(transferAmount), persistenceUpdateBal)
 
 	gaiaUpdateBal, err := gaiaChain.GetBalance(ctx, gaiaUserAddr, persistenceIBCDenom)
 	require.NoError(t, err)

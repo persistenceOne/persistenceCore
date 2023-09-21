@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -75,7 +76,7 @@ func TestTokenizeSendVote(t *testing.T) {
 	sharesToSend := ibc.WalletAmount{
 		Address: secondUser.FormattedAddress(), // recipient
 		Denom:   validators[0].OperatorAddress + "/1",
-		Amount:  1,
+		Amount:  math.NewInt(1),
 	}
 
 	err = chainNode.SendFunds(ctx, firstUser.KeyName(), sharesToSend)
@@ -115,7 +116,7 @@ func TestTokenizeSendVote(t *testing.T) {
 	require.Equal(t, sdk.ZeroInt(), tally.YesCount, "second user's tokenized shares don't count in tally")
 
 	// Redeem all shares - second user
-	redeemCoints := sdk.NewCoin(validators[0].OperatorAddress+"/1", sdk.NewInt(sharesBalance))
+	redeemCoints := sdk.NewCoin(validators[0].OperatorAddress+"/1", sharesBalance)
 	_, err = chainNode.ExecTx(ctx, secondUser.KeyName(),
 		"staking", "redeem-tokens", redeemCoints.String(),
 		"--gas=500000",
@@ -125,7 +126,7 @@ func TestTokenizeSendVote(t *testing.T) {
 	sharesBalance, err = chain.GetBalance(ctx, secondUser.FormattedAddress(), validators[0].OperatorAddress+"/1")
 	require.NoError(t, err)
 	require.Equal(t, int64(0), sharesBalance, "second user's shares balance must be 0")
-	secondUserBondCoins := sdk.NewCoin(testDenom, sdk.NewInt(sharesToSend.Amount))
+	secondUserBondCoins := sdk.NewCoin(testDenom, sharesToSend.Amount)
 
 	// The vote will be reflected in the tally (on behalf of second user - their shares were just bonded)
 	tally = helpers.QueryProposalTally(t, ctx, chainNode, proposalTx.ProposalID)
@@ -156,7 +157,7 @@ func TestTokenizeSendVote(t *testing.T) {
 	require.Equal(t, sdk.ZeroInt(), tally.NoWithVetoCount, "first user's bonded amount not counted towards NoWithVeto (since it's liquid)")
 
 	// Redeem all shares - first user
-	firstUserSharesLeftAmount := firstUserBondAmount.Sub(sdk.NewInt(sharesToSend.Amount))
+	firstUserSharesLeftAmount := firstUserBondAmount.Sub(sharesToSend.Amount)
 	redeemCoints = sdk.NewCoin(validators[0].OperatorAddress+"/1", firstUserSharesLeftAmount)
 	_, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
 		"staking", "redeem-tokens", redeemCoints.String(),

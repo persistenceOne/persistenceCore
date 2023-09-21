@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	"github.com/persistenceOne/persistenceCore/v9/interchaintest/helpers"
@@ -230,7 +231,7 @@ func TestPacketForwardMiddlewareRouter(t *testing.T) {
 		transfer := ibc.WalletAmount{
 			Address: userB.FormattedAddress(),
 			Denom:   chainA.Config().Denom,
-			Amount:  transferAmount,
+			Amount:  math.NewInt(transferAmount),
 		}
 
 		secondHopMetadata := &PacketMetadata{

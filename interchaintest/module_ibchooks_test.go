@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"cosmossdk.io/math"
 	"github.com/persistenceOne/persistenceCore/v9/interchaintest/helpers"
 	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
@@ -132,7 +133,7 @@ func TestPersistenceIBCHooks(t *testing.T) {
 	transfer := ibc.WalletAmount{
 		Address: contractAddr,
 		Denom:   p1Chain.Config().Denom,
-		Amount:  int64(1),
+		Amount:  math.NewInt(1),
 	}
 
 	memo := ibc.TransferOptions{

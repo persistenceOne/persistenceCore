@@ -4,6 +4,7 @@ vendor/
 .mocha/node_modules/
 .vscode/
 .idea/
+.fleet/
 target/
 build/
 release/
