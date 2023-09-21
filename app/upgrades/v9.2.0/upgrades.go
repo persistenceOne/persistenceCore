@@ -63,7 +63,7 @@ func Fork(ctx sdk.Context, keepers *stakingkeeper.Keeper) {
 		}
 		if !val.DelegatorShares.Equal(calculatedVal.DelegatorShares) {
 			// SHOW ME
-			ctx.Logger().Info(fmt.Sprintf("Validator %s is affected", val.OperatorAddress))
+			ctx.Logger().Info(fmt.Sprintf("Validator %s is affected with shares is %s, should be: %s", val.OperatorAddress, val.DelegatorShares, calculatedVal.DelegatorShares))
 			tokens := val.TokensFromShares(calculatedVal.DelegatorShares)
 			calculatedVal.Tokens = tokens.TruncateInt()
 			valShareMap[calculatedVal.OperatorAddress] = calculatedVal
@@ -90,7 +90,11 @@ func fixPower(ctx sdk.Context, k *stakingkeeper.Keeper, oldval, newval stakingty
 		// part of the bonded validator set
 		valAddr := sdk.ValAddress(iterator.Value())
 		if newval.GetOperator().Equals(valAddr) {
-			keys = append(keys, iterator.Key())
+			ikey := make([]byte, len(iterator.Key()))
+			v := make([]byte, len(valAddr))
+			copy(ikey, iterator.Key())
+			copy(v, valAddr)
+			keys = append(keys, ikey)
 			values = append(values, valAddr)
 		}
 	}
