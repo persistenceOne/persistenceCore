@@ -88,6 +88,7 @@ jobs:
               - "ictest-ibchooks"
               - "ictest-pfm"
               - "ictest-lsm"
+              - "ictest-haltfork"
         fail-fast: false
 
     steps:

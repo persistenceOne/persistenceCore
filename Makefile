@@ -278,6 +278,9 @@ ictest-pob: rm-testcache
 ictest-lsm: rm-testcache
 	cd interchaintest && go test -race -v -run "(TestMultiTokenizeVote|TestTokenizeSendVote|TestBondTokenize)" .
 
+ictest-haltfork: rm-testcache
+	cd interchaintest && go test -race -v -run TestPersistenceLSMHaltFork .
+
 rm-testcache:
 	go clean -testcache
 

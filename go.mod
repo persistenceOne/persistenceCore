@@ -202,7 +202,7 @@ replace (
 // use persistence's forks with LSM implemented
 replace (
 	github.com/CosmWasm/wasmd => github.com/persistenceOne/wasmd v0.40.2-lsm3
-	github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk v0.47.3-lsm4
+	github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk v0.47.3-lsm5
 	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 => github.com/persistenceOne/ibc-apps/middleware/packet-forward-middleware/v7 v7.0.0-20230824193127-59068e7c7cfe
 	github.com/cosmos/ibc-apps/modules/ibc-hooks/v7 => github.com/persistenceOne/ibc-apps/modules/ibc-hooks/v7 v7.0.0-20230824193127-59068e7c7cfe
 	github.com/cosmos/ibc-go/v7 => github.com/persistenceOne/ibc-go/v7 v7.2.0-lsm3

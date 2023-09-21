@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
@@ -76,7 +77,7 @@ func TestMultiTokenizeVote(t *testing.T) {
 
 	sharesBalance, err := chain.GetBalance(ctx, secondUser.FormattedAddress(), validators[0].OperatorAddress+"/1")
 	require.NoError(t, err)
-	require.Equal(t, secondUserBondAmount.Int64(), sharesBalance, "shares balance must match initially bonded amount")
+	require.Equal(t, secondUserBondAmount, sharesBalance, "shares balance must match initially bonded amount")
 
 	// Submitting a proposal from the second user
 	height, err := chain.Height(ctx)
@@ -105,7 +106,7 @@ func TestMultiTokenizeVote(t *testing.T) {
 
 	// The vote is not being reflected in the tally for now
 	tally := helpers.QueryProposalTally(t, ctx, chainNode, proposalTx.ProposalID)
-	require.Equal(t, sdk.ZeroInt(), tally.YesCount, "second user's tokenized shares don't show up in tally")
+	require.Equal(t, math.ZeroInt(), tally.YesCount, "second user's tokenized shares don't show up in tally")
 
 	// Redeem all shares - second user
 	redeemCoints := sdk.NewCoin(validators[0].OperatorAddress+"/1", secondUserBondAmount)
@@ -117,7 +118,7 @@ func TestMultiTokenizeVote(t *testing.T) {
 
 	sharesBalance, err = chain.GetBalance(ctx, secondUser.FormattedAddress(), validators[0].OperatorAddress+"/1")
 	require.NoError(t, err)
-	require.Equal(t, int64(0), sharesBalance, "second user's shares balance must be 0")
+	require.Equal(t, math.ZeroInt(), sharesBalance, "second user's shares balance must be 0")
 
 	// The vote will be reflected in the tally now (on behalf of second user's bond)
 	tally = helpers.QueryProposalTally(t, ctx, chainNode, proposalTx.ProposalID)
@@ -140,7 +141,7 @@ func TestMultiTokenizeVote(t *testing.T) {
 
 	sharesBalance, err = chain.GetBalance(ctx, firstUser.FormattedAddress(), validators[0].OperatorAddress+"/2")
 	require.NoError(t, err)
-	require.Equal(t, firstUserBondAmount.Int64(), sharesBalance, "shares balance must match initially bonded amount")
+	require.Equal(t, firstUserBondAmount, sharesBalance, "shares balance must match initially bonded amount")
 
 	// Tokenize all shares - second user
 	_, err = chainNode.ExecTx(ctx, secondUser.KeyName(),
@@ -151,12 +152,12 @@ func TestMultiTokenizeVote(t *testing.T) {
 
 	sharesBalance, err = chain.GetBalance(ctx, secondUser.FormattedAddress(), validators[0].OperatorAddress+"/3")
 	require.NoError(t, err)
-	require.Equal(t, secondUserBondAmount.Int64(), sharesBalance, "shares balance must match initially bonded amount")
+	require.Equal(t, secondUserBondAmount, sharesBalance, "shares balance must match initially bonded amount")
 
 	// No votes displayed in the voting tally as both delegators have tokenized their shares
 	tally = helpers.QueryProposalTally(t, ctx, chainNode, proposalTx.ProposalID)
-	require.Equal(t, sdk.ZeroInt(), tally.YesCount, "second user's tokenized shares amount doesn't show in the tally")
-	require.Equal(t, sdk.ZeroInt(), tally.NoWithVetoCount, "first user's tokenized shares amount doesn't show in the tally")
+	require.Equal(t, math.ZeroInt(), tally.YesCount, "second user's tokenized shares amount doesn't show in the tally")
+	require.Equal(t, math.ZeroInt(), tally.NoWithVetoCount, "first user's tokenized shares amount doesn't show in the tally")
 
 	// Redeem all shares - first user
 	redeemCoints = sdk.NewCoin(validators[0].OperatorAddress+"/2", firstUserBondAmount)
@@ -168,11 +169,11 @@ func TestMultiTokenizeVote(t *testing.T) {
 
 	sharesBalance, err = chain.GetBalance(ctx, firstUser.FormattedAddress(), validators[0].OperatorAddress+"/2")
 	require.NoError(t, err)
-	require.Equal(t, int64(0), sharesBalance, "second user's shares balance must be 0")
+	require.Equal(t, math.ZeroInt(), sharesBalance, "second user's shares balance must be 0")
 
 	// Check that first user's votes appear in the tally now
 	tally = helpers.QueryProposalTally(t, ctx, chainNode, proposalTx.ProposalID)
-	require.Equal(t, sdk.ZeroInt(), tally.YesCount, "second user's tokenized shares amount doesn't show in the tally")
+	require.Equal(t, math.ZeroInt(), tally.YesCount, "second user's tokenized shares amount doesn't show in the tally")
 	require.Equal(t, firstUserBondAmount, tally.NoWithVetoCount, "first user's bonded amount counted towards NoWithVeto")
 
 	// Redeem all shares - second user
@@ -185,7 +186,7 @@ func TestMultiTokenizeVote(t *testing.T) {
 
 	sharesBalance, err = chain.GetBalance(ctx, secondUser.FormattedAddress(), validators[0].OperatorAddress+"/3")
 	require.NoError(t, err)
-	require.Equal(t, int64(0), sharesBalance, "second user's shares balance must be 0")
+	require.Equal(t, math.ZeroInt(), sharesBalance, "second user's shares balance must be 0")
 
 	// Check that second user's votes appear in the tally now
 	tally = helpers.QueryProposalTally(t, ctx, chainNode, proposalTx.ProposalID)

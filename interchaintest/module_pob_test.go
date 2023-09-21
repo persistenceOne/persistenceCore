@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -103,7 +104,7 @@ func TestSkipMevAuction(t *testing.T) {
 	recipientBalance, err := chain.GetBalance(ctx, helpers.SomeoneAddress.String(), testDenom)
 	require.NoError(t, err)
 
-	require.Equal(t, int64(100), recipientBalance, "recipient must have balance")
+	require.Equal(t, math.NewInt(100), recipientBalance, "recipient must have balance")
 
 	// TODO: verify that tx is actually prioritised over other txns in the block
 	// The best way to do so it by using a wasm counter contract, but it requires some more orchestration

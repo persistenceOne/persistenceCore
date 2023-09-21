@@ -57,12 +57,16 @@ import (
 
 	"github.com/persistenceOne/persistenceCore/v9/app/keepers"
 	"github.com/persistenceOne/persistenceCore/v9/app/upgrades"
+	v9 "github.com/persistenceOne/persistenceCore/v9/app/upgrades/v9"
+	v9_1_0 "github.com/persistenceOne/persistenceCore/v9/app/upgrades/v9.1.0"
 	v9_2_0 "github.com/persistenceOne/persistenceCore/v9/app/upgrades/v9.2.0"
 )
 
 var (
 	DefaultNodeHome string
-	Upgrades        = []upgrades.Upgrade{v9_2_0.Upgrade}
+	//Upgrades        = []upgrades.Upgrade{v9.Upgrade, v9_1_0.Upgrade}
+	UpgradesMainnet = []upgrades.Upgrade{v9.Upgrade, v9_1_0.Upgrade}
+	UpgradesTestnet = []upgrades.Upgrade{v9_2_0.Upgrade}
 	ModuleBasics    = module.NewBasicManager(keepers.AppModuleBasics...)
 )
 
@@ -216,8 +220,16 @@ func NewApplication(
 
 	// setup postHandler in this method
 	// app.setupPostHandler()
-	app.setupUpgradeHandlers()
-	app.setupUpgradeStoreLoaders()
+	if app.ChainID() == "test-core-2" {
+		app.setupUpgradeHandlers(UpgradesTestnet)
+		app.setupUpgradeStoreLoaders(UpgradesTestnet)
+	} else if app.ChainID() == "core-1" {
+		app.setupUpgradeHandlers(UpgradesMainnet)
+		app.setupUpgradeStoreLoaders(UpgradesMainnet)
+	} else {
+		app.setupUpgradeHandlers(UpgradesTestnet)
+		app.setupUpgradeStoreLoaders(UpgradesTestnet)
+	}
 
 	// must be before Loading version
 	// requires the snapshot store to be created and registered as a BaseAppOption
@@ -366,6 +378,19 @@ func (app *Application) LegacyAmino() *codec.LegacyAmino {
 }
 
 func (app *Application) BeginBlocker(ctx sdk.Context, req abcitypes.RequestBeginBlock) abcitypes.ResponseBeginBlock {
+	if ctx.ChainID() == "core-1" && ctx.BlockHeight() == 13263217 {
+		v9_2_0.Fork(ctx, app.StakingKeeper)
+		v9_2_0.RemoveMainnetV9_2Prop(ctx, app.UpgradeKeeper)
+	}
+
+	if ctx.ChainID() == "test-core-2" && ctx.BlockHeight() == 1728710 {
+		v9_2_0.Fork(ctx, app.StakingKeeper)
+	}
+
+	if ctx.ChainID() == "ictest-core-1" {
+		v9_2_0.Fork(ctx, app.StakingKeeper)
+	}
+
 	return app.moduleManager.BeginBlock(ctx, req)
 }
 
@@ -423,8 +448,8 @@ func (app *Application) RegisterAPIRoutes(apiServer *api.Server, apiConfig confi
 	}
 }
 
-func (app *Application) setupUpgradeHandlers() {
-	for _, upgrade := range Upgrades {
+func (app *Application) setupUpgradeHandlers(upgradeversions []upgrades.Upgrade) {
+	for _, upgrade := range upgradeversions {
 		app.UpgradeKeeper.SetUpgradeHandler(
 			upgrade.UpgradeName,
 			upgrade.CreateUpgradeHandler(upgrades.UpgradeHandlerArgs{
@@ -438,7 +463,7 @@ func (app *Application) setupUpgradeHandlers() {
 }
 
 // configure store loader that checks if version == upgradeHeight and applies store upgrades
-func (app *Application) setupUpgradeStoreLoaders() {
+func (app *Application) setupUpgradeStoreLoaders(upgradeversions []upgrades.Upgrade) {
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
 	if err != nil {
 		panic(fmt.Sprintf("failed to read upgrade info from disk %s", err))
@@ -448,7 +473,7 @@ func (app *Application) setupUpgradeStoreLoaders() {
 		return
 	}
 
-	for _, upgrade := range Upgrades {
+	for _, upgrade := range upgradeversions {
 		if upgradeInfo.Name == upgrade.UpgradeName {
 			storeUpgrades := upgrade.StoreUpgrades
 			app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
