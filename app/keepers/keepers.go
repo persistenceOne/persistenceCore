@@ -561,8 +561,7 @@ func NewAppKeeper(
 	}
 
 	govConfig := govtypes.DefaultConfig()
-	// Example of setting gov params:
-	// govConfig.MaxMetadataLen = 10000
+	govConfig.MaxMetadataLen = 5000
 
 	appKeepers.GovKeeper = govkeeper.NewKeeper(
 		appCodec,
