@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/persistenceOne/persistenceCore/v9/interchaintest/helpers"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
+
+	"github.com/persistenceOne/persistenceCore/v10/interchaintest/helpers"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	testutil "github.com/cosmos/cosmos-sdk/types/module/testutil"

@@ -1,4 +1,4 @@
-module github.com/persistenceOne/persistenceCore/v9
+module github.com/persistenceOne/persistenceCore/v10
 
 go 1.21
 

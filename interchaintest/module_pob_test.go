@@ -5,16 +5,16 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
+	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/stretchr/testify/require"
 
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 
-	"github.com/persistenceOne/persistenceCore/v9/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v10/interchaintest/helpers"
 )
 
 // TestSkipMevAuction tests that x/builder corretly wired and allows to make auctions to prioritise txns

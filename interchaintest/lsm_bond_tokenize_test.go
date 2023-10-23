@@ -4,12 +4,13 @@ import (
 	"context"
 	"testing"
 
+	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/persistenceOne/persistenceCore/v9/interchaintest/helpers"
-	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
+
+	"github.com/persistenceOne/persistenceCore/v10/interchaintest/helpers"
 )
 
 // TestBondTokenize executes scenario of bonding and tokenizing.

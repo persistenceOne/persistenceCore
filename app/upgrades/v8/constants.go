@@ -12,7 +12,7 @@ import (
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
 
-	"github.com/persistenceOne/persistenceCore/v9/app/upgrades"
+	"github.com/persistenceOne/persistenceCore/v10/app/upgrades"
 )
 
 const (

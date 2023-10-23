@@ -55,18 +55,16 @@ import (
 	pobabci "github.com/skip-mev/pob/abci"
 	"github.com/skip-mev/pob/mempool"
 
-	"github.com/persistenceOne/persistenceCore/v9/app/keepers"
-	"github.com/persistenceOne/persistenceCore/v9/app/upgrades"
-	v9 "github.com/persistenceOne/persistenceCore/v9/app/upgrades/v9"
-	v9_1_0 "github.com/persistenceOne/persistenceCore/v9/app/upgrades/v9.1.0"
-	v9_2_0 "github.com/persistenceOne/persistenceCore/v9/app/upgrades/v9.2.0"
+	"github.com/persistenceOne/persistenceCore/v10/app/keepers"
+	"github.com/persistenceOne/persistenceCore/v10/app/upgrades"
+	v10 "github.com/persistenceOne/persistenceCore/v10/app/upgrades/v10"
+	v9_2_0 "github.com/persistenceOne/persistenceCore/v10/app/upgrades/v9.2.0"
 )
 
 var (
 	DefaultNodeHome string
-	//Upgrades        = []upgrades.Upgrade{v9.Upgrade, v9_1_0.Upgrade}
-	UpgradesMainnet = []upgrades.Upgrade{v9.Upgrade, v9_1_0.Upgrade}
-	UpgradesTestnet = []upgrades.Upgrade{v9_2_0.Upgrade}
+	UpgradesMainnet = []upgrades.Upgrade{v10.Upgrade}
+	UpgradesTestnet = []upgrades.Upgrade{v10.Upgrade}
 	ModuleBasics    = module.NewBasicManager(keepers.AppModuleBasics...)
 )
 
