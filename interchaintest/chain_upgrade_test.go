@@ -30,9 +30,9 @@ func TestPersistenceUpgradeBasic(t *testing.T) {
 	var (
 		chainName            = "persistence"
 		upgradeRepo          = PersistenceCoreImage.Repository
-		initialVersion       = "v9.1.0"
+		initialVersion       = "v9.2.0"
 		upgradeBranchVersion = PersistenceCoreImage.Version
-		upgradeName          = "v9.2.0"
+		upgradeName          = "v10.0.0"
 	)
 
 	CosmosChainUpgradeTest(
