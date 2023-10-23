@@ -5,9 +5,10 @@ package v9_2_0_test
 
 import (
 	"fmt"
-	v9_2_0 "github.com/persistenceOne/persistenceCore/v9/app/upgrades/v9.2.0"
 	"os"
 	"testing"
+
+	v9_2_0 "github.com/persistenceOne/persistenceCore/v10/app/upgrades/v9.2.0"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -24,8 +25,9 @@ import (
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
-	"github.com/persistenceOne/persistenceCore/v9/app"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/persistenceOne/persistenceCore/v10/app"
 )
 
 type KeeperTestHelper struct {
