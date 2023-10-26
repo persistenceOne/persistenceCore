@@ -58,13 +58,14 @@ import (
 	"github.com/persistenceOne/persistenceCore/v10/app/keepers"
 	"github.com/persistenceOne/persistenceCore/v10/app/upgrades"
 	v10 "github.com/persistenceOne/persistenceCore/v10/app/upgrades/v10"
+	v10stkosmo "github.com/persistenceOne/persistenceCore/v10/app/upgrades/v10_stkosmo"
 	v9_2_0 "github.com/persistenceOne/persistenceCore/v10/app/upgrades/v9.2.0"
 )
 
 var (
 	DefaultNodeHome string
 	UpgradesMainnet = []upgrades.Upgrade{v10.Upgrade}
-	UpgradesTestnet = []upgrades.Upgrade{v10.Upgrade}
+	UpgradesTestnet = []upgrades.Upgrade{v10stkosmo.Upgrade}
 	ModuleBasics    = module.NewBasicManager(keepers.AppModuleBasics...)
 )
 
