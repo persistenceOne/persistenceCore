@@ -1,4 +1,4 @@
-package v10
+package v10_1_0_testnet
 
 import (
 	store "github.com/cosmos/cosmos-sdk/store/types"
@@ -8,7 +8,7 @@ import (
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName = "v10-stkosmo"
+	UpgradeName = "v10.1.0-testnet"
 )
 
 var Upgrade = upgrades.Upgrade{

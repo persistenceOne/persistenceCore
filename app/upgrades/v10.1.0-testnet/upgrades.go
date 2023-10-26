@@ -1,4 +1,4 @@
-package v10
+package v10_1_0_testnet
 
 import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
