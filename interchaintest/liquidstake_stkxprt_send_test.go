@@ -38,15 +38,8 @@ func TestLiquidStakeSendStkXPRT(t *testing.T) {
 
 	// create a single chain instance with 4 validators
 	validatorsCount := 4
-	// important overrides: fast voting for quick proposal passing
-	// genesisOverrides := append([]cosmos.GenesisKV{}, defaultGenesisOverridesKV...)
-	// genesisOverrides = append(genesisOverrides,
-	// 	cosmos.GenesisKV{
-	// 		Key:   "app_state.gov.params.voting_period",
-	// 		Value: "600s",
-	// 	},
-	// )
 
+	// important overrides: fast voting for quick proposal passing
 	ic, chain := CreateChain(t, ctx, validatorsCount, 0, fastVotingGenesisOverridesKV...)
 	chainNode := chain.Nodes()[0]
 	testDenom := chain.Config().Denom
@@ -85,7 +78,7 @@ func TestLiquidStakeSendStkXPRT(t *testing.T) {
 		},
 	})
 
-	require.NoError(t, err, "failed to pack upgradetypes.SoftwareUpgradeProposal")
+	require.NoError(t, err, "failed to pack liquidstaketypes.MsgUpdateParams")
 
 	broadcaster := cosmos.NewBroadcaster(t, chain)
 	txResp, err := cosmos.BroadcastTx(
@@ -100,7 +93,7 @@ func TestLiquidStakeSendStkXPRT(t *testing.T) {
 			Messages:       []*codectypes.Any{msgUpdateParams},
 		},
 	)
-	require.NoError(t, err, "error submitting software upgrade tx")
+	require.NoError(t, err, "error submitting liquidstake params update tx")
 
 	upgradeTx, err := helpers.QueryProposalTx(context.Background(), chain.Nodes()[0], txResp.TxHash)
 	require.NoError(t, err, "error checking proposal tx")
@@ -115,6 +108,7 @@ func TestLiquidStakeSendStkXPRT(t *testing.T) {
 	require.NoError(t, err)
 
 	// Liquid stake XPRT from the first user (5 XPRT)
+
 	firstUserLiquidStakeAmount := sdk.NewInt(5_000_000)
 	firstUserLiquidStakeCoins := sdk.NewCoin(testDenom, firstUserLiquidStakeAmount)
 	txHash, err := chainNode.ExecTx(ctx, firstUser.KeyName(),
@@ -146,6 +140,7 @@ func TestLiquidStakeSendStkXPRT(t *testing.T) {
 	require.Equal(t, tokensToSend.Amount, stkXPRTBalance, "second user's stkXPRT balance must match sent stk tokens")
 
 	// Try to unstake stkXPRT from second user
+
 	unstakeCoins := sdk.NewCoin("stk/uxprt", stkXPRTBalance)
 	txHash, err = chainNode.ExecTx(ctx, secondUser.KeyName(),
 		"liquidstake", "liquid-unstake", unstakeCoins.String(),
@@ -155,6 +150,8 @@ func TestLiquidStakeSendStkXPRT(t *testing.T) {
 
 	_, err = helpers.QueryTx(ctx, chainNode, txHash)
 	require.NoError(t, err)
+
+	// Check token balances afterwards
 
 	stkXPRTBalance, err = chain.GetBalance(ctx, secondUser.FormattedAddress(), "stk/uxprt")
 	require.NoError(t, err)
@@ -169,5 +166,5 @@ func TestLiquidStakeSendStkXPRT(t *testing.T) {
 	unbondingDelegation := helpers.QueryUnbondingDelegation(t, ctx, chainNode, secondUser.FormattedAddress(), validators[0].OperatorAddress)
 	require.Len(t, unbondingDelegation.Entries, 1)
 	require.Equal(t, secondUser.FormattedAddress(), unbondingDelegation.DelegatorAddress, "unbonding delegation must have second user as delegator")
-	require.Equal(t, tokensToSend.Amount, unbondingDelegation.Entries[0].Balance, "balance of ubd delegation to match for stkXPRT unbonding")
+	require.Equal(t, tokensToSend.Amount, unbondingDelegation.Entries[0].Balance, "balance of unbonding delegation to match for stkXPRT unbonding")
 }
