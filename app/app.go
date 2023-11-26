@@ -55,10 +55,10 @@ import (
 	pobabci "github.com/skip-mev/pob/abci"
 	"github.com/skip-mev/pob/mempool"
 
-	"github.com/persistenceOne/persistenceCore/v10/app/keepers"
-	"github.com/persistenceOne/persistenceCore/v10/app/upgrades"
-	v10 "github.com/persistenceOne/persistenceCore/v10/app/upgrades/v10"
-	v9_2_0 "github.com/persistenceOne/persistenceCore/v10/app/upgrades/v9.2.0"
+	"github.com/persistenceOne/persistenceCore/v11/app/keepers"
+	"github.com/persistenceOne/persistenceCore/v11/app/upgrades"
+	v10 "github.com/persistenceOne/persistenceCore/v11/app/upgrades/v10"
+	v9_2_0 "github.com/persistenceOne/persistenceCore/v11/app/upgrades/v9.2.0"
 )
 
 var (
