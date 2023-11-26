@@ -57,14 +57,12 @@ import (
 
 	"github.com/persistenceOne/persistenceCore/v11/app/keepers"
 	"github.com/persistenceOne/persistenceCore/v11/app/upgrades"
-	v10 "github.com/persistenceOne/persistenceCore/v11/app/upgrades/v10"
-	v9_2_0 "github.com/persistenceOne/persistenceCore/v11/app/upgrades/v9.2.0"
+	v11 "github.com/persistenceOne/persistenceCore/v11/app/upgrades/v11"
 )
 
 var (
 	DefaultNodeHome string
-	UpgradesMainnet = []upgrades.Upgrade{v10.Upgrade}
-	UpgradesTestnet = []upgrades.Upgrade{v10.Upgrade}
+	Upgrades        = []upgrades.Upgrade{v11.Upgrade}
 	ModuleBasics    = module.NewBasicManager(keepers.AppModuleBasics...)
 )
 
@@ -218,16 +216,8 @@ func NewApplication(
 
 	// setup postHandler in this method
 	// app.setupPostHandler()
-	if app.ChainID() == "test-core-2" {
-		app.setupUpgradeHandlers(UpgradesTestnet)
-		app.setupUpgradeStoreLoaders(UpgradesTestnet)
-	} else if app.ChainID() == "core-1" {
-		app.setupUpgradeHandlers(UpgradesMainnet)
-		app.setupUpgradeStoreLoaders(UpgradesMainnet)
-	} else {
-		app.setupUpgradeHandlers(UpgradesTestnet)
-		app.setupUpgradeStoreLoaders(UpgradesTestnet)
-	}
+	app.setupUpgradeHandlers(Upgrades)
+	app.setupUpgradeStoreLoaders(Upgrades)
 
 	// must be before Loading version
 	// requires the snapshot store to be created and registered as a BaseAppOption
@@ -376,19 +366,6 @@ func (app *Application) LegacyAmino() *codec.LegacyAmino {
 }
 
 func (app *Application) BeginBlocker(ctx sdk.Context, req abcitypes.RequestBeginBlock) abcitypes.ResponseBeginBlock {
-	if ctx.ChainID() == "core-1" && ctx.BlockHeight() == 13263217 {
-		v9_2_0.Fork(ctx, app.StakingKeeper)
-		v9_2_0.RemoveMainnetV9_2Prop(ctx, app.UpgradeKeeper)
-	}
-
-	if ctx.ChainID() == "test-core-2" && ctx.BlockHeight() == 1728710 {
-		v9_2_0.Fork(ctx, app.StakingKeeper)
-	}
-
-	if ctx.ChainID() == "ictest-core-1" {
-		v9_2_0.Fork(ctx, app.StakingKeeper)
-	}
-
 	return app.moduleManager.BeginBlock(ctx, req)
 }
 
