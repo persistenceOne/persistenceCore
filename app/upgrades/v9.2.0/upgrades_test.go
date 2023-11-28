@@ -8,7 +8,7 @@ import (
 	"os"
 	"testing"
 
-	v9_2_0 "github.com/persistenceOne/persistenceCore/v10/app/upgrades/v9.2.0"
+	v9_2_0 "github.com/persistenceOne/persistenceCore/v11/app/upgrades/v9.2.0"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -27,7 +27,7 @@ import (
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/persistenceOne/persistenceCore/v10/app"
+	"github.com/persistenceOne/persistenceCore/v11/app"
 )
 
 type KeeperTestHelper struct {

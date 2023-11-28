@@ -12,7 +12,7 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
 
-	"github.com/persistenceOne/persistenceCore/v10/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v11/interchaintest/helpers"
 )
 
 // TestTokenizeSendVote checks that once shares are tokenized, the tokens can be

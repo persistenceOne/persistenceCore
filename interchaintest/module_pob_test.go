@@ -14,7 +14,7 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 
-	"github.com/persistenceOne/persistenceCore/v10/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v11/interchaintest/helpers"
 )
 
 // TestSkipMevAuction tests that x/builder corretly wired and allows to make auctions to prioritise txns

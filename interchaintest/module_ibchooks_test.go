@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 
-	"github.com/persistenceOne/persistenceCore/v10/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v11/interchaintest/helpers"
 )
 
 // TestPersistenceIBCHooks ensures the ibc-hooks middleware from osmosis works.

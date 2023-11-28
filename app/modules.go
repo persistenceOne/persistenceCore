@@ -62,7 +62,7 @@ import (
 	"github.com/skip-mev/pob/x/builder"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
 
-	appparams "github.com/persistenceOne/persistenceCore/v10/app/params"
+	appparams "github.com/persistenceOne/persistenceCore/v11/app/params"
 )
 
 var ModuleAccountPermissions = map[string][]string{

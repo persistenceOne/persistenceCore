@@ -88,7 +88,7 @@ import (
 	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
 
-	"github.com/persistenceOne/persistenceCore/v10/wasmbindings"
+	"github.com/persistenceOne/persistenceCore/v11/wasmbindings"
 
 	// unnamed import of statik for swagger UI support
 	_ "github.com/cosmos/cosmos-sdk/client/docs/statik"

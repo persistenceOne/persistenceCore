@@ -40,7 +40,7 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"github.com/persistenceOne/persistenceCore/v10/app"
+	"github.com/persistenceOne/persistenceCore/v11/app"
 )
 
 var (

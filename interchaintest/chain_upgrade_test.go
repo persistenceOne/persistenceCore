@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 
-	"github.com/persistenceOne/persistenceCore/v10/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v11/interchaintest/helpers"
 )
 
 const (
@@ -30,9 +30,9 @@ func TestPersistenceUpgradeBasic(t *testing.T) {
 	var (
 		chainName            = "persistence"
 		upgradeRepo          = PersistenceCoreImage.Repository
-		initialVersion       = "v9.2.0"
+		initialVersion       = "v10.0.0"
 		upgradeBranchVersion = PersistenceCoreImage.Version
-		upgradeName          = "v10"
+		upgradeName          = "v11"
 	)
 
 	CosmosChainUpgradeTest(
