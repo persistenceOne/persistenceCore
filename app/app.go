@@ -267,6 +267,8 @@ func (app *Application) setupPOBAndAnteHandler(wasmConfig wasmtypes.WasmConfig) 
 		Mempool:       mempool,
 		TxDecoder:     app.txConfig.TxDecoder(),
 		TxEncoder:     app.txConfig.TxEncoder(),
+
+		FeeDenomsWhitelist: app.GetFeeDenomsWhitelist(),
 	}
 	anteHandler, err := NewAnteHandler(anteOptions)
 	if err != nil {
@@ -328,6 +330,18 @@ func (app *Application) GetChainBondDenom() string {
 	}
 
 	return "stake"
+}
+
+func (app *Application) GetFeeDenomsWhitelist() []string {
+	chainID := app.ChainID()
+
+	if strings.HasPrefix(chainID, "core-") {
+		return FeeDenomsWhitelistMainnet
+	} else if strings.HasPrefix(chainID, "test-core-") {
+		return FeeDenomsWhitelistTestnet
+	}
+
+	return []string{"stake"}
 }
 
 // CheckTx will check the transaction with the provided checkTxHandler. We override the default
