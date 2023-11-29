@@ -25,6 +25,8 @@ type HandlerOptions struct {
 	TxDecoder     sdk.TxDecoder
 	TxEncoder     sdk.TxEncoder
 	BuilderKeeper *builderkeeper.Keeper
+
+	FeeDenomsWhitelist []string
 }
 
 func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
@@ -57,6 +59,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
+		NewFeeDenomWhitelistDecorator(options.FeeDenomsWhitelist),
 		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
 		// SetPubKeyDecorator must be called before all signature verification decorators
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
