@@ -38,7 +38,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
-	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
@@ -210,8 +209,7 @@ func NewApplication(
 	app.MountTransientStores(app.GetTransientStoreKey())
 	app.MountMemoryStores(app.GetMemoryStoreKey())
 
-	minGasPricesStr := cast.ToString(applicationOptions.Get(server.FlagMinGasPrices))
-	app.setupPOBAndAnteHandler(wasmConfig, minGasPricesStr)
+	app.setupPOBAndAnteHandler(wasmConfig)
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
@@ -248,7 +246,7 @@ func NewApplication(
 	return app
 }
 
-func (app *Application) setupPOBAndAnteHandler(wasmConfig wasmtypes.WasmConfig, minGasPricesStr string) {
+func (app *Application) setupPOBAndAnteHandler(wasmConfig wasmtypes.WasmConfig) {
 	// Set POB's mempool into the app.
 	mempool := mempool.NewAuctionMempool(app.txConfig.TxDecoder(), app.txConfig.TxEncoder(), 0, mempool.NewDefaultAuctionFactory(app.txConfig.TxDecoder()))
 	app.BaseApp.SetMempool(mempool)
@@ -260,7 +258,6 @@ func (app *Application) setupPOBAndAnteHandler(wasmConfig wasmtypes.WasmConfig, 
 			FeegrantKeeper:  app.FeegrantKeeper,
 			SignModeHandler: app.txConfig.SignModeHandler(),
 			SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
-			TxFeeChecker:    GetTxFeeChecker(minGasPricesStr),
 		},
 		IBCKeeper:         app.IBCKeeper,
 		WasmConfig:        &wasmConfig,
@@ -270,6 +267,8 @@ func (app *Application) setupPOBAndAnteHandler(wasmConfig wasmtypes.WasmConfig, 
 		Mempool:       mempool,
 		TxDecoder:     app.txConfig.TxDecoder(),
 		TxEncoder:     app.txConfig.TxEncoder(),
+
+		FeeDenomsWhitelist: app.GetFeeDenomsWhitelist(),
 	}
 	anteHandler, err := NewAnteHandler(anteOptions)
 	if err != nil {
@@ -331,6 +330,18 @@ func (app *Application) GetChainBondDenom() string {
 	}
 
 	return "stake"
+}
+
+func (app *Application) GetFeeDenomsWhitelist() []string {
+	chainID := app.ChainID()
+
+	if strings.HasPrefix(chainID, "core-") {
+		return FeeDenomsWhitelistMainnet
+	} else if strings.HasPrefix(chainID, "test-core-") {
+		return FeeDenomsWhitelistTestnet
+	}
+
+	return []string{"stake"}
 }
 
 // CheckTx will check the transaction with the provided checkTxHandler. We override the default
