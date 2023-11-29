@@ -38,6 +38,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
+	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
@@ -209,7 +210,8 @@ func NewApplication(
 	app.MountTransientStores(app.GetTransientStoreKey())
 	app.MountMemoryStores(app.GetMemoryStoreKey())
 
-	app.setupPOBAndAnteHandler(wasmConfig)
+	minGasPricesStr := cast.ToString(applicationOptions.Get(server.FlagMinGasPrices))
+	app.setupPOBAndAnteHandler(wasmConfig, minGasPricesStr)
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
@@ -246,7 +248,7 @@ func NewApplication(
 	return app
 }
 
-func (app *Application) setupPOBAndAnteHandler(wasmConfig wasmtypes.WasmConfig) {
+func (app *Application) setupPOBAndAnteHandler(wasmConfig wasmtypes.WasmConfig, minGasPricesStr string) {
 	// Set POB's mempool into the app.
 	mempool := mempool.NewAuctionMempool(app.txConfig.TxDecoder(), app.txConfig.TxEncoder(), 0, mempool.NewDefaultAuctionFactory(app.txConfig.TxDecoder()))
 	app.BaseApp.SetMempool(mempool)
@@ -258,6 +260,7 @@ func (app *Application) setupPOBAndAnteHandler(wasmConfig wasmtypes.WasmConfig) 
 			FeegrantKeeper:  app.FeegrantKeeper,
 			SignModeHandler: app.txConfig.SignModeHandler(),
 			SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
+			TxFeeChecker:    GetTxFeeChecker(minGasPricesStr),
 		},
 		IBCKeeper:         app.IBCKeeper,
 		WasmConfig:        &wasmConfig,
