@@ -8,11 +8,11 @@ type QueryMsg struct {
 	GetTotalFunds *GetTotalFundsQuery `json:"get_total_funds,omitempty"`
 
 	// Superfluid LP
-	GetLockedLstForUser *GetLockedLstForUserQuery `json:"locked_lst_for_user,omitmepty"`
+	GetLockedLstForUser *GetLockedLstForUserQuery `json:"locked_lst_for_user,omitempty"`
 }
 
 type ExecMsg struct {
-	LockLstAssetForUser *LockLstAssetForUserMsg `json:"lock_lst_asset_for_user,omitmepty"`
+	LockLstAssetForUser *LockLstAssetForUserMsg `json:"lock_lst_asset_for_user,omitempty"`
 }
 
 type GetTotalFundsQuery struct {
