@@ -10,4 +10,5 @@ build/
 release/
 bin/
 
+.DS_Store
 *.swp

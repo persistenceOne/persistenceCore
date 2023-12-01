@@ -2,6 +2,7 @@ package interchaintest
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -19,9 +20,9 @@ import (
 	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
 )
 
-// TestLiquidStakeSendStkXPRT runs the flow of liquid XPRT staking using
-// liquidstake module, then sending the resulting stkXPRT to another address.
-func TestLiquidStakeSendStkXPRT(t *testing.T) {
+// TestLiquidStakeStkXPRT runs the flow of liquid XPRT staking using
+// liquidstake module, including LSM-LP flow when stake gets locked into Superfluid LP.
+func TestLiquidStakeStkXPRT(t *testing.T) {
 	if testing.Short() {
 		t.Skip()
 	}
@@ -54,8 +55,18 @@ func TestLiquidStakeSendStkXPRT(t *testing.T) {
 	// Allocate two chain users with funds
 	firstUserFunds := int64(10_000_000_000)
 	firstUser := interchaintest.GetAndFundTestUsers(t, ctx, firstUserName(t.Name()), firstUserFunds, chain)[0]
-	secondUserFunds := int64(1000)
+	secondUserFunds := int64(1_000_000)
 	secondUser := interchaintest.GetAndFundTestUsers(t, ctx, secondUserName(t.Name()), secondUserFunds, chain)[0]
+
+	_, lpContractAddr := helpers.SetupContract(
+		t, ctx, chain, firstUser.KeyName(),
+		"contracts/dexter_superfluid_lp.wasm",
+		`{"base_lock_period":0}`,
+	)
+	t.Logf("Deployed Superfluid LP contract: %s", lpContractAddr)
+
+	lockedLST := helpers.GetLockedLstForUser(t, ctx, chainNode, lpContractAddr, firstUser.FormattedAddress())
+	require.Equal(t, math.ZeroInt(), lockedLST, "no locked LST expected")
 
 	// Get list of validators
 	validators := helpers.QueryAllValidators(t, ctx, chainNode)
@@ -73,8 +84,10 @@ func TestLiquidStakeSendStkXPRT(t *testing.T) {
 				ValidatorAddress: validators[0].OperatorAddress,
 				TargetWeight:     math.NewInt(1),
 			}},
+			LsmDisabled:          false,
 			UnstakeFeeRate:       liquidstaketypes.DefaultUnstakeFeeRate,
 			MinLiquidStakeAmount: liquidstaketypes.DefaultMinLiquidStakeAmount,
+			CwLockedPoolAddress:  lpContractAddr,
 		},
 	})
 
@@ -124,6 +137,94 @@ func TestLiquidStakeSendStkXPRT(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, firstUserLiquidStakeAmount, stkXPRTBalance, "stkXPRT balance must match the liquid-staked amount")
 
+	// Lock some liquid stkXPRT tokens into LP contract manually, using a direct CW call
+
+	tokensToLock := sdk.NewCoin("stk/uxprt", math.NewInt(1_000_000))
+
+	msg := &helpers.LockLstAssetForUserMsg{
+		Asset: helpers.Asset{
+			Amount: tokensToLock.Amount,
+			Info: helpers.AssetInfo{
+				NativeToken: helpers.NativeTokenInfo{
+					Denom: tokensToLock.Denom,
+				},
+			},
+		},
+
+		User: firstUser.FormattedAddress(),
+	}
+
+	callData, err := json.Marshal(&helpers.ExecMsg{
+		LockLstAssetForUser: msg,
+	})
+	require.NoError(t, err, "failed to marshal ExecMsg")
+
+	txHash = helpers.ExecuteMsgWithAmount(t, ctx, chain, firstUser, lpContractAddr, tokensToLock.String(), string(callData))
+	_, err = helpers.QueryTx(ctx, chainNode, txHash)
+	require.NoError(t, err)
+
+	lockedLST = helpers.GetLockedLstForUser(t, ctx, chainNode, lpContractAddr, firstUser.FormattedAddress())
+	require.Equal(t, tokensToLock.Amount, lockedLST, "expected LST tokens to be locked")
+
+	stkXPRTBalance, err = chain.GetBalance(ctx, firstUser.FormattedAddress(), "stk/uxprt")
+	require.NoError(t, err)
+	require.Equal(t, firstUserLiquidStakeAmount.Sub(tokensToLock.Amount), stkXPRTBalance, "first user's stkXPRT balance must be reduced by locked stkXPRT")
+
+	// Delegate from the first user to get a delegation that could be used to obtain non-liquid stkXPRT
+
+	firstUserDelegationAmount := sdk.NewInt(5_000_000)
+	firstUserDelegationCoins := sdk.NewCoin(testDenom, firstUserDelegationAmount)
+
+	txHash, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
+		"staking", "delegate", validators[0].OperatorAddress, firstUserDelegationCoins.String(),
+		"--gas=auto",
+	)
+	require.NoError(t, err)
+
+	_, err = helpers.QueryTx(ctx, chainNode, txHash)
+	require.NoError(t, err)
+
+	delegation := helpers.QueryDelegation(t, ctx, chainNode, firstUser.FormattedAddress(), validators[0].OperatorAddress)
+	require.Equal(t, sdk.NewDecFromInt(firstUserDelegationCoins.Amount), delegation.Shares)
+	require.False(t, delegation.ValidatorBond)
+
+	firstUserXPRTBalanceBeforeLock, err := chain.GetBalance(ctx, firstUser.FormattedAddress(), testDenom)
+	require.NoError(t, err)
+
+	// Lock more liquid stkXPRT tokens into LP contract, as well as stake (through implicit LSM)
+	// using pStake's liquidstake module
+	tokensToLock2 := sdk.NewCoin(testDenom, math.NewInt(1_000_000))
+	stakeToLP := sdk.NewCoin(testDenom, math.NewInt(2_000_000))
+
+	txHash, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
+		"liquidstake", "stake-to-lp", validators[0].OperatorAddress, stakeToLP.String(), tokensToLock2.String(),
+		"--gas=auto",
+	)
+	require.NoError(t, err)
+
+	_, err = helpers.QueryTx(ctx, chainNode, txHash)
+	require.NoError(t, err)
+
+	// check that delegation has reduced by stakeToLP amount
+	delegation = helpers.QueryDelegation(t, ctx, chainNode, firstUser.FormattedAddress(), validators[0].OperatorAddress)
+	require.Equal(t, firstUserDelegationCoins.Amount.Sub(stakeToLP.Amount).ToLegacyDec(), delegation.Shares)
+
+	firstUserXPRTBalanceAfterLock, err := chain.GetBalance(ctx, firstUser.FormattedAddress(), testDenom)
+	require.NoError(t, err)
+	require.Equal(t,
+		firstUserXPRTBalanceBeforeLock.Sub(tokensToLock2.Amount).Add(sdk.NewInt(1)), // fix a blip from LSM rewards
+		firstUserXPRTBalanceAfterLock,
+		"first user's XPRT balance must be reduced by locked XPRT during stake-to-lp",
+	)
+
+	// Check total expected locked stkXPRT in LP: two deposits of liquid stkXPRT in different ways
+	// and one stake transfer through LSM-LP flow (using stake-to-lp).
+	totalLockedExpected := tokensToLock.Amount.Add(tokensToLock2.Amount).Add(stakeToLP.Amount)
+	totalLockedExpected = totalLockedExpected.Sub(sdk.NewInt(3)) // some dust lost due to stk math
+
+	lockedLST = helpers.GetLockedLstForUser(t, ctx, chainNode, lpContractAddr, firstUser.FormattedAddress())
+	require.Equal(t, totalLockedExpected, lockedLST, "expected LST tokens to add up")
+
 	// Send some stkXPRT tokens from first user to second user
 
 	tokensToSend := ibc.WalletAmount{
@@ -166,5 +267,6 @@ func TestLiquidStakeSendStkXPRT(t *testing.T) {
 	unbondingDelegation := helpers.QueryUnbondingDelegation(t, ctx, chainNode, secondUser.FormattedAddress(), validators[0].OperatorAddress)
 	require.Len(t, unbondingDelegation.Entries, 1)
 	require.Equal(t, secondUser.FormattedAddress(), unbondingDelegation.DelegatorAddress, "unbonding delegation must have second user as delegator")
-	require.Equal(t, tokensToSend.Amount, unbondingDelegation.Entries[0].Balance, "balance of unbonding delegation to match for stkXPRT unbonding")
+	expectedUnbondingBalance := tokensToSend.Amount.Add(sdk.NewInt(1))
+	require.Equal(t, expectedUnbondingBalance, unbondingDelegation.Entries[0].Balance, "balance of unbonding delegation to match for stkXPRT unbonding")
 }

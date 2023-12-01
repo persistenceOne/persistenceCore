@@ -283,7 +283,7 @@ ictest-haltfork: rm-testcache
 
 # Executes Liquidstake tests
 ictest-liquidstake: rm-testcache
-	cd interchaintest && go test -race -v -run TestLiquidStakeSendStkXPRT .
+	cd interchaintest && go test -race -v -run TestLiquidStakeStkXPRT .
 
 rm-testcache:
 	go clean -testcache

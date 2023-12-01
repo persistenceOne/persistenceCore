@@ -444,6 +444,7 @@ func NewAppKeeper(
 		appKeepers.StakingKeeper,
 		appKeepers.DistributionKeeper,
 		appKeepers.SlashingKeeper,
+		bApp.MsgServiceRouter(),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 	appKeepers.LiquidStakeKeeper = &liquidStakeKeeper

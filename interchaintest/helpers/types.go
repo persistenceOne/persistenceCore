@@ -1,13 +1,18 @@
 package helpers
 
-// Go based data types for querying on the contract.
-// Execute types are not needed here. We just use strings. Could add though in the future and to_string it
+import "cosmossdk.io/math"
 
-// EntryPoint
 type QueryMsg struct {
 	// IBCHooks
 	GetCount      *GetCountQuery      `json:"get_count,omitempty"`
 	GetTotalFunds *GetTotalFundsQuery `json:"get_total_funds,omitempty"`
+
+	// Superfluid LP
+	GetLockedLstForUser *GetLockedLstForUserQuery `json:"locked_lst_for_user,omitmepty"`
+}
+
+type ExecMsg struct {
+	LockLstAssetForUser *LockLstAssetForUserMsg `json:"lock_lst_asset_for_user,omitmepty"`
 }
 
 type GetTotalFundsQuery struct {
@@ -41,4 +46,32 @@ type GetCountResponse struct {
 
 type GetCountObj struct {
 	Count int64 `json:"count"`
+}
+
+type GetLockedLstForUserQuery struct {
+	// {"locked_lst_for_user": {"user":"persistence1..."}}
+	Asset Asset  `json:"asset"`
+	User  string `json:"user"`
+}
+
+type GetLockedLstForUserResponse struct {
+	Data math.Int `json:"data"`
+}
+
+type Asset struct {
+	Amount math.Int  `json:"amount"`
+	Info   AssetInfo `json:"info"`
+}
+
+type AssetInfo struct {
+	NativeToken NativeTokenInfo `json:"native_token"`
+}
+
+type NativeTokenInfo struct {
+	Denom string `json:"denom"`
+}
+
+type LockLstAssetForUserMsg struct {
+	Asset Asset  `json:"asset"`
+	User  string `json:"user"`
 }
