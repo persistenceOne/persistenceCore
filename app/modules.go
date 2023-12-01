@@ -57,6 +57,8 @@ import (
 	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/types"
 	"github.com/persistenceOne/persistence-sdk/v2/x/oracle"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
+	"github.com/persistenceOne/pstake-native/v2/x/liquidstake"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
 	"github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc"
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
 	"github.com/skip-mev/pob/x/builder"
@@ -81,6 +83,7 @@ var ModuleAccountPermissions = map[string][]string{
 	liquidstakeibctypes.DepositModuleAccount:      nil,
 	liquidstakeibctypes.UndelegationModuleAccount: {authtypes.Burner},
 	buildertypes.ModuleName:                       nil,
+	liquidstaketypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
 }
 
 var receiveAllowedMAcc = map[string]bool{
@@ -127,6 +130,7 @@ func appModules(
 		epochs.NewAppModule(*app.EpochsKeeper),
 		app.InterchainQueryModule,
 		liquidstakeibc.NewAppModule(*app.LiquidStakeIBCKeeper),
+		liquidstake.NewAppModule(*app.LiquidStakeKeeper),
 		oracle.NewAppModule(appCodec, *app.OracleKeeper, app.AccountKeeper, app.BankKeeper),
 		builder.NewAppModule(appCodec, *app.BuilderKeeper),
 		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)), // always be last to make sure that it checks for all invariants and not only part of them
@@ -178,6 +182,7 @@ func orderBeginBlockers() []string {
 		ibchookertypes.ModuleName,
 		interchainquerytypes.ModuleName,
 		liquidstakeibctypes.ModuleName,
+		liquidstaketypes.ModuleName,
 		oracletypes.ModuleName,
 	}
 }
@@ -214,6 +219,7 @@ func orderEndBlockers() []string {
 		ibchookertypes.ModuleName,
 		interchainquerytypes.ModuleName,
 		liquidstakeibctypes.ModuleName,
+		liquidstaketypes.ModuleName,
 		oracletypes.ModuleName,
 		buildertypes.ModuleName,
 	}
@@ -256,6 +262,7 @@ func orderInitGenesis() []string {
 		ibchookertypes.ModuleName,
 		interchainquerytypes.ModuleName,
 		liquidstakeibctypes.ModuleName,
+		liquidstaketypes.ModuleName,
 		oracletypes.ModuleName,
 		buildertypes.ModuleName,
 	}

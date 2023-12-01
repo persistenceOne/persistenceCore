@@ -17,6 +17,9 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
 	"github.com/strangelove-ventures/interchaintest/v7/testreporter"
+
+	"github.com/persistenceOne/persistenceCore/v10/interchaintest/helpers"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
 )
 
 var (
@@ -30,7 +33,7 @@ var (
 		UidGid:     "1025:1025",
 	}
 
-	defaultGenesisOverridesKV = append([]cosmos.GenesisKV{
+	defaultGenesisOverridesKV = []cosmos.GenesisKV{
 		{
 			Key:   "app_state.gov.params.voting_period",
 			Value: "15s",
@@ -51,9 +54,9 @@ var (
 			Key:   "app_state.builder.params.min_bid_increment.denom",
 			Value: helpers.PersistenceBondDenom,
 		},
-	})
+	}
 
-	votingGenesisOverridesKV = append([]cosmos.GenesisKV{
+	votingGenesisOverridesKV = []cosmos.GenesisKV{
 		{
 			Key:   "app_state.gov.params.voting_period",
 			Value: "600s",
@@ -70,7 +73,26 @@ var (
 			Key:   "app_state.gov.params.min_deposit.0.amount",
 			Value: "10",
 		},
-	})
+	}
+
+	fastVotingGenesisOverridesKV = []cosmos.GenesisKV{
+		{
+			Key:   "app_state.gov.params.voting_period",
+			Value: "5s",
+		},
+		{
+			Key:   "app_state.gov.params.max_deposit_period",
+			Value: "5s",
+		},
+		{
+			Key:   "app_state.gov.params.min_deposit.0.denom",
+			Value: helpers.PersistenceBondDenom,
+		},
+		{
+			Key:   "app_state.gov.params.min_deposit.0.amount",
+			Value: "10",
+		},
+	}
 
 	genesisWalletAmount = int64(10_000_000)
 )
@@ -83,6 +105,7 @@ func persistenceEncoding() *testutil.TestEncodingConfig {
 	// register custom types
 	ibclocalhost.RegisterInterfaces(cfg.InterfaceRegistry)
 	wasmtypes.RegisterInterfaces(cfg.InterfaceRegistry)
+	liquidstaketypes.RegisterInterfaces(cfg.InterfaceRegistry)
 
 	return &cfg
 }

@@ -82,6 +82,8 @@ import (
 	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/types"
 	oraclekeeper "github.com/persistenceOne/persistence-sdk/v2/x/oracle/keeper"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
+	liquidstakekeeper "github.com/persistenceOne/pstake-native/v2/x/liquidstake/keeper"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
 	"github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc"
 	liquidstakeibckeeper "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/keeper"
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
@@ -126,6 +128,7 @@ type AppKeepers struct {
 	InterchainQueryKeeper *interchainquerykeeper.Keeper
 	TransferHooksKeeper   *ibchookerkeeper.Keeper
 	LiquidStakeIBCKeeper  *liquidstakeibckeeper.Keeper
+	LiquidStakeKeeper     *liquidstakekeeper.Keeper
 	ConsensusParamsKeeper *consensusparamskeeper.Keeper
 	GroupKeeper           *groupkeeper.Keeper
 	PacketForwardKeeper   *packetforwardkeeper.Keeper
@@ -432,6 +435,18 @@ func NewAppKeeper(
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 	appKeepers.LiquidStakeIBCKeeper = &liquidStakeIBCKeeper
+
+	liquidStakeKeeper := liquidstakekeeper.NewKeeper(
+		appCodec,
+		appKeepers.keys[liquidstaketypes.StoreKey],
+		appKeepers.AccountKeeper,
+		appKeepers.BankKeeper,
+		appKeepers.StakingKeeper,
+		appKeepers.DistributionKeeper,
+		appKeepers.SlashingKeeper,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+	appKeepers.LiquidStakeKeeper = &liquidStakeKeeper
 
 	err := appKeepers.InterchainQueryKeeper.SetCallbackHandler(liquidstakeibctypes.ModuleName, appKeepers.LiquidStakeIBCKeeper.CallbackHandler())
 	if err != nil {

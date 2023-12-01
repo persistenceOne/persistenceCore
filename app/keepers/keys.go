@@ -31,6 +31,7 @@ import (
 	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
 	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v2/x/interchainquery/types"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
 )
@@ -61,6 +62,7 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 		icahosttypes.StoreKey,
 		interchainquerytypes.StoreKey,
 		liquidstakeibctypes.StoreKey,
+		liquidstaketypes.StoreKey,
 		minttypes.StoreKey,
 		oracletypes.StoreKey,
 		paramstypes.StoreKey,
