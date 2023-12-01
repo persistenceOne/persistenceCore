@@ -8,8 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 
-	"github.com/persistenceOne/persistenceCore/v11/interchaintest/helpers"
-
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	testutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	ibclocalhost "github.com/cosmos/ibc-go/v7/modules/light-clients/09-localhost"
@@ -18,7 +16,7 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
 	"github.com/strangelove-ventures/interchaintest/v7/testreporter"
 
-	"github.com/persistenceOne/persistenceCore/v10/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v11/interchaintest/helpers"
 	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
 )
 
