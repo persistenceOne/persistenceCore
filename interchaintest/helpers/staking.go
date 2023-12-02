@@ -64,6 +64,26 @@ func QueryDelegation(
 	return resp.Delegation
 }
 
+// QueryUnbondingDelegation gets info about particular unbonding delegation
+func QueryUnbondingDelegation(
+	t *testing.T,
+	ctx context.Context,
+	chainNode *cosmos.ChainNode,
+	delegatorAddr string,
+	valoperAddr string,
+) UnbondingDelegation {
+	stdout, _, err := chainNode.ExecQuery(ctx, "staking", "unbonding-delegation", delegatorAddr, valoperAddr)
+	require.NoError(t, err)
+
+	debugOutput(t, string(stdout))
+
+	var resp UnbondingDelegation
+	err = json.Unmarshal([]byte(stdout), &resp)
+	require.NoError(t, err)
+
+	return resp
+}
+
 type queryDelegationResponse struct {
 	Delegation Delegation `json:"delegation"`
 }
@@ -89,4 +109,22 @@ type Validator struct {
 	UnbondingTime       time.Time `json:"unbonding_time"`
 	ValidatorBondShares sdk.Dec   `json:"validator_bond_shares"`
 	LiquidShares        sdk.Dec   `json:"liquid_shares"`
+}
+
+type UnbondingDelegation struct {
+	DelegatorAddress string `json:"delegator_address"`
+	ValidatorAddress string `json:"validator_address"`
+
+	Entries []UnbondingDelegationEntry `json:"entries"`
+}
+
+type UnbondingDelegationEntry struct {
+	CreationHeight          string    `json:"creation_height"`
+	CompletionTime          time.Time `json:"completion_time"`
+	InitialBalance          sdk.Int   `json:"initial_balance"`
+	Balance                 sdk.Int   `json:"balance"`
+	UnbondingID             string    `json:"unbonding_id"`
+	UnbondingOnHoldRefCount string    `json:"unbonding_on_hold_ref_count"`
+	ValidatorBondFactor     sdk.Dec   `json:"validator_bond_factor"`
+	GlobalLiquidStakingCap  sdk.Dec   `json:"global_liquid_staking_cap"`
 }

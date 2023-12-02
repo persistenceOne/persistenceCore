@@ -36,7 +36,7 @@ func ExecuteMsgWithAmount(
 	chain *cosmos.CosmosChain,
 	user ibc.Wallet,
 	contractAddr, amount, message string,
-) {
+) (txHash string) {
 	cmd := []string{
 		"wasm", "execute", contractAddr, message,
 		"--gas", "500000",
@@ -51,6 +51,8 @@ func ExecuteMsgWithAmount(
 	require.NoError(t, err)
 
 	debugOutput(t, string(stdout))
+
+	return txHash
 }
 
 func ExecuteMsgWithFee(
@@ -59,7 +61,7 @@ func ExecuteMsgWithFee(
 	chain *cosmos.CosmosChain,
 	user ibc.Wallet,
 	contractAddr, amount, feeCoin, message string,
-) {
+) (txHash string) {
 	cmd := []string{
 		"wasm", "execute", contractAddr, message,
 		"--fees", feeCoin,
@@ -78,4 +80,6 @@ func ExecuteMsgWithFee(
 	require.NoError(t, err)
 
 	debugOutput(t, string(stdout))
+
+	return txHash
 }
