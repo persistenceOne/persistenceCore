@@ -8,11 +8,11 @@ type QueryMsg struct {
 	GetTotalFunds *GetTotalFundsQuery `json:"get_total_funds,omitempty"`
 
 	// Superfluid LP
-	GetLockedLstForUser *GetLockedLstForUserQuery `json:"locked_lst_for_user,omitempty"`
+	GetTotalAmountLocked *GetTotalAmountLockedQuery `json:"total_amount_locked,omitempty"`
 }
 
 type ExecMsg struct {
-	LockLstAssetForUser *LockLstAssetForUserMsg `json:"lock_lst_asset_for_user,omitempty"`
+	LockLstAsset *LockLstAssetMsg `json:"lock_lst_asset,omitempty"`
 }
 
 type GetTotalFundsQuery struct {
@@ -48,13 +48,13 @@ type GetCountObj struct {
 	Count int64 `json:"count"`
 }
 
-type GetLockedLstForUserQuery struct {
-	// {"locked_lst_for_user": {"user":"persistence1..."}}
-	Asset Asset  `json:"asset"`
-	User  string `json:"user"`
+type GetTotalAmountLockedQuery struct {
+	// {"total_amount_locked": {"user":"persistence1..."}}
+	AssetInfo AssetInfo `json:"asset_info"`
+	User      string    `json:"user"`
 }
 
-type GetLockedLstForUserResponse struct {
+type GetTotalAmountLockedResponse struct {
 	Data math.Int `json:"data"`
 }
 
@@ -71,7 +71,12 @@ type NativeTokenInfo struct {
 	Denom string `json:"denom"`
 }
 
-type LockLstAssetForUserMsg struct {
-	Asset Asset  `json:"asset"`
-	User  string `json:"user"`
+type LockLstAssetMsg struct {
+	Asset Asset `json:"asset"`
+}
+
+type SuperFluidInstantiateMsg struct {
+	VaultAddress          string      `json:"vault_addr"`
+	Owner                 string      `json:"owner"`
+	AllowedLockableTokens []AssetInfo `json:"allowed_lockable_tokens"`
 }
