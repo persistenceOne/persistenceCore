@@ -11,7 +11,7 @@ import (
 )
 
 type FeeDenomWhitelistDecorator struct {
-	whitelistMap map[string]struct{}
+	whitelistMap map[string]bool
 	whitelistStr string // this is used for err msg only
 }
 
@@ -20,13 +20,13 @@ func NewFeeDenomWhitelistDecorator(denomsWhitelist []string) *FeeDenomWhitelistD
 		panic("at least one fee denom must be whitelisted")
 	}
 
-	whitelistMap := map[string]struct{}{}
+	whitelistMap := map[string]bool{}
 	for _, denom := range denomsWhitelist {
 		// must be valid denom
 		if err := sdk.ValidateDenom(denom); err != nil {
 			panic(fmt.Sprintf("invalid denoms whiltelist; err: %v", err))
 		}
-		whitelistMap[denom] = struct{}{}
+		whitelistMap[denom] = true
 	}
 
 	return &FeeDenomWhitelistDecorator{
