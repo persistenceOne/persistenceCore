@@ -25,11 +25,10 @@ func TestFeeDenomWhiltelistDecorator(t *testing.T) {
 		panics          bool
 	}{
 		{
-			name:            "empty denoms list",
-			txFee:           coins(),
+			name:            "empty denoms list should allow all denom",
+			txFee:           coins(1, "abcd", 1, "xyz"),
 			denomsWhitelist: []string{},
-			expectedErr:     "at least one fee denom must be whitelisted",
-			panics:          true,
+			expectedErr:     "",
 		},
 		{
 			name:            "invalid denoms list",
