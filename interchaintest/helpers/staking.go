@@ -64,6 +64,25 @@ func QueryDelegation(
 	return resp.Delegation
 }
 
+// QueryUnbondingDelegations gets info about all unbonding delegations for a delegator
+func QueryUnbondingDelegations(
+	t *testing.T,
+	ctx context.Context,
+	chainNode *cosmos.ChainNode,
+	delegatorAddr string,
+) []UnbondingDelegation {
+	stdout, _, err := chainNode.ExecQuery(ctx, "staking", "unbonding-delegations", delegatorAddr)
+	require.NoError(t, err)
+
+	debugOutput(t, string(stdout))
+
+	var resp queryUnbondingDelegationsResponse
+	err = json.Unmarshal([]byte(stdout), &resp)
+	require.NoError(t, err)
+
+	return resp.UnbondingResponses
+}
+
 // QueryUnbondingDelegation gets info about particular unbonding delegation
 func QueryUnbondingDelegation(
 	t *testing.T,
@@ -97,6 +116,10 @@ type Delegation struct {
 
 type queryValidatorsResponse struct {
 	Validators []Validator `json:"validators"`
+}
+
+type queryUnbondingDelegationsResponse struct {
+	UnbondingResponses []UnbondingDelegation `json:"unbonding_responses"`
 }
 
 type Validator struct {

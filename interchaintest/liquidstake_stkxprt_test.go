@@ -58,14 +58,26 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 	secondUserFunds := int64(1_000_000)
 	secondUser := interchaintest.GetAndFundTestUsers(t, ctx, secondUserName(t.Name()), secondUserFunds, chain)[0]
 
+	instantiateMsg, err := json.Marshal(helpers.SuperFluidInstantiateMsg{
+		VaultAddress: "",
+		Owner:        firstUser.FormattedAddress(),
+		AllowedLockableTokens: []helpers.AssetInfo{{
+			NativeToken: helpers.NativeTokenInfo{
+				Denom: "stk/uxprt",
+			},
+		}},
+	})
+	require.NoError(t, err)
+
 	_, lpContractAddr := helpers.SetupContract(
 		t, ctx, chain, firstUser.KeyName(),
 		"contracts/dexter_superfluid_lp.wasm",
-		`{"base_lock_period":0}`,
+		string(instantiateMsg),
 	)
+
 	t.Logf("Deployed Superfluid LP contract: %s", lpContractAddr)
 
-	lockedLST := helpers.GetLockedLstForUser(t, ctx, chainNode, lpContractAddr, firstUser.FormattedAddress())
+	lockedLST := helpers.GetTotalAmountLocked(t, ctx, chainNode, lpContractAddr, firstUser.FormattedAddress())
 	require.Equal(t, math.ZeroInt(), lockedLST, "no locked LST expected")
 
 	// Get list of validators
@@ -88,6 +100,8 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 			UnstakeFeeRate:       liquidstaketypes.DefaultUnstakeFeeRate,
 			MinLiquidStakeAmount: liquidstaketypes.DefaultMinLiquidStakeAmount,
 			CwLockedPoolAddress:  lpContractAddr,
+			FeeAccountAddress:    liquidstaketypes.DummyFeeAccountAcc.String(),
+			AutocompoundFeeRate:  liquidstaketypes.DefaultAutocompoundFeeRate,
 		},
 	})
 
@@ -141,7 +155,7 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 
 	tokensToLock := sdk.NewCoin("stk/uxprt", math.NewInt(1_000_000))
 
-	msg := &helpers.LockLstAssetForUserMsg{
+	msg := &helpers.LockLstAssetMsg{
 		Asset: helpers.Asset{
 			Amount: tokensToLock.Amount,
 			Info: helpers.AssetInfo{
@@ -150,12 +164,10 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 				},
 			},
 		},
-
-		User: firstUser.FormattedAddress(),
 	}
 
 	callData, err := json.Marshal(&helpers.ExecMsg{
-		LockLstAssetForUser: msg,
+		LockLstAsset: msg,
 	})
 	require.NoError(t, err, "failed to marshal ExecMsg")
 
@@ -163,7 +175,7 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 	_, err = helpers.QueryTx(ctx, chainNode, txHash)
 	require.NoError(t, err)
 
-	lockedLST = helpers.GetLockedLstForUser(t, ctx, chainNode, lpContractAddr, firstUser.FormattedAddress())
+	lockedLST = helpers.GetTotalAmountLocked(t, ctx, chainNode, lpContractAddr, firstUser.FormattedAddress())
 	require.Equal(t, tokensToLock.Amount, lockedLST, "expected LST tokens to be locked")
 
 	stkXPRTBalance, err = chain.GetBalance(ctx, firstUser.FormattedAddress(), "stk/uxprt")
@@ -222,7 +234,7 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 	totalLockedExpected := tokensToLock.Amount.Add(tokensToLock2.Amount).Add(stakeToLP.Amount)
 	totalLockedExpected = totalLockedExpected.Sub(sdk.NewInt(3)) // some dust lost due to stk math
 
-	lockedLST = helpers.GetLockedLstForUser(t, ctx, chainNode, lpContractAddr, firstUser.FormattedAddress())
+	lockedLST = helpers.GetTotalAmountLocked(t, ctx, chainNode, lpContractAddr, firstUser.FormattedAddress())
 	require.Equal(t, totalLockedExpected, lockedLST, "expected LST tokens to add up")
 
 	// Send some stkXPRT tokens from first user to second user

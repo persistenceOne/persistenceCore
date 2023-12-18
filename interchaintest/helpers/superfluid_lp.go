@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func GetLockedLstForUser(
+func GetTotalAmountLocked(
 	t *testing.T,
 	ctx context.Context,
 	chainNode *cosmos.ChainNode,
@@ -18,13 +18,10 @@ func GetLockedLstForUser(
 	uaddr string,
 ) math.Int {
 	query, err := json.Marshal(QueryMsg{
-		GetLockedLstForUser: &GetLockedLstForUserQuery{
-			Asset: Asset{
-				Amount: math.NewInt(0),
-				Info: AssetInfo{
-					NativeToken: NativeTokenInfo{
-						Denom: "stk/uxprt",
-					},
+		GetTotalAmountLocked: &GetTotalAmountLockedQuery{
+			AssetInfo: AssetInfo{
+				NativeToken: NativeTokenInfo{
+					Denom: "stk/uxprt",
 				},
 			},
 			User: uaddr,
@@ -37,7 +34,7 @@ func GetLockedLstForUser(
 
 	debugOutput(t, string(stdout))
 
-	var res GetLockedLstForUserResponse
+	var res GetTotalAmountLockedResponse
 
 	err = json.Unmarshal([]byte(stdout), &res)
 	require.NoError(t, err)
