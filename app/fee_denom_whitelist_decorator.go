@@ -13,14 +13,9 @@ import (
 type FeeDenomWhitelistDecorator struct {
 	whitelistMap map[string]bool
 	whitelistStr string // this is used for err msg only
-	allowAll     bool
 }
 
 func NewFeeDenomWhitelistDecorator(denomsWhitelist []string) *FeeDenomWhitelistDecorator {
-	if len(denomsWhitelist) == 0 {
-		return &FeeDenomWhitelistDecorator{allowAll: true}
-	}
-
 	whitelistMap := map[string]bool{}
 	for _, denom := range denomsWhitelist {
 		// must be valid denom
@@ -33,12 +28,15 @@ func NewFeeDenomWhitelistDecorator(denomsWhitelist []string) *FeeDenomWhitelistD
 	return &FeeDenomWhitelistDecorator{
 		whitelistMap: whitelistMap,
 		whitelistStr: strings.Join(denomsWhitelist, ","),
-		allowAll:     false,
 	}
 }
 
+func (fdd *FeeDenomWhitelistDecorator) allowAll() bool {
+	return len(fdd.whitelistMap) == 0
+}
+
 func (fdd *FeeDenomWhitelistDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
-	if fdd.allowAll {
+	if fdd.allowAll() {
 		return next(ctx, tx, simulate)
 	}
 
