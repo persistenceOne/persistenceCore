@@ -1012,10 +1012,10 @@ github.com/pelletier/go-toml/v2 v2.0.8/go.mod h1:vuYfssBdrU2XDZ9bYydBu6t+6a6PYNc
 github.com/performancecopilot/speed v3.0.0+incompatible/go.mod h1:/CLtqpZ5gBg1M9iaPbIdPPGyKcA8hKdoy6hAWba7Yac=
 github.com/persistenceOne/cosmos-sdk v0.47.3-lsm5 h1:z5k9M81ogHgaMyLck7GVzfdNYvn03ZTXsCpQDzy69eQ=
 github.com/persistenceOne/cosmos-sdk v0.47.3-lsm5/go.mod h1:4oxikyyHyEe1wlYQFMGITfW/r01wYtfj8yjwru7bSWE=
-github.com/persistenceOne/ibc-apps/middleware/packet-forward-middleware/v7 v7.0.0-20231013113028-ed5200e45b3f h1:rBSSzxpWmrv0wcBL8StKY+SskBwjSm0GVQKbOoBN5gs=
-github.com/persistenceOne/ibc-apps/middleware/packet-forward-middleware/v7 v7.0.0-20231013113028-ed5200e45b3f/go.mod h1:v+x4hTcShRZylXZNsK5zXFQ8QMV448rbIY4e9HDXBkY=
-github.com/persistenceOne/ibc-apps/modules/ibc-hooks/v7 v7.0.0-20231013113028-ed5200e45b3f h1:7ifIPNlYNFey0DTRMLSc3b3TwSy0Gia/HQ3SVhfum+E=
-github.com/persistenceOne/ibc-apps/modules/ibc-hooks/v7 v7.0.0-20231013113028-ed5200e45b3f/go.mod h1:fbwFAk6oxuKiFvp5SLCItT34A1+F5LjGcMNOTuU8h4c=
+github.com/persistenceOne/ibc-apps/middleware/packet-forward-middleware/v7 v7.0.0-20231208060526-73231b958bd4 h1:7HGqX27LtoKrbOHTI1ymyT0fAHHoSd+xfxGuI8KFJ2Y=
+github.com/persistenceOne/ibc-apps/middleware/packet-forward-middleware/v7 v7.0.0-20231208060526-73231b958bd4/go.mod h1:v+x4hTcShRZylXZNsK5zXFQ8QMV448rbIY4e9HDXBkY=
+github.com/persistenceOne/ibc-apps/modules/ibc-hooks/v7 v7.0.0-20231208060526-73231b958bd4 h1:vxJTAcApUh/pizcdEj6KFI5dv9KeiM2RGOggJz6y3k4=
+github.com/persistenceOne/ibc-apps/modules/ibc-hooks/v7 v7.0.0-20231208060526-73231b958bd4/go.mod h1:fbwFAk6oxuKiFvp5SLCItT34A1+F5LjGcMNOTuU8h4c=
 github.com/persistenceOne/ibc-go/v7 v7.2.0-lsm3 h1:U4NsRXpg9VHCFVyrk1JfG+sIA3frtZIWbtNmmumjta8=
 github.com/persistenceOne/ibc-go/v7 v7.2.0-lsm3/go.mod h1:PDvFOPEd8Fz25qBmhX7KXSPX4COyGnytKweRdEP1yfA=
 github.com/persistenceOne/persistence-sdk/v2 v2.1.1 h1:fo8Og2QkjsqqhH/wiEiOSB99M2Jr0kLqirU2xhJRZfQ=

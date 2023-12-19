@@ -12,6 +12,11 @@ import (
 )
 
 func TestFeeDenomWhiltelistDecorator(t *testing.T) {
+	testDenomsWhitelist := []string{
+		"uxprt",
+		"ibc/C8A74ABBE2AF892E15680D916A7C22130585CE5704F9B17A10F184A90D53BECA",
+	}
+
 	testcases := []struct {
 		name            string
 		txFee           sdk.Coins
@@ -20,11 +25,10 @@ func TestFeeDenomWhiltelistDecorator(t *testing.T) {
 		panics          bool
 	}{
 		{
-			name:            "empty denoms list",
-			txFee:           coins(),
+			name:            "empty denoms list should allow all denom",
+			txFee:           coins(1, "abcd", 1, "xyz"),
 			denomsWhitelist: []string{},
-			expectedErr:     "at least one fee denom must be whitelisted",
-			panics:          true,
+			expectedErr:     "",
 		},
 		{
 			name:            "invalid denoms list",
@@ -36,25 +40,25 @@ func TestFeeDenomWhiltelistDecorator(t *testing.T) {
 		{
 			name:            "valid denoms - valid fee",
 			txFee:           coins(10, "uxprt"),
-			denomsWhitelist: FeeDenomsWhitelistMainnet,
+			denomsWhitelist: testDenomsWhitelist,
 			expectedErr:     "",
 		},
 		{
 			name:            "valid denoms - multiple valid fees",
-			txFee:           coins(10, FeeDenomsWhitelistMainnet[1], 10, "uxprt"),
-			denomsWhitelist: FeeDenomsWhitelistMainnet,
+			txFee:           coins(10, testDenomsWhitelist[1], 10, "uxprt"),
+			denomsWhitelist: testDenomsWhitelist,
 			expectedErr:     "",
 		},
 		{
 			name:            "valid denoms - invalid fee",
 			txFee:           coins(10, "abcd"),
-			denomsWhitelist: FeeDenomsWhitelistMainnet,
+			denomsWhitelist: testDenomsWhitelist,
 			expectedErr:     "fee denom is not allowed; got: abcd, allowed: uxprt,ibc/C8A74ABBE2AF892E15680D916A7C22130585CE5704F9B17A10F184A90D53BECA: invalid coins",
 		},
 		{
 			name:            "valid denoms - multiple invalid fee",
 			txFee:           coins(10, "uxprt", 10, "xyz"),
-			denomsWhitelist: FeeDenomsWhitelistMainnet,
+			denomsWhitelist: testDenomsWhitelist,
 			expectedErr:     "fee denom is not allowed; got: xyz, allowed: uxprt,ibc/C8A74ABBE2AF892E15680D916A7C22130585CE5704F9B17A10F184A90D53BECA: invalid coins",
 		},
 	}
