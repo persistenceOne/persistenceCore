@@ -341,7 +341,8 @@ func (app *Application) GetFeeDenomsWhitelist() []string {
 		return FeeDenomsWhitelistTestnet
 	}
 
-	return []string{"stake"}
+	// Allow all denoms for random chain
+	return []string{} // empty list => allow all
 }
 
 // CheckTx will check the transaction with the provided checkTxHandler. We override the default
