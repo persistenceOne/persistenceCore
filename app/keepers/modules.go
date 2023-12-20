@@ -41,6 +41,7 @@ import (
 	"github.com/persistenceOne/pstake-native/v2/x/liquidstake"
 	"github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc"
 	"github.com/persistenceOne/pstake-native/v2/x/lscosmos"
+	"github.com/persistenceOne/pstake-native/v2/x/ratesync"
 	buildermodule "github.com/skip-mev/pob/x/builder"
 )
 
@@ -86,6 +87,7 @@ var AppModuleBasics = []module.AppModuleBasic{
 	lscosmos.AppModuleBasic{},
 	liquidstakeibc.AppModuleBasic{},
 	liquidstake.AppModuleBasic{},
+	ratesync.AppModuleBasic{},
 	consensus.AppModuleBasic{},
 	groupmodule.AppModuleBasic{},
 	ibchooks.AppModuleBasic{},

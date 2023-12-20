@@ -33,6 +33,7 @@ import (
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
 	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
+	ratesynctypes "github.com/persistenceOne/pstake-native/v2/x/ratesync/types"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
 )
 
@@ -63,6 +64,7 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 		interchainquerytypes.StoreKey,
 		liquidstakeibctypes.StoreKey,
 		liquidstaketypes.StoreKey,
+		ratesynctypes.StoreKey,
 		minttypes.StoreKey,
 		oracletypes.StoreKey,
 		paramstypes.StoreKey,

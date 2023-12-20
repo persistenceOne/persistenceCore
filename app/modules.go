@@ -61,6 +61,8 @@ import (
 	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
 	"github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc"
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
+	"github.com/persistenceOne/pstake-native/v2/x/ratesync"
+	ratesynctypes "github.com/persistenceOne/pstake-native/v2/x/ratesync/types"
 	"github.com/skip-mev/pob/x/builder"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
 
@@ -131,6 +133,7 @@ func appModules(
 		app.InterchainQueryModule,
 		liquidstakeibc.NewAppModule(*app.LiquidStakeIBCKeeper),
 		liquidstake.NewAppModule(*app.LiquidStakeKeeper),
+		ratesync.NewAppModule(appCodec, *app.RateSyncKeeper, app.AccountKeeper, app.BankKeeper),
 		oracle.NewAppModule(appCodec, *app.OracleKeeper, app.AccountKeeper, app.BankKeeper),
 		builder.NewAppModule(appCodec, *app.BuilderKeeper),
 		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)), // always be last to make sure that it checks for all invariants and not only part of them
@@ -183,6 +186,7 @@ func orderBeginBlockers() []string {
 		interchainquerytypes.ModuleName,
 		liquidstakeibctypes.ModuleName,
 		liquidstaketypes.ModuleName,
+		ratesynctypes.ModuleName,
 		oracletypes.ModuleName,
 	}
 }
@@ -220,6 +224,7 @@ func orderEndBlockers() []string {
 		interchainquerytypes.ModuleName,
 		liquidstakeibctypes.ModuleName,
 		liquidstaketypes.ModuleName,
+		ratesynctypes.ModuleName,
 		oracletypes.ModuleName,
 		buildertypes.ModuleName,
 	}
@@ -263,6 +268,7 @@ func orderInitGenesis() []string {
 		interchainquerytypes.ModuleName,
 		liquidstakeibctypes.ModuleName,
 		liquidstaketypes.ModuleName,
+		ratesynctypes.ModuleName,
 		oracletypes.ModuleName,
 		buildertypes.ModuleName,
 	}

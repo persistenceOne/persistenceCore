@@ -87,6 +87,9 @@ import (
 	"github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc"
 	liquidstakeibckeeper "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/keeper"
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
+	"github.com/persistenceOne/pstake-native/v2/x/ratesync"
+	ratesynckeeper "github.com/persistenceOne/pstake-native/v2/x/ratesync/keeper"
+	ratesynctypes "github.com/persistenceOne/pstake-native/v2/x/ratesync/types"
 	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
 
@@ -129,6 +132,7 @@ type AppKeepers struct {
 	TransferHooksKeeper   *ibchookerkeeper.Keeper
 	LiquidStakeIBCKeeper  *liquidstakeibckeeper.Keeper
 	LiquidStakeKeeper     *liquidstakekeeper.Keeper
+	RateSyncKeeper        *ratesynckeeper.Keeper
 	ConsensusParamsKeeper *consensusparamskeeper.Keeper
 	GroupKeeper           *groupkeeper.Keeper
 	PacketForwardKeeper   *packetforwardkeeper.Keeper
@@ -455,10 +459,20 @@ func NewAppKeeper(
 	}
 
 	liquidStakeIBCModule := liquidstakeibc.NewIBCModule(*appKeepers.LiquidStakeIBCKeeper)
+	appKeepers.RateSyncKeeper = ratesynckeeper.NewKeeper(appCodec,
+		appKeepers.keys[ratesynctypes.StoreKey],
+		appKeepers.EpochsKeeper,
+		appKeepers.LiquidStakeKeeper,
+		appKeepers.ICAControllerKeeper,
+		appKeepers.IBCKeeper, bApp.MsgServiceRouter(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String())
 
+	appKeepers.LiquidStakeIBCKeeper.SetHooks(liquidstakeibctypes.NewMultiLiquidStakeIBCHooks(
+		appKeepers.RateSyncKeeper.LiquidStakeIBCHooks()),
+	)
 	appKeepers.EpochsKeeper.SetHooks(
 		epochstypes.NewMultiEpochHooks(
-			appKeepers.LiquidStakeIBCKeeper.NewEpochHooks(),
+			appKeepers.LiquidStakeIBCKeeper.NewEpochHooks(), appKeepers.RateSyncKeeper.EpochHooks(),
 		),
 	)
 
@@ -552,6 +566,7 @@ func NewAppKeeper(
 
 	// Information will flow: ibc-port -> icaController -> lscosmos.
 	var icaControllerStack ibctypes.IBCModule = liquidStakeIBCModule
+	icaControllerStack = ratesync.NewIBCModule(icaControllerStack, *appKeepers.RateSyncKeeper)
 	icaControllerStack = icacontroller.NewIBCMiddleware(icaControllerStack, *appKeepers.ICAControllerKeeper)
 
 	var wasmStack ibctypes.IBCModule
@@ -563,7 +578,8 @@ func NewAppKeeper(
 		AddRoute(wasm.ModuleName, wasmStack).
 		AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
 		AddRoute(icahosttypes.SubModuleName, icaHostStack).
-		AddRoute(liquidstakeibctypes.ModuleName, icaControllerStack)
+		AddRoute(liquidstakeibctypes.ModuleName, icaControllerStack).
+		AddRoute(ratesynctypes.ModuleName, icaControllerStack)
 	appKeepers.IBCKeeper.SetRouter(ibcRouter)
 
 	govRouter := govv1beta1.NewRouter()
