@@ -2,6 +2,7 @@ package v11_1_0
 
 import (
 	store "github.com/cosmos/cosmos-sdk/store/types"
+	ratesynctypes "github.com/persistenceOne/pstake-native/v2/x/ratesync/types"
 
 	"github.com/persistenceOne/persistenceCore/v11/app/upgrades"
 )
@@ -15,6 +16,6 @@ var Upgrade = upgrades.Upgrade{
 	UpgradeName:          UpgradeName,
 	CreateUpgradeHandler: CreateUpgradeHandler,
 	StoreUpgrades: store.StoreUpgrades{
-		Added: []string{},
+		Added: []string{ratesynctypes.StoreKey},
 	},
 }
