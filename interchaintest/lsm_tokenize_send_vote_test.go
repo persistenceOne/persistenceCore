@@ -49,7 +49,7 @@ func TestTokenizeSendVote(t *testing.T) {
 
 	// Get list of validators
 	validators := helpers.QueryAllValidators(t, ctx, chainNode)
-	require.Len(t, validators, validatorsCount, "valudator returned must match count of validators created")
+	require.Len(t, validators, validatorsCount, "validator returned must match count of validators created")
 
 	// Bond first user
 	firstUserBondAmount := sdk.NewInt(100000)
@@ -169,7 +169,7 @@ func TestTokenizeSendVote(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, math.ZeroInt(), sharesBalance, "first user's shares balance must be 0")
 
-	// Votes from the first user now sucessfully reflected in the tally towards NoWithVeto
+	// Votes from the first user now successfully reflected in the tally towards NoWithVeto
 	tally = helpers.QueryProposalTally(t, ctx, chainNode, proposalTx.ProposalID)
 	require.Equal(t, math.ZeroInt(), tally.YesCount, "second user's bonded amount not shown in tally")
 	require.Equal(t, firstUserSharesLeftAmount, tally.NoWithVetoCount, "first user's bonded amount counted towards NoWithVeto now")

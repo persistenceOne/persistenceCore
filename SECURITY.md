@@ -56,7 +56,7 @@ We ask security researchers to keep vulnerabilities and communications around vu
 
 ### Disclosure Policy
 
-When the security team receives a security bug report, they will assign it to a primary handler. This person will co-ordinate the fix and release process, involving the following steps:
+When the security team receives a security bug report, they will assign it to a primary handler. This person will coordinate the fix and release process, involving the following steps:
 
 - Confirm the problem and determine the affected versions.
 - Audit code to find any potential similar problems.

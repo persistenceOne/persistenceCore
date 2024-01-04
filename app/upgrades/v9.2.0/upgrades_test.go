@@ -33,7 +33,7 @@ type KeeperTestHelper struct {
 
 	// defaults to false,
 	// set to true if any method that potentially alters baseapp/abci is used.
-	// this controls whether or not we can re-use the app instance, or have to set a new one.
+	// this controls whether or not we can reuse the app instance, or have to set a new one.
 	hasUsedAbci bool
 	// defaults to false, set to true if we want to use a new app instance with caching enabled.
 	// then on new setup test call, we just drop the current cache.

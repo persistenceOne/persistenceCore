@@ -33,7 +33,7 @@ func TestFeeDenomWhiltelistDecorator(t *testing.T) {
 			name:            "invalid denoms list",
 			txFee:           coins(),
 			denomsWhitelist: []string{"a"},
-			expectedErr:     "invalid denoms whiltelist; err: invalid denom: a",
+			expectedErr:     "invalid denoms whitelist; err: invalid denom: a",
 			panics:          true,
 		},
 		{

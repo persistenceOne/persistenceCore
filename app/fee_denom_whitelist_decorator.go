@@ -19,7 +19,7 @@ func NewFeeDenomWhitelistDecorator(denomsWhitelist []string) *FeeDenomWhitelistD
 	for _, denom := range denomsWhitelist {
 		// must be valid denom
 		if err := sdk.ValidateDenom(denom); err != nil {
-			panic(fmt.Sprintf("invalid denoms whiltelist; err: %v", err))
+			panic(fmt.Sprintf("invalid denoms whitelist; err: %v", err))
 		}
 		whitelistMap[denom] = true
 	}
