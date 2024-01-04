@@ -8,10 +8,6 @@ import (
 	"os"
 	"testing"
 
-	v9_2_0 "github.com/persistenceOne/persistenceCore/v11/app/upgrades/v9.2.0"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/CosmWasm/wasmd/x/wasm"
 	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -23,11 +19,13 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/persistenceOne/persistenceCore/v11/app"
+	v9_2_0 "github.com/persistenceOne/persistenceCore/v11/app/upgrades/v9.2.0"
 )
 
 type KeeperTestHelper struct {

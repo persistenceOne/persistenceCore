@@ -9,16 +9,15 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/stretchr/testify/suite"
-	"go.uber.org/zap"
-	"gopkg.in/yaml.v3"
-
 	coretypes "github.com/cometbft/cometbft/rpc/core/types"
 	starship "github.com/cosmology-tech/starship/clients/go/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 	lscosmos "github.com/persistenceOne/pstake-native/v2/x/lscosmos"
+	"github.com/stretchr/testify/suite"
+	"go.uber.org/zap"
+	"gopkg.in/yaml.v3"
 )
 
 var configFile = "./config.yaml"
