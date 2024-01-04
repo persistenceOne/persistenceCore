@@ -18,7 +18,7 @@ func (s *TestSuite) RunTokenTransferTests() {
 
 	amt := 2345000
 	balBefore := s.GetBalance(persistence, address, uxprt)
-	s.T().Logf("transfering %d%s to addr: %s", amt, uxprt, address)
+	s.T().Logf("transferring %d%s to addr: %s", amt, uxprt, address)
 	s.TransferTokens(persistence, address, amt, uxprt)
 	balAfter := s.GetBalance(persistence, address, uxprt)
 	s.T().Log("verifying balance after transfer")

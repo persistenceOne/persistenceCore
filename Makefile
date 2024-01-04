@@ -172,7 +172,7 @@ draw-deps:
 # 								 Access to persistenceCore binary here
 # 		NOTE: To be used for testing only, since the container will be removed after stopping
 # 	make docker-run DOCKER_CMD=sleep 10000000 DOCKER_OPTS=-d   ## Will run the container in the background
-# 		NOTE: Recommeded to use docker commands directly for long running processes
+# 		NOTE: Recommended to use docker commands directly for long running processes
 # 	make docker-clean  # Will clean up the running container, as well as delete the image
 # 						 after one is done testing
 

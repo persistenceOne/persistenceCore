@@ -199,7 +199,7 @@ func TestPacketForwardMiddlewareRouter(t *testing.T) {
 		func() {
 			err := relayer.StopRelayer(ctx, relayerExecReporter)
 			if err != nil {
-				t.Logf("an error occured while stopping the relayer: %s", err)
+				t.Logf("an error occurred while stopping the relayer: %s", err)
 			}
 		},
 	)

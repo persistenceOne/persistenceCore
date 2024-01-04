@@ -17,7 +17,7 @@ import (
 	"github.com/persistenceOne/persistenceCore/v11/interchaintest/helpers"
 )
 
-// TestSkipMevAuction tests that x/builder corretly wired and allows to make auctions to prioritise txns
+// TestSkipMevAuction tests that x/builder correctly wired and allows to make auctions to prioritise txns
 func TestSkipMevAuction(t *testing.T) {
 	if testing.Short() {
 		t.Skip()
