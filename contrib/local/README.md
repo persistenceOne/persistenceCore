@@ -4,7 +4,7 @@ Scripts for running local net locally (tested for mac and linux).
 
 ## Prerequisite
 
-For any of the types bellow, need to build the local clients
+For any of the types below, need to build the local clients
 
 * From root dir `persistenceCore/`
 * Run `make build`: This will create the binary at `./build/persistenceCore`
@@ -46,7 +46,7 @@ WASM_PERMISSIONLESS=true make
 WASM_PERMISSIONLESS=true make docker-setup
 ```
 
-With this we start the container such that the wasm module runns in permissionless fashion. For testing,
+With this we start the container such that the wasm module runs in permissionless fashion. For testing,
 run `make run-contract` for permissionless contract testing.
 
 Commands we can run with permissionless wasm are

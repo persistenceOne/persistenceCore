@@ -230,7 +230,7 @@ func orderEndBlockers() []string {
 	}
 }
 
-// orderInitGenesis returns the order in which genesis is initialzed for modules
+// orderInitGenesis returns the order in which genesis is initialized for modules
 // NOTE: The genutils module must occur after staking so that pools are
 // properly initialized with tokens from genesis accounts.
 // NOTE: Capability module must occur first so that it can initialize any capabilities
