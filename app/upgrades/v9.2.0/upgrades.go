@@ -75,8 +75,7 @@ func Fork(ctx sdk.Context, keepers *stakingkeeper.Keeper) {
 			ctx.Logger().Info(fmt.Sprintf("Validator %s is ok", val.OperatorAddress))
 		}
 	}
-	ctx.Logger().Info(fmt.Sprintf("Fork Successful"))
-
+	ctx.Logger().Info("Fork Successful")
 }
 
 func fixPower(ctx sdk.Context, k *stakingkeeper.Keeper, oldval, newval stakingtypes.Validator, maxValidators uint32) {
@@ -115,6 +114,6 @@ func fixPower(ctx sdk.Context, k *stakingkeeper.Keeper, oldval, newval stakingty
 }
 
 func RemoveMainnetV9_2Prop(ctx sdk.Context, keeper *upgradekeeper.Keeper) {
-	ctx.Logger().Info(fmt.Sprintf("Removing v9.2 upgrade plan for mainnet"))
+	ctx.Logger().Info("Removing v9.2 upgrade plan for mainnet")
 	keeper.ClearUpgradePlan(ctx)
 }

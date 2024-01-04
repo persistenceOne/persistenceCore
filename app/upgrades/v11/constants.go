@@ -2,9 +2,9 @@ package v11
 
 import (
 	store "github.com/cosmos/cosmos-sdk/store/types"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
 
 	"github.com/persistenceOne/persistenceCore/v11/app/upgrades"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
 )
 
 const (

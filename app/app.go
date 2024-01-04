@@ -18,8 +18,6 @@ import (
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
-	"github.com/spf13/cast"
-
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -54,6 +52,7 @@ import (
 	"github.com/rakyll/statik/fs"
 	pobabci "github.com/skip-mev/pob/abci"
 	"github.com/skip-mev/pob/mempool"
+	"github.com/spf13/cast"
 
 	"github.com/persistenceOne/persistenceCore/v11/app/keepers"
 	"github.com/persistenceOne/persistenceCore/v11/app/upgrades"

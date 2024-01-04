@@ -4,11 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/strangelove-ventures/interchaintest/v7"
-	"github.com/stretchr/testify/require"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
+	"github.com/stretchr/testify/require"
 
 	"github.com/persistenceOne/persistenceCore/v11/interchaintest/helpers"
 )

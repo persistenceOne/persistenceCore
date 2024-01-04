@@ -5,14 +5,13 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	"github.com/strangelove-ventures/interchaintest/v7"
-	"github.com/stretchr/testify/require"
-
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
+	"github.com/stretchr/testify/require"
 
 	"github.com/persistenceOne/persistenceCore/v11/interchaintest/helpers"
 )

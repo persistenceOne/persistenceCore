@@ -3,8 +3,6 @@ package keepers
 import (
 	"fmt"
 
-	"github.com/spf13/cast"
-
 	"github.com/CosmWasm/wasmd/x/wasm"
 	tmos "github.com/cometbft/cometbft/libs/os"
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -92,6 +90,7 @@ import (
 	ratesynctypes "github.com/persistenceOne/pstake-native/v2/x/ratesync/types"
 	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
+	"github.com/spf13/cast"
 
 	"github.com/persistenceOne/persistenceCore/v11/wasmbindings"
 

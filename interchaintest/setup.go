@@ -5,19 +5,18 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-	"go.uber.org/zap/zaptest"
-
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	testutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	ibclocalhost "github.com/cosmos/ibc-go/v7/modules/light-clients/09-localhost"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
 	interchaintest "github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
 	"github.com/strangelove-ventures/interchaintest/v7/testreporter"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/zap/zaptest"
 
 	"github.com/persistenceOne/persistenceCore/v11/interchaintest/helpers"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
 )
 
 var (
