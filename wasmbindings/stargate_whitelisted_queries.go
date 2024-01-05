@@ -25,7 +25,7 @@ func init() {
 	setStargateWhitelistQuery("/cosmos.gov.v1.Query/Params", &govtypes.QueryParamsResponse{})
 
 	// liquid staking module for exchange rate query from a contract
-	setStargateWhitelistQuery("/pstake.liquidstakeibc.v1beta1/ExchangeRate", &liquidstakeibctypes.QueryExchangeRateResponse{})
+	setStargateWhitelistQuery("/pstake.liquidstakeibc.v1beta1.Query/ExchangeRate", &liquidstakeibctypes.QueryExchangeRateResponse{})
 }
 
 // setStargateWhitelistQuery stores the stargate queries.
