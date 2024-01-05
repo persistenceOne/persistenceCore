@@ -8,6 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
 )
 
@@ -26,6 +27,7 @@ func init() {
 
 	// liquid staking module for exchange rate query from a contract
 	setStargateWhitelistQuery("/pstake.liquidstakeibc.v1beta1.Query/ExchangeRate", &liquidstakeibctypes.QueryExchangeRateResponse{})
+	setStargateWhitelistQuery("/pstake.liquidstake.v1beta1.Query/States", &liquidstaketypes.QueryStatesResponse{})
 }
 
 // setStargateWhitelistQuery stores the stargate queries.
