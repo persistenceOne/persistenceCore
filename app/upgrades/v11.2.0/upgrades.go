@@ -14,7 +14,12 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 		ctx.Logger().Info("running upgrade handler")
 
 		// stuck unbonding epoch numbers
-		RemovableUnbondings := map[string]map[int64]any{"cosmoshub-4": {312: nil}, "osmosis-1": {429: nil, 432: nil}}
+		RemovableUnbondings := map[string]map[int64]any{
+			"cosmoshub-4":       {312: nil},
+			"osmosis-1":         {429: nil, 432: nil},
+			"theta-testnet-001": {104: nil, 128: nil, 140: nil, 148: nil},
+			"osmo-test-5":       {193: nil, 194: nil, 201: nil},
+		}
 
 		// get the stuck unbondings from the store
 		unbondings := args.Keepers.LiquidStakeIBCKeeper.FilterUnbondings(
