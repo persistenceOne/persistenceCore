@@ -42,6 +42,12 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 				hc.Params.LowerCValueLimit = lowerLimit
 				args.Keepers.LiquidStakeIBCKeeper.SetHostChain(ctx, hc)
 
+			default:
+				upperLimit, _ := sdk.NewDecFromStr("1.01")
+				lowerLimit, _ := sdk.NewDecFromStr("0.80")
+				hc.Params.UpperCValueLimit = upperLimit
+				hc.Params.LowerCValueLimit = lowerLimit
+				args.Keepers.LiquidStakeIBCKeeper.SetHostChain(ctx, hc)
 			}
 		}
 
