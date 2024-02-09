@@ -62,22 +62,13 @@ func TestLiquidStakeUnstakeStkXPRT(t *testing.T) {
 	height, err := chain.Height(ctx)
 	require.NoError(t, err, "error fetching height before submitting a proposal")
 
-	whitelistedValidators := make([]liquidstaketypes.WhitelistedValidator, 0, len(validators))
-	for _, val := range validators {
-		whitelistedValidators = append(whitelistedValidators, liquidstaketypes.WhitelistedValidator{
-			ValidatorAddress: val.OperatorAddress,
-			TargetWeight:     math.NewInt(1),
-		})
-	}
-
 	msgUpdateParams, err := codectypes.NewAnyWithValue(&liquidstaketypes.MsgUpdateParams{
 		Authority: authtypes.NewModuleAddress("gov").String(),
 		Params: liquidstaketypes.Params{
-			LiquidBondDenom:       liquidstaketypes.DefaultLiquidBondDenom,
-			WhitelistedValidators: whitelistedValidators,
-			LsmDisabled:           false,
-			UnstakeFeeRate:        liquidstaketypes.DefaultUnstakeFeeRate,
-			MinLiquidStakeAmount:  liquidstaketypes.DefaultMinLiquidStakeAmount,
+			LiquidBondDenom:      liquidstaketypes.DefaultLiquidBondDenom,
+			LsmDisabled:          false,
+			UnstakeFeeRate:       liquidstaketypes.DefaultUnstakeFeeRate,
+			MinLiquidStakeAmount: liquidstaketypes.DefaultMinLiquidStakeAmount,
 		},
 	})
 
@@ -95,7 +86,7 @@ func TestLiquidStakeUnstakeStkXPRT(t *testing.T) {
 			InitialDeposit: []sdk.Coin{sdk.NewCoin(chain.Config().Denom, sdk.NewInt(500_000_000))},
 			Proposer:       chainUser.FormattedAddress(),
 			Title:          "LiquidStake Params Update",
-			Summary:        "Sets whitelisted validators for liquidstake",
+			Summary:        "Sets params for liquidstake",
 			Messages:       []*codectypes.Any{msgUpdateParams},
 		},
 	)
@@ -115,6 +106,26 @@ func TestLiquidStakeUnstakeStkXPRT(t *testing.T) {
 
 	err = testutil.WaitForBlocks(ctx, 2, chain)
 	require.NoError(t, err)
+
+	whitelistedValidators := make([]liquidstaketypes.WhitelistedValidator, 0, len(validators))
+	for _, val := range validators {
+		whitelistedValidators = append(whitelistedValidators, liquidstaketypes.WhitelistedValidator{
+			ValidatorAddress: val.OperatorAddress,
+			TargetWeight:     math.NewInt(10000 / int64(len(validators))),
+		})
+	}
+
+	// Update whitelisted validators list from the chain user (just for convenience)
+	txResp, err = cosmos.BroadcastTx(
+		ctx,
+		broadcaster,
+		chainUser,
+		&liquidstaketypes.MsgUpdateWhitelistedValidators{
+			Authority:             chainUser.FormattedAddress(),
+			WhitelistedValidators: whitelistedValidators,
+		},
+	)
+	require.NoError(t, err, "error submitting liquidstake validators whitelist update tx")
 
 	// Liquid stake XPRT
 
