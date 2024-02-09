@@ -17,7 +17,7 @@ require (
 	github.com/cosmos/ibc-go/v7 v7.1.0
 	github.com/gorilla/mux v1.8.1
 	github.com/persistenceOne/persistence-sdk/v2 v2.1.1
-	github.com/persistenceOne/pstake-native/v2 v2.9.2-rc1
+	github.com/persistenceOne/pstake-native/v2 v2.9.2-rc2
 	github.com/prometheus/client_golang v1.15.0
 	github.com/rakyll/statik v0.1.7
 	github.com/skip-mev/pob v1.0.1
