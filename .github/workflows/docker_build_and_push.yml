@@ -1,0 +1,75 @@
+name: CI/CD Pipeline for PersistenceCore
+
+on:
+  push:
+    branches:
+      - 'main'
+    tags:
+      - 'v*.*.*' 
+  release:
+    types:
+      - created
+
+env:
+  IMAGE_NAME: "persistencecore/persistencecore"
+  REGISTRY: "docker.io"
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Determine latest version tag
+        run: |
+          echo "Current working directory:"
+          pwd
+          echo "Listing versions in /app/upgrades:"
+          cd ./app/upgrades || exit 1
+          ls -d v* || { echo "No version directories found."; exit 1; }
+          LATEST_VERSION=$(find . -type d -name "v*" | sed 's|./v||' | sort -V | tail -n1)
+          if [[ -z "$LATEST_VERSION" ]]; then
+            echo "No version found. Exiting..."
+            exit 1
+          fi
+          LATEST_VERSION="v$LATEST_VERSION"
+          echo "Latest version tag determined: $LATEST_VERSION"
+          echo "LATEST_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
+          cd - || exit 1
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image with configuration
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./docker/persistencecore/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ env.IMAGE_NAME }}:${{ env.LATEST_VERSION }}
+          push: true
+          build-args: CONFIG_PATH=./chains.yaml
+
+  draft-release:
+    needs: build-and-push-image
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Draft Release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          tag_name: ${{ env.LATEST_VERSION }}
+          name: Release ${{ env.LATEST_VERSION }}
+          body: |
+            New release of PersistenceCore ${{ env.LATEST_VERSION }}.
+            Docker images for amd64 and arm64 are now available on Docker Hub.
+            
+            `docker pull ${{ env.IMAGE_NAME }}:${{ env.LATEST_VERSION }}`

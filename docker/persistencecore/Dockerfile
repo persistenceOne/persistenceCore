@@ -1,4 +1,4 @@
-FROM golang:1.21.5-alpine3.18 AS go-builder
+FROM golang:1.22.0-alpine3.18 AS go-builder
 
 # Set up dependencies
 ENV PACKAGES curl make git libusb-dev libc-dev bash gcc linux-headers eudev-dev python3
