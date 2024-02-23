@@ -2,7 +2,6 @@ package v11_7_0
 
 import (
 	"fmt"
-	ratesynctypes "github.com/persistenceOne/pstake-native/v2/x/ratesync/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -12,6 +11,7 @@ import (
 	"github.com/persistenceOne/persistenceCore/v11/app/keepers"
 	"github.com/persistenceOne/persistenceCore/v11/app/upgrades"
 	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
+	ratesynctypes "github.com/persistenceOne/pstake-native/v2/x/ratesync/types"
 )
 
 func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.UpgradeHandler {
