@@ -91,8 +91,11 @@ var ModuleAccountPermissions = map[string][]string{
 }
 
 var receiveAllowedMAcc = map[string]bool{
-	liquidstakeibctypes.DepositModuleAccount:      true,
-	liquidstakeibctypes.UndelegationModuleAccount: true,
+	liquidstakeibctypes.DepositModuleAccount:             true,
+	liquidstakeibctypes.UndelegationModuleAccount:        true,
+	liquidstaketypes.ModuleName:                          true,
+	liquidstaketypes.ModuleName + "-LiquidStakeProxyAcc": true,
+	liquidstaketypes.ModuleName + "-FeeAcc":              true,
 }
 
 func appModules(
