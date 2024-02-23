@@ -48,7 +48,7 @@ func runLiquidstakeUpgradeMigration(
 	lsParams.CwLockedPoolAddress = "persistence1md28ykl78fgxtuvj8gvntjlqdamqzx33dr80cf0tkqzx5cv0j8aqtkdjp3"
 
 	// TODO: this to be authz
-	lsParams.WhitelistAdminAddress = "persistence1my083l0vkug8p4yvajpa3dnpf2pwmzmym35lne"
+	lsParams.WhitelistAdminAddress = "persistence1ealyadcds02yvsn78he4wntt7tpdqhlhg7y2s6"
 
 	if err := keepers.LiquidStakeKeeper.SetParams(ctx, lsParams); err != nil {
 		panic(err)
