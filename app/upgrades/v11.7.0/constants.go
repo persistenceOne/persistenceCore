@@ -15,6 +15,6 @@ var Upgrade = upgrades.Upgrade{
 	UpgradeName:          UpgradeName,
 	CreateUpgradeHandler: CreateUpgradeHandler,
 	StoreUpgrades: store.StoreUpgrades{
-		Added: []string{},
+		Added: []string{liquidstaketypes.StoreKey, ratesynctypes.StoreKey},
 	},
 }
