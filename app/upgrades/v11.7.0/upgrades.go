@@ -2,6 +2,7 @@ package v11_7_0
 
 import (
 	"fmt"
+	ratesynctypes "github.com/persistenceOne/pstake-native/v2/x/ratesync/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -20,6 +21,9 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 		// make sure this region runs only during CI and mainnet v11 upgrade
 		if chainID := ctx.ChainID(); chainID == "core-1" || chainID == "ictest-core-1" {
 			if err := runLiquidstakeUpgradeMigration(ctx, args.Keepers); err != nil {
+				panic(err)
+			}
+			if err := runRatesyncUpgradeMigration(ctx, args.Keepers); err != nil {
 				panic(err)
 			}
 
@@ -91,6 +95,18 @@ func runLiquidstakeUpgradeMigration(
 			newModuleAccount,
 		))
 	}
+
+	return nil
+}
+
+// runRatesyncUpgradeMigration contains ratesync for cvalue on host-chains related migrations
+func runRatesyncUpgradeMigration(
+	ctx sdk.Context,
+	keepers *keepers.AppKeepers,
+) error {
+	params := ratesynctypes.DefaultParams()
+	params.Admin = "persistence1ealyadcds02yvsn78he4wntt7tpdqhlhg7y2s6"
+	keepers.RateSyncKeeper.SetParams(ctx, params)
 
 	return nil
 }
