@@ -44,7 +44,7 @@ func runLiquidstakeUpgradeMigration(
 	lsParams.ModulePaused = false
 	lsParams.AutocompoundFeeRate = sdk.ZeroDec()
 	lsParams.UnstakeFeeRate = sdk.ZeroDec()
-	lsParams.FeeAccountAddress = "persistence1my083l0vkug8p4yvajpa3dnpf2pwmzmym35lne"
+	lsParams.FeeAccountAddress = "persistence1ealyadcds02yvsn78he4wntt7tpdqhlhg7y2s6"
 	lsParams.CwLockedPoolAddress = "persistence1md28ykl78fgxtuvj8gvntjlqdamqzx33dr80cf0tkqzx5cv0j8aqtkdjp3"
 
 	// TODO: this to be authz
