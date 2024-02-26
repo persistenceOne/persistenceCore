@@ -58,8 +58,8 @@ func runLiquidstakeUpgradeMigration(
 	ak := keepers.AccountKeeper
 	moduleAccsToInitialize := []string{
 		liquidstaketypes.ModuleName,
-		liquidstaketypes.ModuleName + "-LiquidStakeProxyAcc",
-		liquidstaketypes.ModuleName + "-FeeAcc",
+
+		// not including the other two since they are special
 	}
 
 	for _, modAccName := range moduleAccsToInitialize {

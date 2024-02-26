@@ -70,32 +70,28 @@ import (
 )
 
 var ModuleAccountPermissions = map[string][]string{
-	authtypes.FeeCollectorName:                           nil,
-	distributiontypes.ModuleName:                         nil,
-	icatypes.ModuleName:                                  nil,
-	minttypes.ModuleName:                                 {authtypes.Minter},
-	stakingtypes.BondedPoolName:                          {authtypes.Burner, authtypes.Staking},
-	stakingtypes.NotBondedPoolName:                       {authtypes.Burner, authtypes.Staking},
-	govtypes.ModuleName:                                  {authtypes.Burner},
-	ibctransfertypes.ModuleName:                          {authtypes.Minter, authtypes.Burner},
-	ibcfeetypes.ModuleName:                               nil,
-	wasm.ModuleName:                                      {authtypes.Burner},
-	oracletypes.ModuleName:                               nil,
-	liquidstakeibctypes.ModuleName:                       {authtypes.Minter, authtypes.Burner},
-	liquidstakeibctypes.DepositModuleAccount:             nil,
-	liquidstakeibctypes.UndelegationModuleAccount:        {authtypes.Burner},
-	buildertypes.ModuleName:                              nil,
-	liquidstaketypes.ModuleName:                          {authtypes.Minter, authtypes.Burner},
-	liquidstaketypes.ModuleName + "-LiquidStakeProxyAcc": nil,
-	liquidstaketypes.ModuleName + "-FeeAcc":              nil,
+	authtypes.FeeCollectorName:                    nil,
+	distributiontypes.ModuleName:                  nil,
+	icatypes.ModuleName:                           nil,
+	minttypes.ModuleName:                          {authtypes.Minter},
+	stakingtypes.BondedPoolName:                   {authtypes.Burner, authtypes.Staking},
+	stakingtypes.NotBondedPoolName:                {authtypes.Burner, authtypes.Staking},
+	govtypes.ModuleName:                           {authtypes.Burner},
+	ibctransfertypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
+	ibcfeetypes.ModuleName:                        nil,
+	wasm.ModuleName:                               {authtypes.Burner},
+	oracletypes.ModuleName:                        nil,
+	liquidstakeibctypes.ModuleName:                {authtypes.Minter, authtypes.Burner},
+	liquidstakeibctypes.DepositModuleAccount:      nil,
+	liquidstakeibctypes.UndelegationModuleAccount: {authtypes.Burner},
+	buildertypes.ModuleName:                       nil,
+	liquidstaketypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
 }
 
 var receiveAllowedMAcc = map[string]bool{
-	liquidstakeibctypes.DepositModuleAccount:             true,
-	liquidstakeibctypes.UndelegationModuleAccount:        true,
-	liquidstaketypes.ModuleName:                          true,
-	liquidstaketypes.ModuleName + "-LiquidStakeProxyAcc": true,
-	liquidstaketypes.ModuleName + "-FeeAcc":              true,
+	liquidstakeibctypes.DepositModuleAccount:      true,
+	liquidstakeibctypes.UndelegationModuleAccount: true,
+	liquidstaketypes.ModuleName:                   true,
 }
 
 func appModules(
