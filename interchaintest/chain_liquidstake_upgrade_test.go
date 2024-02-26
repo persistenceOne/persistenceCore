@@ -6,27 +6,31 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/math"
+	"github.com/cosmos/cosmos-sdk/client/tx"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
 	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 	"github.com/stretchr/testify/require"
+
 	"go.uber.org/zap/zaptest"
 
 	"github.com/persistenceOne/persistenceCore/v11/interchaintest/helpers"
 )
 
-const (
-	haltHeightDelta    = uint64(10) // will propose upgrade this many blocks in the future
-	blocksAfterUpgrade = uint64(7)
+var (
+	blocksAfterUpgradeFast = uint64(1)
 )
 
-func TestPersistenceUpgradeBasic(t *testing.T) {
+// TestPersistenceUpgradeLiquidstake initializes some liquidstake delegations and then runs chain upgrade with address migrations.
+func TestPersistenceUpgradeLiquidstake(t *testing.T) {
 	var (
 		chainName            = "persistence"
 		upgradeRepo          = PersistenceCoreImage.Repository
@@ -35,7 +39,7 @@ func TestPersistenceUpgradeBasic(t *testing.T) {
 		upgradeName          = "v11.7.0"
 	)
 
-	CosmosChainUpgradeTest(
+	LSChainUpgradeTest(
 		t,
 		chainName,
 		upgradeRepo,
@@ -45,7 +49,7 @@ func TestPersistenceUpgradeBasic(t *testing.T) {
 	)
 }
 
-func CosmosChainUpgradeTest(
+func LSChainUpgradeTest(
 	t *testing.T,
 	chainName,
 	upgradeRepo,
@@ -56,8 +60,6 @@ func CosmosChainUpgradeTest(
 	if testing.Short() {
 		t.Skip("skipping in short mode")
 	}
-
-	t.Parallel()
 
 	t.Log(chainName, initialVersion, upgradeBranchVersion, upgradeRepo, upgradeName)
 
@@ -80,16 +82,22 @@ func CosmosChainUpgradeTest(
 		UsingNewGenesisCommand: true,
 		GasPrices:              fmt.Sprintf("0%s", helpers.PersistenceBondDenom),
 		EncodingConfig:         persistenceEncoding(),
-		ModifyGenesis:          cosmos.ModifyGenesis(defaultGenesisOverridesKV),
+		ModifyGenesis:          cosmos.ModifyGenesis(fastVotingGenesisOverridesKV),
+
+		GasAdjustment: 10,
 	}
+
+	// create a single chain instance with 2 validators
+	validatorsCount := 2
 
 	cf := interchaintest.NewBuiltinChainFactory(
 		zaptest.NewLogger(t),
 		[]*interchaintest.ChainSpec{{
-			Name:        chainName,
-			ChainName:   chainName,
-			Version:     initialVersion,
-			ChainConfig: chainCfg,
+			Name:          chainName,
+			ChainName:     chainName,
+			Version:       initialVersion,
+			ChainConfig:   chainCfg,
+			NumValidators: &validatorsCount,
 		}},
 	)
 
@@ -108,7 +116,7 @@ func CosmosChainUpgradeTest(
 		TestName:         t.Name(),
 		Client:           client,
 		NetworkID:        network,
-		SkipPathCreation: true,
+		SkipPathCreation: false,
 	})
 	require.NoError(t, err)
 
@@ -120,9 +128,110 @@ func CosmosChainUpgradeTest(
 	users := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), userFunds, chain)
 	chainUser := users[0]
 
-	// TODO: pre-check state migrations
+	chainNode := chain.Nodes()[0]
+	testDenom := chain.Config().Denom
 
+	// pre-check state migrations: setup liquidstake and stake some!
+	broadcaster := cosmos.NewBroadcaster(t, chain)
+	broadcaster.ConfigureFactoryOptions(func(factory tx.Factory) tx.Factory {
+		return factory.WithSimulateAndExecute(true)
+	})
+
+	// Updating liquidstake params for a new chain
 	height, err := chain.Height(ctx)
+	require.NoError(t, err, "error fetching height before submitting a proposal")
+
+	msgUpdateParams, err := codectypes.NewAnyWithValue(&liquidstaketypes.MsgUpdateParams{
+		Authority: authtypes.NewModuleAddress("gov").String(),
+		Params: liquidstaketypes.Params{
+			LiquidBondDenom:       liquidstaketypes.DefaultLiquidBondDenom,
+			LsmDisabled:           false,
+			UnstakeFeeRate:        liquidstaketypes.DefaultUnstakeFeeRate,
+			MinLiquidStakeAmount:  liquidstaketypes.DefaultMinLiquidStakeAmount,
+			CwLockedPoolAddress:   "",
+			FeeAccountAddress:     liquidstaketypes.DummyFeeAccountAcc.String(),
+			AutocompoundFeeRate:   liquidstaketypes.DefaultAutocompoundFeeRate,
+			WhitelistAdminAddress: chainUser.FormattedAddress(),
+			ModulePaused:          false,
+		},
+	})
+
+	require.NoError(t, err, "failed to pack liquidstaketypes.MsgUpdateParams")
+
+	txResp, err := cosmos.BroadcastTx(
+		ctx,
+		broadcaster,
+		chainUser,
+		&govv1.MsgSubmitProposal{
+			InitialDeposit: []sdk.Coin{sdk.NewCoin(chain.Config().Denom, sdk.NewInt(500_000_000))},
+			Proposer:       chainUser.FormattedAddress(),
+			Title:          "LiquidStake Params Update",
+			Summary:        "Sets params for liquidstake",
+			Messages:       []*codectypes.Any{msgUpdateParams},
+		},
+	)
+	require.NoError(t, err, "error submitting liquidstake params update tx")
+
+	paramsUpdateTx, err := helpers.QueryProposalTx(context.Background(), chain.Nodes()[0], txResp.TxHash)
+	require.NoError(t, err, "error checking proposal tx")
+
+	err = chain.VoteOnProposalAllValidators(ctx, paramsUpdateTx.ProposalID, cosmos.ProposalVoteYes)
+	require.NoError(t, err, "failed to submit votes")
+
+	_, err = cosmos.PollForProposalStatus(ctx, chain, height, height+15, paramsUpdateTx.ProposalID, cosmos.ProposalStatusPassed)
+	require.NoError(t, err, "proposal status did not change to passed in expected number of blocks")
+
+	err = testutil.WaitForBlocks(ctx, 2, chain)
+	require.NoError(t, err)
+
+	// Get list of validators
+	validators := helpers.QueryAllValidators(t, ctx, chainNode)
+	require.Len(t, validators, validatorsCount, "validators returned must match count of validators created")
+
+	// Update whitelisted validators list from the first user (just for convenience)
+	txResp, err = cosmos.BroadcastTx(
+		ctx,
+		broadcaster,
+		chainUser,
+		&liquidstaketypes.MsgUpdateWhitelistedValidators{
+			Authority: chainUser.FormattedAddress(),
+			WhitelistedValidators: []liquidstaketypes.WhitelistedValidator{{
+				ValidatorAddress: validators[0].OperatorAddress,
+				TargetWeight:     math.NewInt(5000),
+			}, {
+				ValidatorAddress: validators[1].OperatorAddress,
+				TargetWeight:     math.NewInt(5000),
+			}},
+		},
+	)
+	require.NoError(t, err, "error submitting liquidstake validators whitelist update tx")
+
+	// Liquid stake XPRT from the first user (5 XPRT)
+
+	chainUserLiquidStakeAmount := sdk.NewInt(5_000_000)
+	chainUserLiquidStakeCoins := sdk.NewCoin(testDenom, chainUserLiquidStakeAmount)
+
+	txResp, err = cosmos.BroadcastTx(
+		ctx,
+		broadcaster,
+		chainUser,
+		&liquidstaketypes.MsgLiquidStake{
+			DelegatorAddress: chainUser.FormattedAddress(),
+			Amount:           chainUserLiquidStakeCoins,
+		},
+	)
+	require.NoError(t, err)
+
+	_, err = helpers.QueryTx(ctx, chainNode, txResp.TxHash)
+	require.NoError(t, err)
+
+	stkXPRTBalance, err := chain.GetBalance(ctx, chainUser.FormattedAddress(), "stk/uxprt")
+	require.NoError(t, err)
+	require.Equal(t, chainUserLiquidStakeAmount, stkXPRTBalance, "stkXPRT balance must match the liquid-staked amount")
+
+	// end of pre-check state migrations
+
+	height, err = chain.Height(ctx)
 	require.NoError(t, err, "error fetching height before submit upgrade proposal")
 
 	haltHeight := height + haltHeightDelta
@@ -138,8 +247,8 @@ func CosmosChainUpgradeTest(
 
 	require.NoError(t, err, "failed to pack upgradetypes.SoftwareUpgradeProposal")
 
-	broadcaster := cosmos.NewBroadcaster(t, chain)
-	txResp, err := cosmos.BroadcastTx(
+	broadcaster = cosmos.NewBroadcaster(t, chain)
+	txResp, err = cosmos.BroadcastTx(
 		ctx,
 		broadcaster,
 		chainUser,
@@ -201,13 +310,15 @@ func CosmosChainUpgradeTest(
 	timeoutCtx, timeoutCtxCancel = context.WithTimeout(ctx, time.Second*60)
 	defer timeoutCtxCancel()
 
-	err = testutil.WaitForBlocks(timeoutCtx, int(blocksAfterUpgrade), chain)
+	err = testutil.WaitForBlocks(timeoutCtx, int(blocksAfterUpgradeFast), chain)
 	require.NoError(t, err, "chain did not produce blocks after upgrade")
 
 	height, err = chain.Height(ctx)
 	require.NoError(t, err, "error fetching height after upgrade")
 
-	require.GreaterOrEqual(t, height, haltHeight+blocksAfterUpgrade, "height did not increment enough after upgrade")
+	require.GreaterOrEqual(t, height, haltHeight+blocksAfterUpgradeFast, "height did not increment enough after upgrade")
 
 	// TODO: post-check state migrations
+
+	require.FailNow(t, "required a failure to dump the logs")
 }

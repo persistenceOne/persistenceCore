@@ -3,31 +3,29 @@ package v11_7_0
 import (
 	"fmt"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	"github.com/persistenceOne/persistenceCore/v11/app/keepers"
 	"github.com/persistenceOne/persistenceCore/v11/app/upgrades"
 	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
-	ratesynctypes "github.com/persistenceOne/pstake-native/v2/x/ratesync/types"
 )
 
 func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
 		ctx.Logger().Info("running upgrade handler")
 
-		// make sure this region runs only during CI and mainnet v11 upgrade
-		if chainID := ctx.ChainID(); chainID == "core-1" || chainID == "ictest-core-1" {
+		// make sure this region runs only during CI and testnet v11.7.0 upgrade
+		if chainID := ctx.ChainID(); chainID == "test-core-1" || chainID == "ictest-core-1" {
 			if err := runLiquidstakeUpgradeMigration(ctx, args.Keepers); err != nil {
 				panic(err)
 			}
-			if err := runRatesyncUpgradeMigration(ctx, args.Keepers); err != nil {
-				panic(err)
-			}
-
-			// TODO: more migrations
+		} else {
+			panic("chainID not expected: " + chainID)
 		}
 
 		return args.ModuleManager.RunMigrations(ctx, args.Configurator, vm)
@@ -39,74 +37,39 @@ func runLiquidstakeUpgradeMigration(
 	ctx sdk.Context,
 	keepers *keepers.AppKeepers,
 ) error {
-	// run x/liquidstake params upgrade to set the defaults in the state
-	lsParams := liquidstaketypes.DefaultParams()
-	lsParams.ModulePaused = false
-	lsParams.AutocompoundFeeRate = sdk.ZeroDec()
-	lsParams.UnstakeFeeRate = sdk.ZeroDec()
-	lsParams.FeeAccountAddress = "persistence1ealyadcds02yvsn78he4wntt7tpdqhlhg7y2s6"
-	lsParams.CwLockedPoolAddress = "persistence1md28ykl78fgxtuvj8gvntjlqdamqzx33dr80cf0tkqzx5cv0j8aqtkdjp3"
+	oldProxyAcc := authtypes.NewModuleAddress(liquidstaketypes.ModuleName + "-LiquidStakeProxyAcc")
 
-	// TODO: this to be authz
-	lsParams.WhitelistAdminAddress = "persistence1ealyadcds02yvsn78he4wntt7tpdqhlhg7y2s6"
+	delegations := []stakingtypes.Delegation{}
+	keepers.StakingKeeper.IterateDelegatorDelegations(ctx, oldProxyAcc, func(delegation stakingtypes.Delegation) bool {
+		delegations = append(delegations, delegation)
+		return false
+	})
 
-	if err := keepers.LiquidStakeKeeper.SetParams(ctx, lsParams); err != nil {
-		panic(err)
-	}
+	ctx.Logger().Info(fmt.Sprintf("Found %d existing delegations from %s", len(delegations), oldProxyAcc.String()))
 
-	// initialize module accounts for x/liquidstake
-	ak := keepers.AccountKeeper
-	moduleAccsToInitialize := []string{
-		liquidstaketypes.ModuleName,
-
-		// not including the other two since they are special
-	}
-
-	for _, modAccName := range moduleAccsToInitialize {
-		// Get module account and relevant permissions from the accountKeeper.
-		addr, perms := ak.GetModuleAddressAndPermissions(modAccName)
-		if addr == nil {
-			panic(fmt.Sprintf(
-				"Did not find %v in `ak.GetModuleAddressAndPermissions`. This is not expected. Skipping.",
-				modAccName,
-			))
+	recovered := math.NewInt(0)
+	for _, del := range delegations {
+		valAddr, err := sdk.ValAddressFromBech32(del.ValidatorAddress)
+		if err != nil {
+			panic("failed to parse validator address from delegation")
 		}
 
-		// Try to get the account in state.
-		acc := ak.GetAccount(ctx, addr)
-		if acc != nil {
-			// Account has been initialized.
-			macc, isModuleAccount := acc.(authtypes.ModuleAccountI)
-			if isModuleAccount {
-				// Module account was correctly initialized. Skipping
-				ctx.Logger().Info(fmt.Sprintf(
-					"module account %+v was correctly initialized. No-op",
-					macc,
-				))
-				continue
-			}
+		amt, err := keepers.StakingKeeper.Unbond(ctx, oldProxyAcc, valAddr, del.Shares)
+		if err != nil {
+			ctx.Logger().Error(fmt.Sprintf("unbonding failed for %s->%s: %+v", del.DelegatorAddress, del.ValidatorAddress, err))
+			continue
 		}
 
-		newModuleAccount := authtypes.NewEmptyModuleAccount(modAccName, perms...)
-		maccI := (ak.NewAccount(ctx, newModuleAccount)).(authtypes.ModuleAccountI) // this set the account number
-		ak.SetModuleAccount(ctx, maccI)
-		ctx.Logger().Info(fmt.Sprintf(
-			"Successfully initialized module account in state: %+v",
-			newModuleAccount,
-		))
+		recovered = recovered.Add(amt)
 	}
 
-	return nil
-}
+	ctx.Logger().Info(fmt.Sprintf("Recovered tokens after unbonding: %s", recovered.String()))
 
-// runRatesyncUpgradeMigration contains ratesync for cvalue on host-chains related migrations
-func runRatesyncUpgradeMigration(
-	ctx sdk.Context,
-	keepers *keepers.AppKeepers,
-) error {
-	params := ratesynctypes.DefaultParams()
-	params.Admin = "persistence1ealyadcds02yvsn78he4wntt7tpdqhlhg7y2s6"
-	keepers.RateSyncKeeper.SetParams(ctx, params)
+	// TODO: next testnet upgrade send all tokens from oldProxyAcc to liquidstaketypes.LiquidStakeProxyAcc
+
+	if ctx.ChainID() == "ictest-core-1" {
+		panic("runLiquidstakeUpgradeMigration done")
+	}
 
 	return nil
 }
