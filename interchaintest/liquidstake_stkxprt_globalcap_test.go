@@ -25,8 +25,6 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 		t.Skip()
 	}
 
-	t.Parallel()
-
 	// override SDK bech prefixes with chain specific
 	helpers.SetConfig()
 
