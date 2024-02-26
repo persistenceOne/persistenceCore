@@ -358,5 +358,6 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	require.NoError(t, err)
 	t.Logf("[7] Total Tokens Liquid Staked (After LP): %s", totalLiquidStakedAfterLP)
 
-	require.True(t, totalLiquidStakedAfterLP.Sub(totalLiquidStakedBeforeLP).IsPositive(), "tokens liquid staked in stake-to-lp must be accounted in global LS counter")
+	delta := totalLiquidStakedAfterLP.Sub(totalLiquidStakedBeforeLP)
+	require.True(t, delta.IsPositive() && delta.LTE(firstUserLiquidStakeAmount), "tokens liquid staked in stake-to-lp must be accounted in global LS counter, 0 < delta <= amount")
 }
