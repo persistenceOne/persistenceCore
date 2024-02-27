@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/stretchr/testify/require"
@@ -101,6 +102,28 @@ func QueryUnbondingDelegation(
 	require.NoError(t, err)
 
 	return resp
+}
+
+// QueryTotalLiquidStaked returns amount of tokens in liquid staking protocol globally (LSM, ICA, stkxprt)
+func QueryTotalLiquidStaked(
+	t *testing.T,
+	ctx context.Context,
+	chainNode *cosmos.ChainNode,
+) math.Int {
+	stdout, _, err := chainNode.ExecQuery(ctx, "staking", "total-liquid-staked")
+	require.NoError(t, err)
+
+	debugOutput(t, string(stdout))
+
+	var resp queryTotalLiquidStaked
+	err = json.Unmarshal([]byte(stdout), &resp)
+	require.NoError(t, err)
+
+	return resp.Tokens
+}
+
+type queryTotalLiquidStaked struct {
+	Tokens math.Int `json:"tokens"`
 }
 
 type queryDelegationResponse struct {

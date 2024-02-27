@@ -10,7 +10,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.47.5
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/cosmos/ibc-go/v7 v7.3.0
-	github.com/persistenceOne/pstake-native/v2 v2.10.0
+	github.com/persistenceOne/pstake-native/v2 v2.10.2
 	github.com/pkg/errors v0.9.1
 	github.com/strangelove-ventures/interchaintest/v7 v7.0.0-20230905210439-3e17efc70581
 	github.com/stretchr/testify v1.8.4

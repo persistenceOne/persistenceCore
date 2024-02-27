@@ -281,9 +281,13 @@ ictest-lsm: rm-testcache
 ictest-haltfork: rm-testcache
 	cd interchaintest && go test -race -v -run TestPersistenceLSMHaltFork .
 
-# Executes Liquidstake tests
+# Executes the essential Liquidstake tests
 ictest-liquidstake: rm-testcache
-	cd interchaintest && go test -race -v -run TestLiquidStakeStkXPRT .
+	cd interchaintest && go test -race -v -run "(TestLiquidStakeStkXPRT|TestLiquidStakeGlobalCapStkXPRT)" .
+
+# Executes all Liquidstake tests
+ictest-liquidstake-all: rm-testcache
+	cd interchaintest && go test -race -v -run "(TestLiquidStakeStkXPRT|TestLiquidStakeUnstakeStkXPRT|TestPauseLiquidStakeStkXPRT)" .
 
 rm-testcache:
 	go clean -testcache
