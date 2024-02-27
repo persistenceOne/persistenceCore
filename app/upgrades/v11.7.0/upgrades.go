@@ -20,7 +20,7 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 		ctx.Logger().Info("running upgrade handler")
 
 		// make sure this region runs only during CI and testnet v11.7.0 upgrade
-		if chainID := ctx.ChainID(); chainID == "test-core-1" || chainID == "ictest-core-1" {
+		if chainID := ctx.ChainID(); chainID == "test-core-2" || chainID == "ictest-core-1" {
 			if err := runLiquidstakeUpgradeMigration(ctx, args.Keepers); err != nil {
 				panic(err)
 			}
