@@ -21,22 +21,25 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v3
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
+      - name: Create and use a new builder instance
+        run: docker buildx create --use
+
       - name: Determine latest version tag
         run: |
-          echo "Current working directory:"
-          pwd
+          echo "Current working directory: $(pwd)"
           echo "Listing versions in /app/upgrades:"
           cd ./app/upgrades || exit 1
-          ls -d v* || { echo "No version directories found."; exit 1; }
-          LATEST_VERSION=$(find . -type d -name "v*" | sed 's|./v||' | sort -V | tail -n1)
+          LATEST_VERSION=$(ls -d v* | sort -V | tail -n1)
           if [[ -z "$LATEST_VERSION" ]]; then
             echo "No version found. Exiting..."
             exit 1
           fi
-          LATEST_VERSION="v$LATEST_VERSION"
           echo "Latest version tag determined: $LATEST_VERSION"
           echo "LATEST_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
           cd - || exit 1
@@ -57,8 +60,68 @@ jobs:
           push: true
           build-args: CONFIG_PATH=./chains.yaml
 
+  update-dependencies-and-build-new-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Create and use a new builder instance
+        run: docker buildx create --use
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.22'
+
+      - name: Update Cosmos SDK and CometBFT dependencies
+        run: |
+          latest_cosmos_version=$(go list -m github.com/cosmos/cosmos-sdk | awk '{print $NF}')
+          echo "Latest Cosmos SDK version: $latest_cosmos_version"
+          go mod edit -replace github.com/cosmos/cosmos-sdk=github.com/persistenceOne/cosmos-sdk@${latest_cosmos_version}-fh
+          latest_cometbft_version=$(go list -m github.com/cometbft/cometbft | awk '{print $NF}')
+          echo "Latest CometBFT version: $latest_cometbft_version"
+          go mod edit -replace github.com/cometbft/cometbft=github.com/persistenceOne/cometbft@${latest_cometbft_version}-fh
+          go mod tidy
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+        
+      - name: Determine latest version tag
+        run: |
+          echo "Current working directory: $(pwd)"
+          echo "Listing versions in /app/upgrades:"
+          cd ./app/upgrades || exit 1
+          LATEST_VERSION=$(ls -d v* | sort -V | tail -n1)
+          if [[ -z "$LATEST_VERSION" ]]; then
+            echo "No version found. Exiting..."
+            exit 1
+          fi
+          echo "Latest version tag determined: $LATEST_VERSION"
+          echo "LATEST_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
+          cd - || exit 1
+
+      - name: Build and push updated Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./docker/persistencecore/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ env.IMAGE_NAME }}:${{ env.LATEST_VERSION }}-fh
+          push: true
+          build-args: CONFIG_PATH=./chains.yaml
+
   draft-release:
-    needs: build-and-push-image
+    needs: [build-and-push-image, update-dependencies-and-build-new-image]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     steps:
@@ -66,10 +129,10 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           draft: true
-          tag_name: ${{ env.LATEST_VERSION }}
-          name: Release ${{ env.LATEST_VERSION }}
+          tag_name: ${{ env.LATEST_VERSION }}-fh
+          name: Release ${{ env.LATEST_VERSION }}-fh
           body: |
-            New release of PersistenceCore ${{ env.LATEST_VERSION }}.
-            Docker images for amd64 and arm64 are now available on Docker Hub.
+            New release of PersistenceCore ${{ env.LATEST_VERSION }}-fh.
+            Docker images for amd64 and arm64 with updated dependencies are now available on Docker Hub.
             
-            `docker pull ${{ env.IMAGE_NAME }}:${{ env.LATEST_VERSION }}`
+            `docker pull ${{ env.IMAGE_NAME }}:${{ env.LATEST_VERSION }}-fh`
