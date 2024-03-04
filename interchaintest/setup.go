@@ -14,6 +14,7 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
 	"github.com/strangelove-ventures/interchaintest/v7/testreporter"
 	"github.com/stretchr/testify/require"
+	alliancetypes "github.com/terra-money/alliance/x/alliance/types"
 	"go.uber.org/zap/zaptest"
 
 	"github.com/persistenceOne/persistenceCore/v11/interchaintest/helpers"
@@ -103,6 +104,7 @@ func persistenceEncoding() *testutil.TestEncodingConfig {
 	ibclocalhost.RegisterInterfaces(cfg.InterfaceRegistry)
 	wasmtypes.RegisterInterfaces(cfg.InterfaceRegistry)
 	liquidstaketypes.RegisterInterfaces(cfg.InterfaceRegistry)
+	alliancetypes.RegisterInterfaces(cfg.InterfaceRegistry)
 
 	return &cfg
 }

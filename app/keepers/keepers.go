@@ -14,7 +14,6 @@ import (
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
@@ -92,6 +91,11 @@ import (
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
 	"github.com/spf13/cast"
 
+	bankkeeper "github.com/terra-money/alliance/custom/bank/keeper"
+	alliancemodule "github.com/terra-money/alliance/x/alliance"
+	alliancemodulekeeper "github.com/terra-money/alliance/x/alliance/keeper"
+	alliancemoduletypes "github.com/terra-money/alliance/x/alliance/types"
+
 	"github.com/persistenceOne/persistenceCore/v11/wasmbindings"
 
 	// unnamed import of statik for swagger UI support
@@ -105,7 +109,7 @@ type AppKeepers struct {
 	memKeys map[string]*storetypes.MemoryStoreKey
 
 	AccountKeeper         *authkeeper.AccountKeeper
-	BankKeeper            *bankkeeper.BaseKeeper
+	BankKeeper            *bankkeeper.Keeper
 	CapabilityKeeper      *capabilitykeeper.Keeper
 	StakingKeeper         *stakingkeeper.Keeper
 	SlashingKeeper        *slashingkeeper.Keeper
@@ -136,6 +140,7 @@ type AppKeepers struct {
 	GroupKeeper           *groupkeeper.Keeper
 	PacketForwardKeeper   *packetforwardkeeper.Keeper
 	BuilderKeeper         *builderkeeper.Keeper
+	AllianceKeeper        *alliancemodulekeeper.Keeper
 
 	// Modules
 	TransferModule             ibctransfer.AppModule
@@ -218,7 +223,7 @@ func NewAppKeeper(
 	bankKeeper := bankkeeper.NewBaseKeeper(
 		appCodec,
 		appKeepers.keys[banktypes.StoreKey],
-		appKeepers.AccountKeeper,
+		*appKeepers.AccountKeeper,
 		sendCoinBlockedAddrs, // these blocked address will be used in distribution keeper as well
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
@@ -324,8 +329,25 @@ func NewAppKeeper(
 	)
 	appKeepers.HalvingKeeper = &halvingKeeper
 
+	allianceKeeper := alliancemodulekeeper.NewKeeper(
+		appCodec,
+		appKeepers.keys[alliancemoduletypes.StoreKey],
+		appKeepers.AccountKeeper,
+		appKeepers.BankKeeper,
+		appKeepers.StakingKeeper,
+		appKeepers.DistributionKeeper,
+		authtypes.FeeCollectorName,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+	appKeepers.BankKeeper.RegisterKeepers(allianceKeeper, appKeepers.StakingKeeper)
+	appKeepers.AllianceKeeper = &allianceKeeper
+
 	appKeepers.StakingKeeper.SetHooks(
-		stakingtypes.NewMultiStakingHooks(appKeepers.DistributionKeeper.Hooks(), appKeepers.SlashingKeeper.Hooks()),
+		stakingtypes.NewMultiStakingHooks(
+			appKeepers.DistributionKeeper.Hooks(),
+			appKeepers.SlashingKeeper.Hooks(),
+			appKeepers.AllianceKeeper.StakingHooks(),
+		),
 	)
 
 	appKeepers.EpochsKeeper = epochskeeper.NewKeeper(appKeepers.keys[epochstypes.StoreKey])
@@ -586,7 +608,8 @@ func NewAppKeeper(
 		AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
 		AddRoute(paramsproposal.RouterKey, params.NewParamChangeProposalHandler(*appKeepers.ParamsKeeper)).
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(appKeepers.UpgradeKeeper)).
-		AddRoute(ibcclienttypes.RouterKey, ibccoreclient.NewClientProposalHandler(appKeepers.IBCKeeper.ClientKeeper))
+		AddRoute(ibcclienttypes.RouterKey, ibccoreclient.NewClientProposalHandler(appKeepers.IBCKeeper.ClientKeeper)).
+		AddRoute(alliancemoduletypes.RouterKey, alliancemodule.NewAllianceProposalHandler(*appKeepers.AllianceKeeper))
 
 	if len(wasmEnabledProposals) != 0 {
 		govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(appKeepers.WasmKeeper, wasmEnabledProposals))
@@ -644,6 +667,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
 	paramsKeeper.Subspace(oracletypes.ModuleName)
 	paramsKeeper.Subspace(packetforwardtypes.ModuleName)
+	paramsKeeper.Subspace(alliancemoduletypes.ModuleName)
 
 	return paramsKeeper
 }

@@ -1080,6 +1080,8 @@ github.com/pelletier/go-toml/v2 v2.0.8/go.mod h1:vuYfssBdrU2XDZ9bYydBu6t+6a6PYNc
 github.com/pelletier/go-toml/v2 v2.0.9 h1:uH2qQXheeefCCkuBBSLi7jCiSmj3VRh2+Goq2N7Xxu0=
 github.com/pelletier/go-toml/v2 v2.0.9/go.mod h1:tJU2Z3ZkXwnxa4DPO899bsyIoywizdUvyaeZurnPPDc=
 github.com/performancecopilot/speed v3.0.0+incompatible/go.mod h1:/CLtqpZ5gBg1M9iaPbIdPPGyKcA8hKdoy6hAWba7Yac=
+github.com/persistenceOne/alliance v0.3.4-lsm h1:0+GyiZaT6o0WH1D6RE8bTKeRWBVMhpuoPVwX+H+tUA0=
+github.com/persistenceOne/alliance v0.3.4-lsm/go.mod h1:5HcwoYt2u8oZmkIHcH0Nu/DY73h91qLjJOwpWruHbws=
 github.com/persistenceOne/cosmos-sdk v0.47.3-lsm5 h1:z5k9M81ogHgaMyLck7GVzfdNYvn03ZTXsCpQDzy69eQ=
 github.com/persistenceOne/cosmos-sdk v0.47.3-lsm5/go.mod h1:4oxikyyHyEe1wlYQFMGITfW/r01wYtfj8yjwru7bSWE=
 github.com/persistenceOne/ibc-go/v7 v7.2.0-lsm3 h1:U4NsRXpg9VHCFVyrk1JfG+sIA3frtZIWbtNmmumjta8=

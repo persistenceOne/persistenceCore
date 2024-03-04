@@ -289,6 +289,9 @@ ictest-liquidstake: rm-testcache
 ictest-liquidstake-all: rm-testcache
 	cd interchaintest && go test -race -v -run "(TestLiquidStakeStkXPRT|TestLiquidStakeUnstakeStkXPRT|TestPauseLiquidStakeStkXPRT)" .
 
+ictest-alliance: rm-testcache
+	cd interchaintest && go test -race -v -run TestAllianceBasic .
+
 rm-testcache:
 	go clean -testcache
 

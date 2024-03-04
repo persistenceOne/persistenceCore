@@ -10,7 +10,6 @@ import (
 	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
-	"github.com/cosmos/cosmos-sdk/x/bank"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/capability"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
@@ -66,6 +65,10 @@ import (
 	"github.com/skip-mev/pob/x/builder"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
 
+	custombankmodule "github.com/terra-money/alliance/custom/bank"
+	alliancemodule "github.com/terra-money/alliance/x/alliance"
+	alliancemoduletypes "github.com/terra-money/alliance/x/alliance/types"
+
 	appparams "github.com/persistenceOne/persistenceCore/v11/app/params"
 )
 
@@ -86,12 +89,15 @@ var ModuleAccountPermissions = map[string][]string{
 	liquidstakeibctypes.UndelegationModuleAccount: {authtypes.Burner},
 	buildertypes.ModuleName:                       nil,
 	liquidstaketypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
+	alliancemoduletypes.ModuleName:                {authtypes.Minter, authtypes.Burner},
+	alliancemoduletypes.RewardsPoolName:           nil,
 }
 
 var receiveAllowedMAcc = map[string]bool{
 	liquidstakeibctypes.DepositModuleAccount:      true,
 	liquidstakeibctypes.UndelegationModuleAccount: true,
 	liquidstaketypes.ModuleName:                   true,
+	alliancemoduletypes.ModuleName:                true,
 }
 
 func appModules(
@@ -108,7 +114,7 @@ func appModules(
 		),
 		auth.NewAppModule(appCodec, *app.AccountKeeper, authsimulation.RandomGenesisAccounts, app.GetSubspace(authtypes.ModuleName)),
 		vesting.NewAppModule(*app.AccountKeeper, app.BankKeeper),
-		bank.NewAppModule(appCodec, *app.BankKeeper, app.AccountKeeper, app.GetSubspace(banktypes.ModuleName)),
+		custombankmodule.NewAppModule(appCodec, *app.BankKeeper, app.AccountKeeper, app.GetSubspace(banktypes.ModuleName)),
 		capability.NewAppModule(appCodec, *app.CapabilityKeeper, false),
 		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(govtypes.ModuleName)),
 		mint.NewAppModule(appCodec, *app.MintKeeper, app.AccountKeeper, nil, app.GetSubspace(minttypes.ModuleName)), // nil -> SDK's default inflation function.
@@ -137,6 +143,7 @@ func appModules(
 		ratesync.NewAppModule(appCodec, *app.RateSyncKeeper, app.AccountKeeper, app.BankKeeper),
 		oracle.NewAppModule(appCodec, *app.OracleKeeper, app.AccountKeeper, app.BankKeeper),
 		builder.NewAppModule(appCodec, *app.BuilderKeeper),
+		alliancemodule.NewAppModule(appCodec, *app.AllianceKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry, app.GetSubspace(alliancemoduletypes.ModuleName)),
 		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)), // always be last to make sure that it checks for all invariants and not only part of them
 	}
 }
@@ -189,6 +196,7 @@ func orderBeginBlockers() []string {
 		liquidstaketypes.ModuleName,
 		ratesynctypes.ModuleName,
 		oracletypes.ModuleName,
+		alliancemoduletypes.ModuleName,
 	}
 }
 
@@ -228,6 +236,7 @@ func orderEndBlockers() []string {
 		ratesynctypes.ModuleName,
 		oracletypes.ModuleName,
 		buildertypes.ModuleName,
+		alliancemoduletypes.ModuleName,
 	}
 }
 
@@ -272,5 +281,6 @@ func orderInitGenesis() []string {
 		ratesynctypes.ModuleName,
 		oracletypes.ModuleName,
 		buildertypes.ModuleName,
+		alliancemoduletypes.ModuleName,
 	}
 }
