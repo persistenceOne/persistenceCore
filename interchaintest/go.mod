@@ -14,6 +14,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/strangelove-ventures/interchaintest/v7 v7.0.0-20230905210439-3e17efc70581
 	github.com/stretchr/testify v1.8.4
+	github.com/terra-money/alliance v0.3.4
 	go.uber.org/zap v1.25.0
 )
 
@@ -263,4 +264,5 @@ replace (
 	github.com/cosmos/ibc-apps/modules/ibc-hooks/v7 => github.com/persistenceOne/ibc-apps/modules/ibc-hooks/v7 v7.0.0-20240109170424-f4a8f29910eb
 	github.com/cosmos/ibc-go/v7 => github.com/persistenceOne/ibc-go/v7 v7.2.0-lsm3
 	github.com/skip-mev/pob => github.com/persistenceOne/pob v1.0.3-lsm3
+	github.com/terra-money/alliance => github.com/persistenceOne/alliance v0.3.4-lsm
 )

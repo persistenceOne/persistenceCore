@@ -43,6 +43,9 @@ import (
 	"github.com/persistenceOne/pstake-native/v2/x/lscosmos"
 	"github.com/persistenceOne/pstake-native/v2/x/ratesync"
 	buildermodule "github.com/skip-mev/pob/x/builder"
+
+	alliancemodule "github.com/terra-money/alliance/x/alliance"
+	alliancemoduleclient "github.com/terra-money/alliance/x/alliance/client"
 )
 
 // AppModuleBasics defines the module BasicManager is in charge of setting up basic,
@@ -63,6 +66,9 @@ var AppModuleBasics = []module.AppModuleBasic{
 			upgradeclient.LegacyCancelProposalHandler,
 			ibcclient.UpdateClientProposalHandler,
 			ibcclient.UpgradeProposalHandler,
+			alliancemoduleclient.CreateAllianceProposalHandler,
+			alliancemoduleclient.UpdateAllianceProposalHandler,
+			alliancemoduleclient.DeleteAllianceProposalHandler,
 		},
 	),
 	params.AppModuleBasic{},
@@ -93,4 +99,5 @@ var AppModuleBasics = []module.AppModuleBasic{
 	ibchooks.AppModuleBasic{},
 	router.AppModuleBasic{},
 	buildermodule.AppModuleBasic{},
+	alliancemodule.AppModuleBasic{},
 }

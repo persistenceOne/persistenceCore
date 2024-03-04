@@ -199,8 +199,8 @@ cosmossdk.io/depinject v1.0.0-alpha.4 h1:PLNp8ZYAMPTUKyG9IK2hsbciDWqna2z1Wsl98ok
 cosmossdk.io/depinject v1.0.0-alpha.4/go.mod h1:HeDk7IkR5ckZ3lMGs/o91AVUc7E596vMaOmslGFM3yU=
 cosmossdk.io/errors v1.0.1 h1:bzu+Kcr0kS/1DuPBtUFdWjzLqyUuCiyHjyJB6srBV/0=
 cosmossdk.io/errors v1.0.1/go.mod h1:MeelVSZThMi4bEakzhhhE/CKqVv3nOJDA25bIqRDu/U=
-cosmossdk.io/log v1.2.0 h1:BbykkDsutXPSy8RojFB3KZEWyvMsToLy0ykb/ZhsLqQ=
-cosmossdk.io/log v1.2.0/go.mod h1:GNSCc/6+DhFIj1aLn/j7Id7PaO8DzNylUZoOYBL9+I4=
+cosmossdk.io/log v1.2.1 h1:Xc1GgTCicniwmMiKwDxUjO4eLhPxoVdI9vtMW8Ti/uk=
+cosmossdk.io/log v1.2.1/go.mod h1:GNSCc/6+DhFIj1aLn/j7Id7PaO8DzNylUZoOYBL9+I4=
 cosmossdk.io/math v1.2.0 h1:8gudhTkkD3NxOP2YyyJIYYmt6dQ55ZfJkDOaxXpy7Ig=
 cosmossdk.io/math v1.2.0/go.mod h1:l2Gnda87F0su8a/7FEKJfFdJrM0JZRXQaohlgJeyQh0=
 cosmossdk.io/tools/rosetta v0.2.1 h1:ddOMatOH+pbxWbrGJKRAawdBkPYLfKXutK9IETnjYxw=
@@ -1011,6 +1011,8 @@ github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/9
 github.com/pelletier/go-toml/v2 v2.0.8 h1:0ctb6s9mE31h0/lhu+J6OPmVeDxJn+kYnJc2jZR9tGQ=
 github.com/pelletier/go-toml/v2 v2.0.8/go.mod h1:vuYfssBdrU2XDZ9bYydBu6t+6a6PYNcZljzZR9VXg+4=
 github.com/performancecopilot/speed v3.0.0+incompatible/go.mod h1:/CLtqpZ5gBg1M9iaPbIdPPGyKcA8hKdoy6hAWba7Yac=
+github.com/persistenceOne/alliance v0.3.4-lsm h1:0+GyiZaT6o0WH1D6RE8bTKeRWBVMhpuoPVwX+H+tUA0=
+github.com/persistenceOne/alliance v0.3.4-lsm/go.mod h1:5HcwoYt2u8oZmkIHcH0Nu/DY73h91qLjJOwpWruHbws=
 github.com/persistenceOne/cosmos-sdk v0.47.3-lsm5 h1:z5k9M81ogHgaMyLck7GVzfdNYvn03ZTXsCpQDzy69eQ=
 github.com/persistenceOne/cosmos-sdk v0.47.3-lsm5/go.mod h1:4oxikyyHyEe1wlYQFMGITfW/r01wYtfj8yjwru7bSWE=
 github.com/persistenceOne/ibc-apps/middleware/packet-forward-middleware/v7 v7.0.0-20240109170424-f4a8f29910eb h1:diFYtzQUDh2WKIy21ywl45rWidpVbd0jAKcR0ddlndw=

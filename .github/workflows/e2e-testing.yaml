@@ -89,6 +89,7 @@ jobs:
               - "ictest-pfm"
               - "ictest-lsm"
               - "ictest-liquidstake"
+              - "ictest-alliance"
         fail-fast: false
 
     steps:

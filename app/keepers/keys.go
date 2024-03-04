@@ -35,6 +35,7 @@ import (
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
 	ratesynctypes "github.com/persistenceOne/pstake-native/v2/x/ratesync/types"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
+	alliancemoduletypes "github.com/terra-money/alliance/x/alliance/types"
 )
 
 func (appKeepers *AppKeepers) GenerateKeys() {
@@ -73,6 +74,7 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 		stakingtypes.StoreKey,
 		upgradetypes.StoreKey,
 		wasm.StoreKey,
+		alliancemoduletypes.StoreKey,
 	)
 
 	// Define transient store keys
