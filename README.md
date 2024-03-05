@@ -1,12 +1,10 @@
-![Persistence Core](https://www.asiacryptotoday.com/wp-content/uploads/2020/09/persistence-protocol.jpg)
+![Persistence Core](https://blog.persistence.one/wp-content/uploads/2022/04/Full_Logo_Light.png)
 
 [![Lines of Code](https://tokei.rs/b1/github/persistenceOne/persistenceCore)](https://github.com/persistenceOne/persistenceCore) [![GitHub commit activity](https://img.shields.io/github/commit-activity/m/persistenceOne/persistenceCore)](https://github.com/persistenceOne/persistenceCore/graphs/commit-activity) [![GitHub contributors](https://img.shields.io/github/contributors/persistenceOne/persistenceCore)](https://github.com/persistenceOne/persistenceCore/graphs/contributors) [![GitHub stars](https://img.shields.io/github/stars/persistenceOne/persistenceCore?style=social)](https://github.com/persistenceOne/persistenceCore/stargazers) [![GitHub issues](https://img.shields.io/github/issues/persistenceOne/persistenceCore)](https://github.com/persistenceOne/persistenceCore/issues) [![GitHub forks](https://img.shields.io/github/forks/persistenceOne/persistenceCore?style=social)](https://github.com/persistenceOne/persistenceCore/network/members) [![GitHub license](https://img.shields.io/github/license/persistenceOne/persistenceCore)](https://github.com/persistenceOne/persistenceCore/blob/main/LICENSE) [![GitHub last commit](https://img.shields.io/github/last-commit/persistenceOne/persistenceCore)](https://github.com/persistenceOne/persistenceCore/commits/main) [![GitHub pull requests](https://img.shields.io/github/issues-pr/persistenceOne/persistenceCore)](https://github.com/persistenceOne/persistenceCore/pulls) [![GitHub closed issues](https://img.shields.io/github/issues-closed/persistenceOne/persistenceCore)](https://github.com/persistenceOne/persistenceCore/issues?q=is%3Aissue+is%3Aclosed) [![GitHub language count](https://img.shields.io/github/languages/count/persistenceOne/persistenceCore)](https://github.com/persistenceOne/persistenceCore) [![GitHub top language](https://img.shields.io/github/languages/top/persistenceOne/persistenceCore)](https://github.com/persistenceOne/persistenceCore) [![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/persistenceOne/persistenceCore)](https://github.com/persistenceOne/persistenceCore) [![GitHub repo size](https://img.shields.io/github/repo-size/persistenceOne/persistenceCore)](https://github.com/persistenceOne/persistenceCore) [![GitHub watchers](https://img.shields.io/github/watchers/persistenceOne/persistenceCore?style=social)](https://github.com/persistenceOne/persistenceCore/watchers) [![GitHub release (latest by date)](https://img.shields.io/github/v/release/persistenceOne/persistenceCore)](https://github.com/persistenceOne/persistenceCore/releases) [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/persistenceOne/persistenceCore?include_prereleases&label=Pre-release)](https://github.com/persistenceOne/persistenceCore/releases)
 
 
 
 <h1 align="center">PersistenceCore-1: Revolutionizing Liquid Staking 🌌🚀</h1>
-
-![Persistence Core](https://blog.persistence.one/wp-content/uploads/2022/04/Full_Logo_Light.png)
 
 **PersistenceCore** is at the heart of the Persistence ecosystem, utilizing the power of Tendermint for blockchain consensus. Our vision is to bridge various blockchain networks, facilitating a unified ecosystem for liquid staking and decentralized finance (DeFi) applications. By enabling assets to flow freely across blockchains, we aim to unlock new possibilities for asset utilization and yield generation.
 
@@ -84,11 +82,5 @@ Join our growing list of contributors who are making a significant impact:
 <a href="https://github.com/persistenceOne/persistenceCore/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=persistenceOne/persistenceCore"/>
 </a>
-
-<br/>
-
-<p align="center"><a href="https://github.com/nastyox/Rando.js#nastyox"><img src="http://randojs.com/images/barsSmallTransparentBackground.gif" alt="Animated footer bars" width="100%"/></a></p>
-
-<br/>
 
 <p align="center"><a href="https://github.com/persistenceOne/persistenceCore#"><img src="http://randojs.com/images/backToTopButtonTransparentBackground.png" alt="Back to top" height="29"/></a></p>
