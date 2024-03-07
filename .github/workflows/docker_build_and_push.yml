@@ -136,3 +136,9 @@ jobs:
             Docker images for amd64 and arm64 with updated dependencies are now available on Docker Hub.
             
             `docker pull ${{ env.IMAGE_NAME }}:${{ env.LATEST_VERSION }}-fh`
+
+
+
+
+
+            
