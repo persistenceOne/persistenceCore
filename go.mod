@@ -11,10 +11,10 @@ require (
 	github.com/CosmWasm/wasmvm v1.2.4
 	github.com/cometbft/cometbft v0.37.2
 	github.com/cometbft/cometbft-db v0.9.1
-	github.com/cosmos/cosmos-sdk v0.47.3
-	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 v7.0.0-20230523193151-73dea436e53f
+	github.com/cosmos/cosmos-sdk v0.47.5
+	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 v7.1.3-0.20240228213828-cce7f56d000b
 	github.com/cosmos/ibc-apps/modules/ibc-hooks/v7 v7.0.0-20230706221116-a1e480497c12
-	github.com/cosmos/ibc-go/v7 v7.1.0
+	github.com/cosmos/ibc-go/v7 v7.3.1
 	github.com/gorilla/mux v1.8.1
 	github.com/persistenceOne/persistence-sdk/v2 v2.1.1
 	github.com/persistenceOne/pstake-native/v2 v2.9.1
@@ -36,7 +36,7 @@ require (
 	cloud.google.com/go/storage v1.30.1 // indirect
 	cosmossdk.io/core v0.6.1 // indirect
 	cosmossdk.io/depinject v1.0.0-alpha.4 // indirect
-	cosmossdk.io/log v1.2.0 // indirect
+	cosmossdk.io/log v1.2.1 // indirect
 	filippo.io/edwards25519 v1.0.0 // indirect
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
 	github.com/99designs/keyring v1.2.2 // indirect
@@ -203,7 +203,6 @@ replace (
 replace (
 	github.com/CosmWasm/wasmd => github.com/persistenceOne/wasmd v0.40.2-lsm3
 	github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk v0.47.3-lsm5
-	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 => github.com/persistenceOne/ibc-apps/middleware/packet-forward-middleware/v7 v7.0.0-20240109170424-f4a8f29910eb
 	github.com/cosmos/ibc-apps/modules/ibc-hooks/v7 => github.com/persistenceOne/ibc-apps/modules/ibc-hooks/v7 v7.0.0-20240109170424-f4a8f29910eb
 	github.com/cosmos/ibc-go/v7 => github.com/persistenceOne/ibc-go/v7 v7.2.0-lsm3
 	github.com/skip-mev/pob => github.com/persistenceOne/pob v1.0.3-lsm3
