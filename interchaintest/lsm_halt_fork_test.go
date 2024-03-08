@@ -22,7 +22,7 @@ func TestPersistenceLSMHaltFork(t *testing.T) {
 	var (
 		chainName            = "persistence"
 		upgradeRepo          = PersistenceCoreImage.Repository
-		initialVersion       = "v9.1.1"
+		initialVersion       = "v10.4.1-fix"
 		upgradeBranchVersion = PersistenceCoreImage.Version
 	)
 
