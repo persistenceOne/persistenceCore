@@ -114,7 +114,7 @@ func TestPersistenceLSMHaltFork(t *testing.T) {
 	require.Len(t, validators, validatorsCount, "validator returned must match count of validators created")
 
 	// Bond first user
-	firstUserBondAmount := sdk.NewInt(100_000_000_000)
+	firstUserBondAmount := math.NewInt(100_000_000_000)
 	firstUserBondCoins := sdk.NewCoin(testDenom, firstUserBondAmount)
 	txHash, err := chainNode.ExecTx(ctx, firstUser.KeyName(),
 		"staking", "delegate", validators[0].OperatorAddress, firstUserBondCoins.String(),
@@ -167,7 +167,7 @@ func TestPersistenceLSMHaltFork(t *testing.T) {
 	checkCtx, cancelFn = context.WithTimeout(context.Background(), 15*time.Second)
 
 	// Create second user delegation
-	secondUserBondAmount := sdk.NewInt(88_000_000_000) // 88k magic number to tell from 100k that comes from A
+	secondUserBondAmount := math.NewInt(88_000_000_000) // 88k magic number to tell from 100k that comes from A
 	secondUserBondCoins := sdk.NewCoin(testDenom, secondUserBondAmount)
 	_, err = chainNode.ExecTx(checkCtx, secondUser.KeyName(),
 		"staking", "delegate", validators[0].OperatorAddress, secondUserBondCoins.String(),
