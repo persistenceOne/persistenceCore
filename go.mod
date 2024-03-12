@@ -17,7 +17,7 @@ require (
 	github.com/cosmos/ibc-go/v7 v7.1.0
 	github.com/gorilla/mux v1.8.1
 	github.com/persistenceOne/persistence-sdk/v2 v2.1.1
-	github.com/persistenceOne/pstake-native/v2 v2.10.2
+	github.com/persistenceOne/pstake-native/v2 v2.11.0
 	github.com/prometheus/client_golang v1.15.0
 	github.com/rakyll/statik v0.1.7
 	github.com/skip-mev/pob v1.0.1
@@ -25,7 +25,7 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.16.0
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 )
 
 require (
@@ -92,7 +92,7 @@ require (
 	github.com/golang/glog v1.1.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/mock v1.6.0 // indirect
-	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/btree v1.1.2 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
@@ -180,7 +180,7 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20231120223509-83a465c0220f // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231212172506-995d672761c0 // indirect
 	google.golang.org/grpc v1.60.1 // indirect
-	google.golang.org/protobuf v1.32.0 // indirect
+	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

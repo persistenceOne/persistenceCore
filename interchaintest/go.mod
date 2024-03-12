@@ -10,10 +10,10 @@ require (
 	github.com/cosmos/cosmos-sdk v0.47.5
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/cosmos/ibc-go/v7 v7.3.0
-	github.com/persistenceOne/pstake-native/v2 v2.10.2
+	github.com/persistenceOne/pstake-native/v2 v2.11.0
 	github.com/pkg/errors v0.9.1
 	github.com/strangelove-ventures/interchaintest/v7 v7.0.0-20230905210439-3e17efc70581
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.25.0
 )
 
@@ -102,7 +102,7 @@ require (
 	github.com/golang/glog v1.1.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/mock v1.6.0 // indirect
-	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/btree v1.1.2 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
@@ -219,7 +219,7 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20231120223509-83a465c0220f // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231212172506-995d672761c0 // indirect
 	google.golang.org/grpc v1.60.1 // indirect
-	google.golang.org/protobuf v1.32.0 // indirect
+	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

@@ -245,7 +245,7 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 	// Check total expected locked stkXPRT in LP: two deposits of liquid stkXPRT in different ways
 	// and one stake transfer through LSM-LP flow (using stake-to-lp).
 	totalLockedExpected := tokensToLock.Amount.Add(tokensToLock2.Amount).Add(stakeToLP.Amount)
-	totalLockedExpected = totalLockedExpected.Sub(sdk.NewInt(3)) // some dust lost due to stk math
+	totalLockedExpected = totalLockedExpected.Sub(sdk.NewInt(1)) // some dust lost due to stk math
 
 	lockedLST = helpers.GetTotalAmountLocked(t, ctx, chainNode, lpContractAddr, firstUser.FormattedAddress())
 	require.Equal(t, totalLockedExpected, lockedLST, "expected LST tokens to add up")
@@ -292,6 +292,6 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 	unbondingDelegation := helpers.QueryUnbondingDelegation(t, ctx, chainNode, secondUser.FormattedAddress(), validators[0].OperatorAddress)
 	require.Len(t, unbondingDelegation.Entries, 1)
 	require.Equal(t, secondUser.FormattedAddress(), unbondingDelegation.DelegatorAddress, "unbonding delegation must have second user as delegator")
-	expectedUnbondingBalance := tokensToSend.Amount.Add(sdk.NewInt(1))
+	expectedUnbondingBalance := tokensToSend.Amount
 	require.Equal(t, expectedUnbondingBalance, unbondingDelegation.Entries[0].Balance, "balance of unbonding delegation to match for stkXPRT unbonding")
 }

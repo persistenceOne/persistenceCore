@@ -1,4 +1,4 @@
-package v11_7_1
+package v11_8_0
 
 import (
 	store "github.com/cosmos/cosmos-sdk/store/types"
@@ -10,7 +10,7 @@ import (
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName = "v11.7.1"
+	UpgradeName = "v11" //ONLY FOR MAINNET
 )
 
 var Upgrade = upgrades.Upgrade{
