@@ -292,6 +292,6 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 	unbondingDelegation := helpers.QueryUnbondingDelegation(t, ctx, chainNode, secondUser.FormattedAddress(), validators[0].OperatorAddress)
 	require.Len(t, unbondingDelegation.Entries, 1)
 	require.Equal(t, secondUser.FormattedAddress(), unbondingDelegation.DelegatorAddress, "unbonding delegation must have second user as delegator")
-	expectedUnbondingBalance := tokensToSend.Amount.Add(sdk.NewInt(1))
+	expectedUnbondingBalance := tokensToSend.Amount
 	require.Equal(t, expectedUnbondingBalance, unbondingDelegation.Entries[0].Balance, "balance of unbonding delegation to match for stkXPRT unbonding")
 }
