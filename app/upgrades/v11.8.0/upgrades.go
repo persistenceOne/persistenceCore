@@ -18,6 +18,10 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 	return func(ctx sdk.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
 		ctx.Logger().Info("running upgrade handler")
 
+		newVM, err := args.ModuleManager.RunMigrations(ctx, args.Configurator, vm)
+		if err != nil {
+			panic(err)
+		}
 		// make sure this region runs only during CI and mainnet v11 upgrade
 		if chainID := ctx.ChainID(); chainID == "core-1" || chainID == "ictest-core-1" {
 			if err := runLiquidstakeUpgradeMigration(ctx, args.Keepers); err != nil {
@@ -30,7 +34,7 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 			// TODO: more migrations
 		}
 
-		return args.ModuleManager.RunMigrations(ctx, args.Configurator, vm)
+		return newVM, nil
 	}
 }
 
