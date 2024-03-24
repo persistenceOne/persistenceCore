@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/fs"
 	stdlog "log"
 	"net/http"
 	"os"
@@ -49,7 +50,6 @@ import (
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/gorilla/mux"
-	"github.com/rakyll/statik/fs"
 	pobabci "github.com/skip-mev/pob/abci"
 	"github.com/skip-mev/pob/mempool"
 	"github.com/spf13/cast"
@@ -57,6 +57,7 @@ import (
 	"github.com/persistenceOne/persistenceCore/v11/app/keepers"
 	"github.com/persistenceOne/persistenceCore/v11/app/upgrades"
 	v11_8_0 "github.com/persistenceOne/persistenceCore/v11/app/upgrades/v11.8.0"
+	"github.com/persistenceOne/persistenceCore/v11/client/docs"
 )
 
 var (
@@ -488,12 +489,12 @@ func (app *Application) setupPostHandler() {
 }
 
 func RegisterSwaggerAPI(rtr *mux.Router) {
-	statikFS, err := fs.New()
+	swaggerDir, err := fs.Sub(docs.SwaggerUI, "swagger-ui")
 	if err != nil {
 		panic(err)
 	}
 
-	staticServer := http.FileServer(statikFS)
+	staticServer := http.FileServer(http.FS(swaggerDir))
 	rtr.PathPrefix("/swagger/").Handler(http.StripPrefix("/swagger/", staticServer))
 }
 
