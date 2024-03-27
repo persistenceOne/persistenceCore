@@ -14,6 +14,8 @@ import (
 	ratesynctypes "github.com/persistenceOne/pstake-native/v2/x/ratesync/types"
 )
 
+// This was buggy in mainnet upgrade -> potantial fix/ diff should have been -> https://github.com/persistenceOne/persistenceCore/pull/308
+// PR #308 is not merged to preserve upgrade history as is.
 func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.UpgradeHandler {
 	return func(ctx sdk.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
 		ctx.Logger().Info("running upgrade handler")
