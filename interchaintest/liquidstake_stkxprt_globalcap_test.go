@@ -60,7 +60,7 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	firstUser := interchaintest.GetAndFundTestUsers(t, ctx, firstUserName(t.Name()), firstUserFunds, chain)[0]
 
 	instantiateMsg, err := json.Marshal(helpers.SuperFluidInstantiateMsg{
-		VaultAddress: "",
+		VaultAddress: "persistence1z0uz82yle9tavl4qpq86a34z4hn7gsdd8n56t3qzr0nf4nwptv8q3h274d",
 		Owner:        firstUser.FormattedAddress(),
 		AllowedLockableTokens: []helpers.AssetInfo{{
 			NativeToken: helpers.NativeTokenInfo{
