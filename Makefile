@@ -293,3 +293,23 @@ rm-testcache:
 	go clean -testcache
 
 .PHONY: test ictest-all ictest-basic ictest-ibchooks ictest-pfm ictest-upgrade ictest-upgrade-local ictest-ibc ictest-pob ictest-lsm ictest-liquidstake
+
+
+###############################################################################
+###                                Protobuf                                 ###
+###############################################################################
+
+protoVer=0.14.0
+protoImageName=ghcr.io/cosmos/proto-builder:$(protoVer)
+protoImage=$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(protoImageName)
+
+proto-swagger-gen:
+	@echo "Generating Protobuf Swagger"
+	#@$(protoImage) sh ./proto/scripts/proto-swagger-gen.sh
+	./proto/scripts/proto-swagger-gen.sh
+
+proto-clean:
+	rm -rf tmp-swagger-gen/
+	rm -rf tmp_deps/
+
+.PHONY: proto-swagger-gen proto-clean
