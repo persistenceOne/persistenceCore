@@ -240,7 +240,6 @@ func newApp(
 		db,
 		traceStore,
 		true,
-		app.GetEnabledProposals(),
 		appOpts,
 		wasmOpts,
 		baseappOpts...,
@@ -269,7 +268,6 @@ func appExport(
 		db,
 		traceStore,
 		loadLatest,
-		app.GetEnabledProposals(),
 		appOpts,
 		emptyWasmOpts,
 	)

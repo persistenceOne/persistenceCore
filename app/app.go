@@ -56,42 +56,15 @@ import (
 
 	"github.com/persistenceOne/persistenceCore/v11/app/keepers"
 	"github.com/persistenceOne/persistenceCore/v11/app/upgrades"
-	v11_8_0 "github.com/persistenceOne/persistenceCore/v11/app/upgrades/v11.8.0"
+	v11_9_0 "github.com/persistenceOne/persistenceCore/v11/app/upgrades/v11.9.0"
 	"github.com/persistenceOne/persistenceCore/v11/client/docs"
 )
 
 var (
 	DefaultNodeHome string
-	Upgrades        = []upgrades.Upgrade{v11_8_0.Upgrade}
+	Upgrades        = []upgrades.Upgrade{v11_9_0.Upgrade}
 	ModuleBasics    = module.NewBasicManager(keepers.AppModuleBasics...)
 )
-
-var (
-	// ProposalsEnabled is "true" and EnabledSpecificProposals is "", then enable all x/wasm proposals.
-	// ProposalsEnabled is not "true" and EnabledSpecificProposals is "", then disable all x/wasm proposals.
-	ProposalsEnabled = "true"
-	// EnableSpecificProposals if set to non-empty string it must be comma-separated list of values that are all a subset
-	// of "EnableAllProposals" (takes precedence over ProposalsEnabled)
-	// https://github.com/CosmWasm/wasmd/blob/02a54d33ff2c064f3539ae12d75d027d9c665f05/x/wasm/internal/types/proposal.go#L28-L34
-	EnableSpecificProposals = ""
-)
-
-// GetEnabledProposals parses the ProposalsEnabled / EnableSpecificProposals values to
-// produce a list of enabled proposals to pass into wasmd app.
-func GetEnabledProposals() []wasm.ProposalType {
-	if EnableSpecificProposals == "" {
-		if ProposalsEnabled == "true" {
-			return wasm.EnableAllProposals
-		}
-		return wasm.DisableAllProposals
-	}
-	chunks := strings.Split(EnableSpecificProposals, ",")
-	proposals, err := wasm.ConvertToProposals(chunks)
-	if err != nil {
-		panic(err)
-	}
-	return proposals
-}
 
 var (
 	_ runtime.AppI            = (*Application)(nil)
@@ -129,7 +102,6 @@ func NewApplication(
 	db tendermintdb.DB,
 	traceStore io.Writer,
 	loadLatest bool,
-	enabledProposals []wasm.ProposalType,
 	applicationOptions servertypes.AppOptions,
 	wasmOpts []wasm.Option,
 	baseAppOptions ...func(*baseapp.BaseApp),
@@ -177,7 +149,6 @@ func NewApplication(
 		SendCoinBlockedAddrs(),
 		applicationOptions,
 		wasmDir,
-		enabledProposals,
 		wasmOpts,
 		Bech32MainPrefix,
 	)

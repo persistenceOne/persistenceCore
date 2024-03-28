@@ -24,11 +24,11 @@ func NewTestNetworkFixture() network.TestFixture {
 	}
 	defer os.RemoveAll(dir)
 
-	app := NewApplication(log.NewNopLogger(), dbm.NewMemDB(), nil, true, GetEnabledProposals(), simtestutil.NewAppOptionsWithFlagHome(dir), []wasm.Option{})
+	app := NewApplication(log.NewNopLogger(), dbm.NewMemDB(), nil, true, simtestutil.NewAppOptionsWithFlagHome(dir), []wasm.Option{})
 
 	appCtr := func(val network.ValidatorI) servertypes.Application {
 		return NewApplication(
-			val.GetCtx().Logger, dbm.NewMemDB(), nil, true, GetEnabledProposals(),
+			val.GetCtx().Logger, dbm.NewMemDB(), nil, true,
 			simtestutil.NewAppOptionsWithFlagHome(val.GetCtx().Config.RootDir), []wasm.Option{},
 			bam.SetPruning(pruningtypes.NewPruningOptionsFromString(val.GetAppConfig().Pruning)),
 			bam.SetMinGasPrices(val.GetAppConfig().MinGasPrices),
