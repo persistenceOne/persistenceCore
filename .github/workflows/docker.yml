@@ -5,6 +5,8 @@ name: Docker
 on:
   push:
     branches: [ ajeet/just-for-docker-image ]
+  pull_request:
+    branches: [ main ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
