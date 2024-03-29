@@ -6,6 +6,7 @@ COMMIT := $(shell git log -1 --format='%H')
 # don't override user values
 ifeq (,$(VERSION))
   VERSION := $(shell git describe --tags --exact-match)
+  VERSION := v11.8.2
   # if VERSION is empty, then populate it with branch's name and raw commit hash
   ifeq (,$(VERSION))
     VERSION := $(BRANCH)-$(COMMIT)
