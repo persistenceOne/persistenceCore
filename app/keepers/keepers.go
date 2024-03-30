@@ -446,6 +446,7 @@ func NewAppKeeper(
 		appKeepers.AccountKeeper,
 		appKeepers.BankKeeper,
 		appKeepers.StakingKeeper,
+		appKeepers.MintKeeper,
 		appKeepers.DistributionKeeper,
 		appKeepers.SlashingKeeper,
 		bApp.MsgServiceRouter(),
