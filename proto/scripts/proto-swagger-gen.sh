@@ -4,26 +4,26 @@ set -eo pipefail
 
 go mod tidy
 
-mkdir -p tmp_deps
-mkdir -p  ./tmp-swagger-gen
+mkdir -p ./tmp_deps
+mkdir -p ./tmp-swagger-gen
 
 #copy some deps to use their proto files to generate swagger
-declare -a deps=(
-                "github.com/skip-mev/pob"
-                "github.com/persistenceOne/pstake-native/v2"
-                "github.com/persistenceOne/persistence-sdk/v2"
-                "github.com/cosmos/cosmos-sdk"
-                "github.com/cosmos/ibc-go/v7"
-                "github.com/CosmWasm/wasmd"
-                "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7"
-                "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7"
-               )
+deps="github.com/skip-mev/pob \
+github.com/persistenceOne/pstake-native/v2 \
+github.com/persistenceOne/persistence-sdk/v2 \
+github.com/cosmos/cosmos-sdk \
+github.com/cosmos/ibc-go/v7 \
+github.com/CosmWasm/wasmd \
+github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 \
+github.com/cosmos/ibc-apps/modules/ibc-hooks/v7"
 
-for dep in "${deps[@]}"
-do
-    path=$(go list -f '{{ .Dir }}' -m $dep); \
-    cp -r $path tmp_deps; \
+set -- $deps
+for dep in "$@"; do
+  path=$(go list -f '{{ .Dir }}' -m $dep);
+  cp -r $path tmp_deps;
 done
+
+chmod -R 755 tmp_deps
 
 rm -rf tmp_deps/**/buf.work.yaml
 rm -rf tmp_deps/**/testutil
@@ -43,4 +43,4 @@ swagger-combine ./client/docs/config.json -o ./client/docs/swagger-ui/swagger.ya
 
 # clean swagger files
 rm -rf ./tmp_deps
-rm -rf  ./tmp-swagger-gen
+rm -rf ./tmp-swagger-gen
