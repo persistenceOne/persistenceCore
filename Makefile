@@ -305,7 +305,10 @@ protoImage=$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(pro
 
 proto-swagger-gen:
 	@echo "Generating Protobuf Swagger"
-	#@$(protoImage) sh ./proto/scripts/proto-swagger-gen.sh
+	@$(protoImage) sh ./proto/scripts/proto-swagger-gen.sh
+
+proto-swagger-gen-direct:
+	@echo "Generating Protobuf Swagger"
 	./proto/scripts/proto-swagger-gen.sh
 
 proto-clean:
