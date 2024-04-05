@@ -13,7 +13,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.47.10
 	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 v7.1.3
 	github.com/cosmos/ibc-apps/modules/ibc-hooks/v7 v7.0.0-20240321032823-2733d24a1b99
-	github.com/cosmos/ibc-go/v7 v7.3.2
+	github.com/cosmos/ibc-go/v7 v7.4.0
 	github.com/gorilla/mux v1.8.1
 	github.com/persistenceOne/persistence-sdk/v2 v2.2.0-rc0
 	github.com/persistenceOne/pstake-native/v2 v2.12.0
