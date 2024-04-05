@@ -27,7 +27,7 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 		t.Skip()
 	}
 
-	t.Parallel()
+	// t.Parallel()
 
 	// override SDK bech prefixes with chain specific
 	helpers.SetConfig()
@@ -40,8 +40,16 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 	// create a single chain instance with 4 validators
 	validatorsCount := 4
 
+	overridesKV := append([]cosmos.GenesisKV{}, fastVotingGenesisOverridesKV...)
+	// By default the module is in paused state.
+	// set it unpaused.
+	overridesKV = append(overridesKV, cosmos.GenesisKV{
+		Key:   "app_state.liquidstake.params.module_paused",
+		Value: false,
+	})
+
 	// important overrides: fast voting for quick proposal passing
-	ic, chain := CreateChain(t, ctx, validatorsCount, 0, fastVotingGenesisOverridesKV...)
+	ic, chain := CreateChain(t, ctx, validatorsCount, 0, overridesKV...)
 	chainNode := chain.Nodes()[0]
 	testDenom := chain.Config().Denom
 
@@ -146,6 +154,7 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 		},
 	)
 	require.NoError(t, err, "error submitting liquidstake validators whitelist update tx")
+	require.Equal(t, uint32(0), txResp.Code, txResp.RawLog)
 
 	// Liquid stake XPRT from the first user (5 XPRT)
 
@@ -245,7 +254,7 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 	// Check total expected locked stkXPRT in LP: two deposits of liquid stkXPRT in different ways
 	// and one stake transfer through LSM-LP flow (using stake-to-lp).
 	totalLockedExpected := tokensToLock.Amount.Add(tokensToLock2.Amount).Add(stakeToLP.Amount)
-	totalLockedExpected = totalLockedExpected.Sub(sdk.NewInt(1)) // some dust lost due to stk math
+	// totalLockedExpected = totalLockedExpected.Sub(sdk.NewInt(1)) // some dust lost due to stk math
 
 	lockedLST = helpers.GetTotalAmountLocked(t, ctx, chainNode, lpContractAddr, firstUser.FormattedAddress())
 	require.Equal(t, totalLockedExpected, lockedLST, "expected LST tokens to add up")

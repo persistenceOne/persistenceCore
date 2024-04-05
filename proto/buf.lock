@@ -19,5 +19,5 @@ deps:
   - remote: buf.build
     owner: persistence
     repository: cosmos-sdk-lsm
-    commit: ac3de0dcbfbe4150b68e337f3063beed
-    digest: shake256:85111a50f8f3d210189e8b5c179c9883f2b94d99028814f9ebec0680b4f2bd365086c3fa1d8bb5990b35b316f1ac4854bfbcd3b954060f065025e94c21989ca5
+    commit: 55bfa73f469f45279b972dc24195429c
+    digest: shake256:2f4fb6d4b10e0de05f02fe979cc3b487ce89520495c50a10a867bdbe30b02bc0a8123ff30964f304c2ba7d07bede0786cb82a91ff590ffe413b18dbfae57a216

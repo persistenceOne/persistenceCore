@@ -4,4 +4,4 @@ deps:
   - buf.build/cosmos/cosmos-proto
   - buf.build/cosmos/gogo-proto
   - buf.build/googleapis/googleapis
-  - buf.build/persistence/cosmos-sdk-lsm:v0.47.3-lsm
+  - buf.build/persistence/cosmos-sdk-lsm:v0.47.10-lsm
