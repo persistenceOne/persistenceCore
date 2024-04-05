@@ -307,6 +307,10 @@ proto-swagger-gen:
 	@echo "Generating Protobuf Swagger"
 	@$(protoImage) sh ./proto/scripts/proto-swagger-gen.sh
 
+proto-swagger-gen-direct:
+	@echo "Generating Protobuf Swagger"
+	./proto/scripts/proto-swagger-gen.sh
+
 proto-clean:
 	rm -rf tmp-swagger-gen/
 	rm -rf tmp_deps/
