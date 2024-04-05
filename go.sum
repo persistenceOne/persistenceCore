@@ -1034,8 +1034,8 @@ github.com/persistenceOne/cosmos-sdk v0.47.10-lsm-rc0 h1:lbSQZUdaaKIpoSAznVESl0v
 github.com/persistenceOne/cosmos-sdk v0.47.10-lsm-rc0/go.mod h1:Q/eHvXB0Awenk3NCh77NvjpeKGPigawFHIXlz2ayfos=
 github.com/persistenceOne/persistence-sdk/v2 v2.2.0-rc0 h1:SXvhBcOX8Vik4sP4fKf6VlFUNIfR0bxFXrCN3y6yL08=
 github.com/persistenceOne/persistence-sdk/v2 v2.2.0-rc0/go.mod h1:8VgozZWTPLMdlzsyiuGI0+vLo2fvGYSj/YKM9kiJwrI=
-github.com/persistenceOne/pstake-native/v2 v2.12.0-rc1 h1:8wU4XuQ849ITX3mTdEa/IHrpxlEEGnR9T93NQ+UoGGU=
-github.com/persistenceOne/pstake-native/v2 v2.12.0-rc1/go.mod h1:mSAByOyYAXomcALxlwyVGKdFPwUkkyLOFs9OeTHKcuw=
+github.com/persistenceOne/pstake-native/v2 v2.12.0 h1:uuqZufMArylhtJvsLNVRWDhZRYUOz4xRmU+NVEryu6c=
+github.com/persistenceOne/pstake-native/v2 v2.12.0/go.mod h1:mSAByOyYAXomcALxlwyVGKdFPwUkkyLOFs9OeTHKcuw=
 github.com/peterh/liner v1.0.1-0.20180619022028-8c1271fcf47f/go.mod h1:xIteQHvHuaLYG9IFj6mSxM0fCKrs34IrEQUhOYuGPHc=
 github.com/peterh/liner v1.1.1-0.20190123174540-a2c9a5303de7/go.mod h1:CRroGNssyjTd/qIG2FyxByd2S8JEAZXBl4qUrZf8GS0=
 github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5/go.mod h1:jvVRKCrJTQWu0XVbaOlby/2lO20uSCHEMzzplHXte1o=
