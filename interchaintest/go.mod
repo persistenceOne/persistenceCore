@@ -6,10 +6,10 @@ require (
 	cosmossdk.io/math v1.3.0
 	github.com/CosmWasm/wasmd v0.41.0
 	github.com/avast/retry-go/v4 v4.5.0
-	github.com/cometbft/cometbft v0.37.2
-	github.com/cosmos/cosmos-sdk v0.47.5
+	github.com/cometbft/cometbft v0.37.4
+	github.com/cosmos/cosmos-sdk v0.47.8
 	github.com/cosmos/go-bip39 v1.0.0
-	github.com/cosmos/ibc-go/v7 v7.3.0
+	github.com/cosmos/ibc-go/v7 v7.4.0
 	github.com/persistenceOne/pstake-native/v2 v2.11.0
 	github.com/pkg/errors v0.9.1
 	github.com/strangelove-ventures/interchaintest/v7 v7.0.0-20230905210439-3e17efc70581
