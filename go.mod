@@ -208,3 +208,5 @@ replace (
 
 // replace with persistence's LSM fork
 replace github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk v0.47.10-lsm-rc0
+
+replace github.com/terra-money/alliance => github.com/persistenceOne/alliance v0.3.4-lsm
