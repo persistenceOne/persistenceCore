@@ -26,7 +26,7 @@ func TestPauseLiquidStakeStkXPRT(t *testing.T) {
 		t.Skip()
 	}
 
-	t.Parallel()
+	// t.Parallel()
 
 	// override SDK bech prefixes with chain specific
 	helpers.SetConfig()
@@ -39,8 +39,12 @@ func TestPauseLiquidStakeStkXPRT(t *testing.T) {
 	// create a single chain instance with 4 validators
 	validatorsCount := 4
 
-	// important overrides: fast voting for quick proposal passing
-	ic, chain := CreateChain(t, ctx, validatorsCount, 0, fastVotingGenesisOverridesKV...)
+	overridesKV := append([]cosmos.GenesisKV{}, fastVotingGenesisOverridesKV...)
+	overridesKV = append(overridesKV, cosmos.GenesisKV{
+		Key:   "app_state.liquidstake.params.module_paused",
+		Value: false,
+	})
+	ic, chain := CreateChain(t, ctx, validatorsCount, 0, overridesKV...)
 	chainNode := chain.Nodes()[0]
 	testDenom := chain.Config().Denom
 
@@ -58,7 +62,7 @@ func TestPauseLiquidStakeStkXPRT(t *testing.T) {
 	secondUser := interchaintest.GetAndFundTestUsers(t, ctx, secondUserName(t.Name()), secondUserFunds, chain)[0]
 
 	instantiateMsg, err := json.Marshal(helpers.SuperFluidInstantiateMsg{
-		VaultAddress: "",
+		VaultAddress: "persistence1z0uz82yle9tavl4qpq86a34z4hn7gsdd8n56t3qzr0nf4nwptv8q3h274d",
 		Owner:        firstUser.FormattedAddress(),
 		AllowedLockableTokens: []helpers.AssetInfo{{
 			NativeToken: helpers.NativeTokenInfo{
@@ -146,6 +150,7 @@ func TestPauseLiquidStakeStkXPRT(t *testing.T) {
 		},
 	)
 	require.NoError(t, err, "error submitting liquidstake validators whitelist update tx")
+	require.Equal(t, uint32(0), txResp.Code, txResp.RawLog)
 
 	// Pause the module
 
@@ -162,7 +167,7 @@ func TestPauseLiquidStakeStkXPRT(t *testing.T) {
 
 	firstUserLiquidStakeAmount := sdk.NewInt(5_000_000)
 	firstUserLiquidStakeCoins := sdk.NewCoin(testDenom, firstUserLiquidStakeAmount)
-	txHash, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
+	_, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
 		"liquidstake", "liquid-stake", firstUserLiquidStakeCoins.String(),
 		"--gas=auto",
 	)

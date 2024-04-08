@@ -38,10 +38,14 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 
 	// important overrides: fast voting for quick proposal passing
 	// x/staking: lsm global cap to 10%
+	// x/liquidstake: module_paused to false
 	overridesKV := append([]cosmos.GenesisKV{}, fastVotingGenesisOverridesKV...)
 	overridesKV = append(overridesKV, cosmos.GenesisKV{
 		Key:   "app_state.staking.params.global_liquid_staking_cap",
 		Value: "0.100000000000000000",
+	}, cosmos.GenesisKV{
+		Key:   "app_state.liquidstake.params.module_paused",
+		Value: false,
 	})
 
 	ic, chain := CreateChain(t, ctx, validatorsCount, 0, overridesKV...)
@@ -60,7 +64,7 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	firstUser := interchaintest.GetAndFundTestUsers(t, ctx, firstUserName(t.Name()), firstUserFunds, chain)[0]
 
 	instantiateMsg, err := json.Marshal(helpers.SuperFluidInstantiateMsg{
-		VaultAddress: "",
+		VaultAddress: "persistence1z0uz82yle9tavl4qpq86a34z4hn7gsdd8n56t3qzr0nf4nwptv8q3h274d",
 		Owner:        firstUser.FormattedAddress(),
 		AllowedLockableTokens: []helpers.AssetInfo{{
 			NativeToken: helpers.NativeTokenInfo{
@@ -158,6 +162,7 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 		},
 	)
 	require.NoError(t, err, "error submitting liquidstake validators whitelist update tx")
+	require.Equal(t, uint32(0), txResp.Code, txResp.RawLog)
 
 	stakingParams, _, err := chainNode.ExecQuery(ctx, "staking", "params")
 	require.NoError(t, err)
@@ -167,7 +172,7 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 
 	firstUserLiquidStakeAmount := sdk.NewInt(5_000_000_000_000)
 	firstUserLiquidStakeCoins := sdk.NewCoin(testDenom, firstUserLiquidStakeAmount)
-	txHash, err := chainNode.ExecTx(ctx, firstUser.KeyName(),
+	_, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
 		"liquidstake", "liquid-stake", firstUserLiquidStakeCoins.String(),
 		"--gas=auto",
 	)
@@ -177,7 +182,7 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	// Retry with 2M XPRT (10%)
 	firstUserLiquidStakeAmount = sdk.NewInt(2_000_000_000_000)
 	firstUserLiquidStakeCoins = sdk.NewCoin(testDenom, firstUserLiquidStakeAmount)
-	txHash, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
+	txHash, err := chainNode.ExecTx(ctx, firstUser.KeyName(),
 		"liquidstake", "liquid-stake", firstUserLiquidStakeCoins.String(),
 		"--gas=auto",
 	)
@@ -207,7 +212,7 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 
 	firstUserLiquidStakeAmount = sdk.NewInt(300_000_000_000)
 	firstUserLiquidStakeCoins = sdk.NewCoin(testDenom, firstUserLiquidStakeAmount)
-	txHash, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
+	_, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
 		"liquidstake", "liquid-stake", firstUserLiquidStakeCoins.String(),
 		"--gas=auto",
 	)
@@ -300,7 +305,7 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 
 	firstUserLiquidStakeAmount = sdk.NewInt(1_000_000_000_000)
 	firstUserLiquidStakeCoins = sdk.NewCoin(testDenom, firstUserLiquidStakeAmount)
-	txHash, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
+	_, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
 		"liquidstake", "stake-to-lp", validators[0].OperatorAddress, firstUserLiquidStakeCoins.String(),
 		"--gas=auto",
 	)

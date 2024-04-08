@@ -1,0 +1,7 @@
+version: v1
+name: buf.build/persistence/persistence
+deps:
+  - buf.build/cosmos/cosmos-proto
+  - buf.build/cosmos/gogo-proto
+  - buf.build/googleapis/googleapis
+  - buf.build/persistence/cosmos-sdk-lsm:v0.47.10-lsm

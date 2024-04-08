@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	"github.com/cosmos/cosmos-sdk/client/tx"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -25,7 +24,7 @@ func TestLiquidStakeUnstakeStkXPRT(t *testing.T) {
 		t.Skip()
 	}
 
-	t.Parallel()
+	// t.Parallel()
 
 	// override SDK bech prefixes with chain specific
 	helpers.SetConfig()
@@ -39,7 +38,15 @@ func TestLiquidStakeUnstakeStkXPRT(t *testing.T) {
 	validatorsCount := 8
 
 	// important overrides: fast voting for quick proposal passing
-	ic, chain := CreateChain(t, ctx, validatorsCount, 0, fastVotingGenesisOverridesKV...)
+	overridesKV := append([]cosmos.GenesisKV{}, fastVotingGenesisOverridesKV...)
+	// By default the module is in paused state.
+	// set it unpaused.
+	overridesKV = append(overridesKV, cosmos.GenesisKV{
+		Key:   "app_state.liquidstake.params.module_paused",
+		Value: false,
+	})
+
+	ic, chain := CreateChain(t, ctx, validatorsCount, 0, overridesKV...)
 	chainNode := chain.Nodes()[0]
 	testDenom := chain.Config().Denom
 
@@ -62,22 +69,19 @@ func TestLiquidStakeUnstakeStkXPRT(t *testing.T) {
 	height, err := chain.Height(ctx)
 	require.NoError(t, err, "error fetching height before submitting a proposal")
 
+	params := liquidstaketypes.DefaultParams()
+	params.WhitelistAdminAddress = chainUser.FormattedAddress()
 	msgUpdateParams, err := codectypes.NewAnyWithValue(&liquidstaketypes.MsgUpdateParams{
 		Authority: authtypes.NewModuleAddress("gov").String(),
-		Params: liquidstaketypes.Params{
-			LiquidBondDenom:      liquidstaketypes.DefaultLiquidBondDenom,
-			LsmDisabled:          false,
-			UnstakeFeeRate:       liquidstaketypes.DefaultUnstakeFeeRate,
-			MinLiquidStakeAmount: liquidstaketypes.DefaultMinLiquidStakeAmount,
-		},
+		Params:    params,
 	})
 
 	require.NoError(t, err, "failed to pack liquidstaketypes.MsgUpdateParams")
 
 	broadcaster := cosmos.NewBroadcaster(t, chain)
-	broadcaster.ConfigureFactoryOptions(func(factory tx.Factory) (_ tx.Factory) {
-		return factory.WithGas(1_000_000)
-	})
+	// broadcaster.ConfigureFactoryOptions(func(factory tx.Factory) (_ tx.Factory) {
+	// 	return factory.WithGas(1_000_000)
+	// })
 	txResp, err := cosmos.BroadcastTx(
 		ctx,
 		broadcaster,
@@ -126,6 +130,7 @@ func TestLiquidStakeUnstakeStkXPRT(t *testing.T) {
 		},
 	)
 	require.NoError(t, err, "error submitting liquidstake validators whitelist update tx")
+	require.Equal(t, uint32(0), txResp.Code, txResp.RawLog)
 
 	// Liquid stake XPRT
 

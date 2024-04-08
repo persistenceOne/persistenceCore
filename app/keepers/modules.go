@@ -25,7 +25,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/router"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
 	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7"
 	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
 	ibcfee "github.com/cosmos/ibc-go/v7/modules/apps/29-fee"
@@ -97,7 +97,7 @@ var AppModuleBasics = []module.AppModuleBasic{
 	consensus.AppModuleBasic{},
 	groupmodule.AppModuleBasic{},
 	ibchooks.AppModuleBasic{},
-	router.AppModuleBasic{},
+	packetforward.AppModuleBasic{},
 	buildermodule.AppModuleBasic{},
 	alliancemodule.AppModuleBasic{},
 }
