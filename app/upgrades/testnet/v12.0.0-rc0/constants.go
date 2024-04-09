@@ -1,4 +1,4 @@
-package v11_8_0
+package v12_0_0_rc0
 
 import (
 	store "github.com/cosmos/cosmos-sdk/store/types"
