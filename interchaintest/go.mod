@@ -14,6 +14,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/strangelove-ventures/interchaintest/v7 v7.0.0-20230905210439-3e17efc70581
 	github.com/stretchr/testify v1.9.0
+	github.com/terra-money/alliance v0.3.5
 	go.uber.org/zap v1.25.0
 )
 
