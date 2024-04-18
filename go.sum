@@ -1032,8 +1032,8 @@ github.com/pelletier/go-toml/v2 v2.0.8/go.mod h1:vuYfssBdrU2XDZ9bYydBu6t+6a6PYNc
 github.com/performancecopilot/speed v3.0.0+incompatible/go.mod h1:/CLtqpZ5gBg1M9iaPbIdPPGyKcA8hKdoy6hAWba7Yac=
 github.com/persistenceOne/cosmos-sdk v0.47.10-lsm-rc0 h1:lbSQZUdaaKIpoSAznVESl0vMv7pwGiXeIRsGXBlefCE=
 github.com/persistenceOne/cosmos-sdk v0.47.10-lsm-rc0/go.mod h1:Q/eHvXB0Awenk3NCh77NvjpeKGPigawFHIXlz2ayfos=
-github.com/persistenceOne/persistence-sdk/v2 v2.2.0-rc0 h1:SXvhBcOX8Vik4sP4fKf6VlFUNIfR0bxFXrCN3y6yL08=
-github.com/persistenceOne/persistence-sdk/v2 v2.2.0-rc0/go.mod h1:8VgozZWTPLMdlzsyiuGI0+vLo2fvGYSj/YKM9kiJwrI=
+github.com/persistenceOne/persistence-sdk/v2 v2.2.0 h1:ZsBsy/HElkwjPXoASI7CptMFY9C3C/d27G+8bxFDzQw=
+github.com/persistenceOne/persistence-sdk/v2 v2.2.0/go.mod h1:8VgozZWTPLMdlzsyiuGI0+vLo2fvGYSj/YKM9kiJwrI=
 github.com/persistenceOne/pstake-native/v2 v2.12.0 h1:uuqZufMArylhtJvsLNVRWDhZRYUOz4xRmU+NVEryu6c=
 github.com/persistenceOne/pstake-native/v2 v2.12.0/go.mod h1:mSAByOyYAXomcALxlwyVGKdFPwUkkyLOFs9OeTHKcuw=
 github.com/peterh/liner v1.0.1-0.20180619022028-8c1271fcf47f/go.mod h1:xIteQHvHuaLYG9IFj6mSxM0fCKrs34IrEQUhOYuGPHc=
