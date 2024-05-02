@@ -30,7 +30,7 @@ func TestPersistenceUpgradeBasic(t *testing.T) {
 	var (
 		chainName            = "persistence"
 		initialVersion       = "v11.10.0"
-		upgradeName          = "v11.11.0-rc0"
+		upgradeName          = "v11.11.0"
 		upgradeRepo          = PersistenceCoreImage.Repository
 		upgradeBranchVersion = PersistenceCoreImage.Version
 	)
