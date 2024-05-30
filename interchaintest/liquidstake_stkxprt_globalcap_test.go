@@ -2,11 +2,8 @@ package interchaintest
 
 import (
 	"context"
-	"encoding/json"
-	"testing"
-	"time"
-
 	"cosmossdk.io/math"
+	"encoding/json"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -16,6 +13,7 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 	"github.com/stretchr/testify/require"
+	"testing"
 
 	"github.com/persistenceOne/persistenceCore/v11/interchaintest/helpers"
 )
@@ -47,9 +45,6 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	}, cosmos.GenesisKV{
 		Key:   "app_state.liquidstake.params.module_paused",
 		Value: false,
-	}, cosmos.GenesisKV{
-		Key:   "app_state.epochs.epochs.0.duration",
-		Value: "5s",
 	})
 
 	ic, chain := CreateChain(t, ctx, validatorsCount, 0, overridesKV...)
@@ -167,7 +162,6 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	)
 	require.NoError(t, err, "error submitting liquidstake validators whitelist update tx")
 	require.Equal(t, uint32(0), txResp.Code, txResp.RawLog)
-	time.Sleep(6 * time.Second)
 
 	stakingParams, _, err := chainNode.ExecQuery(ctx, "staking", "params")
 	require.NoError(t, err)

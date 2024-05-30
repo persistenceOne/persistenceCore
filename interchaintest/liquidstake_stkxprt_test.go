@@ -8,6 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
+	"github.com/persistenceOne/persistenceCore/v11/interchaintest/helpers"
 	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
 	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
@@ -15,9 +16,6 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 	"github.com/stretchr/testify/require"
 	"testing"
-	"time"
-
-	"github.com/persistenceOne/persistenceCore/v11/interchaintest/helpers"
 )
 
 // TestLiquidStakeStkXPRT runs the flow of liquid XPRT staking using
@@ -46,9 +44,6 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 	overridesKV = append(overridesKV, cosmos.GenesisKV{
 		Key:   "app_state.liquidstake.params.module_paused",
 		Value: false,
-	}, cosmos.GenesisKV{
-		Key:   "app_state.epochs.epochs.0.duration",
-		Value: "5s",
 	})
 
 	// important overrides: fast voting for quick proposal passing
@@ -159,7 +154,6 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 	require.NoError(t, err, "error submitting liquidstake validators whitelist update tx")
 	require.Equal(t, uint32(0), txResp.Code, txResp.RawLog)
 	// Liquid stake XPRT from the first user (5 XPRT)
-	time.Sleep(6 * time.Second)
 
 	firstUserLiquidStakeAmount := sdk.NewInt(5_000_000)
 	firstUserLiquidStakeCoins := sdk.NewCoin(testDenom, firstUserLiquidStakeAmount)
