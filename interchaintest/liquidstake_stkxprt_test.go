@@ -46,6 +46,9 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 	overridesKV = append(overridesKV, cosmos.GenesisKV{
 		Key:   "app_state.liquidstake.params.module_paused",
 		Value: false,
+	}, cosmos.GenesisKV{
+		Key:   "app_state.epochs.epochs.0.duration",
+		Value: "5s",
 	})
 
 	// important overrides: fast voting for quick proposal passing

@@ -46,6 +46,9 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	}, cosmos.GenesisKV{
 		Key:   "app_state.liquidstake.params.module_paused",
 		Value: false,
+	}, cosmos.GenesisKV{
+		Key:   "app_state.epochs.epochs.0.duration",
+		Value: "5s",
 	})
 
 	ic, chain := CreateChain(t, ctx, validatorsCount, 0, overridesKV...)
