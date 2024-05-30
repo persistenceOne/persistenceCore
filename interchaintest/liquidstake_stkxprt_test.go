@@ -2,10 +2,8 @@ package interchaintest
 
 import (
 	"context"
-	"encoding/json"
-	"testing"
-
 	"cosmossdk.io/math"
+	"encoding/json"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -16,6 +14,8 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 	"github.com/stretchr/testify/require"
+	"testing"
+	"time"
 
 	"github.com/persistenceOne/persistenceCore/v11/interchaintest/helpers"
 )
@@ -158,8 +158,8 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 	)
 	require.NoError(t, err, "error submitting liquidstake validators whitelist update tx")
 	require.Equal(t, uint32(0), txResp.Code, txResp.RawLog)
-
 	// Liquid stake XPRT from the first user (5 XPRT)
+	time.Sleep(6 * time.Second)
 
 	firstUserLiquidStakeAmount := sdk.NewInt(5_000_000)
 	firstUserLiquidStakeCoins := sdk.NewCoin(testDenom, firstUserLiquidStakeAmount)

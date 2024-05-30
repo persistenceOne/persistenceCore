@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"testing"
+	"time"
 
 	"cosmossdk.io/math"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -166,6 +167,7 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	)
 	require.NoError(t, err, "error submitting liquidstake validators whitelist update tx")
 	require.Equal(t, uint32(0), txResp.Code, txResp.RawLog)
+	time.Sleep(6 * time.Second)
 
 	stakingParams, _, err := chainNode.ExecQuery(ctx, "staking", "params")
 	require.NoError(t, err)
