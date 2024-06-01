@@ -2,10 +2,8 @@ package interchaintest
 
 import (
 	"context"
-	"encoding/json"
-	"testing"
-
 	"cosmossdk.io/math"
+	"encoding/json"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -15,6 +13,7 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 	"github.com/stretchr/testify/require"
+	"testing"
 
 	"github.com/persistenceOne/persistenceCore/v11/interchaintest/helpers"
 )
