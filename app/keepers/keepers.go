@@ -473,7 +473,9 @@ func NewAppKeeper(
 	)
 	appKeepers.EpochsKeeper.SetHooks(
 		epochstypes.NewMultiEpochHooks(
-			appKeepers.LiquidStakeIBCKeeper.NewEpochHooks(), appKeepers.RateSyncKeeper.EpochHooks(),
+			appKeepers.LiquidStakeIBCKeeper.NewEpochHooks(),
+			appKeepers.LiquidStakeKeeper.EpochHooks(),
+			appKeepers.RateSyncKeeper.EpochHooks(),
 		),
 	)
 
