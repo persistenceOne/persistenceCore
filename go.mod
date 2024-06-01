@@ -24,6 +24,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.9.0
+	github.com/terra-money/alliance v0.3.5
 )
 
 require (
@@ -207,3 +208,5 @@ replace (
 
 // replace with persistence's LSM fork
 replace github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk v0.47.10-lsm-rc0
+
+replace github.com/terra-money/alliance => github.com/persistenceOne/alliance v0.3.4-lsm

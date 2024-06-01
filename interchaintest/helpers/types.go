@@ -1,6 +1,10 @@
 package helpers
 
-import "cosmossdk.io/math"
+import (
+	"time"
+
+	"cosmossdk.io/math"
+)
 
 type QueryMsg struct {
 	// IBCHooks
@@ -79,4 +83,23 @@ type SuperFluidInstantiateMsg struct {
 	VaultAddress          string      `json:"vault_addr"`
 	Owner                 string      `json:"owner"`
 	AllowedLockableTokens []AssetInfo `json:"allowed_lockable_tokens"`
+}
+
+type Alliance struct {
+	Denom                string         `json:"denom"`
+	RewardWeight         math.LegacyDec `json:"reward_weight"`
+	TakeRate             math.LegacyDec `json:"take_rate"`
+	TotalTokens          math.Int       `json:"total_tokens"`
+	TotalValidatorShares math.LegacyDec `json:"total_validator_shares"`
+	RewardStartTime      time.Time      `json:"reward_start_time"`
+	RewardChangeRate     math.LegacyDec `json:"reward_change_rate"`
+	RewardChangeInterval string         `json:"reward_change_interval"`
+	LastRewardChangeTime time.Time      `json:"last_reward_change_time"`
+
+	RewardWeightRange struct {
+		Min math.LegacyDec `json:"min"`
+		Max math.LegacyDec `json:"max"`
+	} `json:"reward_weight_range"`
+
+	IsInitialized bool `json:"is_initialized"`
 }
