@@ -1,16 +1,18 @@
 package v11_14_0_test
 
 import (
+	"testing"
+
 	"github.com/CosmWasm/wasmd/x/wasm"
 	dbm "github.com/cometbft/cometbft-db"
 	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	"github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/require"
+
 	"github.com/persistenceOne/persistenceCore/v11/app"
 	v11_14_0 "github.com/persistenceOne/persistenceCore/v11/app/upgrades/v11.14.0"
-	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestRemoveStargazeUnbondedBalance(t *testing.T) {
