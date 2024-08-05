@@ -39,9 +39,9 @@ Alternately you can also notify us of a security issue through, [Discord](https:
 
 |         | Telegram       | Discord                         |
 | ------  | -------------  | ------------------------------  |
-| Puneet  | `@mkoijn6`     | `Puneet | Persistence 💪#0507`  |
+| Puneet  | `@mkoijn6`     | `puneet_m`                      |
 | Marc    | `@m4rcpt`      | `kruspy`                        |
-| Pranjal | `@betterclever`|                                 |
+| Pranjal | `@betterclever`| `betterclever`                  |
 
 ### Coordinated Vulnerability Disclosure Policy
 
