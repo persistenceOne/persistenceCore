@@ -94,7 +94,7 @@ jobs:
     steps:
       # Load the docker image tarball from github actions artifacts and run tests (one runner per test due to matrix)
       - name: Download Tarball Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: persistence-docker-image
 
