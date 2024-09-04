@@ -344,12 +344,23 @@ func NewAppKeeper(
 		appCodec,
 		appKeepers.keys[ibcfeetypes.StoreKey],
 		appKeepers.IBCKeeper.ChannelKeeper, // may be replaced with IBC middleware
-		appKeepers.IBCKeeper.ChannelKeeper,
+		appKeepers.IBCKeeper.ChannelKeeper, // TODO CHECK hooks here
 		&appKeepers.IBCKeeper.PortKeeper,
 		appKeepers.AccountKeeper,
 		appKeepers.BankKeeper,
 	)
 	appKeepers.IBCFeeKeeper = &ibcFeeKeeper
+
+	// Configure the hooks keeper
+	hooksKeeper := ibchookskeeper.NewKeeper(appKeepers.keys[ibchookstypes.StoreKey])
+	appKeepers.IBCHooksKeeper = &hooksKeeper
+	wasmHooks := ibchooks.NewWasmHooks(&hooksKeeper, appKeepers.WasmKeeper, bech32Prefix)
+	appKeepers.ICS20WasmHooks = &wasmHooks
+	hooksICS4Wrapper := ibchooks.NewICS4Middleware(
+		appKeepers.IBCKeeper.ChannelKeeper,
+		appKeepers.ICS20WasmHooks,
+	)
+	appKeepers.HooksICS4Wrapper = &hooksICS4Wrapper
 
 	appKeepers.PacketForwardKeeper = packetforwardkeeper.NewKeeper(
 		appCodec,
@@ -358,7 +369,7 @@ func NewAppKeeper(
 		appKeepers.IBCKeeper.ChannelKeeper,
 		appKeepers.DistributionKeeper,
 		appKeepers.BankKeeper,
-		appKeepers.IBCKeeper.ChannelKeeper,
+		appKeepers.HooksICS4Wrapper, // TODO CHECK HOOKS HERE
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
@@ -368,7 +379,7 @@ func NewAppKeeper(
 		appKeepers.GetSubspace(ibctransfertypes.ModuleName),
 		// The ICS4Wrapper is replaced by the PacketForwardKeeper
 		// so that sending can be overridden by the middleware
-		appKeepers.PacketForwardKeeper,
+		appKeepers.PacketForwardKeeper, // TODO CHECK HOOKS HERE
 		appKeepers.IBCKeeper.ChannelKeeper,
 		&appKeepers.IBCKeeper.PortKeeper,
 		appKeepers.AccountKeeper,
@@ -528,19 +539,8 @@ func NewAppKeeper(
 		wasmOpts...,
 	)
 	appKeepers.WasmKeeper = &wasmKeeper
-
-	// Configure the hooks keeper
-	hooksKeeper := ibchookskeeper.NewKeeper(appKeepers.keys[ibchookstypes.StoreKey])
-	appKeepers.IBCHooksKeeper = &hooksKeeper
-
-	wasmHooks := ibchooks.NewWasmHooks(&hooksKeeper, appKeepers.WasmKeeper, bech32Prefix)
-	appKeepers.ICS20WasmHooks = &wasmHooks
-
-	hooksICS4Wrapper := ibchooks.NewICS4Middleware(
-		appKeepers.IBCKeeper.ChannelKeeper,
-		appKeepers.ICS20WasmHooks,
-	)
-	appKeepers.HooksICS4Wrapper = &hooksICS4Wrapper
+	// Set ics20 wasm hooks the initialised wasmkeeper
+	appKeepers.ICS20WasmHooks.ContractKeeper = appKeepers.WasmKeeper
 
 	builderKeeper := builderkeeper.NewKeeper(
 		appCodec,
