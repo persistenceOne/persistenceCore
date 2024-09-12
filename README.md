@@ -49,6 +49,7 @@ git clone https://github.com/persistenceOne/persistenceCore.git
 * Checkout release tag
 
 ```shell
+cd persistenceCore
 git fetch --tags
 git checkout [vX.X.X]
 ```
@@ -56,7 +57,6 @@ git checkout [vX.X.X]
 * Install
 
 ```shell
-cd persistenceCore
 make all
 ```
 
