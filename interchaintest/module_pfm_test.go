@@ -438,7 +438,7 @@ func TestTimeoutOnForward(t *testing.T) {
 		func() {
 			err := r.StopRelayer(ctx, eRep)
 			if err != nil {
-				t.Logf("an error occured while stopping the relayer: %s", err)
+				t.Logf("an error occurred while stopping the relayer: %s", err)
 			}
 		},
 	)

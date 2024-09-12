@@ -136,7 +136,7 @@ locally [read more here.](https://github.com/persistenceOne/persistenceCore#init
 
 ### Send a transaction
 
-You are now ready to start signing in and sending transactions. Send a transaction with persistenceCore using the the **
+You are now ready to start signing in and sending transactions. Send a transaction with persistenceCore using the **
 tx send** command.
 
 ``` bash
