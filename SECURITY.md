@@ -10,7 +10,7 @@ Thank you for improving the security of Persistence. We appreciate your efforts 
 
 For a bug that is non-sensitive and/or operational in nature rather than a critical vulnerability, please add it as a GitHub issue.
 
-If it is not taken up in a couple of days, feel free to tag `@Anmol1696`, `@puneet2019`, `@snj33v`, `@ajansari95`, `@arhamchordia` or `@bahdotsh`.
+If it is not taken up in a couple of days, feel free to tag `@kruspy`, `@puneet2019` or `@betterclever`.
 
 ### Critical bug or security issue
 
@@ -39,12 +39,9 @@ Alternately you can also notify us of a security issue through, [Discord](https:
 
 |         | Telegram       | Discord                         |
 | ------  | -------------  | ------------------------------  |
-| Puneet  | `@mkoijn6`     | `Puneet | Persistence 💪#0507`  |
-| Anmol   | `@anmol1696`   | `anmol1696 | Persistence#0348`  |
-| Sanjeev | `@ping_echo`   | `Echo | AUDIT.one#7553`         |
-| Ajaz    | `@ajansari95`  | `Ajaz Ahmed | Persistence#0296` |
-| Arham   | `@arhamchordia`| `Arham | Persistence#4526`      |
-| Gokul   | `@bahdotsh`    | `bahdotsh#9564`                 |
+| Puneet  | `@mkoijn6`     | `puneet_m`                      |
+| Marc    | `@m4rcpt`      | `kruspy`                        |
+| Pranjal | `@betterclever`| `betterclever`                  |
 
 ### Coordinated Vulnerability Disclosure Policy
 

@@ -48,7 +48,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	packetforward "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
 	packetforwardkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/keeper"
 	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
 	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7"
@@ -340,10 +340,21 @@ func NewAppKeeper(
 		appKeepers.ScopedIBCKeeper,
 	)
 
+	// Configure the hooks keeper
+	hooksKeeper := ibchookskeeper.NewKeeper(appKeepers.keys[ibchookstypes.StoreKey])
+	appKeepers.IBCHooksKeeper = &hooksKeeper
+	wasmHooks := ibchooks.NewWasmHooks(&hooksKeeper, appKeepers.WasmKeeper, bech32Prefix)
+	appKeepers.ICS20WasmHooks = &wasmHooks
+	hooksICS4Wrapper := ibchooks.NewICS4Middleware(
+		appKeepers.IBCKeeper.ChannelKeeper,
+		appKeepers.ICS20WasmHooks,
+	)
+	appKeepers.HooksICS4Wrapper = &hooksICS4Wrapper
+
 	ibcFeeKeeper := ibcfeekeeper.NewKeeper(
 		appCodec,
 		appKeepers.keys[ibcfeetypes.StoreKey],
-		appKeepers.IBCKeeper.ChannelKeeper, // may be replaced with IBC middleware
+		appKeepers.HooksICS4Wrapper, // may be replaced with IBC middleware
 		appKeepers.IBCKeeper.ChannelKeeper,
 		&appKeepers.IBCKeeper.PortKeeper,
 		appKeepers.AccountKeeper,
@@ -358,7 +369,7 @@ func NewAppKeeper(
 		appKeepers.IBCKeeper.ChannelKeeper,
 		appKeepers.DistributionKeeper,
 		appKeepers.BankKeeper,
-		appKeepers.IBCKeeper.ChannelKeeper,
+		appKeepers.IBCFeeKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
@@ -528,19 +539,8 @@ func NewAppKeeper(
 		wasmOpts...,
 	)
 	appKeepers.WasmKeeper = &wasmKeeper
-
-	// Configure the hooks keeper
-	hooksKeeper := ibchookskeeper.NewKeeper(appKeepers.keys[ibchookstypes.StoreKey])
-	appKeepers.IBCHooksKeeper = &hooksKeeper
-
-	wasmHooks := ibchooks.NewWasmHooks(&hooksKeeper, appKeepers.WasmKeeper, bech32Prefix)
-	appKeepers.ICS20WasmHooks = &wasmHooks
-
-	hooksICS4Wrapper := ibchooks.NewICS4Middleware(
-		appKeepers.IBCKeeper.ChannelKeeper,
-		appKeepers.ICS20WasmHooks,
-	)
-	appKeepers.HooksICS4Wrapper = &hooksICS4Wrapper
+	// Set ics20 wasm hooks the initialised wasmkeeper
+	appKeepers.ICS20WasmHooks.ContractKeeper = appKeepers.WasmKeeper
 
 	builderKeeper := builderkeeper.NewKeeper(
 		appCodec,
@@ -557,9 +557,9 @@ func NewAppKeeper(
 	icaHostStack = icahost.NewIBCModule(*appKeepers.ICAHostKeeper)
 	icaHostStack = ibcfee.NewIBCMiddleware(icaHostStack, *appKeepers.IBCFeeKeeper)
 
+	//SendPacket --> Transfer -> PFM -> Fee -> ibcHooks -> IBC-Core (ICS4Wrappers)
+	//RecvPacket --> IBC-Core -> ibcHooks -> Fee -> PFM -> ibcHooker(persistence-sdk) ->  Transfer (AddRoute)
 	var transferStack ibctypes.IBCModule = appKeepers.IBCTransferHooksMiddleware
-	transferStack = ibcfee.NewIBCMiddleware(transferStack, *appKeepers.IBCFeeKeeper)
-	transferStack = ibchooks.NewIBCMiddleware(transferStack, appKeepers.HooksICS4Wrapper)
 	transferStack = packetforward.NewIBCMiddleware(
 		transferStack,
 		appKeepers.PacketForwardKeeper,
@@ -567,6 +567,8 @@ func NewAppKeeper(
 		packetforwardkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
 		packetforwardkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
 	)
+	transferStack = ibcfee.NewIBCMiddleware(transferStack, *appKeepers.IBCFeeKeeper)
+	transferStack = ibchooks.NewIBCMiddleware(transferStack, appKeepers.HooksICS4Wrapper)
 
 	// Information will flow: ibc-port -> icaController -> lscosmos.
 	var icaControllerStack ibctypes.IBCModule = liquidStakeIBCModule
