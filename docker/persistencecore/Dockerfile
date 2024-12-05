@@ -10,10 +10,10 @@ RUN set -eux; apk add --no-cache ca-certificates build-base;
 RUN apk add --no-cache $PACKAGES
 
 # See https://github.com/CosmWasm/wasmvm/releases
-ADD https://github.com/CosmWasm/wasmvm/releases/download/v1.5.0/libwasmvm_muslc.aarch64.a /lib/libwasmvm_muslc.aarch64.a
-ADD https://github.com/CosmWasm/wasmvm/releases/download/v1.5.0/libwasmvm_muslc.x86_64.a /lib/libwasmvm_muslc.x86_64.a
-RUN sha256sum /lib/libwasmvm_muslc.aarch64.a | grep 2687afbdae1bc6c7c8b05ae20dfb8ffc7ddc5b4e056697d0f37853dfe294e913
-RUN sha256sum /lib/libwasmvm_muslc.x86_64.a | grep 465e3a088e96fd009a11bfd234c69fb8a0556967677e54511c084f815cf9ce63
+ADD https://github.com/CosmWasm/wasmvm/releases/download/v1.5.5/libwasmvm_muslc.aarch64.a /lib/libwasmvm_muslc.aarch64.a
+ADD https://github.com/CosmWasm/wasmvm/releases/download/v1.5.5/libwasmvm_muslc.x86_64.a /lib/libwasmvm_muslc.x86_64.a
+RUN sha256sum /lib/libwasmvm_muslc.aarch64.a | grep 9429e9ab18f0b2519d9e3344b13fbb3ea339b7f1deedfaa2abc71522d190eaef
+RUN sha256sum /lib/libwasmvm_muslc.x86_64.a | grep 0421ad81247a46bbad6899c49d5081a5a080621ab9432e710152d85ba66c94bc
 
 # Copy the library you want to the final location that will be found by the linker flag `-lwasmvm_muslc`
 RUN cp /lib/libwasmvm_muslc.$(uname -m).a /lib/libwasmvm_muslc.a
