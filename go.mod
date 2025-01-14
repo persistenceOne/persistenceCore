@@ -5,7 +5,7 @@ go 1.21
 require (
 	cosmossdk.io/api v0.3.1
 	cosmossdk.io/errors v1.0.1
-	cosmossdk.io/math v1.3.0
+	cosmossdk.io/math v1.4.0
 	cosmossdk.io/tools/rosetta v0.2.1
 	github.com/CosmWasm/wasmd v0.45.0
 	github.com/cometbft/cometbft v0.37.4
@@ -16,14 +16,14 @@ require (
 	github.com/cosmos/ibc-go/v7 v7.4.0
 	github.com/gorilla/mux v1.8.1
 	github.com/persistenceOne/persistence-sdk/v2 v2.2.0
-	github.com/persistenceOne/pstake-native/v2 v2.15.0
+	github.com/persistenceOne/pstake-native/v2 v2.16.0
 	github.com/prometheus/client_golang v1.16.0
 	github.com/skip-mev/pob v1.0.5
 	github.com/spf13/cast v1.6.0
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.16.0
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 )
 
 require (
