@@ -69,7 +69,7 @@ jobs:
         id: go
 
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download dependencies for interchaintest
         run: |
@@ -108,7 +108,7 @@ jobs:
         id: go
 
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: run test
         run: make ${{ matrix.test }}
