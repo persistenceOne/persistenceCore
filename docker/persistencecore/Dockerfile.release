@@ -1,4 +1,4 @@
-FROM golang:1.21.5-alpine3.18
+FROM golang:1.23.6-alpine3.21
 
 # Set up dependencies
 ENV PACKAGES curl make git libusb-dev libc-dev bash gcc linux-headers eudev-dev python3 git
