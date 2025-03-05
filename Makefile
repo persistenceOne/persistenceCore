@@ -18,6 +18,11 @@ LEDGER_ENABLED ?= true
 SDK_PACK := $(shell go list -m github.com/cosmos/cosmos-sdk | sed  's/ /\@/g')
 BFT_VERSION := $(shell go list -m github.com/cometbft/cometbft | sed 's:.* ::') # grab everything after the space in "github.com/cometbft/cometbft v0.34.7"
 
+GO_MAJOR_VERSION = $(shell go version | cut -c 14- | cut -d' ' -f1 | cut -d'.' -f1)
+GO_MINOR_VERSION = $(shell go version | cut -c 14- | cut -d' ' -f1 | cut -d'.' -f2)
+GO_MINIMUM_MAJOR_VERSION = $(shell cat go.mod | grep -E 'go [0-9].[0-9]+' | cut -d ' ' -f2 | cut -d'.' -f1)
+GO_MINIMUM_MINOR_VERSION = $(shell cat go.mod | grep -E 'go [0-9].[0-9]+' | cut -d ' ' -f2 | cut -d'.' -f2)
+
 # process build tags
 build_tags = netgo
 ifeq ($(LEDGER_ENABLED),true)
@@ -105,10 +110,10 @@ include sims.mk
 
 all: build lint
 
-install: go.sum
+install: check-go-version go.sum
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/persistenceCore
 
-build:
+build: check-go-version
 	go build $(BUILD_FLAGS) -o bin/persistenceCore ./cmd/persistenceCore
 
 $(BUILDDIR)/:
@@ -124,6 +129,19 @@ vulncheck: $(BUILDDIR)/
 ###                          Tools & Dependencies                           ###
 ###############################################################################
 
+check-go-version:
+# picked from https://github.com/osmosis-labs/osmosis/blob/main/scripts/makefiles/build.mk#L23
+	@echo "Go version: $(GO_MAJOR_VERSION).$(GO_MINOR_VERSION)"
+	@if [ $(GO_MAJOR_VERSION) -gt $(GO_MINIMUM_MAJOR_VERSION) ]; then \
+		echo "Go version is sufficient"; \
+		exit 0; \
+	elif [ $(GO_MAJOR_VERSION) -lt $(GO_MINIMUM_MAJOR_VERSION) ]; then \
+		echo '$(GO_VERSION_ERR_MSG)'; \
+		exit 1; \
+	elif [ $(GO_MINOR_VERSION) -lt $(GO_MINIMUM_MINOR_VERSION) ]; then \
+		echo '$(GO_VERSION_ERR_MSG)'; \
+		exit 1; \
+	fi
 go.sum: go.mod
 	@echo "Ensure dependencies have not been modified ..." >&2
 	go mod verify
