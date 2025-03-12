@@ -413,8 +413,8 @@ github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 v7.1.3 h1:MZG
 github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7 v7.1.3/go.mod h1:UvDmcGIWJPIytq+Q78/ff5NTOsuX/7IrNgEugTW5i0s=
 github.com/cosmos/ibc-apps/modules/ibc-hooks/v7 v7.0.0-20240321032823-2733d24a1b99 h1:AC05pevT3jIVTxJ0mABlN3hxyHESPpELhVQjwQVT6Pw=
 github.com/cosmos/ibc-apps/modules/ibc-hooks/v7 v7.0.0-20240321032823-2733d24a1b99/go.mod h1:JwHFbo1oX/ht4fPpnPvmhZr+dCkYK1Vihw+vZE9umR4=
-github.com/cosmos/ibc-go/v7 v7.9.2 h1:TReF8shQmjvIMXvSJ8AvRgpnf7g6BEeHx8l1rIqQlgU=
-github.com/cosmos/ibc-go/v7 v7.9.2/go.mod h1:v2hOSSf9Lmx2S590X/3aJ8CvHj4ewZV3Bviu6by2Y3g=
+github.com/cosmos/ibc-go/v7 v7.10.0 h1:/IUJ6wilNnGcpP5XMb7p74JnctKDrFSv30i7aoJRnVI=
+github.com/cosmos/ibc-go/v7 v7.10.0/go.mod h1:PiVSJhIPBq/rI+6UOfKPy4RKDCvQ2vR+Vdb6SaowETQ=
 github.com/cosmos/ics23/go v0.10.0 h1:iXqLLgp2Lp+EdpIuwXTYIQU+AiHj9mOC2X9ab++bZDM=
 github.com/cosmos/ics23/go v0.10.0/go.mod h1:ZfJSmng/TBNTBkFemHHHj5YY7VAU/MBU980F4VU1NG0=
 github.com/cosmos/keyring v1.2.0 h1:8C1lBP9xhImmIabyXW4c3vFjjLiBdGCmfLUfeZlV1Yo=
@@ -1024,8 +1024,8 @@ github.com/pelletier/go-toml/v2 v2.0.8/go.mod h1:vuYfssBdrU2XDZ9bYydBu6t+6a6PYNc
 github.com/pelletier/go-toml/v2 v2.2.2 h1:aYUidT7k73Pcl9nb2gScu7NSrKCSHIDE89b3+6Wq+LM=
 github.com/pelletier/go-toml/v2 v2.2.2/go.mod h1:1t835xjRzz80PqgE6HHgN2JOsmgYu/h4qDAS4n929Rs=
 github.com/performancecopilot/speed v3.0.0+incompatible/go.mod h1:/CLtqpZ5gBg1M9iaPbIdPPGyKcA8hKdoy6hAWba7Yac=
-github.com/persistenceOne/cosmos-sdk v0.47.13-lsm h1:hJSyQMqU/xjOHlqyjIY1Mox7v0NPiGu4WeYB90aX3j4=
-github.com/persistenceOne/cosmos-sdk v0.47.13-lsm/go.mod h1:YWRf6wvJRWldjI6AMlec9t0RDGAKzhk/AK6IMfWafOE=
+github.com/persistenceOne/cosmos-sdk v0.47.14-lsm h1:PNSoGWL75QbY0xTVZmqFgW6NKeoxMsWfgJs+uYQ5ypQ=
+github.com/persistenceOne/cosmos-sdk v0.47.14-lsm/go.mod h1:YWRf6wvJRWldjI6AMlec9t0RDGAKzhk/AK6IMfWafOE=
 github.com/persistenceOne/persistence-sdk/v2 v2.2.0 h1:ZsBsy/HElkwjPXoASI7CptMFY9C3C/d27G+8bxFDzQw=
 github.com/persistenceOne/persistence-sdk/v2 v2.2.0/go.mod h1:8VgozZWTPLMdlzsyiuGI0+vLo2fvGYSj/YKM9kiJwrI=
 github.com/persistenceOne/pstake-native/v2 v2.16.0 h1:xn/wlN3W/1yccqpSP89MaX5SCnj+VnYCN5C5pXZM0AY=
