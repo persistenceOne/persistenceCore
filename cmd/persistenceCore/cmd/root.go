@@ -86,7 +86,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	return rootCmd, encodingConfig
 }
 
-// setCfg params at the package state
+// setConfig params at the package state
 func setConfig() {
 	cfg := sdk.GetConfig()
 
