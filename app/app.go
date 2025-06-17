@@ -54,15 +54,15 @@ import (
 	"github.com/skip-mev/pob/mempool"
 	"github.com/spf13/cast"
 
-	"github.com/persistenceOne/persistenceCore/v11/app/keepers"
-	"github.com/persistenceOne/persistenceCore/v11/app/upgrades"
-	v11210 "github.com/persistenceOne/persistenceCore/v11/app/upgrades/v11.21.0"
-	"github.com/persistenceOne/persistenceCore/v11/client/docs"
+	"github.com/persistenceOne/persistenceCore/v12/app/keepers"
+	"github.com/persistenceOne/persistenceCore/v12/app/upgrades"
+	v1200 "github.com/persistenceOne/persistenceCore/v12/app/upgrades/testnet/v12.0.0-rc0"
+	"github.com/persistenceOne/persistenceCore/v12/client/docs"
 )
 
 var (
 	DefaultNodeHome string
-	Upgrades        = []upgrades.Upgrade{v11210.Upgrade}
+	Upgrades        = []upgrades.Upgrade{v1200.Upgrade}
 	ModuleBasics    = module.NewBasicManager(keepers.AppModuleBasics...)
 )
 

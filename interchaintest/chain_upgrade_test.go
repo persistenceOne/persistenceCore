@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 
-	"github.com/persistenceOne/persistenceCore/v11/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v12/interchaintest/helpers"
 )
 
 const (
@@ -29,8 +29,8 @@ const (
 func TestPersistenceUpgradeBasic(t *testing.T) {
 	var (
 		chainName            = "persistence"
-		initialVersion       = "v11.20.0"
-		upgradeName          = "v11.21.0"
+		initialVersion       = "v11.21.0-rc0"
+		upgradeName          = "v12.0.0-rc0"
 		upgradeRepo          = PersistenceCoreImage.Repository
 		upgradeBranchVersion = PersistenceCoreImage.Version
 	)

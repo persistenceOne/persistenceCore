@@ -1,4 +1,4 @@
-package v11_11_0_rc0
+package v12_0_0_rc0
 
 import (
 	store "github.com/cosmos/cosmos-sdk/store/types"
@@ -8,7 +8,7 @@ import (
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName = "v11.11.0-rc0"
+	UpgradeName = "v12.0.0-rc0"
 )
 
 var Upgrade = upgrades.Upgrade{

@@ -9,7 +9,7 @@ import (
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	"github.com/persistenceOne/persistenceCore/v11/app/upgrades"
+	"github.com/persistenceOne/persistenceCore/v12/app/upgrades"
 )
 
 var denomsMap = map[string]struct{}{
