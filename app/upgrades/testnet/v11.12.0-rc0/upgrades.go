@@ -6,8 +6,8 @@ import (
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
 
-	"github.com/persistenceOne/persistenceCore/v11/app/keepers"
-	"github.com/persistenceOne/persistenceCore/v11/app/upgrades"
+	"github.com/persistenceOne/persistenceCore/v12/app/keepers"
+	"github.com/persistenceOne/persistenceCore/v12/app/upgrades"
 )
 
 func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.UpgradeHandler {

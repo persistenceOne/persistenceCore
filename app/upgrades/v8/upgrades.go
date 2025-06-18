@@ -17,8 +17,8 @@ import (
 	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
 
-	"github.com/persistenceOne/persistenceCore/v11/app/keepers"
-	"github.com/persistenceOne/persistenceCore/v11/app/upgrades"
+	"github.com/persistenceOne/persistenceCore/v12/app/keepers"
+	"github.com/persistenceOne/persistenceCore/v12/app/upgrades"
 )
 
 func setInitialMinCommissionRate(ctx sdk.Context, keepers *keepers.AppKeepers) error {

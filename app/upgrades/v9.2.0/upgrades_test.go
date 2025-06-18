@@ -24,8 +24,8 @@ import (
 	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/persistenceOne/persistenceCore/v11/app"
-	v9_2_0 "github.com/persistenceOne/persistenceCore/v11/app/upgrades/v9.2.0"
+	"github.com/persistenceOne/persistenceCore/v12/app"
+	v9_2_0 "github.com/persistenceOne/persistenceCore/v12/app/upgrades/v9.2.0"
 )
 
 type KeeperTestHelper struct {

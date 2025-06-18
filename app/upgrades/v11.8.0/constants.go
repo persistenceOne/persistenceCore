@@ -5,7 +5,7 @@ import (
 	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
 	ratesynctypes "github.com/persistenceOne/pstake-native/v2/x/ratesync/types"
 
-	"github.com/persistenceOne/persistenceCore/v11/app/upgrades"
+	"github.com/persistenceOne/persistenceCore/v12/app/upgrades"
 )
 
 const (
