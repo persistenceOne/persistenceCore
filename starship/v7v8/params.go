@@ -8,7 +8,7 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	exported "github.com/cosmos/ibc-go/v7/modules/core/exported"
-	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
+	oracletypes "github.com/persistenceOne/persistence-sdk/v3/x/oracle/types"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
 )
 

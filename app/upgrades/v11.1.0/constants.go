@@ -2,7 +2,7 @@ package v11_1_0
 
 import (
 	store "github.com/cosmos/cosmos-sdk/store/types"
-	ratesynctypes "github.com/persistenceOne/pstake-native/v2/x/ratesync/types"
+	ratesynctypes "github.com/persistenceOne/pstake-native/v3/x/ratesync/types"
 
 	"github.com/persistenceOne/persistenceCore/v12/app/upgrades"
 )

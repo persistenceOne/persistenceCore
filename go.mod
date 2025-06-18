@@ -15,8 +15,8 @@ require (
 	github.com/cosmos/ibc-apps/modules/ibc-hooks/v7 v7.0.0-20240321032823-2733d24a1b99
 	github.com/cosmos/ibc-go/v7 v7.10.0
 	github.com/gorilla/mux v1.8.1
-	github.com/persistenceOne/persistence-sdk/v2 v2.2.0
-	github.com/persistenceOne/pstake-native/v2 v2.16.0
+	github.com/persistenceOne/persistence-sdk/v3 v3.0.0-20250618161146-c4a9a85bdf0d
+	github.com/persistenceOne/pstake-native/v3 v3.0.0-20250618163832-b9a90cee1fcf
 	github.com/prometheus/client_golang v1.20.5
 	github.com/skip-mev/pob v1.0.5
 	github.com/spf13/cast v1.6.0
@@ -145,6 +145,7 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
+	github.com/persistenceOne/persistence-sdk/v2 v2.2.0 // indirect
 	github.com/petermattis/goid v0.0.0-20240813172612-4fcff4a6cae7 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect

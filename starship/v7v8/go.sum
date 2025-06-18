@@ -1010,12 +1010,12 @@ github.com/persistenceOne/cosmos-sdk v0.0.0-20230706104148-3466cdce6a53 h1:/YLH6
 github.com/persistenceOne/cosmos-sdk v0.0.0-20230706104148-3466cdce6a53/go.mod h1:wPdAkY5Za4c7lRzLbZXsATjPWnD5Pkp2keGJ+yCTFVQ=
 github.com/persistenceOne/ibc-go/v7 v7.0.0-rc0.0.20230612095033-b776ca4647aa h1:cR2o2fUitv0hOPOihgirf1KzF/EC0cEU1r5C4YRw2HM=
 github.com/persistenceOne/ibc-go/v7 v7.0.0-rc0.0.20230612095033-b776ca4647aa/go.mod h1:DK8bzoAukxOGX1KiPSRWjx0VrDOerWP7HkWlxfoF2Js=
-github.com/persistenceOne/persistence-sdk/v2 v2.1.0-rc3.0.20230613005335-2f5959f4c5ee h1:LbH0KxoSwHs7lGJ6kAoYpBwKdAuQXVsrvs2oJltEG04=
-github.com/persistenceOne/persistence-sdk/v2 v2.1.0-rc3.0.20230613005335-2f5959f4c5ee/go.mod h1:j52RQ+563vpEcLLJTsd6ulAV/O1FrffoJUTBWGr1fGE=
+github.com/persistenceOne/persistence-sdk/v3 v2.1.0-rc3.0.20230613005335-2f5959f4c5ee h1:LbH0KxoSwHs7lGJ6kAoYpBwKdAuQXVsrvs2oJltEG04=
+github.com/persistenceOne/persistence-sdk/v3 v2.1.0-rc3.0.20230613005335-2f5959f4c5ee/go.mod h1:j52RQ+563vpEcLLJTsd6ulAV/O1FrffoJUTBWGr1fGE=
 github.com/persistenceOne/pob v1.0.0-lsm h1:8S5YUpbuurj4AnzLqeeBan9sEDB/OL2IARh6AizWkl4=
 github.com/persistenceOne/pob v1.0.0-lsm/go.mod h1:Gg9vkg9SvYIjwJAAosypoa3PSwpErX+ZGw8eoI0Hops=
-github.com/persistenceOne/pstake-native/v2 v2.2.0-rc3 h1:RbLIMTWQQ9R7KepV1UmUpZrQHPe8Op9abT3iz3nFb4I=
-github.com/persistenceOne/pstake-native/v2 v2.2.0-rc3/go.mod h1:t+oa6RERNcz9DzZ5NvLtX/G/xyblRaetSTHd2/PljJ0=
+github.com/persistenceOne/pstake-native/v3 v2.2.0-rc3 h1:RbLIMTWQQ9R7KepV1UmUpZrQHPe8Op9abT3iz3nFb4I=
+github.com/persistenceOne/pstake-native/v3 v2.2.0-rc3/go.mod h1:t+oa6RERNcz9DzZ5NvLtX/G/xyblRaetSTHd2/PljJ0=
 github.com/persistenceOne/starship/clients/go/client v0.0.0-20230701141320-e70f4ea1244d h1:tUKBGyy6mFFpq+js8VMGuLfTXEJkzZeJ37sBqdrZm6c=
 github.com/persistenceOne/starship/clients/go/client v0.0.0-20230701141320-e70f4ea1244d/go.mod h1:6tOA/rsr7j7lKn/Rwo+T7ttvznw11jdG7jSk+SRWxs4=
 github.com/peterh/liner v1.0.1-0.20180619022028-8c1271fcf47f/go.mod h1:xIteQHvHuaLYG9IFj6mSxM0fCKrs34IrEQUhOYuGPHc=

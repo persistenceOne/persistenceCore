@@ -5,8 +5,8 @@ import (
 
 	starship "github.com/cosmology-tech/starship/clients/go/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	lsibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
-	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
+	lsibctypes "github.com/persistenceOne/pstake-native/v3/x/liquidstakeibc/types"
+	lscosmostypes "github.com/persistenceOne/pstake-native/v3/x/lscosmos/types"
 )
 
 func (s *TestSuite) RunLiquidstakeibcTests() {
