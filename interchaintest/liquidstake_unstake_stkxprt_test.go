@@ -2,6 +2,8 @@ package interchaintest
 
 import (
 	"context"
+	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+	"strconv"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -9,7 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v3/x/liquidstake/types"
 	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
@@ -58,7 +60,7 @@ func TestLiquidStakeUnstakeStkXPRT(t *testing.T) {
 	})
 
 	// Allocate user with funds
-	chainUserFunds := int64(10_000_000_000)
+	chainUserFunds := math.NewInt(10_000_000_000)
 	chainUser := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), chainUserFunds, chain)[0]
 
 	// Get list of validators
@@ -102,10 +104,13 @@ func TestLiquidStakeUnstakeStkXPRT(t *testing.T) {
 	upgradeTx, err := helpers.QueryProposalTx(context.Background(), chain.Nodes()[0], txResp.TxHash)
 	require.NoError(t, err, "error checking proposal tx")
 
-	err = chain.VoteOnProposalAllValidators(ctx, upgradeTx.ProposalID, cosmos.ProposalVoteYes)
+	proposalID, err := strconv.ParseInt(upgradeTx.ProposalID, 10, 64)
+	require.NoError(t, err, "error parsing proposal id")
+
+	err = chain.VoteOnProposalAllValidators(ctx, proposalID, cosmos.ProposalVoteYes)
 	require.NoError(t, err, "failed to submit votes")
 
-	_, err = cosmos.PollForProposalStatus(ctx, chain, height, height+15, upgradeTx.ProposalID, cosmos.ProposalStatusPassed)
+	_, err = cosmos.PollForProposalStatus(ctx, chain, height, height+15, proposalID, govv1beta1.StatusPassed)
 	require.NoError(t, err, "proposal status did not change to passed in expected number of blocks")
 
 	err = testutil.WaitForBlocks(ctx, 2, chain)

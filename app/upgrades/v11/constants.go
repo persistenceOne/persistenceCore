@@ -2,7 +2,7 @@ package v11
 
 import (
 	store "github.com/cosmos/cosmos-sdk/store/types"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v3/x/liquidstake/types"
 
 	"github.com/persistenceOne/persistenceCore/v12/app/upgrades"
 )

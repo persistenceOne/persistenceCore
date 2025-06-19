@@ -2,13 +2,14 @@ package interchaintest
 
 import (
 	"context"
+	"cosmossdk.io/math"
 	"fmt"
 	"testing"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	testutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	ibclocalhost "github.com/cosmos/ibc-go/v7/modules/light-clients/09-localhost"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v3/x/liquidstake/types"
 	interchaintest "github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
@@ -91,7 +92,7 @@ var (
 		},
 	}
 
-	genesisWalletAmount = int64(10_000_000)
+	genesisWalletAmount = math.NewInt(10_000_000)
 )
 
 // persistenceEncoding registers the persistenceCore specific module codecs so that the associated types and msgs
@@ -116,21 +117,20 @@ func persistenceChainConfig(
 	}
 
 	config := ibc.ChainConfig{
-		Type:                   "cosmos",
-		Name:                   "persistence",
-		ChainID:                "ictest-core-1",
-		Bin:                    "persistenceCore",
-		Bech32Prefix:           "persistence",
-		Denom:                  helpers.PersistenceBondDenom,
-		CoinType:               fmt.Sprintf("%d", helpers.PersistenceCoinType),
-		GasPrices:              fmt.Sprintf("0%s", helpers.PersistenceBondDenom),
-		GasAdjustment:          1.5,
-		TrustingPeriod:         "112h",
-		NoHostMount:            false,
-		ConfigFileOverrides:    nil,
-		EncodingConfig:         persistenceEncoding(),
-		UsingNewGenesisCommand: true,
-		ModifyGenesis:          cosmos.ModifyGenesis(genesisOverrides),
+		Type:                "cosmos",
+		Name:                "persistence",
+		ChainID:             "ictest-core-1",
+		Bin:                 "persistenceCore",
+		Bech32Prefix:        "persistence",
+		Denom:               helpers.PersistenceBondDenom,
+		CoinType:            fmt.Sprintf("%d", helpers.PersistenceCoinType),
+		GasPrices:           fmt.Sprintf("0%s", helpers.PersistenceBondDenom),
+		GasAdjustment:       1.5,
+		TrustingPeriod:      "112h",
+		NoHostMount:         false,
+		ConfigFileOverrides: nil,
+		EncodingConfig:      persistenceEncoding(),
+		ModifyGenesis:       cosmos.ModifyGenesis(genesisOverrides),
 
 		Images: []ibc.DockerImage{
 			PersistenceCoreImage,

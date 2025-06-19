@@ -14,8 +14,8 @@ require (
 	github.com/cosmology-tech/starship/clients/go/client v0.0.0-20230502175643-cec33bcb37e4
 	github.com/cosmos/cosmos-sdk v0.47.3
 	github.com/cosmos/ibc-go/v7 v7.2.0
-	github.com/persistenceOne/persistence-sdk/v2 v2.1.0-rc3.0.20230613005335-2f5959f4c5ee
-	github.com/persistenceOne/pstake-native/v2 v2.2.0-rc3
+	github.com/persistenceOne/persistence-sdk/v3 v3.0.0-20250618161146-c4a9a85bdf0d
+    github.com/persistenceOne/pstake-native/v3 v3.0.0-20250618163832-b9a90cee1fcf
 	github.com/skip-mev/pob v1.0.0
 	github.com/stretchr/testify v1.8.4
 	go.uber.org/zap v1.24.0

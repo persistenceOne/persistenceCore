@@ -50,10 +50,9 @@ func TestPersistenceLSMHaltFork(t *testing.T) {
 			UidGid:     PersistenceCoreImage.UidGid,
 		}},
 
-		UsingNewGenesisCommand: true,
-		GasPrices:              fmt.Sprintf("0%s", helpers.PersistenceBondDenom),
-		EncodingConfig:         persistenceEncoding(),
-		ModifyGenesis:          cosmos.ModifyGenesis(defaultGenesisOverridesKV),
+		GasPrices:      fmt.Sprintf("0%s", helpers.PersistenceBondDenom),
+		EncodingConfig: persistenceEncoding(),
+		ModifyGenesis:  cosmos.ModifyGenesis(defaultGenesisOverridesKV),
 	}
 
 	validatorsCount := 4
@@ -96,9 +95,9 @@ func TestPersistenceLSMHaltFork(t *testing.T) {
 	testDenom := chain.Config().Denom
 
 	// Allocate two chain users with funds
-	firstUserFunds := int64(10_000_000_000_000)
+	firstUserFunds := math.NewInt(10_000_000_000_000)
 	firstUser := interchaintest.GetAndFundTestUsers(t, ctx, firstUserName(t.Name()), firstUserFunds, chain)[0]
-	secondUserFunds := int64(10_000_000_000_000)
+	secondUserFunds := math.NewInt(10_000_000_000_000)
 	secondUser := interchaintest.GetAndFundTestUsers(t, ctx, secondUserName(t.Name()), secondUserFunds, chain)[0]
 
 	validatorInitialDelegation := math.NewInt(5_000_000_000_000)

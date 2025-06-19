@@ -21,8 +21,8 @@ import (
 	icahosttypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
-	"github.com/persistenceOne/persistence-sdk/v2/x/halving"
-	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
+	"github.com/persistenceOne/persistence-sdk/v3/x/halving"
+	oracletypes "github.com/persistenceOne/persistence-sdk/v3/x/oracle/types"
 )
 
 func getLegacySubspaces(paramsKeeper *paramskeeper.Keeper) paramstypes.Subspace {

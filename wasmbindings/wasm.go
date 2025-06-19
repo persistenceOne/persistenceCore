@@ -7,10 +7,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
+	oracletypes "github.com/persistenceOne/persistence-sdk/v3/x/oracle/types"
 
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
-	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v3/x/liquidstake/types"
+	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v3/x/liquidstakeibc/types"
 )
 
 // RegisterStargateQueries returns wasm options for the stargate querier.

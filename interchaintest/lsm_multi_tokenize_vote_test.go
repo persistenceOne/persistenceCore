@@ -2,6 +2,8 @@ package interchaintest
 
 import (
 	"context"
+	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+	"strconv"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -41,9 +43,9 @@ func TestMultiTokenizeVote(t *testing.T) {
 	})
 
 	// Allocate two chain users with funds
-	firstUserFunds := int64(10_000_000_000)
+	firstUserFunds := math.NewInt(10_000_000_000)
 	firstUser := interchaintest.GetAndFundTestUsers(t, ctx, firstUserName(t.Name()), firstUserFunds, chain)[0]
-	secondUserFunds := int64(1000)
+	secondUserFunds := math.NewInt(1000)
 	secondUser := interchaintest.GetAndFundTestUsers(t, ctx, secondUserName(t.Name()), secondUserFunds, chain)[0]
 
 	// Get list of validators
@@ -95,13 +97,16 @@ func TestMultiTokenizeVote(t *testing.T) {
 	proposalTx, err := helpers.QueryProposalTx(ctx, chainNode, proposalTxHash)
 	require.NoError(t, err, "error reading text proposal result")
 
-	_, err = cosmos.PollForProposalStatus(ctx, chain, height, height+10, proposalTx.ProposalID, cosmos.ProposalStatusVotingPeriod)
+	proposalID, err := strconv.ParseInt(proposalTx.ProposalID, 10, 64)
+	require.NoError(t, err, "error parsing proposal id")
+
+	_, err = cosmos.PollForProposalStatus(ctx, chain, height, height+10, proposalID, govv1beta1.StatusVotingPeriod)
 	require.NoError(t, err, "proposal status did not change to voting in expected number of blocks")
 
 	// At this point, second user has 1stake tokenized, put up a proposal for 100stake initial deposit,
 	// and now he votes once the proposal in the voting period.
 
-	err = chainNode.VoteOnProposal(ctx, secondUser.KeyName(), proposalTx.ProposalID, helpers.ProposalVoteYes)
+	err = chainNode.VoteOnProposal(ctx, secondUser.KeyName(), proposalID, helpers.ProposalVoteYes)
 	require.NoError(t, err)
 
 	// The vote is not being reflected in the tally for now
@@ -125,7 +130,7 @@ func TestMultiTokenizeVote(t *testing.T) {
 	require.Equal(t, secondUserBondAmount, tally.YesCount, "second user's bonded amount counted towards Yes")
 
 	// First user tries to vote with NoWithVeto using his own bond
-	err = chainNode.VoteOnProposal(ctx, firstUser.KeyName(), proposalTx.ProposalID, helpers.ProposalVoteNoWithVeto)
+	err = chainNode.VoteOnProposal(ctx, firstUser.KeyName(), proposalID, helpers.ProposalVoteNoWithVeto)
 	require.NoError(t, err)
 
 	// His vote is reflected in the tally (on behalf of the delegation)

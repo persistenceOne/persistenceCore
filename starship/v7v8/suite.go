@@ -14,7 +14,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
-	lscosmos "github.com/persistenceOne/pstake-native/v2/x/lscosmos"
+	lscosmos "github.com/persistenceOne/pstake-native/v3/x/lscosmos"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v3"

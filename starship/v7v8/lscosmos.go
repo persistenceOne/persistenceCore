@@ -8,7 +8,7 @@ import (
 	starship "github.com/cosmology-tech/starship/clients/go/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ibcchanneltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
+	lscosmostypes "github.com/persistenceOne/pstake-native/v3/x/lscosmos/types"
 )
 
 func (s *TestSuite) RunLSCosmosTests() {

@@ -2,7 +2,10 @@ package interchaintest
 
 import (
 	"context"
+	"cosmossdk.io/math"
 	"fmt"
+	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+	"strconv"
 	"testing"
 	"time"
 
@@ -22,8 +25,8 @@ import (
 )
 
 const (
-	haltHeightDelta    = uint64(10) // will propose upgrade this many blocks in the future
-	blocksAfterUpgrade = uint64(7)
+	haltHeightDelta    = int64(10) // will propose upgrade this many blocks in the future
+	blocksAfterUpgrade = int64(7)
 )
 
 func TestPersistenceUpgradeBasic(t *testing.T) {
@@ -76,11 +79,10 @@ func CosmosChainUpgradeTest(
 			Version:    initialVersion,
 			UidGid:     PersistenceCoreImage.UidGid,
 		}},
-
-		UsingNewGenesisCommand: true,
-		GasPrices:              fmt.Sprintf("0%s", helpers.PersistenceBondDenom),
-		EncodingConfig:         persistenceEncoding(),
-		ModifyGenesis:          cosmos.ModifyGenesis(defaultGenesisOverridesKV),
+		CoinDecimals:   &helpers.PersistenceCoinDecimals,
+		GasPrices:      fmt.Sprintf("0%s", helpers.PersistenceBondDenom),
+		EncodingConfig: persistenceEncoding(),
+		ModifyGenesis:  cosmos.ModifyGenesis(defaultGenesisOverridesKV),
 	}
 
 	cf := interchaintest.NewBuiltinChainFactory(
@@ -116,7 +118,7 @@ func CosmosChainUpgradeTest(
 		_ = ic.Close()
 	})
 
-	const userFunds = int64(10_000_000_000)
+	userFunds := math.NewInt(10_000_000_000)
 	users := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), userFunds, chain)
 	chainUser := users[0]
 
@@ -156,10 +158,12 @@ func CosmosChainUpgradeTest(
 	upgradeTx, err := helpers.QueryProposalTx(context.Background(), chain.Nodes()[0], txResp.TxHash)
 	require.NoError(t, err, "error checking software upgrade tx")
 
-	err = chain.VoteOnProposalAllValidators(ctx, upgradeTx.ProposalID, cosmos.ProposalVoteYes)
+	proposalID, err := strconv.ParseInt(upgradeTx.ProposalID, 10, 64)
+	require.NoError(t, err, "error parsing proposal id")
+	err = chain.VoteOnProposalAllValidators(ctx, proposalID, cosmos.ProposalVoteYes)
 	require.NoError(t, err, "failed to submit votes")
 
-	_, err = cosmos.PollForProposalStatus(ctx, chain, height, height+haltHeightDelta, upgradeTx.ProposalID, cosmos.ProposalStatusPassed)
+	_, err = cosmos.PollForProposalStatus(ctx, chain, height, height+haltHeightDelta, proposalID, govv1beta1.StatusPassed)
 	require.NoError(t, err, "proposal status did not change to passed in expected number of blocks")
 
 	stdout, stderr, err := chain.Validators[0].ExecQuery(ctx, "upgrade", "plan")
