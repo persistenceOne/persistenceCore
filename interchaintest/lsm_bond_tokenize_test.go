@@ -2,6 +2,7 @@ package interchaintest
 
 import (
 	"context"
+	"cosmossdk.io/math"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -42,9 +43,9 @@ func TestBondTokenize(t *testing.T) {
 	})
 
 	// Allocate two chain users with funds
-	firstUserFunds := int64(10_000_000_000)
+	firstUserFunds := math.NewInt(10_000_000_000)
 	firstUser := interchaintest.GetAndFundTestUsers(t, ctx, firstUserName(t.Name()), firstUserFunds, chain)[0]
-	secondUserFunds := int64(2_000_000)
+	secondUserFunds := math.NewInt(2_000_000)
 	secondUser := interchaintest.GetAndFundTestUsers(t, ctx, secondUserName(t.Name()), secondUserFunds, chain)[0]
 
 	// Get list of validators

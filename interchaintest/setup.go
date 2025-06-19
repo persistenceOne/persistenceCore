@@ -2,6 +2,7 @@ package interchaintest
 
 import (
 	"context"
+	"cosmossdk.io/math"
 	"fmt"
 	"testing"
 
@@ -91,7 +92,7 @@ var (
 		},
 	}
 
-	genesisWalletAmount = int64(10_000_000)
+	genesisWalletAmount = math.NewInt(10_000_000)
 )
 
 // persistenceEncoding registers the persistenceCore specific module codecs so that the associated types and msgs
@@ -116,21 +117,20 @@ func persistenceChainConfig(
 	}
 
 	config := ibc.ChainConfig{
-		Type:                   "cosmos",
-		Name:                   "persistence",
-		ChainID:                "ictest-core-1",
-		Bin:                    "persistenceCore",
-		Bech32Prefix:           "persistence",
-		Denom:                  helpers.PersistenceBondDenom,
-		CoinType:               fmt.Sprintf("%d", helpers.PersistenceCoinType),
-		GasPrices:              fmt.Sprintf("0%s", helpers.PersistenceBondDenom),
-		GasAdjustment:          1.5,
-		TrustingPeriod:         "112h",
-		NoHostMount:            false,
-		ConfigFileOverrides:    nil,
-		EncodingConfig:         persistenceEncoding(),
-		UsingNewGenesisCommand: true,
-		ModifyGenesis:          cosmos.ModifyGenesis(genesisOverrides),
+		Type:                "cosmos",
+		Name:                "persistence",
+		ChainID:             "ictest-core-1",
+		Bin:                 "persistenceCore",
+		Bech32Prefix:        "persistence",
+		Denom:               helpers.PersistenceBondDenom,
+		CoinType:            fmt.Sprintf("%d", helpers.PersistenceCoinType),
+		GasPrices:           fmt.Sprintf("0%s", helpers.PersistenceBondDenom),
+		GasAdjustment:       1.5,
+		TrustingPeriod:      "112h",
+		NoHostMount:         false,
+		ConfigFileOverrides: nil,
+		EncodingConfig:      persistenceEncoding(),
+		ModifyGenesis:       cosmos.ModifyGenesis(genesisOverrides),
 
 		Images: []ibc.DockerImage{
 			PersistenceCoreImage,

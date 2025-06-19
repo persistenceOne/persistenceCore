@@ -8,11 +8,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
+	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	liquidstaketypes "github.com/persistenceOne/pstake-native/v3/x/liquidstake/types"
 	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 	"github.com/stretchr/testify/require"
+	"strconv"
 	"testing"
 
 	"github.com/persistenceOne/persistenceCore/v12/interchaintest/helpers"
@@ -59,7 +61,7 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	})
 
 	// Allocate two chain users with funds
-	firstUserFunds := int64(10_000_000_000_000)
+	firstUserFunds := math.NewInt(10_000_000_000_000)
 	firstUser := interchaintest.GetAndFundTestUsers(t, ctx, firstUserName(t.Name()), firstUserFunds, chain)[0]
 
 	instantiateMsg, err := json.Marshal(helpers.SuperFluidInstantiateMsg{
@@ -137,10 +139,13 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	upgradeTx, err := helpers.QueryProposalTx(context.Background(), chain.Nodes()[0], txResp.TxHash)
 	require.NoError(t, err, "error checking proposal tx")
 
-	err = chain.VoteOnProposalAllValidators(ctx, upgradeTx.ProposalID, cosmos.ProposalVoteYes)
+	proposalID, err := strconv.ParseInt(upgradeTx.ProposalID, 10, 64)
+	require.NoError(t, err, "error parsing proposal id")
+
+	err = chain.VoteOnProposalAllValidators(ctx, proposalID, cosmos.ProposalVoteYes)
 	require.NoError(t, err, "failed to submit votes")
 
-	_, err = cosmos.PollForProposalStatus(ctx, chain, height, height+15, upgradeTx.ProposalID, cosmos.ProposalStatusPassed)
+	_, err = cosmos.PollForProposalStatus(ctx, chain, height, height+15, proposalID, govv1beta1.StatusPassed)
 	require.NoError(t, err, "proposal status did not change to passed in expected number of blocks")
 
 	err = testutil.WaitForBlocks(ctx, 2, chain)
