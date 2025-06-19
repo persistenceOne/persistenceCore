@@ -79,7 +79,7 @@ func CosmosChainUpgradeTest(
 			Version:    initialVersion,
 			UidGid:     PersistenceCoreImage.UidGid,
 		}},
-
+		CoinDecimals:   &helpers.PersistenceCoinDecimals,
 		GasPrices:      fmt.Sprintf("0%s", helpers.PersistenceBondDenom),
 		EncodingConfig: persistenceEncoding(),
 		ModifyGenesis:  cosmos.ModifyGenesis(defaultGenesisOverridesKV),
