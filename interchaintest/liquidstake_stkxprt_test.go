@@ -296,7 +296,7 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 
 	xprtBalance, err := chain.GetBalance(ctx, secondUser.FormattedAddress(), "uxprt")
 	require.NoError(t, err)
-	require.Equal(t, xprtBalance.Int64(), secondUserFunds, "second user's XPRT balance must be untouched")
+	require.Equal(t, xprtBalance.Int64(), secondUserFunds.Int64(), "second user's XPRT balance must be untouched")
 
 	// Query the created unbonding delegation in favour of second user
 
