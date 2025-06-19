@@ -80,9 +80,7 @@ func TestBondTokenize(t *testing.T) {
 		"staking", "tokenize-share", validators[0].OperatorAddress, tokenizeCoins.String(), firstUser.FormattedAddress(),
 		"--gas=500000",
 	)
-	require.NoError(t, err)
-
-	_, err = helpers.QueryTx(ctx, chainNode, txHash)
+	require.Error(t, err)
 	require.ErrorContains(t, err, "insufficient validator bond shares")
 
 	// Mark second user bond as validator bond
