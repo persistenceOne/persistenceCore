@@ -310,7 +310,6 @@ func NewAppKeeper(
 		appKeepers.keys[packetforwardtypes.StoreKey],
 		appKeepers.TransferKeeper, // Will be zero-value here. Reference is set later on with SetTransferKeeper.
 		appKeepers.IBCKeeper.ChannelKeeper,
-		appKeepers.DistributionKeeper,
 		appKeepers.BankKeeper,
 		appKeepers.HooksICS4Wrapper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
