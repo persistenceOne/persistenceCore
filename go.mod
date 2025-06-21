@@ -1,4 +1,4 @@
-module github.com/persistenceOne/persistenceCore/v11
+module github.com/persistenceOne/persistenceCore/v12
 
 go 1.23.6
 
@@ -15,8 +15,8 @@ require (
 	github.com/cosmos/ibc-apps/modules/ibc-hooks/v7 v7.0.0-20240321032823-2733d24a1b99
 	github.com/cosmos/ibc-go/v7 v7.10.0
 	github.com/gorilla/mux v1.8.1
-	github.com/persistenceOne/persistence-sdk/v2 v2.2.0
-	github.com/persistenceOne/pstake-native/v2 v2.16.0
+	github.com/persistenceOne/persistence-sdk/v3 v3.0.0-20250618161146-c4a9a85bdf0d
+	github.com/persistenceOne/pstake-native/v3 v3.0.0-20250618174020-3deab9b3e282
 	github.com/prometheus/client_golang v1.20.5
 	github.com/skip-mev/pob v1.0.5
 	github.com/spf13/cast v1.6.0

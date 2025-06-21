@@ -19,7 +19,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 
-	"github.com/persistenceOne/persistenceCore/v11/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v12/interchaintest/helpers"
 )
 
 type PacketMetadata struct {
@@ -61,18 +61,17 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		Images: []ibc.DockerImage{
 			PersistenceCoreImage,
 		},
-		Bin:                    "persistenceCore",
-		Bech32Prefix:           "persistence",
-		Denom:                  helpers.PersistenceBondDenom,
-		CoinType:               fmt.Sprintf("%d", helpers.PersistenceCoinType),
-		GasPrices:              fmt.Sprintf("0%s", helpers.PersistenceBondDenom),
-		GasAdjustment:          2.0,
-		TrustingPeriod:         "112h",
-		NoHostMount:            false,
-		ConfigFileOverrides:    nil,
-		EncodingConfig:         persistenceEncoding(),
-		UsingNewGenesisCommand: true,
-		ModifyGenesis:          cosmos.ModifyGenesis(defaultGenesisOverridesKV),
+		Bin:                 "persistenceCore",
+		Bech32Prefix:        "persistence",
+		Denom:               helpers.PersistenceBondDenom,
+		CoinType:            fmt.Sprintf("%d", helpers.PersistenceCoinType),
+		GasPrices:           fmt.Sprintf("0%s", helpers.PersistenceBondDenom),
+		GasAdjustment:       2.0,
+		TrustingPeriod:      "112h",
+		NoHostMount:         false,
+		ConfigFileOverrides: nil,
+		EncodingConfig:      persistenceEncoding(),
+		ModifyGenesis:       cosmos.ModifyGenesis(defaultGenesisOverridesKV),
 	}
 
 	baseCfg.ChainID = chainIdA
@@ -155,7 +154,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 	})
 
 	initBal := math.NewInt(10_000_000_000)
-	users := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal.Int64(), chainA, chainB, chainC, chainD)
+	users := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), initBal, chainA, chainB, chainC, chainD)
 
 	abChan, err := ibc.GetTransferChannel(ctx, r, eRep, chainIdA, chainIdB)
 	require.NoError(t, err)

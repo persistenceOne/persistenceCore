@@ -3,7 +3,7 @@ package v11_4_0
 import (
 	store "github.com/cosmos/cosmos-sdk/store/types"
 
-	"github.com/persistenceOne/persistenceCore/v11/app/upgrades"
+	"github.com/persistenceOne/persistenceCore/v12/app/upgrades"
 )
 
 const (

@@ -13,7 +13,7 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/stretchr/testify/require"
 
-	"github.com/persistenceOne/persistenceCore/v11/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v12/interchaintest/helpers"
 )
 
 // TestSkipMevAuction tests that x/builder correctly wired and allows to make auctions to prioritise txns
@@ -45,7 +45,7 @@ func TestSkipMevAuction(t *testing.T) {
 		_ = ic.Close()
 	})
 
-	const userFunds = int64(10_000_000_000)
+	userFunds := math.NewInt(10_000_000_000)
 
 	chainUserMnemonic := helpers.NewMnemonic()
 	chainUser, err := interchaintest.GetAndFundTestUserWithMnemonic(ctx, t.Name(), chainUserMnemonic, userFunds, chain)
@@ -85,7 +85,7 @@ func TestSkipMevAuction(t *testing.T) {
 
 	// transaction simulation there is possible, but we skip it for now
 	txn.SetGasLimit(100000)
-	txn.SetTimeoutHeight(currentHeight + 5)
+	txn.SetTimeoutHeight(uint64(currentHeight + 5))
 
 	err = tx.Sign(txFactory, chainUser.KeyName(), txn, true)
 	require.NoError(t, err)
@@ -96,7 +96,7 @@ func TestSkipMevAuction(t *testing.T) {
 		chainUser,
 		chainUser.FormattedAddress(),
 		auctionBid,
-		currentHeight+5,
+		uint64(currentHeight+5),
 		txn.GetTx(),
 	)
 

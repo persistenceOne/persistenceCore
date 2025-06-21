@@ -8,13 +8,15 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
-	"github.com/persistenceOne/persistenceCore/v11/interchaintest/helpers"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
+	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+	"github.com/persistenceOne/persistenceCore/v12/interchaintest/helpers"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v3/x/liquidstake/types"
 	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v7/ibc"
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 	"github.com/stretchr/testify/require"
+	"strconv"
 	"testing"
 )
 
@@ -59,9 +61,9 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 	})
 
 	// Allocate two chain users with funds
-	firstUserFunds := int64(10_000_000_000)
+	firstUserFunds := math.NewInt(10_000_000_000)
 	firstUser := interchaintest.GetAndFundTestUsers(t, ctx, firstUserName(t.Name()), firstUserFunds, chain)[0]
-	secondUserFunds := int64(1_000_000)
+	secondUserFunds := math.NewInt(1_000_000)
 	secondUser := interchaintest.GetAndFundTestUsers(t, ctx, secondUserName(t.Name()), secondUserFunds, chain)[0]
 
 	instantiateMsg, err := json.Marshal(helpers.SuperFluidInstantiateMsg{
@@ -129,10 +131,13 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 	upgradeTx, err := helpers.QueryProposalTx(context.Background(), chain.Nodes()[0], txResp.TxHash)
 	require.NoError(t, err, "error checking proposal tx")
 
-	err = chain.VoteOnProposalAllValidators(ctx, upgradeTx.ProposalID, cosmos.ProposalVoteYes)
+	proposalID, err := strconv.ParseInt(upgradeTx.ProposalID, 10, 64)
+	require.NoError(t, err, "error parsing proposal id")
+
+	err = chain.VoteOnProposalAllValidators(ctx, proposalID, cosmos.ProposalVoteYes)
 	require.NoError(t, err, "failed to submit votes")
 
-	_, err = cosmos.PollForProposalStatus(ctx, chain, height, height+15, upgradeTx.ProposalID, cosmos.ProposalStatusPassed)
+	_, err = cosmos.PollForProposalStatus(ctx, chain, height, height+15, proposalID, govv1beta1.StatusPassed)
 	require.NoError(t, err, "proposal status did not change to passed in expected number of blocks")
 
 	err = testutil.WaitForBlocks(ctx, 2, chain)
@@ -291,7 +296,7 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 
 	xprtBalance, err := chain.GetBalance(ctx, secondUser.FormattedAddress(), "uxprt")
 	require.NoError(t, err)
-	require.Equal(t, xprtBalance.Int64(), secondUserFunds, "second user's XPRT balance must be untouched")
+	require.Equal(t, xprtBalance.Int64(), secondUserFunds.Int64(), "second user's XPRT balance must be untouched")
 
 	// Query the created unbonding delegation in favour of second user
 

@@ -8,10 +8,10 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
-	"github.com/persistenceOne/persistenceCore/v11/app/keepers"
-	"github.com/persistenceOne/persistenceCore/v11/app/upgrades"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v2/x/liquidstake/types"
-	ratesynctypes "github.com/persistenceOne/pstake-native/v2/x/ratesync/types"
+	"github.com/persistenceOne/persistenceCore/v12/app/keepers"
+	"github.com/persistenceOne/persistenceCore/v12/app/upgrades"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v3/x/liquidstake/types"
+	ratesynctypes "github.com/persistenceOne/pstake-native/v3/x/ratesync/types"
 )
 
 // This was buggy in mainnet upgrade -> potantial fix/ diff should have been -> https://github.com/persistenceOne/persistenceCore/pull/308

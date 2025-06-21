@@ -21,11 +21,11 @@ import (
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
-	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
+	oracletypes "github.com/persistenceOne/persistence-sdk/v3/x/oracle/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/persistenceOne/persistenceCore/v11/app"
-	v9_2_0 "github.com/persistenceOne/persistenceCore/v11/app/upgrades/v9.2.0"
+	"github.com/persistenceOne/persistenceCore/v12/app"
+	v9_2_0 "github.com/persistenceOne/persistenceCore/v12/app/upgrades/v9.2.0"
 )
 
 type KeeperTestHelper struct {

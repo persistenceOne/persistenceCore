@@ -8,11 +8,11 @@ import (
 	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
 	ibchookstypes "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/types"
 	ibcfeetypes "github.com/cosmos/ibc-go/v7/modules/apps/29-fee/types"
-	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
-	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v2/x/liquidstakeibc/types"
+	oracletypes "github.com/persistenceOne/persistence-sdk/v3/x/oracle/types"
+	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v3/x/liquidstakeibc/types"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
 
-	"github.com/persistenceOne/persistenceCore/v11/app/upgrades"
+	"github.com/persistenceOne/persistenceCore/v12/app/upgrades"
 )
 
 const (

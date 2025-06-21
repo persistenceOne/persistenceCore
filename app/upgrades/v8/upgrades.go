@@ -13,12 +13,12 @@ import (
 	icaMigrations "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/migrations/v6"
 	exported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	ibctmmigrations "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint/migrations"
-	oracletypes "github.com/persistenceOne/persistence-sdk/v2/x/oracle/types"
-	lscosmostypes "github.com/persistenceOne/pstake-native/v2/x/lscosmos/types"
+	oracletypes "github.com/persistenceOne/persistence-sdk/v3/x/oracle/types"
+	lscosmostypes "github.com/persistenceOne/pstake-native/v3/x/lscosmos/types"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
 
-	"github.com/persistenceOne/persistenceCore/v11/app/keepers"
-	"github.com/persistenceOne/persistenceCore/v11/app/upgrades"
+	"github.com/persistenceOne/persistenceCore/v12/app/keepers"
+	"github.com/persistenceOne/persistenceCore/v12/app/upgrades"
 )
 
 func setInitialMinCommissionRate(ctx sdk.Context, keepers *keepers.AppKeepers) error {

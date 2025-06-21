@@ -111,11 +111,11 @@ func TestPersistenceGaiaIBCTransfer(t *testing.T) {
 	// Get original account balances
 	persistenceOrigBal, err := persistenceChain.GetBalance(ctx, persistenceUserAddr, persistenceChain.Config().Denom)
 	require.NoError(t, err)
-	require.Equal(t, math.NewInt(genesisWalletAmount), persistenceOrigBal)
+	require.Equal(t, genesisWalletAmount, persistenceOrigBal)
 
 	gaiaOrigBal, err := gaiaChain.GetBalance(ctx, gaiaUserAddr, gaiaChain.Config().Denom)
 	require.NoError(t, err)
-	require.Equal(t, math.NewInt(genesisWalletAmount), gaiaOrigBal)
+	require.Equal(t, genesisWalletAmount, gaiaOrigBal)
 
 	// Compose an IBC transfer and send from Persistence -> Gaia
 	var transferAmount = math.NewInt(1_000)

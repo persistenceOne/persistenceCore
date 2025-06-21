@@ -2,6 +2,7 @@ package interchaintest
 
 import (
 	"context"
+	"cosmossdk.io/math"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -9,7 +10,7 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/stretchr/testify/require"
 
-	"github.com/persistenceOne/persistenceCore/v11/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v12/interchaintest/helpers"
 )
 
 // TestBondTokenize executes scenario of bonding and tokenizing.
@@ -42,9 +43,9 @@ func TestBondTokenize(t *testing.T) {
 	})
 
 	// Allocate two chain users with funds
-	firstUserFunds := int64(10_000_000_000)
+	firstUserFunds := math.NewInt(10_000_000_000)
 	firstUser := interchaintest.GetAndFundTestUsers(t, ctx, firstUserName(t.Name()), firstUserFunds, chain)[0]
-	secondUserFunds := int64(2_000_000)
+	secondUserFunds := math.NewInt(2_000_000)
 	secondUser := interchaintest.GetAndFundTestUsers(t, ctx, secondUserName(t.Name()), secondUserFunds, chain)[0]
 
 	// Get list of validators
@@ -79,9 +80,7 @@ func TestBondTokenize(t *testing.T) {
 		"staking", "tokenize-share", validators[0].OperatorAddress, tokenizeCoins.String(), firstUser.FormattedAddress(),
 		"--gas=500000",
 	)
-	require.NoError(t, err)
-
-	_, err = helpers.QueryTx(ctx, chainNode, txHash)
+	require.Error(t, err)
 	require.ErrorContains(t, err, "insufficient validator bond shares")
 
 	// Mark second user bond as validator bond
@@ -121,9 +120,7 @@ func TestBondTokenize(t *testing.T) {
 		"staking", "tokenize-share", validators[0].OperatorAddress, tokenizeCoins.String(), firstUser.FormattedAddress(),
 		"--gas=500000",
 	)
-	require.NoError(t, err)
-
-	_, err = helpers.QueryTx(ctx, chainNode, txHash)
+	require.Error(t, err)
 	require.ErrorContains(t, err, "insufficient validator bond shares")
 
 	// Delegate from second user more

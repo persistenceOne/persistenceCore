@@ -66,7 +66,7 @@ func QueryProposalTx(ctx context.Context, chainNode *cosmos.ChainNode, txHash st
 		return tx, fmt.Errorf("proposal transaction error: code %d %s", txResp.Code, txResp.RawLog)
 	}
 
-	tx.Height = uint64(txResp.Height)
+	tx.Height = txResp.Height
 	tx.TxHash = txHash
 	// In cosmos, user is charged for entire gas requested, not the actual gas used.
 	tx.GasSpent = txResp.GasWanted

@@ -12,8 +12,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/persistenceOne/persistenceCore/v11/app"
-	v11_16_0 "github.com/persistenceOne/persistenceCore/v11/app/upgrades/v11.16.0"
+	"github.com/persistenceOne/persistenceCore/v12/app"
+	v11_16_0 "github.com/persistenceOne/persistenceCore/v12/app/upgrades/v11.16.0"
 )
 
 func TestRemoveUnbondedBalance(t *testing.T) {

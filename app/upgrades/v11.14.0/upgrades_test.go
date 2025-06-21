@@ -11,8 +11,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/persistenceOne/persistenceCore/v11/app"
-	v11_14_0 "github.com/persistenceOne/persistenceCore/v11/app/upgrades/v11.14.0"
+	"github.com/persistenceOne/persistenceCore/v12/app"
+	v11_14_0 "github.com/persistenceOne/persistenceCore/v12/app/upgrades/v11.14.0"
 )
 
 func TestRemoveStargazeUnbondedBalance(t *testing.T) {
