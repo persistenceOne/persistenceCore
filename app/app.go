@@ -50,8 +50,6 @@ import (
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/gorilla/mux"
-	pobabci "github.com/skip-mev/pob/abci"
-	"github.com/skip-mev/pob/mempool"
 	"github.com/spf13/cast"
 
 	"github.com/persistenceOne/persistenceCore/v12/app/keepers"
@@ -92,9 +90,6 @@ type Application struct {
 	moduleManager     *module.Manager
 	configurator      module.Configurator
 	simulationManager *module.SimulationManager
-
-	// override handler for CheckTx for POB
-	checkTxHandler pobabci.CheckTx
 }
 
 func NewApplication(
@@ -180,7 +175,7 @@ func NewApplication(
 	app.MountTransientStores(app.GetTransientStoreKey())
 	app.MountMemoryStores(app.GetMemoryStoreKey())
 
-	app.setupPOBAndAnteHandler(wasmConfig)
+	app.setupAnteHandler(wasmConfig)
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
@@ -217,10 +212,7 @@ func NewApplication(
 	return app
 }
 
-func (app *Application) setupPOBAndAnteHandler(wasmConfig wasmtypes.WasmConfig) {
-	// Set POB's mempool into the app.
-	mempool := mempool.NewAuctionMempool(app.txConfig.TxDecoder(), app.txConfig.TxEncoder(), 0, mempool.NewDefaultAuctionFactory(app.txConfig.TxDecoder()))
-	app.BaseApp.SetMempool(mempool)
+func (app *Application) setupAnteHandler(wasmConfig wasmtypes.WasmConfig) {
 
 	anteOptions := HandlerOptions{
 		HandlerOptions: ante.HandlerOptions{
@@ -234,10 +226,8 @@ func (app *Application) setupPOBAndAnteHandler(wasmConfig wasmtypes.WasmConfig) 
 		WasmConfig:        &wasmConfig,
 		TXCounterStoreKey: app.GetKVStoreKey()[wasm.StoreKey],
 
-		BuilderKeeper: app.BuilderKeeper,
-		Mempool:       mempool,
-		TxDecoder:     app.txConfig.TxDecoder(),
-		TxEncoder:     app.txConfig.TxEncoder(),
+		TxDecoder: app.txConfig.TxDecoder(),
+		TxEncoder: app.txConfig.TxEncoder(),
 
 		FeeDenomsWhitelist: app.GetFeeDenomsWhitelist(),
 	}
@@ -246,31 +236,7 @@ func (app *Application) setupPOBAndAnteHandler(wasmConfig wasmtypes.WasmConfig) 
 		panic(fmt.Errorf("failed to create AnteHandler: %s", err))
 	}
 
-	// Set the proposal handlers on the BaseApp along with the custom antehandler.
-	proposalHandlers := pobabci.NewProposalHandler(
-		mempool,
-		app.BaseApp.Logger(),
-		anteHandler,
-		anteOptions.TxEncoder,
-		anteOptions.TxDecoder,
-	)
-	app.BaseApp.SetPrepareProposal(proposalHandlers.PrepareProposalHandler())
-	app.BaseApp.SetProcessProposal(proposalHandlers.ProcessProposalHandler())
 	app.BaseApp.SetAnteHandler(anteHandler)
-
-	chainID := app.ChainID()
-	app.BaseApp.Logger().Info("using BaseApp chainID for POB ABCI", "chainID", chainID)
-
-	// Set the custom CheckTx handler on BaseApp.
-	checkTxHandler := pobabci.NewCheckTxHandler(
-		app.BaseApp,
-		app.txConfig.TxDecoder(),
-		mempool,
-		anteHandler,
-		chainID,
-	)
-
-	app.SetCheckTx(checkTxHandler.CheckTx())
 }
 
 func (app *Application) registerGRPCServices() {
@@ -314,19 +280,6 @@ func (app *Application) GetFeeDenomsWhitelist() []string {
 
 	// Allow all denoms for random chain
 	return []string{} // empty list => allow all
-}
-
-// CheckTx will check the transaction with the provided checkTxHandler. We override the default
-// handler so that we can verify bid transactions before they are inserted into the mempool.
-// With the POB CheckTx, we can verify the bid transaction and all of the bundled transactions
-// before inserting the bid transaction into the mempool.
-func (app *Application) CheckTx(req abcitypes.RequestCheckTx) abcitypes.ResponseCheckTx {
-	return app.checkTxHandler(req)
-}
-
-// SetCheckTx sets the checkTxHandler for the app.
-func (app *Application) SetCheckTx(handler pobabci.CheckTx) {
-	app.checkTxHandler = handler
 }
 
 func (app *Application) Name() string {
