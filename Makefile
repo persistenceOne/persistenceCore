@@ -242,7 +242,7 @@ release-git:
 
 get-heighliner:
 	git clone https://github.com/strangelove-ventures/heighliner.git
-	cd heighliner && git checkout v1.5.4 && go install
+	cd heighliner && git checkout v1.7.3 && go install
 
 local-image:
 ifeq (,$(shell which heighliner))
@@ -288,10 +288,6 @@ ictest-upgrade-local: local-image ictest-upgrade
 ictest-ibc: rm-testcache
 	cd interchaintest && go test -race -v -run TestPersistenceGaiaIBCTransfer .
 
-# Executes Skip's MEV auction module tests via interchaintest
-ictest-pob: rm-testcache
-	cd interchaintest && go test -race -v -run TestSkipMevAuction .
-
 # Executes LSM tests
 ictest-lsm: rm-testcache
 	cd interchaintest && go test -race -v -run "(TestMultiTokenizeVote|TestTokenizeSendVote|TestBondTokenize)" .
@@ -310,7 +306,7 @@ ictest-liquidstake-all: rm-testcache
 rm-testcache:
 	go clean -testcache
 
-.PHONY: test ictest-all ictest-basic ictest-ibchooks ictest-pfm ictest-upgrade ictest-upgrade-local ictest-ibc ictest-pob ictest-lsm ictest-liquidstake
+.PHONY: test ictest-all ictest-basic ictest-ibchooks ictest-pfm ictest-upgrade ictest-upgrade-local ictest-ibc ictest-lsm ictest-liquidstake
 
 
 ###############################################################################
