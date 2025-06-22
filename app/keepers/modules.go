@@ -35,7 +35,6 @@ import (
 	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 	"github.com/persistenceOne/persistence-sdk/v3/x/epochs"
 	"github.com/persistenceOne/persistence-sdk/v3/x/halving"
-	"github.com/persistenceOne/persistence-sdk/v3/x/ibchooker"
 	"github.com/persistenceOne/persistence-sdk/v3/x/interchainquery"
 	"github.com/persistenceOne/persistence-sdk/v3/x/oracle"
 	"github.com/persistenceOne/pstake-native/v3/x/liquidstake"
@@ -45,10 +44,21 @@ import (
 	buildermodule "github.com/skip-mev/pob/x/builder"
 )
 
+var DeprecatedAppModuleBasics = []module.AppModuleBasic{
+	buildermodule.AppModuleBasic{},
+	groupmodule.AppModuleBasic{},
+	lscosmos.AppModuleBasic{},
+	liquidstakeibc.AppModuleBasic{},
+	ratesync.AppModuleBasic{},
+	interchainquery.AppModuleBasic{},
+	ibcfee.AppModuleBasic{},
+	oracle.AppModuleBasic{},
+}
+
 // AppModuleBasics defines the module BasicManager is in charge of setting up basic,
 // non-dependant module elements, such as codec registration
 // and genesis verification.
-var AppModuleBasics = []module.AppModuleBasic{
+var AppModuleBasics = append([]module.AppModuleBasic{
 	auth.AppModuleBasic{},
 	genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
 	bank.AppModuleBasic{},
@@ -80,17 +90,8 @@ var AppModuleBasics = []module.AppModuleBasic{
 	halving.AppModuleBasic{},
 	ica.AppModuleBasic{},
 	epochs.AppModuleBasic{},
-	interchainquery.AppModuleBasic{},
-	ibchooker.AppModuleBasic{},
-	ibcfee.AppModuleBasic{},
-	oracle.AppModuleBasic{},
-	lscosmos.AppModuleBasic{},
-	liquidstakeibc.AppModuleBasic{},
 	liquidstake.AppModuleBasic{},
-	ratesync.AppModuleBasic{},
 	consensus.AppModuleBasic{},
-	groupmodule.AppModuleBasic{},
 	ibchooks.AppModuleBasic{},
 	packetforward.AppModuleBasic{},
-	buildermodule.AppModuleBasic{},
-}
+}, DeprecatedAppModuleBasics...)

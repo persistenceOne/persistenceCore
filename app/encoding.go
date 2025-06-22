@@ -22,6 +22,7 @@ func MakeEncodingConfig() params.EncodingConfig {
 	ModuleBasics.RegisterLegacyAminoCodec(encodingConfig.Amino)
 	ModuleBasics.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 
+	//for icacontroller callback applications
 	sdkstaking.AppModuleBasic{}.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 	sdkslashing.AppModuleBasic{}.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 	sdkdistr.AppModuleBasic{}.RegisterInterfaces(encodingConfig.InterfaceRegistry)

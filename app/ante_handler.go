@@ -10,9 +10,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	ibccoreante "github.com/cosmos/ibc-go/v7/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
-	"github.com/skip-mev/pob/mempool"
-	builderante "github.com/skip-mev/pob/x/builder/ante"
-	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
 )
 
 type HandlerOptions struct {
@@ -21,10 +18,8 @@ type HandlerOptions struct {
 	WasmConfig        *wasmtypes.WasmConfig
 	TXCounterStoreKey storetypes.StoreKey
 
-	Mempool       mempool.Mempool
-	TxDecoder     sdk.TxDecoder
-	TxEncoder     sdk.TxEncoder
-	BuilderKeeper *builderkeeper.Keeper
+	TxDecoder sdk.TxDecoder
+	TxEncoder sdk.TxEncoder
 
 	FeeDenomsWhitelist []string
 }
@@ -68,7 +63,6 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		ibccoreante.NewRedundantRelayDecorator(options.IBCKeeper),
-		builderante.NewBuilderDecorator(*options.BuilderKeeper, options.TxEncoder, options.Mempool),
 	}
 
 	return sdk.ChainAnteDecorators(anteDecorators...), nil

@@ -14,7 +14,6 @@ import (
 	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
 	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	"github.com/cosmos/cosmos-sdk/x/group"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
@@ -24,17 +23,11 @@ import (
 	ibchookstypes "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/types"
 	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
 	icahosttypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/types"
-	ibcfeetypes "github.com/cosmos/ibc-go/v7/modules/apps/29-fee/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	epochstypes "github.com/persistenceOne/persistence-sdk/v3/x/epochs/types"
 	"github.com/persistenceOne/persistence-sdk/v3/x/halving"
-	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v3/x/interchainquery/types"
-	oracletypes "github.com/persistenceOne/persistence-sdk/v3/x/oracle/types"
 	liquidstaketypes "github.com/persistenceOne/pstake-native/v3/x/liquidstake/types"
-	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v3/x/liquidstakeibc/types"
-	ratesynctypes "github.com/persistenceOne/pstake-native/v3/x/ratesync/types"
-	buildertypes "github.com/skip-mev/pob/x/builder/types"
 )
 
 func (appKeepers *AppKeepers) GenerateKeys() {
@@ -44,7 +37,6 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 		authtypes.StoreKey,
 		authzkeeper.StoreKey,
 		banktypes.StoreKey,
-		buildertypes.StoreKey,
 		capabilitytypes.StoreKey,
 		consensusparamstypes.StoreKey,
 		crisistypes.StoreKey,
@@ -53,20 +45,14 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 		evidencetypes.StoreKey,
 		feegrant.StoreKey,
 		govtypes.StoreKey,
-		group.StoreKey,
 		halving.StoreKey,
 		ibcexported.StoreKey,
-		ibcfeetypes.StoreKey,
 		ibchookstypes.StoreKey,
 		ibctransfertypes.StoreKey,
 		icacontrollertypes.StoreKey,
 		icahosttypes.StoreKey,
-		interchainquerytypes.StoreKey,
-		liquidstakeibctypes.StoreKey,
 		liquidstaketypes.StoreKey,
-		ratesynctypes.StoreKey,
 		minttypes.StoreKey,
-		oracletypes.StoreKey,
 		paramstypes.StoreKey,
 		packetforwardtypes.StoreKey,
 		slashingtypes.StoreKey,

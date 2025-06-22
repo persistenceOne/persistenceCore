@@ -27,8 +27,6 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	group "github.com/cosmos/cosmos-sdk/x/group"
-	groupmodule "github.com/cosmos/cosmos-sdk/x/group/module"
 	"github.com/cosmos/cosmos-sdk/x/mint"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
@@ -45,53 +43,32 @@ import (
 	ibchookstypes "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/types"
 	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
-	ibcfee "github.com/cosmos/ibc-go/v7/modules/apps/29-fee"
-	ibcfeetypes "github.com/cosmos/ibc-go/v7/modules/apps/29-fee/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v7/modules/core"
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	"github.com/persistenceOne/persistence-sdk/v3/x/epochs"
 	epochstypes "github.com/persistenceOne/persistence-sdk/v3/x/epochs/types"
 	"github.com/persistenceOne/persistence-sdk/v3/x/halving"
-	ibchookertypes "github.com/persistenceOne/persistence-sdk/v3/x/ibchooker/types"
-	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v3/x/interchainquery/types"
-	"github.com/persistenceOne/persistence-sdk/v3/x/oracle"
-	oracletypes "github.com/persistenceOne/persistence-sdk/v3/x/oracle/types"
+	appparams "github.com/persistenceOne/persistenceCore/v12/app/params"
 	"github.com/persistenceOne/pstake-native/v3/x/liquidstake"
 	liquidstaketypes "github.com/persistenceOne/pstake-native/v3/x/liquidstake/types"
-	"github.com/persistenceOne/pstake-native/v3/x/liquidstakeibc"
-	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v3/x/liquidstakeibc/types"
-	"github.com/persistenceOne/pstake-native/v3/x/ratesync"
-	ratesynctypes "github.com/persistenceOne/pstake-native/v3/x/ratesync/types"
-	"github.com/skip-mev/pob/x/builder"
-	buildertypes "github.com/skip-mev/pob/x/builder/types"
-
-	appparams "github.com/persistenceOne/persistenceCore/v12/app/params"
 )
 
 var ModuleAccountPermissions = map[string][]string{
-	authtypes.FeeCollectorName:                    nil,
-	distributiontypes.ModuleName:                  nil,
-	icatypes.ModuleName:                           nil,
-	minttypes.ModuleName:                          {authtypes.Minter},
-	stakingtypes.BondedPoolName:                   {authtypes.Burner, authtypes.Staking},
-	stakingtypes.NotBondedPoolName:                {authtypes.Burner, authtypes.Staking},
-	govtypes.ModuleName:                           {authtypes.Burner},
-	ibctransfertypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
-	ibcfeetypes.ModuleName:                        nil,
-	wasm.ModuleName:                               {authtypes.Burner},
-	oracletypes.ModuleName:                        nil,
-	liquidstakeibctypes.ModuleName:                {authtypes.Minter, authtypes.Burner},
-	liquidstakeibctypes.DepositModuleAccount:      nil,
-	liquidstakeibctypes.UndelegationModuleAccount: {authtypes.Burner},
-	buildertypes.ModuleName:                       nil,
-	liquidstaketypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
+	authtypes.FeeCollectorName:     nil,
+	distributiontypes.ModuleName:   nil,
+	icatypes.ModuleName:            nil,
+	minttypes.ModuleName:           {authtypes.Minter},
+	stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
+	stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
+	govtypes.ModuleName:            {authtypes.Burner},
+	ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
+	wasm.ModuleName:                {authtypes.Burner},
+	liquidstaketypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 }
 
 var receiveAllowedMAcc = map[string]bool{
-	liquidstakeibctypes.DepositModuleAccount:      true,
-	liquidstakeibctypes.UndelegationModuleAccount: true,
-	liquidstaketypes.ModuleName:                   true,
+	liquidstaketypes.ModuleName: true,
 }
 
 func appModules(
@@ -119,24 +96,16 @@ func appModules(
 		evidence.NewAppModule(*app.EvidenceKeeper),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, *app.FeegrantKeeper, app.interfaceRegistry),
 		authzmodule.NewAppModule(appCodec, *app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
-		groupmodule.NewAppModule(appCodec, *app.GroupKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		ibc.NewAppModule(app.IBCKeeper),
-		ibcfee.NewAppModule(*app.IBCFeeKeeper),
 		packetforward.NewAppModule(app.PacketForwardKeeper, app.GetSubspace(packetforwardtypes.ModuleName)),
 		params.NewAppModule(*app.ParamsKeeper),
 		halving.NewAppModule(appCodec, *app.HalvingKeeper),
 		app.TransferModule,
-		app.IBCTransferHooksMiddleware,
 		ibchooks.NewAppModule(*app.AccountKeeper),
 		ica.NewAppModule(app.ICAControllerKeeper, app.ICAHostKeeper),
 		wasm.NewAppModule(appCodec, app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasm.ModuleName)),
 		epochs.NewAppModule(*app.EpochsKeeper),
-		app.InterchainQueryModule,
-		liquidstakeibc.NewAppModule(*app.LiquidStakeIBCKeeper),
 		liquidstake.NewAppModule(*app.LiquidStakeKeeper),
-		ratesync.NewAppModule(appCodec, *app.RateSyncKeeper, app.AccountKeeper, app.BankKeeper),
-		oracle.NewAppModule(appCodec, *app.OracleKeeper, app.AccountKeeper, app.BankKeeper),
-		builder.NewAppModule(appCodec, *app.BuilderKeeper),
 		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)), // always be last to make sure that it checks for all invariants and not only part of them
 	}
 }
@@ -164,7 +133,6 @@ func orderBeginBlockers() []string {
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
-		ibcfeetypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
 		distributiontypes.ModuleName,
@@ -174,21 +142,14 @@ func orderBeginBlockers() []string {
 		evidencetypes.ModuleName,
 		authz.ModuleName,
 		feegrant.ModuleName,
-		group.ModuleName,
 		paramstypes.ModuleName,
 		vestingtypes.ModuleName,
-		buildertypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		halving.ModuleName,
 		ibchookstypes.ModuleName,
 		packetforwardtypes.ModuleName,
 		wasm.ModuleName,
-		ibchookertypes.ModuleName,
-		interchainquerytypes.ModuleName,
-		liquidstakeibctypes.ModuleName,
 		liquidstaketypes.ModuleName,
-		ratesynctypes.ModuleName,
-		oracletypes.ModuleName,
 	}
 }
 
@@ -200,10 +161,8 @@ func orderEndBlockers() []string {
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
-		ibcfeetypes.ModuleName,
 		feegrant.ModuleName,
 		authz.ModuleName,
-		group.ModuleName,
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
@@ -221,13 +180,7 @@ func orderEndBlockers() []string {
 		packetforwardtypes.ModuleName,
 		wasm.ModuleName,
 		epochstypes.ModuleName,
-		ibchookertypes.ModuleName,
-		interchainquerytypes.ModuleName,
-		liquidstakeibctypes.ModuleName,
 		liquidstaketypes.ModuleName,
-		ratesynctypes.ModuleName,
-		oracletypes.ModuleName,
-		buildertypes.ModuleName,
 	}
 }
 
@@ -250,11 +203,9 @@ func orderInitGenesis() []string {
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
-		ibcfeetypes.ModuleName,
 		evidencetypes.ModuleName,
 		feegrant.ModuleName,
 		authz.ModuleName,
-		group.ModuleName,
 		authtypes.ModuleName,
 		genutiltypes.ModuleName,
 		paramstypes.ModuleName,
@@ -265,12 +216,6 @@ func orderInitGenesis() []string {
 		packetforwardtypes.ModuleName,
 		wasm.ModuleName,
 		epochstypes.ModuleName,
-		ibchookertypes.ModuleName,
-		interchainquerytypes.ModuleName,
-		liquidstakeibctypes.ModuleName,
 		liquidstaketypes.ModuleName,
-		ratesynctypes.ModuleName,
-		oracletypes.ModuleName,
-		buildertypes.ModuleName,
 	}
 }
