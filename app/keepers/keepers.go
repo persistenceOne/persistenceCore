@@ -68,7 +68,6 @@ import (
 	epochskeeper "github.com/persistenceOne/persistence-sdk/v3/x/epochs/keeper"
 	epochstypes "github.com/persistenceOne/persistence-sdk/v3/x/epochs/types"
 	"github.com/persistenceOne/persistence-sdk/v3/x/halving"
-	oracletypes "github.com/persistenceOne/persistence-sdk/v3/x/oracle/types"
 	liquidstakekeeper "github.com/persistenceOne/pstake-native/v3/x/liquidstake/keeper"
 	liquidstaketypes "github.com/persistenceOne/pstake-native/v3/x/liquidstake/types"
 	"github.com/spf13/cast"
@@ -438,7 +437,7 @@ func NewAppKeeper(
 	)
 	transferStack = ibchooks.NewIBCMiddleware(transferStack, appKeepers.HooksICS4Wrapper)
 
-	// Information will flow: ibc-port -> icaController -> lscosmos.
+	// Information will flow: ibc-port -> icaController.
 	icaControllerStack := icacontroller.NewIBCMiddleware(nil, *appKeepers.ICAControllerKeeper)
 
 	var wasmStack ibctypes.IBCModule
@@ -508,7 +507,6 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(icahosttypes.SubModuleName)
 	paramsKeeper.Subspace(wasmtypes.ModuleName)
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
-	paramsKeeper.Subspace(oracletypes.ModuleName)
 	paramsKeeper.Subspace(packetforwardtypes.ModuleName)
 
 	return paramsKeeper
