@@ -54,7 +54,7 @@ import (
 
 	"github.com/persistenceOne/persistenceCore/v12/app/keepers"
 	"github.com/persistenceOne/persistenceCore/v12/app/upgrades"
-	v1200 "github.com/persistenceOne/persistenceCore/v12/app/upgrades/testnet/v12.0.0-rc0"
+	v1200 "github.com/persistenceOne/persistenceCore/v12/app/upgrades/v12.0.0"
 	"github.com/persistenceOne/persistenceCore/v12/client/docs"
 )
 
