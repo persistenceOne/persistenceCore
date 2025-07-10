@@ -38,7 +38,7 @@ func TestPersistenceGaiaIBCTransfer(t *testing.T) {
 		},
 		{
 			Name:          "gaia",
-			Version:       "v24.0.0",
+			Version:       "v14.1.0",
 			NumValidators: &numVals,
 			NumFullNodes:  &numFullNodes,
 		},
