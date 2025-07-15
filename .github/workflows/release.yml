@@ -51,7 +51,7 @@ jobs:
         uses: tj-actions/branch-names@v7
         
       - name: Build and push Docker image
-        uses: strangelove-ventures/heighliner-build-action@v1.0.0
+        uses: strangelove-ventures/heighliner-build-action@v1.0.3
         with:
           platform: linux/arm64,linux/amd64
           git-ref: ${{ steps.branch-name.outputs.current_branch }}
