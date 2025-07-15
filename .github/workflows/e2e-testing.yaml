@@ -102,17 +102,14 @@ jobs:
       - name: Tag loaded Docker image
         run: |
           set -e
-          if ! docker image inspect persistence:local > /dev/null 2>&1; then
-            echo "Image not tagged as persistence:local, tagging now..."
-            IMAGE_ID=$(docker images --filter "dangling=true" --format '{{.ID}}' | head -n 1)
-            if [ -z "$IMAGE_ID" ]; then
-              echo "No untagged image found to tag as persistence:local"
+          IMAGE_ID=$(docker images persistence --format '{{.Repository}}:{{.Tag}} {{.ID}}' | grep '^persistence:' | awk '{print $2}' | head -n 1)
+          if [ -z "$IMAGE_ID" ]; then
+            echo "❌ Could not find any image tagged with repository 'persistence'"
+            docker images
             exit 1
           fi
+          echo "✅ Found image ID: $IMAGE_ID — tagging as persistence:local"
           docker tag "$IMAGE_ID" persistence:local
-          else
-            echo "✅ Image is already tagged as persistence:local"
-          fi
       - name: Setup Go with cache
         uses: magnetikonline/action-golang-cache@v4
         with:
