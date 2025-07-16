@@ -104,11 +104,11 @@ jobs:
           set -e
           IMAGE_ID=$(docker images persistence --format '{{.Repository}}:{{.Tag}} {{.ID}}' | grep '^persistence:' | awk '{print $2}' | head -n 1)
           if [ -z "$IMAGE_ID" ]; then
-            echo "❌ Could not find any image tagged with repository 'persistence'"
+            echo "Could not find any image tagged with repository 'persistence'"
             docker images
             exit 1
           fi
-          echo "✅ Found image ID: $IMAGE_ID — tagging as persistence:local"
+          echo "Found image ID: $IMAGE_ID — tagging as persistence:local"
           docker tag "$IMAGE_ID" persistence:local
       - name: Setup Go with cache
         uses: magnetikonline/action-golang-cache@v4
