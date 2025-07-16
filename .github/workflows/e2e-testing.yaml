@@ -37,7 +37,7 @@ jobs:
         uses: tj-actions/branch-names@v7
 
       - name: Build Docker image
-        uses: strangelove-ventures/heighliner-build-action@v0.0.3
+        uses: strangelove-ventures/heighliner-build-action@v1.0.3
         with:
           registry: # empty registry, image only shared for e2e testing
           tag: local # emulate local environment for consistency in interchaintest cases
@@ -79,16 +79,16 @@ jobs:
     needs: build-docker
     runs-on: ubuntu-latest
     strategy:
-        matrix:
-            # names of `make` commands to run tests
-            test:
-              - "ictest-upgrade"
-              - "ictest-ibc"
-              - "ictest-ibchooks"
-              - "ictest-pfm"
-              - "ictest-lsm"
-              - "ictest-liquidstake"
-        fail-fast: false
+      matrix:
+        # names of `make` commands to run tests
+        test:
+          - "ictest-upgrade"
+          - "ictest-ibc"
+          - "ictest-ibchooks"
+          - "ictest-pfm"
+          - "ictest-lsm"
+          - "ictest-liquidstake"
+      fail-fast: false
 
     steps:
       # Load the docker image tarball from github actions artifacts and run tests (one runner per test due to matrix)
@@ -99,7 +99,17 @@ jobs:
 
       - name: Load Docker Image
         run: docker image load -i ${{ env.TAR_PATH }}
-      
+      - name: Tag loaded Docker image
+        run: |
+          set -e
+          IMAGE_ID=$(docker images persistence --format '{{.Repository}}:{{.Tag}} {{.ID}}' | grep '^persistence:' | awk '{print $2}' | head -n 1)
+          if [ -z "$IMAGE_ID" ]; then
+            echo "Could not find any image tagged with repository 'persistence'"
+            docker images
+            exit 1
+          fi
+          echo "Found image ID: $IMAGE_ID — tagging as persistence:local"
+          docker tag "$IMAGE_ID" persistence:local
       - name: Setup Go with cache
         uses: magnetikonline/action-golang-cache@v4
         with:
