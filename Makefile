@@ -242,7 +242,7 @@ release-git:
 
 get-heighliner:
 	git clone https://github.com/strangelove-ventures/heighliner.git
-	cd heighliner && git checkout v1.7.3 && go install
+	cd heighliner && git checkout v1.7.4 && go install
 
 local-image:
 ifeq (,$(shell which heighliner))
