@@ -1,6 +1,6 @@
 module github.com/persistenceOne/persistenceCore/v12/interchaintest
 
-go 1.23
+go 1.23.0
 
 require (
 	cosmossdk.io/math v1.4.0
@@ -220,7 +220,7 @@ require (
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
 	golang.org/x/mod v0.19.0 // indirect
 	golang.org/x/net v0.34.0 // indirect
-	golang.org/x/oauth2 v0.25.0 // indirect
+	golang.org/x/oauth2 v0.27.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.29.0 // indirect
 	golang.org/x/term v0.28.0 // indirect
