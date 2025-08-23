@@ -1,4 +1,4 @@
-module github.com/persistenceOne/persistenceCore/v12
+module github.com/persistenceOne/persistenceCore/v13
 
 go 1.23.6
 

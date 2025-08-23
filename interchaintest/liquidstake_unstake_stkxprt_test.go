@@ -17,7 +17,7 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 	"github.com/stretchr/testify/require"
 
-	"github.com/persistenceOne/persistenceCore/v12/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v13/interchaintest/helpers"
 )
 
 // TestLiquidStakeUnstakeStkXPRT runs the flow of stkXPRT unstaking.

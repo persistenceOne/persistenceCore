@@ -38,7 +38,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
-	"github.com/persistenceOne/persistenceCore/v12/app"
+	"github.com/persistenceOne/persistenceCore/v13/app"
 )
 
 var (
