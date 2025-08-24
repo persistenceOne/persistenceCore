@@ -11,7 +11,7 @@ import (
 	sdkslashing "github.com/cosmos/cosmos-sdk/x/slashing"
 	sdkstaking "github.com/cosmos/cosmos-sdk/x/staking"
 
-	"github.com/persistenceOne/persistenceCore/v12/app/params"
+	"github.com/persistenceOne/persistenceCore/v13/app/params"
 )
 
 // MakeEncodingConfig creates an EncodingConfig for testing

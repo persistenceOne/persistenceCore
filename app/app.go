@@ -52,15 +52,15 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/spf13/cast"
 
-	"github.com/persistenceOne/persistenceCore/v12/app/keepers"
-	"github.com/persistenceOne/persistenceCore/v12/app/upgrades"
-	v1200 "github.com/persistenceOne/persistenceCore/v12/app/upgrades/v12.0.0"
-	"github.com/persistenceOne/persistenceCore/v12/client/docs"
+	"github.com/persistenceOne/persistenceCore/v13/app/keepers"
+	"github.com/persistenceOne/persistenceCore/v13/app/upgrades"
+	v1300rc0 "github.com/persistenceOne/persistenceCore/v13/app/upgrades/testnet/v13.0.0-rc0"
+	"github.com/persistenceOne/persistenceCore/v13/client/docs"
 )
 
 var (
 	DefaultNodeHome string
-	Upgrades        = []upgrades.Upgrade{v1200.Upgrade}
+	Upgrades        = []upgrades.Upgrade{v1300rc0.Upgrade}
 	ModuleBasics    = module.NewBasicManager(keepers.AppModuleBasics...)
 )
 

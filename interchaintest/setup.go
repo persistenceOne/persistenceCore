@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 
-	"github.com/persistenceOne/persistenceCore/v12/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v13/interchaintest/helpers"
 )
 
 var (

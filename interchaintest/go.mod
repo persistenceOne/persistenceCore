@@ -1,4 +1,4 @@
-module github.com/persistenceOne/persistenceCore/v12/interchaintest
+module github.com/persistenceOne/persistenceCore/v13/interchaintest
 
 go 1.23.0
 
