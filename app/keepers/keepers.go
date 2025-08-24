@@ -72,7 +72,7 @@ import (
 	liquidstaketypes "github.com/persistenceOne/pstake-native/v3/x/liquidstake/types"
 	"github.com/spf13/cast"
 
-	"github.com/persistenceOne/persistenceCore/v12/wasmbindings"
+	"github.com/persistenceOne/persistenceCore/v13/wasmbindings"
 
 	// unnamed import of statik for swagger UI support
 	_ "github.com/cosmos/cosmos-sdk/client/docs/statik"

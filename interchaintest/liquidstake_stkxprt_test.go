@@ -9,7 +9,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
-	"github.com/persistenceOne/persistenceCore/v12/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v13/interchaintest/helpers"
 	liquidstaketypes "github.com/persistenceOne/pstake-native/v3/x/liquidstake/types"
 	"github.com/strangelove-ventures/interchaintest/v7"
 	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
