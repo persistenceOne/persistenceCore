@@ -43,14 +43,6 @@ var (
 			Key:   "app_state.gov.params.min_deposit.0.denom",
 			Value: helpers.PersistenceBondDenom,
 		},
-		{
-			Key:   "app_state.builder.params.reserve_fee.denom",
-			Value: helpers.PersistenceBondDenom,
-		},
-		{
-			Key:   "app_state.builder.params.min_bid_increment.denom",
-			Value: helpers.PersistenceBondDenom,
-		},
 	}
 
 	votingGenesisOverridesKV = []cosmos.GenesisKV{
