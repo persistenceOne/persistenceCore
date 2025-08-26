@@ -46,6 +46,7 @@ const flagInvalidCheckPeriod = "invalid-check-period"
 var invalidCheckPeriod uint
 
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
+	setConfig()
 	encodingConfig := app.MakeEncodingConfig()
 	initClientCtx := client.Context{}.
 		WithCodec(encodingConfig.Codec).
@@ -124,7 +125,6 @@ func initAppConfig() (string, interface{}) {
 }
 
 func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig, tempApp *app.Application) {
-	setConfig()
 
 	rootCmd.AddCommand(
 		genutilcli.InitCmd(app.ModuleBasics, app.DefaultNodeHome),
