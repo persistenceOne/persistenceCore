@@ -57,11 +57,11 @@ func QueryDelegation(
 
 	debugOutput(t, string(stdout))
 
-	var resp queryDelegationResponse
+	var resp queryDelegationsResponseWrapper
 	err = json.Unmarshal(stdout, &resp)
 	require.NoError(t, err)
 
-	return resp.Delegation
+	return resp.QueryDelegationResponse.Delegation
 }
 
 // QueryUnbondingDelegations gets info about all unbonding delegations for a delegator
@@ -123,6 +123,10 @@ func QueryTotalLiquidStaked(
 
 type queryTotalLiquidStaked struct {
 	Tokens math.Int `json:"tokens"`
+}
+
+type queryDelegationsResponseWrapper struct {
+	QueryDelegationResponse queryDelegationResponse `json:"delegation_response"`
 }
 
 type queryDelegationResponse struct {

@@ -67,7 +67,7 @@ var (
 	fastVotingGenesisOverridesKV = []cosmos.GenesisKV{
 		{
 			Key:   "app_state.gov.params.voting_period",
-			Value: "5s",
+			Value: "10s",
 		},
 		{
 			Key:   "app_state.gov.params.max_deposit_period",
