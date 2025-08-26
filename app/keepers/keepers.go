@@ -4,6 +4,7 @@ import (
 	"cosmossdk.io/log"
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/codec/address"
+	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
 	"github.com/persistenceOne/persistenceCore/v13/app/constants"
 
 	storetypes "cosmossdk.io/store/types"
@@ -105,8 +106,8 @@ type AppKeepers struct {
 	PacketForwardKeeper   *packetforwardkeeper.Keeper
 
 	// Modules
-	TransferModule ibctransfer.AppModule
-
+	TransferModule      ibctransfer.AppModule
+	TMLightClientModule ibctm.LightClientModule
 	// IBC hooks
 	IBCHooksKeeper   *ibchookskeeper.Keeper
 	ICS20WasmHooks   *ibchooks.WasmHooks
@@ -434,6 +435,13 @@ func NewAppKeeper(
 		AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
 		AddRoute(icahosttypes.SubModuleName, icaHostStack)
 	appKeepers.IBCKeeper.SetRouter(ibcRouter)
+
+	clientKeeper := appKeepers.IBCKeeper.ClientKeeper
+	storeProvider := clientKeeper.GetStoreProvider()
+
+	tmLightClientModule := ibctm.NewLightClientModule(appCodec, storeProvider)
+	appKeepers.TMLightClientModule = tmLightClientModule
+	clientKeeper.AddRoute(ibctm.ModuleName, &tmLightClientModule)
 
 	govRouter := govv1beta1.NewRouter()
 	govRouter.

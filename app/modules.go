@@ -45,6 +45,7 @@ import (
 	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v10/modules/core"
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
+	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
 	"github.com/persistenceOne/persistence-sdk/v4/x/epochs"
 	epochstypes "github.com/persistenceOne/persistence-sdk/v4/x/epochs/types"
 	"github.com/persistenceOne/persistence-sdk/v4/x/halving"
@@ -105,6 +106,7 @@ func appModules(
 		epochs.NewAppModule(*app.EpochsKeeper),
 		liquidstake.NewAppModule(*app.LiquidStakeKeeper),
 		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)), // always be last to make sure that it checks for all invariants and not only part of them
+		ibctm.NewAppModule(app.TMLightClientModule),
 	}
 }
 
