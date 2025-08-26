@@ -188,6 +188,7 @@ func orderEndBlockers() []string {
 // can do so safely.
 func orderInitGenesis() []string {
 	return []string{
+		authtypes.ModuleName,
 		banktypes.ModuleName,
 		distributiontypes.ModuleName,
 		stakingtypes.ModuleName,
@@ -201,7 +202,6 @@ func orderInitGenesis() []string {
 		evidencetypes.ModuleName,
 		feegrant.ModuleName,
 		authz.ModuleName,
-		authtypes.ModuleName,
 		genutiltypes.ModuleName,
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
