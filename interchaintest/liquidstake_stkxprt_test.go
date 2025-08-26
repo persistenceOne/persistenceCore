@@ -131,7 +131,7 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 	upgradeTx, err := helpers.QueryProposalTx(context.Background(), chain.Nodes()[0], txResp.TxHash)
 	require.NoError(t, err, "error checking proposal tx")
 
-	proposalID, err := strconv.ParseInt(upgradeTx.ProposalID, 10, 64)
+	proposalID, err := strconv.ParseUint(upgradeTx.ProposalID, 10, 64)
 	require.NoError(t, err, "error parsing proposal id")
 
 	err = chain.VoteOnProposalAllValidators(ctx, proposalID, cosmos.ProposalVoteYes)
