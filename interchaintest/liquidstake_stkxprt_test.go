@@ -136,8 +136,8 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 
 	proposal, err := chain.GovQueryProposalV1(ctx, proposalID)
 	require.NoError(t, err, "error getting proposal")
-	require.Equal(t, govv1.StatusVotingPeriod, proposal.Status)
 	t.Log(proposal)
+	require.Equal(t, govv1.StatusVotingPeriod, proposal.Status, "proposal status equal check")
 
 	err = chain.VoteOnProposalAllValidators(ctx, proposalID, cosmos.ProposalVoteYes)
 	require.NoError(t, err, "failed to submit votes")

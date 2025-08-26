@@ -86,9 +86,9 @@ var (
 	genesisWalletAmount = math.NewInt(10_000_000)
 )
 
-// persistenceEncoding registers the persistenceCore specific module codecs so that the associated types and msgs
+// PersistenceEncoding registers the persistenceCore specific module codecs so that the associated types and msgs
 // will be supported when writing to the blocksdb sqlite database.
-func persistenceEncoding() *testutil.TestEncodingConfig {
+func PersistenceEncoding() *testutil.TestEncodingConfig {
 	cfg := cosmos.DefaultEncoding()
 
 	// register custom types
@@ -119,7 +119,7 @@ func persistenceChainConfig(
 		TrustingPeriod:      "112h",
 		NoHostMount:         false,
 		ConfigFileOverrides: nil,
-		EncodingConfig:      persistenceEncoding(),
+		EncodingConfig:      PersistenceEncoding(),
 		ModifyGenesis:       cosmos.ModifyGenesis(genesisOverrides),
 
 		Images: []ibc.DockerImage{

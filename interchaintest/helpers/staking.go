@@ -19,7 +19,7 @@ func QueryAllValidators(t *testing.T, ctx context.Context, chainNode *cosmos.Cha
 	debugOutput(t, string(stdout))
 
 	var resp queryValidatorsResponse
-	err = json.Unmarshal([]byte(stdout), &resp)
+	err = json.Unmarshal(stdout, &resp)
 	require.NoError(t, err)
 
 	return resp.Validators
@@ -38,7 +38,7 @@ func QueryValidator(
 	debugOutput(t, string(stdout))
 
 	var validator Validator
-	err = json.Unmarshal([]byte(stdout), &validator)
+	err = json.Unmarshal(stdout, &validator)
 	require.NoError(t, err)
 
 	return validator
@@ -58,7 +58,7 @@ func QueryDelegation(
 	debugOutput(t, string(stdout))
 
 	var resp queryDelegationResponse
-	err = json.Unmarshal([]byte(stdout), &resp)
+	err = json.Unmarshal(stdout, &resp)
 	require.NoError(t, err)
 
 	return resp.Delegation
@@ -77,7 +77,7 @@ func QueryUnbondingDelegations(
 	debugOutput(t, string(stdout))
 
 	var resp queryUnbondingDelegationsResponse
-	err = json.Unmarshal([]byte(stdout), &resp)
+	err = json.Unmarshal(stdout, &resp)
 	require.NoError(t, err)
 
 	return resp.UnbondingResponses
@@ -115,7 +115,7 @@ func QueryTotalLiquidStaked(
 	debugOutput(t, string(stdout))
 
 	var resp queryTotalLiquidStaked
-	err = json.Unmarshal([]byte(stdout), &resp)
+	err = json.Unmarshal(stdout, &resp)
 	require.NoError(t, err)
 
 	return resp.Tokens

@@ -142,6 +142,11 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	proposalID, err := strconv.ParseUint(upgradeTx.ProposalID, 10, 64)
 	require.NoError(t, err, "error parsing proposal id")
 
+	proposal, err := chain.GovQueryProposalV1(ctx, proposalID)
+	require.NoError(t, err, "error getting proposal")
+	t.Log(proposal)
+	require.Equal(t, govv1.StatusVotingPeriod, proposal.Status)
+
 	err = chain.VoteOnProposalAllValidators(ctx, proposalID, cosmos.ProposalVoteYes)
 	require.NoError(t, err, "failed to submit votes")
 

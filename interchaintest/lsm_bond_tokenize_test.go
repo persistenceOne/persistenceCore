@@ -59,7 +59,12 @@ func TestBondTokenize(t *testing.T) {
 		"staking", "delegate", validators[0].OperatorAddress, firstUserDelegationCoins.String(),
 		"--gas=auto",
 	)
+
 	require.NoError(t, err)
+
+	delegation := helpers.QueryDelegation(t, ctx, chainNode, firstUser.FormattedAddress(), validators[0].OperatorAddress)
+	require.Equal(t, math.LegacyNewDecFromInt(firstUserDelegationCoins.Amount), delegation.Shares, "compare first user delegated amounts to delegation.shares")
+	require.False(t, delegation.ValidatorBond)
 
 	// Delegate from second user
 	secondUserDelegationAmount := math.NewInt(1_000_000)
@@ -70,11 +75,11 @@ func TestBondTokenize(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	delegation := helpers.QueryDelegation(t, ctx, chainNode, secondUser.FormattedAddress(), validators[0].OperatorAddress)
-	require.Equal(t, math.LegacyNewDecFromInt(secondUserDelegationCoins.Amount), delegation.Shares)
+	delegation = helpers.QueryDelegation(t, ctx, chainNode, secondUser.FormattedAddress(), validators[0].OperatorAddress)
+	require.Equal(t, math.LegacyNewDecFromInt(secondUserDelegationCoins.Amount), delegation.Shares, "compare second user delegated amounts to delegation.shares")
 	require.False(t, delegation.ValidatorBond)
 
-	// Try to tokenize shares from first user, it won't work because there is no minimal bond
+	// Try to tokenize shares from the first user, it won't work because there is no minimal bond
 	tokenizeCoins := sdk.NewCoin(testDenom, math.NewInt(250_000_000))
 	txHash, err := chainNode.ExecTx(ctx, firstUser.KeyName(),
 		"staking", "tokenize-share", validators[0].OperatorAddress, tokenizeCoins.String(), firstUser.FormattedAddress(),

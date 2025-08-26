@@ -70,7 +70,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		TrustingPeriod:      "112h",
 		NoHostMount:         false,
 		ConfigFileOverrides: nil,
-		EncodingConfig:      persistenceEncoding(),
+		EncodingConfig:      PersistenceEncoding(),
 		ModifyGenesis:       cosmos.ModifyGenesis(defaultGenesisOverridesKV),
 	}
 
