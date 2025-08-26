@@ -92,11 +92,10 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	initClientCtx, _ = config.ReadFromClientConfig(initClientCtx)
 	autoCliOpts.ClientCtx = initClientCtx
 
+	initRootCmd(rootCmd, encodingConfig, tempApp)
 	if err := autoCliOpts.EnhanceRootCommand(rootCmd); err != nil {
 		panic(err)
 	}
-	initRootCmd(rootCmd, encodingConfig, tempApp)
-
 	return rootCmd, encodingConfig
 }
 
