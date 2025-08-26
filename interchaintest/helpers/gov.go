@@ -11,6 +11,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type TallyWrapper struct {
+	Tally Tally `json:"tally"`
+}
 type Tally struct {
 	AbstainCount    math.Int `json:"abstain_count"`
 	NoCount         math.Int `json:"no_count"`
@@ -32,11 +35,11 @@ func QueryProposalTally(t *testing.T, ctx context.Context, chainNode *cosmos.Cha
 
 	debugOutput(t, string(stdout))
 
-	var tally Tally
-	err = json.Unmarshal([]byte(stdout), &tally)
+	var tally TallyWrapper
+	err = json.Unmarshal(stdout, &tally)
 	require.NoError(t, err)
 
-	return tally
+	return tally.Tally
 }
 
 // LegacyTextProposal submits a text governance proposal to the chain.

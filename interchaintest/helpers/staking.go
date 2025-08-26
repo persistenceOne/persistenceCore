@@ -37,11 +37,11 @@ func QueryValidator(
 
 	debugOutput(t, string(stdout))
 
-	var validator Validator
+	var validator ValidatorWrapper
 	err = json.Unmarshal(stdout, &validator)
 	require.NoError(t, err)
 
-	return validator
+	return validator.Validator
 }
 
 // QueryDelegation gets info about particular delegation
@@ -148,6 +148,9 @@ type queryUnbondingDelegationsResponse struct {
 	UnbondingResponses []UnbondingDelegation `json:"unbonding_responses"`
 }
 
+type ValidatorWrapper struct {
+	Validator Validator `json:"validator"`
+}
 type Validator struct {
 	OperatorAddress     string         `json:"operator_address"`
 	Jailed              bool           `json:"jailed"`
