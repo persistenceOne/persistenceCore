@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"errors"
+	"io"
+	"os"
+
 	"github.com/cosmos/cosmos-sdk/client/snapshot"
 	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	"github.com/persistenceOne/persistenceCore/v13/app/constants"
-	"io"
-	"os"
 
 	"cosmossdk.io/log"
 	confixcmd "cosmossdk.io/tools/confix/cmd"
