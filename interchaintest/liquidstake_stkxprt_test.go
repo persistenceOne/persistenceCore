@@ -9,12 +9,12 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+	"github.com/cosmos/interchaintest/v10"
+	"github.com/cosmos/interchaintest/v10/chain/cosmos"
+	"github.com/cosmos/interchaintest/v10/ibc"
+	"github.com/cosmos/interchaintest/v10/testutil"
 	"github.com/persistenceOne/persistenceCore/v13/interchaintest/helpers"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v3/x/liquidstake/types"
-	"github.com/strangelove-ventures/interchaintest/v7"
-	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v7/ibc"
-	"github.com/strangelove-ventures/interchaintest/v7/testutil"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v4/x/liquidstake/types"
 	"github.com/stretchr/testify/require"
 	"strconv"
 	"testing"
@@ -119,7 +119,7 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 		broadcaster,
 		firstUser,
 		&govv1.MsgSubmitProposal{
-			InitialDeposit: []sdk.Coin{sdk.NewCoin(chain.Config().Denom, sdk.NewInt(500_000_000))},
+			InitialDeposit: []sdk.Coin{sdk.NewCoin(chain.Config().Denom, math.NewInt(500_000_000))},
 			Proposer:       firstUser.FormattedAddress(),
 			Title:          "LiquidStake Params Update",
 			Summary:        "Sets params for liquidstake",
@@ -160,7 +160,7 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 	require.Equal(t, uint32(0), txResp.Code, txResp.RawLog)
 	// Liquid stake XPRT from the first user (5 XPRT)
 
-	firstUserLiquidStakeAmount := sdk.NewInt(5_000_000)
+	firstUserLiquidStakeAmount := math.NewInt(5_000_000)
 	firstUserLiquidStakeCoins := sdk.NewCoin(testDenom, firstUserLiquidStakeAmount)
 	txHash, err := chainNode.ExecTx(ctx, firstUser.KeyName(),
 		"liquidstake", "liquid-stake", firstUserLiquidStakeCoins.String(),
@@ -208,7 +208,7 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 
 	// Delegate from the first user to get a delegation that could be used to obtain non-liquid stkXPRT
 
-	firstUserDelegationAmount := sdk.NewInt(5_000_000)
+	firstUserDelegationAmount := math.NewInt(5_000_000)
 	firstUserDelegationCoins := sdk.NewCoin(testDenom, firstUserDelegationAmount)
 
 	txHash, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
@@ -221,7 +221,7 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 	require.NoError(t, err)
 
 	delegation := helpers.QueryDelegation(t, ctx, chainNode, firstUser.FormattedAddress(), validators[0].OperatorAddress)
-	require.Equal(t, sdk.NewDecFromInt(firstUserDelegationCoins.Amount), delegation.Shares)
+	require.Equal(t, math.LegacyNewDecFromInt(firstUserDelegationCoins.Amount), delegation.Shares)
 	require.False(t, delegation.ValidatorBond)
 
 	firstUserXPRTBalanceBeforeLock, err := chain.GetBalance(ctx, firstUser.FormattedAddress(), testDenom)
@@ -248,7 +248,7 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 	firstUserXPRTBalanceAfterLock, err := chain.GetBalance(ctx, firstUser.FormattedAddress(), testDenom)
 	require.NoError(t, err)
 	require.Equal(t,
-		firstUserXPRTBalanceBeforeLock.Sub(tokensToLock2.Amount).Add(sdk.NewInt(1)), // fix a blip from LSM rewards
+		firstUserXPRTBalanceBeforeLock.Sub(tokensToLock2.Amount).Add(math.NewInt(1)), // fix a blip from LSM rewards
 		firstUserXPRTBalanceAfterLock,
 		"first user's XPRT balance must be reduced by locked XPRT during stake-to-lp",
 	)
@@ -256,7 +256,7 @@ func TestLiquidStakeStkXPRT(t *testing.T) {
 	// Check total expected locked stkXPRT in LP: two deposits of liquid stkXPRT in different ways
 	// and one stake transfer through LSM-LP flow (using stake-to-lp).
 	totalLockedExpected := tokensToLock.Amount.Add(tokensToLock2.Amount).Add(stakeToLP.Amount)
-	// totalLockedExpected = totalLockedExpected.Sub(sdk.NewInt(1)) // some dust lost due to stk math
+	// totalLockedExpected = totalLockedExpected.Sub(math.NewInt(1)) // some dust lost due to stk math
 
 	lockedLST = helpers.GetTotalAmountLocked(t, ctx, chainNode, lpContractAddr, firstUser.FormattedAddress())
 	require.Equal(t, totalLockedExpected, lockedLST, "expected LST tokens to add up")

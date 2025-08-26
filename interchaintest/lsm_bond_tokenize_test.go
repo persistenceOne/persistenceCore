@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/strangelove-ventures/interchaintest/v7"
-	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
+	"github.com/cosmos/interchaintest/v10"
+	"github.com/cosmos/interchaintest/v10/chain/cosmos"
 	"github.com/stretchr/testify/require"
 
 	"github.com/persistenceOne/persistenceCore/v13/interchaintest/helpers"
@@ -53,7 +53,7 @@ func TestBondTokenize(t *testing.T) {
 	require.Len(t, validators, validatorsCount, "validator returned must match count of validators created")
 
 	// Delegate from first user
-	firstUserDelegationAmount := sdk.NewInt(1_000_000_000)
+	firstUserDelegationAmount := math.NewInt(1_000_000_000)
 	firstUserDelegationCoins := sdk.NewCoin(testDenom, firstUserDelegationAmount)
 	_, err := chainNode.ExecTx(ctx, firstUser.KeyName(),
 		"staking", "delegate", validators[0].OperatorAddress, firstUserDelegationCoins.String(),
@@ -62,7 +62,7 @@ func TestBondTokenize(t *testing.T) {
 	require.NoError(t, err)
 
 	// Delegate from second user
-	secondUserDelegationAmount := sdk.NewInt(1_000_000)
+	secondUserDelegationAmount := math.NewInt(1_000_000)
 	secondUserDelegationCoins := sdk.NewCoin(testDenom, secondUserDelegationAmount)
 	_, err = chainNode.ExecTx(ctx, secondUser.KeyName(),
 		"staking", "delegate", validators[0].OperatorAddress, secondUserDelegationCoins.String(),
@@ -71,11 +71,11 @@ func TestBondTokenize(t *testing.T) {
 	require.NoError(t, err)
 
 	delegation := helpers.QueryDelegation(t, ctx, chainNode, secondUser.FormattedAddress(), validators[0].OperatorAddress)
-	require.Equal(t, sdk.NewDecFromInt(secondUserDelegationCoins.Amount), delegation.Shares)
+	require.Equal(t, math.LegacyNewDecFromInt(secondUserDelegationCoins.Amount), delegation.Shares)
 	require.False(t, delegation.ValidatorBond)
 
 	// Try to tokenize shares from first user, it won't work because there is no minimal bond
-	tokenizeCoins := sdk.NewCoin(testDenom, sdk.NewInt(250_000_000))
+	tokenizeCoins := sdk.NewCoin(testDenom, math.NewInt(250_000_000))
 	txHash, err := chainNode.ExecTx(ctx, firstUser.KeyName(),
 		"staking", "tokenize-share", validators[0].OperatorAddress, tokenizeCoins.String(), firstUser.FormattedAddress(),
 		"--gas=500000",
@@ -91,7 +91,7 @@ func TestBondTokenize(t *testing.T) {
 	require.NoError(t, err)
 
 	delegation = helpers.QueryDelegation(t, ctx, chainNode, secondUser.FormattedAddress(), validators[0].OperatorAddress)
-	require.Equal(t, sdk.NewDecFromInt(secondUserDelegationCoins.Amount), delegation.Shares)
+	require.Equal(t, math.LegacyNewDecFromInt(secondUserDelegationCoins.Amount), delegation.Shares)
 	require.True(t, delegation.ValidatorBond)
 
 	validator := helpers.QueryValidator(t, ctx, chainNode, validators[0].OperatorAddress)
@@ -134,7 +134,7 @@ func TestBondTokenize(t *testing.T) {
 	require.NoError(t, err)
 
 	delegation = helpers.QueryDelegation(t, ctx, chainNode, secondUser.FormattedAddress(), validators[0].OperatorAddress)
-	secondUserDelegationCoinsDouble := sdk.NewDecFromInt(secondUserDelegationCoins.Amount).MulInt64(2)
+	secondUserDelegationCoinsDouble := math.LegacyNewDecFromInt(secondUserDelegationCoins.Amount).MulInt64(2)
 	require.Equal(t, secondUserDelegationCoinsDouble, delegation.Shares, "expected updated delegation")
 	require.True(t, delegation.ValidatorBond)
 
@@ -153,6 +153,6 @@ func TestBondTokenize(t *testing.T) {
 	require.Equal(t, tokenizeCoins.Amount, sharesBalance, "shares balance must match tokenized amount")
 
 	validator = helpers.QueryValidator(t, ctx, chainNode, validators[0].OperatorAddress)
-	doubleTokenizedAmount := sdk.NewDecFromInt(tokenizeCoins.Amount.MulRaw(2))
+	doubleTokenizedAmount := math.LegacyNewDecFromInt(tokenizeCoins.Amount.MulRaw(2))
 	require.Equal(t, doubleTokenizedAmount, validator.LiquidShares, "validator's liquid shares amount must match tokenized amount x2")
 }

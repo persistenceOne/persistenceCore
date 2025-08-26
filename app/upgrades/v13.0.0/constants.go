@@ -1,7 +1,7 @@
 package v13_0_0
 
 import (
-	store "github.com/cosmos/cosmos-sdk/store/types"
+	store "cosmossdk.io/store/types"
 	"github.com/persistenceOne/persistenceCore/v13/app/upgrades"
 )
 

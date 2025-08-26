@@ -11,10 +11,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v3/x/liquidstake/types"
-	"github.com/strangelove-ventures/interchaintest/v7"
-	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v7/testutil"
+	"github.com/cosmos/interchaintest/v10"
+	"github.com/cosmos/interchaintest/v10/chain/cosmos"
+	"github.com/cosmos/interchaintest/v10/testutil"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v4/x/liquidstake/types"
 	"github.com/stretchr/testify/require"
 
 	"github.com/persistenceOne/persistenceCore/v13/interchaintest/helpers"
@@ -89,7 +89,7 @@ func TestLiquidStakeUnstakeStkXPRT(t *testing.T) {
 		broadcaster,
 		chainUser,
 		&govv1.MsgSubmitProposal{
-			InitialDeposit: []sdk.Coin{sdk.NewCoin(chain.Config().Denom, sdk.NewInt(500_000_000))},
+			InitialDeposit: []sdk.Coin{sdk.NewCoin(chain.Config().Denom, math.NewInt(500_000_000))},
 			Proposer:       chainUser.FormattedAddress(),
 			Title:          "LiquidStake Params Update",
 			Summary:        "Sets params for liquidstake",
@@ -104,7 +104,7 @@ func TestLiquidStakeUnstakeStkXPRT(t *testing.T) {
 	upgradeTx, err := helpers.QueryProposalTx(context.Background(), chain.Nodes()[0], txResp.TxHash)
 	require.NoError(t, err, "error checking proposal tx")
 
-	proposalID, err := strconv.ParseInt(upgradeTx.ProposalID, 10, 64)
+	proposalID, err := strconv.ParseUint(upgradeTx.ProposalID, 10, 64)
 	require.NoError(t, err, "error parsing proposal id")
 
 	err = chain.VoteOnProposalAllValidators(ctx, proposalID, cosmos.ProposalVoteYes)
@@ -139,7 +139,7 @@ func TestLiquidStakeUnstakeStkXPRT(t *testing.T) {
 
 	// Liquid stake XPRT
 
-	chainUserLiquidStakeAmount := sdk.NewInt(8_000_000)
+	chainUserLiquidStakeAmount := math.NewInt(8_000_000)
 	chainUserLiquidStakeCoins := sdk.NewCoin(testDenom, chainUserLiquidStakeAmount)
 	txHash, err := chainNode.ExecTx(ctx, chainUser.KeyName(),
 		"liquidstake", "liquid-stake", chainUserLiquidStakeCoins.String(),

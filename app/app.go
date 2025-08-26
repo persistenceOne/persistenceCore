@@ -9,9 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/fs"
 	stdlog "log"
-	"net/http"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -19,43 +17,47 @@ import (
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
+	"cosmossdk.io/log"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	tendermintdb "github.com/cometbft/cometbft-db"
-	abcitypes "github.com/cometbft/cometbft/abci/types"
+	abci "github.com/cometbft/cometbft/abci/types"
 	tendermintjson "github.com/cometbft/cometbft/libs/json"
-	tendermintlog "github.com/cometbft/cometbft/libs/log"
 	tendermintos "github.com/cometbft/cometbft/libs/os"
 	tendermintproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
+	tmservice "github.com/cosmos/cosmos-sdk/client/grpc/cmtservice"
 	nodeservice "github.com/cosmos/cosmos-sdk/client/grpc/node"
-	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
+	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	sigtypes "github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
+	"github.com/cosmos/cosmos-sdk/x/auth/posthandler"
+	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
+	txmodule "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	"github.com/gorilla/mux"
 	"github.com/spf13/cast"
 
+	"github.com/persistenceOne/persistenceCore/v13/app/constants"
 	"github.com/persistenceOne/persistenceCore/v13/app/keepers"
 	"github.com/persistenceOne/persistenceCore/v13/app/upgrades"
 	v1300rc0 "github.com/persistenceOne/persistenceCore/v13/app/upgrades/testnet/v13.0.0-rc0"
-	"github.com/persistenceOne/persistenceCore/v13/client/docs"
 )
 
 var (
@@ -87,14 +89,15 @@ type Application struct {
 	txConfig          client.TxConfig
 	interfaceRegistry types.InterfaceRegistry
 
-	moduleManager     *module.Manager
-	configurator      module.Configurator
-	simulationManager *module.SimulationManager
+	ModuleBasicManager module.BasicManager
+	moduleManager      *module.Manager
+	configurator       module.Configurator
+	simulationManager  *module.SimulationManager
 }
 
 func NewApplication(
-	logger tendermintlog.Logger,
-	db tendermintdb.DB,
+	logger log.Logger,
+	db dbm.DB,
 	traceStore io.Writer,
 	loadLatest bool,
 	applicationOptions servertypes.AppOptions,
@@ -108,8 +111,10 @@ func NewApplication(
 	interfaceRegistry := encodingConfiguration.InterfaceRegistry
 	txConfig := encodingConfiguration.TxConfig
 
+	// may be in future - vote extensions
+
 	baseApp := baseapp.NewBaseApp(
-		AppName,
+		constants.AppName,
 		logger,
 		db,
 		txConfig.TxDecoder(),
@@ -122,7 +127,7 @@ func NewApplication(
 
 	homePath := cast.ToString(applicationOptions.Get(flags.FlagHome))
 	wasmDir := filepath.Join(homePath, "wasm")
-	wasmConfig, err := wasm.ReadWasmConfig(applicationOptions)
+	nodeConfig, err := wasm.ReadNodeConfig(applicationOptions)
 	if err != nil {
 		panic(fmt.Sprintf("error while reading wasm config: %s", err))
 	}
@@ -134,7 +139,6 @@ func NewApplication(
 		txConfig:          txConfig,
 		interfaceRegistry: interfaceRegistry,
 	}
-
 	// Setup keepers
 	app.AppKeepers = keepers.NewAppKeeper(
 		appCodec,
@@ -145,8 +149,21 @@ func NewApplication(
 		applicationOptions,
 		wasmDir,
 		wasmOpts,
-		Bech32MainPrefix,
+		logger,
 	)
+	enabledSignModes := append(tx.DefaultSignModes, sigtypes.SignMode_SIGN_MODE_TEXTUAL)
+	txConfigOpts := tx.ConfigOptions{
+		EnabledSignModes:           enabledSignModes,
+		TextualCoinMetadataQueryFn: txmodule.NewBankKeeperCoinMetadataQueryFn(app.BankKeeper),
+	}
+	txConfig, err = tx.NewTxConfigWithOptions(
+		appCodec,
+		txConfigOpts,
+	)
+	if err != nil {
+		panic(err)
+	}
+	app.txConfig = txConfig
 
 	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
 	// we prefer to be more strict in what arguments the modules expect.
@@ -154,14 +171,21 @@ func NewApplication(
 
 	app.moduleManager = module.NewManager(appModules(app, encodingConfiguration, skipGenesisInvariants)...)
 
+	app.moduleManager.SetOrderPreBlockers(
+		upgradetypes.ModuleName,
+	)
 	app.moduleManager.SetOrderBeginBlockers(orderBeginBlockers()...)
 	app.moduleManager.SetOrderEndBlockers(orderEndBlockers()...)
 	app.moduleManager.SetOrderInitGenesis(orderInitGenesis()...)
 	app.moduleManager.SetOrderExportGenesis(orderInitGenesis()...)
+	//app.moduleManager.SetOrderMigrations()
 
 	app.moduleManager.RegisterInvariants(app.CrisisKeeper)
 	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
-	app.moduleManager.RegisterServices(app.configurator)
+	err = app.moduleManager.RegisterServices(app.configurator)
+	if err != nil {
+		panic(err)
+	}
 
 	app.simulationManager = module.NewSimulationManagerFromAppModules(
 		app.moduleManager.Modules,
@@ -175,16 +199,19 @@ func NewApplication(
 	app.MountTransientStores(app.GetTransientStoreKey())
 	app.MountMemoryStores(app.GetMemoryStoreKey())
 
-	app.setupAnteHandler(wasmConfig)
+	app.setupAnteHandler(nodeConfig)
 	app.SetInitChainer(app.InitChainer)
+	app.SetPreBlocker(app.PreBlocker)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
+	app.setPostHandler()
 
 	// setup postHandler in this method
 	// app.setupPostHandler()
 	app.setupUpgradeHandlers(Upgrades)
 	app.setupUpgradeStoreLoaders(Upgrades)
 
+	app.ModuleBasicManager = module.NewBasicManagerFromManager(app.moduleManager, map[string]module.AppModuleBasic{})
 	// must be before Loading version
 	// requires the snapshot store to be created and registered as a BaseAppOption
 	// see cmd/wasmd/root.go: 206 - 214 approx
@@ -212,7 +239,7 @@ func NewApplication(
 	return app
 }
 
-func (app *Application) setupAnteHandler(wasmConfig wasmtypes.WasmConfig) {
+func (app *Application) setupAnteHandler(nodeConfig wasmtypes.NodeConfig) {
 
 	anteOptions := HandlerOptions{
 		HandlerOptions: ante.HandlerOptions{
@@ -222,9 +249,9 @@ func (app *Application) setupAnteHandler(wasmConfig wasmtypes.WasmConfig) {
 			SignModeHandler: app.txConfig.SignModeHandler(),
 			SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
 		},
-		IBCKeeper:         app.IBCKeeper,
-		WasmConfig:        &wasmConfig,
-		TXCounterStoreKey: app.GetKVStoreKey()[wasm.StoreKey],
+		IBCKeeper:             app.IBCKeeper,
+		NodeConfig:            &nodeConfig,
+		TXCounterStoreService: runtime.NewKVStoreService(app.GetKVStoreKey()[wasmtypes.StoreKey]),
 
 		TxDecoder: app.txConfig.TxDecoder(),
 		TxEncoder: app.txConfig.TxEncoder(),
@@ -261,9 +288,9 @@ func (app *Application) GetChainBondDenom() string {
 	chainID := app.ChainID()
 
 	if strings.HasPrefix(chainID, "core-") {
-		return BondDenom
+		return constants.BondDenom
 	} else if strings.HasPrefix(chainID, "test-core-") {
-		return BondDenom
+		return constants.BondDenom
 	}
 
 	return "stake"
@@ -273,9 +300,9 @@ func (app *Application) GetFeeDenomsWhitelist() []string {
 	chainID := app.ChainID()
 
 	if strings.HasPrefix(chainID, "core-") {
-		return FeeDenomsWhitelistMainnet
+		return constants.FeeDenomsWhitelistMainnet
 	} else if strings.HasPrefix(chainID, "test-core-") {
-		return FeeDenomsWhitelistTestnet
+		return constants.FeeDenomsWhitelistTestnet
 	}
 
 	// Allow all denoms for random chain
@@ -304,21 +331,39 @@ func (app *Application) LegacyAmino() *codec.LegacyAmino {
 	return app.legacyAmino
 }
 
-func (app *Application) BeginBlocker(ctx sdk.Context, req abcitypes.RequestBeginBlock) abcitypes.ResponseBeginBlock {
-	return app.moduleManager.BeginBlock(ctx, req)
+func (app *Application) setPostHandler() {
+	postHandler, err := posthandler.NewPostHandler(
+		posthandler.HandlerOptions{},
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	app.SetPostHandler(postHandler)
 }
 
-func (app *Application) EndBlocker(ctx sdk.Context, req abcitypes.RequestEndBlock) abcitypes.ResponseEndBlock {
-	return app.moduleManager.EndBlock(ctx, req)
+func (app *Application) PreBlocker(ctx sdk.Context, _ *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
+	return app.moduleManager.PreBlock(ctx)
 }
 
-func (app *Application) InitChainer(ctx sdk.Context, req abcitypes.RequestInitChain) abcitypes.ResponseInitChain {
+func (app *Application) BeginBlocker(ctx sdk.Context) (sdk.BeginBlock, error) {
+	return app.moduleManager.BeginBlock(ctx)
+}
+
+func (app *Application) EndBlocker(ctx sdk.Context) (sdk.EndBlock, error) {
+	return app.moduleManager.EndBlock(ctx)
+}
+
+func (app *Application) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
 	var genesisState GenesisState
 	if err := tendermintjson.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
 	}
 
-	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.moduleManager.GetVersionMap())
+	err := app.UpgradeKeeper.SetModuleVersionMap(ctx, app.moduleManager.GetVersionMap())
+	if err != nil {
+		panic(err)
+	}
 
 	return app.moduleManager.InitGenesis(ctx, app.appCodec, genesisState)
 }
@@ -357,8 +402,8 @@ func (app *Application) RegisterAPIRoutes(apiServer *api.Server, apiConfig confi
 	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiServer.GRPCGatewayRouter)
 
 	// register swagger API from root so that other applications can override easily
-	if apiConfig.Swagger {
-		RegisterSwaggerAPI(apiServer.Router)
+	if err := server.RegisterSwaggerAPI(apiServer.ClientCtx, apiServer.Router, apiConfig.Swagger); err != nil {
+		panic(err)
 	}
 }
 
@@ -412,16 +457,6 @@ func (app *Application) setupPostHandler() {
 	app.SetPostHandler(postHandler)
 }
 
-func RegisterSwaggerAPI(rtr *mux.Router) {
-	swaggerDir, err := fs.Sub(docs.SwaggerUI, "swagger-ui")
-	if err != nil {
-		panic(err)
-	}
-
-	staticServer := http.FileServer(http.FS(swaggerDir))
-	rtr.PathPrefix("/swagger/").Handler(http.StripPrefix("/swagger/", staticServer))
-}
-
 func (app *Application) RegisterTxService(clientContect client.Context) {
 	authtx.RegisterTxService(app.BaseApp.GRPCQueryRouter(), clientContect, app.BaseApp.Simulate, app.interfaceRegistry)
 }
@@ -429,8 +464,8 @@ func (app *Application) RegisterTxService(clientContect client.Context) {
 func (app *Application) RegisterTendermintService(clientCtx client.Context) {
 	tmservice.RegisterTendermintService(clientCtx, app.BaseApp.GRPCQueryRouter(), app.interfaceRegistry, app.Query)
 }
-func (app *Application) RegisterNodeService(clientCtx client.Context) {
-	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter())
+func (app *Application) RegisterNodeService(clientCtx client.Context, cfg config.Config) {
+	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter(), cfg)
 }
 func (app *Application) LoadHeight(height int64) error {
 	return app.BaseApp.LoadVersion(height)

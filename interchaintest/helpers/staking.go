@@ -7,8 +7,7 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
+	"github.com/cosmos/interchaintest/v10/chain/cosmos"
 	"github.com/stretchr/testify/require"
 )
 
@@ -131,10 +130,10 @@ type queryDelegationResponse struct {
 }
 
 type Delegation struct {
-	DelegatorAddress string  `json:"delegator_address"`
-	ValidatorAddress string  `json:"validator_address"`
-	Shares           sdk.Dec `json:"shares"`
-	ValidatorBond    bool    `json:"validator_bond"`
+	DelegatorAddress string         `json:"delegator_address"`
+	ValidatorAddress string         `json:"validator_address"`
+	Shares           math.LegacyDec `json:"shares"`
+	ValidatorBond    bool           `json:"validator_bond"`
 }
 
 type queryValidatorsResponse struct {
@@ -146,15 +145,15 @@ type queryUnbondingDelegationsResponse struct {
 }
 
 type Validator struct {
-	OperatorAddress     string    `json:"operator_address"`
-	Jailed              bool      `json:"jailed"`
-	Status              string    `json:"status"`
-	Tokens              sdk.Int   `json:"tokens"`
-	DelegatorShares     sdk.Dec   `json:"delegator_shares"`
-	UnbondingHeight     int64     `json:"unbonding_height,string"`
-	UnbondingTime       time.Time `json:"unbonding_time"`
-	ValidatorBondShares sdk.Dec   `json:"validator_bond_shares"`
-	LiquidShares        sdk.Dec   `json:"liquid_shares"`
+	OperatorAddress     string         `json:"operator_address"`
+	Jailed              bool           `json:"jailed"`
+	Status              string         `json:"status"`
+	Tokens              math.Int       `json:"tokens"`
+	DelegatorShares     math.LegacyDec `json:"delegator_shares"`
+	UnbondingHeight     int64          `json:"unbonding_height,string"`
+	UnbondingTime       time.Time      `json:"unbonding_time"`
+	ValidatorBondShares math.LegacyDec `json:"validator_bond_shares"`
+	LiquidShares        math.LegacyDec `json:"liquid_shares"`
 }
 
 type UnbondingDelegation struct {
@@ -165,12 +164,12 @@ type UnbondingDelegation struct {
 }
 
 type UnbondingDelegationEntry struct {
-	CreationHeight          string    `json:"creation_height"`
-	CompletionTime          time.Time `json:"completion_time"`
-	InitialBalance          sdk.Int   `json:"initial_balance"`
-	Balance                 sdk.Int   `json:"balance"`
-	UnbondingID             string    `json:"unbonding_id"`
-	UnbondingOnHoldRefCount string    `json:"unbonding_on_hold_ref_count"`
-	ValidatorBondFactor     sdk.Dec   `json:"validator_bond_factor"`
-	GlobalLiquidStakingCap  sdk.Dec   `json:"global_liquid_staking_cap"`
+	CreationHeight          string         `json:"creation_height"`
+	CompletionTime          time.Time      `json:"completion_time"`
+	InitialBalance          math.Int       `json:"initial_balance"`
+	Balance                 math.Int       `json:"balance"`
+	UnbondingID             string         `json:"unbonding_id"`
+	UnbondingOnHoldRefCount string         `json:"unbonding_on_hold_ref_count"`
+	ValidatorBondFactor     math.LegacyDec `json:"validator_bond_factor"`
+	GlobalLiquidStakingCap  math.LegacyDec `json:"global_liquid_staking_cap"`
 }

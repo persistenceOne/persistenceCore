@@ -9,15 +9,15 @@ import (
 	"testing"
 	"time"
 
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	"github.com/strangelove-ventures/interchaintest/v7"
-	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v7/ibc"
-	"github.com/strangelove-ventures/interchaintest/v7/testutil"
+	"github.com/cosmos/interchaintest/v10"
+	"github.com/cosmos/interchaintest/v10/chain/cosmos"
+	"github.com/cosmos/interchaintest/v10/ibc"
+	"github.com/cosmos/interchaintest/v10/testutil"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 
@@ -77,7 +77,7 @@ func CosmosChainUpgradeTest(
 		Images: []ibc.DockerImage{{
 			Repository: PersistenceE2ERepo,
 			Version:    initialVersion,
-			UidGid:     PersistenceCoreImage.UidGid,
+			UIDGID:     PersistenceCoreImage.UIDGID,
 		}},
 		CoinDecimals:   &helpers.PersistenceCoinDecimals,
 		GasPrices:      fmt.Sprintf("0%s", helpers.PersistenceBondDenom),
@@ -146,7 +146,7 @@ func CosmosChainUpgradeTest(
 		broadcaster,
 		chainUser,
 		&govv1.MsgSubmitProposal{
-			InitialDeposit: []sdk.Coin{sdk.NewCoin(chain.Config().Denom, sdk.NewInt(500_000_000))},
+			InitialDeposit: []sdk.Coin{sdk.NewCoin(chain.Config().Denom, math.NewInt(500_000_000))},
 			Proposer:       chainUser.FormattedAddress(),
 			Title:          "Chain Upgrade 1",
 			Summary:        "First chain software upgrade",
@@ -158,7 +158,7 @@ func CosmosChainUpgradeTest(
 	upgradeTx, err := helpers.QueryProposalTx(context.Background(), chain.Nodes()[0], txResp.TxHash)
 	require.NoError(t, err, "error checking software upgrade tx")
 
-	proposalID, err := strconv.ParseInt(upgradeTx.ProposalID, 10, 64)
+	proposalID, err := strconv.ParseUint(upgradeTx.ProposalID, 10, 64)
 	require.NoError(t, err, "error parsing proposal id")
 	err = chain.VoteOnProposalAllValidators(ctx, proposalID, cosmos.ProposalVoteYes)
 	require.NoError(t, err, "failed to submit votes")

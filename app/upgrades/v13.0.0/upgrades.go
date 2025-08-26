@@ -1,16 +1,19 @@
 package v13_0_0
 
 import (
+	"context"
+
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/persistenceOne/persistenceCore/v13/app/upgrades"
 )
 
 func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.UpgradeHandler {
-	return func(ctx sdk.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
-		ctx.Logger().Info("Running upgrade handler")
-		ctx.Logger().Info("running module migrations...")
+	return func(ctx context.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
+		sdkCtx := sdk.UnwrapSDKContext(ctx)
+		sdkCtx.Logger().Info("Running upgrade handler")
+		sdkCtx.Logger().Info("running module migrations...")
 		return args.ModuleManager.RunMigrations(ctx, args.Configurator, vm)
 	}
 }

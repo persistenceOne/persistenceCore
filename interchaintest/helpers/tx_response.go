@@ -7,8 +7,8 @@ import (
 	retry "github.com/avast/retry-go/v4"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
+	"github.com/cosmos/interchaintest/v10/chain/cosmos"
 	"github.com/pkg/errors"
-	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 )
 
 // Tx contains some of Cosmos transaction details.
