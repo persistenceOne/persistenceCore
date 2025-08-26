@@ -102,7 +102,7 @@ func TestBondTokenize(t *testing.T) {
 	validator := helpers.QueryValidator(t, ctx, chainNode, validators[0].OperatorAddress)
 	require.Equal(t,
 		secondUserDelegationAmount.Int64(),
-		validator.ValidatorBondShares.TruncateInt().Int64(),
+		validator.ValidatorBondShares.TruncateInt64(),
 		"validator bond shares must match bonded amount",
 	)
 

@@ -96,11 +96,11 @@ func QueryUnbondingDelegation(
 
 	debugOutput(t, string(stdout))
 
-	var resp UnbondingDelegation
-	err = json.Unmarshal([]byte(stdout), &resp)
+	var resp UnbondingDelegationWrapper
+	err = json.Unmarshal(stdout, &resp)
 	require.NoError(t, err)
 
-	return resp
+	return resp.UnbondingDelegation
 }
 
 // QueryTotalLiquidStaked returns amount of tokens in liquid staking protocol globally (LSM, ICA, stkxprt)
@@ -163,6 +163,9 @@ type Validator struct {
 	LiquidShares        math.LegacyDec `json:"liquid_shares"`
 }
 
+type UnbondingDelegationWrapper struct {
+	UnbondingDelegation UnbondingDelegation `json:"unbond"`
+}
 type UnbondingDelegation struct {
 	DelegatorAddress string `json:"delegator_address"`
 	ValidatorAddress string `json:"validator_address"`
