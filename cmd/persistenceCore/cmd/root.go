@@ -87,7 +87,14 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			return server.InterceptConfigsPreRunHandler(cmd, customConfigTemplate, customAppConfig, customTMConfig)
 		},
 	}
+	// add keyring to autocli opts
+	autoCliOpts := tempApp.AutoCliOpts()
+	initClientCtx, _ = config.ReadFromClientConfig(initClientCtx)
+	autoCliOpts.ClientCtx = initClientCtx
 
+	if err := autoCliOpts.EnhanceRootCommand(rootCmd); err != nil {
+		panic(err)
+	}
 	initRootCmd(rootCmd, encodingConfig, tempApp)
 
 	return rootCmd, encodingConfig

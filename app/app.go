@@ -6,8 +6,11 @@
 package app
 
 import (
+	"cosmossdk.io/client/v2/autocli"
+	"cosmossdk.io/core/appmodule"
 	"encoding/json"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/codec/address"
 	"io"
 	stdlog "log"
 	"os"
@@ -193,8 +196,6 @@ func NewApplication(
 	)
 	app.simulationManager.RegisterStoreDecoders()
 
-	app.registerGRPCServices()
-
 	app.MountKVStores(app.GetKVStoreKey())
 	app.MountTransientStores(app.GetTransientStoreKey())
 	app.MountMemoryStores(app.GetMemoryStoreKey())
@@ -210,6 +211,8 @@ func NewApplication(
 	// app.setupPostHandler()
 	app.setupUpgradeHandlers(Upgrades)
 	app.setupUpgradeStoreLoaders(Upgrades)
+
+	app.registerGRPCServices()
 
 	app.ModuleBasicManager = module.NewBasicManagerFromManager(app.moduleManager, map[string]module.AppModuleBasic{})
 	// must be before Loading version
@@ -467,6 +470,28 @@ func (app *Application) RegisterTendermintService(clientCtx client.Context) {
 func (app *Application) RegisterNodeService(clientCtx client.Context, cfg config.Config) {
 	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter(), cfg)
 }
+
+// AutoCliOpts returns the autocli options for the app.
+func (app *Application) AutoCliOpts() autocli.AppOptions {
+	modules := make(map[string]appmodule.AppModule, 0)
+	for _, m := range app.moduleManager.Modules {
+		if moduleWithName, ok := m.(module.HasName); ok {
+			moduleName := moduleWithName.Name()
+			if appModule, ok := moduleWithName.(appmodule.AppModule); ok {
+				modules[moduleName] = appModule
+			}
+		}
+	}
+
+	return autocli.AppOptions{
+		Modules:               modules,
+		ModuleOptions:         runtimeservices.ExtractAutoCLIOptions(app.moduleManager.Modules),
+		AddressCodec:          address.NewBech32Codec(constants.Bech32PrefixAccAddr),
+		ValidatorAddressCodec: address.NewBech32Codec(constants.Bech32PrefixValAddr),
+		ConsensusAddressCodec: address.NewBech32Codec(constants.Bech32PrefixConsAddr),
+	}
+}
+
 func (app *Application) LoadHeight(height int64) error {
 	return app.BaseApp.LoadVersion(height)
 }
