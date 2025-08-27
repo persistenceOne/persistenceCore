@@ -34,7 +34,7 @@ chains.
 
 ## Installation Steps
 
-> Prerequisite: Go 1.23.6+ required. [ref](https://golang.org/doc/install)
+> Prerequisite: Go 1.23.11+ required. [ref](https://golang.org/doc/install)
 
 > Prerequisite: git. [ref](https://github.com/git/git)
 
