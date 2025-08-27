@@ -3,11 +3,12 @@ package app
 import (
 	"testing"
 
+	"cosmossdk.io/log"
 	"cosmossdk.io/math"
-	"github.com/cometbft/cometbft/libs/log"
 	tmtypes "github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
+	protov2 "google.golang.org/protobuf/proto"
 )
 
 func TestFeeDenomWhiltelistDecorator(t *testing.T) {
@@ -106,10 +107,12 @@ var _ sdk.FeeTx = (*mockFeeTx)(nil)
 
 type mockFeeTx struct{ fee sdk.Coins }
 
+func (m *mockFeeTx) GetMsgsV2() ([]protov2.Message, error) { return nil, nil }
+
 func (m *mockFeeTx) GetFee() sdk.Coins { return m.fee }
 func (m *mockFeeTx) GetGas() uint64    { return 1 }
 
-func (*mockFeeTx) FeeGranter() sdk.AccAddress { return nil }
-func (*mockFeeTx) FeePayer() sdk.AccAddress   { return nil }
-func (*mockFeeTx) GetMsgs() []sdk.Msg         { return nil }
-func (*mockFeeTx) ValidateBasic() error       { return nil }
+func (*mockFeeTx) FeeGranter() []byte   { return nil }
+func (*mockFeeTx) FeePayer() []byte     { return nil }
+func (*mockFeeTx) GetMsgs() []sdk.Msg   { return nil }
+func (*mockFeeTx) ValidateBasic() error { return nil }

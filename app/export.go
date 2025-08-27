@@ -1,6 +1,7 @@
 package app
 
 import (
+	storetypes "cosmossdk.io/store/types"
 	"fmt"
 	stdlog "log"
 
@@ -14,7 +15,7 @@ import (
 )
 
 func (app *Application) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string, modulesToExport []string) (servertypes.ExportedApp, error) {
-	context := app.NewContext(true, tmproto.Header{Height: app.LastBlockHeight()})
+	context := app.NewContextLegacy(true, tmproto.Header{Height: app.LastBlockHeight()})
 
 	height := app.LastBlockHeight() + 1
 	if forZeroHeight {
@@ -22,7 +23,10 @@ func (app *Application) ExportAppStateAndValidators(forZeroHeight bool, jailWhit
 		app.prepForZeroHeightGenesis(context, jailWhiteList)
 	}
 
-	genesisState := app.moduleManager.ExportGenesisForModules(context, app.appCodec, modulesToExport)
+	genesisState, err := app.moduleManager.ExportGenesisForModules(context, app.appCodec, modulesToExport)
+	if err != nil {
+		return servertypes.ExportedApp{}, err
+	}
 	applicationState, Error := codec.MarshalJSONIndent(app.legacyAmino, genesisState)
 
 	if Error != nil {
@@ -46,12 +50,23 @@ func (app *Application) prepForZeroHeightGenesis(context sdk.Context, jailWhiteL
 	/* Handle fee distribution state. */
 
 	// withdraw all validator commission
-	app.StakingKeeper.IterateValidators(context, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
-		_, _ = app.DistributionKeeper.WithdrawValidatorCommission(context, val.GetOperator())
+	err := app.StakingKeeper.IterateValidators(context, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
+		valBz, err := app.StakingKeeper.ValidatorAddressCodec().StringToBytes(val.GetOperator())
+		if err != nil {
+			panic(err)
+		}
+		_, _ = app.DistributionKeeper.WithdrawValidatorCommission(context, valBz)
 		return false
 	})
+	if err != nil {
+		panic(err)
+	}
 
-	delegations := app.StakingKeeper.GetAllDelegations(context)
+	delegations, err := app.StakingKeeper.GetAllDelegations(context)
+	if err != nil {
+		panic(err)
+	}
+
 	app.withdrawDelegationRewards(context, delegations)
 
 	app.DistributionKeeper.DeleteAllValidatorSlashEvents(context)
@@ -72,7 +87,7 @@ func (app *Application) prepForZeroHeightGenesis(context sdk.Context, jailWhiteL
 	// reset creation height for redelegations & unbonding delegations
 	app.resetCreationHeightForDelEntries(context)
 
-	if err := app.resetValidatorBondHeights(context, jailWhiteList); err != nil {
+	if err = app.resetValidatorBondHeights(context, jailWhiteList); err != nil {
 		app.Logger().Error(err.Error())
 		return
 	}
@@ -80,14 +95,20 @@ func (app *Application) prepForZeroHeightGenesis(context sdk.Context, jailWhiteL
 	/* Handle slashing state. */
 
 	// reset start height on signing infos
-	app.SlashingKeeper.IterateValidatorSigningInfos(
+	err = app.SlashingKeeper.IterateValidatorSigningInfos(
 		context,
 		func(validatorConsAddress sdk.ConsAddress, validatorSigningInfo slashingtypes.ValidatorSigningInfo) (stop bool) {
 			validatorSigningInfo.StartHeight = 0
-			app.SlashingKeeper.SetValidatorSigningInfo(context, validatorConsAddress, validatorSigningInfo)
+			err = app.SlashingKeeper.SetValidatorSigningInfo(context, validatorConsAddress, validatorSigningInfo)
+			if err != nil {
+				panic(err)
+			}
 			return false
 		},
 	)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (app *Application) withdrawDelegationRewards(context sdk.Context, delegations []stakingtypes.Delegation) {
@@ -110,18 +131,34 @@ func (app *Application) withdrawDelegationRewards(context sdk.Context, delegatio
 }
 
 func (app *Application) reinitializeValidators(context sdk.Context) {
-	app.StakingKeeper.IterateValidators(context, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
-		scraps := app.DistributionKeeper.GetValidatorOutstandingRewardsCoins(context, val.GetOperator())
-		feePool := app.DistributionKeeper.GetFeePool(context)
+	err := app.StakingKeeper.IterateValidators(context, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
+		valBz, err := app.StakingKeeper.ValidatorAddressCodec().StringToBytes(val.GetOperator())
+		if err != nil {
+			panic(err)
+		}
+		scraps, err := app.DistributionKeeper.GetValidatorOutstandingRewardsCoins(context, valBz)
+		if err != nil {
+			panic(err)
+		}
+		feePool, err := app.DistributionKeeper.FeePool.Get(context)
+		if err != nil {
+			panic(err)
+		}
 		feePool.CommunityPool = feePool.CommunityPool.Add(scraps...)
-		app.DistributionKeeper.SetFeePool(context, feePool)
+		err = app.DistributionKeeper.FeePool.Set(context, feePool)
+		if err != nil {
+			panic(err)
+		}
 
-		if err := app.DistributionKeeper.Hooks().AfterValidatorCreated(context, val.GetOperator()); err != nil {
+		if err := app.DistributionKeeper.Hooks().AfterValidatorCreated(context, valBz); err != nil {
 			// never called as AfterValidatorCreated always returns nil
 			panic(err)
 		}
 		return false
 	})
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (app *Application) reinitializeDelegations(context sdk.Context, delegations []stakingtypes.Delegation) {
@@ -150,22 +187,34 @@ func (app *Application) reinitializeDelegations(context sdk.Context, delegations
 
 func (app *Application) resetCreationHeightForDelEntries(context sdk.Context) {
 	// iterate through redelegations, reset creation height
-	app.StakingKeeper.IterateRedelegations(context, func(_ int64, redelegation stakingtypes.Redelegation) (stop bool) {
+	err := app.StakingKeeper.IterateRedelegations(context, func(_ int64, redelegation stakingtypes.Redelegation) (stop bool) {
 		for i := range redelegation.Entries {
 			redelegation.Entries[i].CreationHeight = 0
 		}
-		app.StakingKeeper.SetRedelegation(context, redelegation)
+		err := app.StakingKeeper.SetRedelegation(context, redelegation)
+		if err != nil {
+			panic(err)
+		}
 		return false
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	// iterate through unbonding delegations, reset creation height
-	app.StakingKeeper.IterateUnbondingDelegations(context, func(_ int64, unbondingDelegation stakingtypes.UnbondingDelegation) (stop bool) {
+	err = app.StakingKeeper.IterateUnbondingDelegations(context, func(_ int64, unbondingDelegation stakingtypes.UnbondingDelegation) (stop bool) {
 		for i := range unbondingDelegation.Entries {
 			unbondingDelegation.Entries[i].CreationHeight = 0
 		}
-		app.StakingKeeper.SetUnbondingDelegation(context, unbondingDelegation)
+		err = app.StakingKeeper.SetUnbondingDelegation(context, unbondingDelegation)
+		if err != nil {
+			panic(err)
+		}
 		return false
 	})
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (app *Application) resetValidatorBondHeights(context sdk.Context, jailWhiteList []string) error {
@@ -175,14 +224,14 @@ func (app *Application) resetValidatorBondHeights(context sdk.Context, jailWhite
 	// Iterate through validators by power descending, reset bond heights, and
 	// update bond intra-tx counters.
 	store := context.KVStore(app.GetKVStoreKey()[stakingtypes.StoreKey])
-	iter := sdk.KVStoreReversePrefixIterator(store, stakingtypes.ValidatorsKey)
+	iter := storetypes.KVStoreReversePrefixIterator(store, stakingtypes.ValidatorsKey)
 	counter := int16(0)
 
 	for ; iter.Valid(); iter.Next() {
 		addr := sdk.ValAddress(stakingtypes.AddressFromValidatorsKey(iter.Key()))
-		validator, found := app.StakingKeeper.GetValidator(context, addr)
+		validator, err := app.StakingKeeper.GetValidator(context, addr)
 
-		if !found {
+		if err != nil {
 			panic("Validator not found!")
 		}
 

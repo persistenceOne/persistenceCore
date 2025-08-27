@@ -1,43 +1,40 @@
 package keepers
 
 import (
+	storetypes "cosmossdk.io/store/types"
+	evidencetypes "cosmossdk.io/x/evidence/types"
+	"cosmossdk.io/x/feegrant"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/CosmWasm/wasmd/x/wasm"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	consensusparamstypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
-	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
-	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward/types"
-	ibchookstypes "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7/types"
-	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
-	icahosttypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/types"
-	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
-	epochstypes "github.com/persistenceOne/persistence-sdk/v3/x/epochs/types"
-	"github.com/persistenceOne/persistence-sdk/v3/x/halving"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v3/x/liquidstake/types"
+	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/types"
+	ibchookstypes "github.com/cosmos/ibc-apps/modules/ibc-hooks/v10/types"
+	icacontrollertypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/types"
+	icahosttypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/host/types"
+	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
+	epochstypes "github.com/persistenceOne/persistence-sdk/v4/x/epochs/types"
+	"github.com/persistenceOne/persistence-sdk/v4/x/halving"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v4/x/liquidstake/types"
 )
 
 func (appKeepers *AppKeepers) GenerateKeys() {
 	// Define what keys will be used in the cosmos-sdk key/value store.
 	// Cosmos-SDK modules each have a "key" that allows the application to reference what they've stored on the chain.
-	appKeepers.keys = sdk.NewKVStoreKeys(
+	appKeepers.keys = storetypes.NewKVStoreKeys(
 		authtypes.StoreKey,
 		authzkeeper.StoreKey,
 		banktypes.StoreKey,
-		capabilitytypes.StoreKey,
 		consensusparamstypes.StoreKey,
 		crisistypes.StoreKey,
 		distributiontypes.StoreKey,
@@ -62,10 +59,9 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 	)
 
 	// Define transient store keys
-	appKeepers.tkeys = sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
+	appKeepers.tkeys = storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
 
 	// MemKeys are for information that is stored only in RAM.
-	appKeepers.memKeys = sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
 }
 
 func (appKeepers *AppKeepers) GetKVStoreKey() map[string]*storetypes.KVStoreKey {

@@ -2,20 +2,23 @@ package helpers
 
 import (
 	"context"
+	"cosmossdk.io/math"
 	"encoding/json"
 	"fmt"
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
+	"github.com/cosmos/interchaintest/v10/chain/cosmos"
 	"github.com/stretchr/testify/require"
 )
 
+type TallyWrapper struct {
+	Tally Tally `json:"tally"`
+}
 type Tally struct {
-	AbstainCount    sdk.Int `json:"abstain_count"`
-	NoCount         sdk.Int `json:"no_count"`
-	NoWithVetoCount sdk.Int `json:"no_with_veto_count"`
-	YesCount        sdk.Int `json:"yes_count"`
+	AbstainCount    math.Int `json:"abstain_count"`
+	NoCount         math.Int `json:"no_count"`
+	NoWithVetoCount math.Int `json:"no_with_veto_count"`
+	YesCount        math.Int `json:"yes_count"`
 }
 
 const (
@@ -32,11 +35,11 @@ func QueryProposalTally(t *testing.T, ctx context.Context, chainNode *cosmos.Cha
 
 	debugOutput(t, string(stdout))
 
-	var tally Tally
-	err = json.Unmarshal([]byte(stdout), &tally)
+	var tally TallyWrapper
+	err = json.Unmarshal(stdout, &tally)
 	require.NoError(t, err)
 
-	return tally
+	return tally.Tally
 }
 
 // LegacyTextProposal submits a text governance proposal to the chain.

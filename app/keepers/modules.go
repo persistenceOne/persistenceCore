@@ -1,18 +1,18 @@
 package keepers
 
 import (
+	"cosmossdk.io/x/evidence"
+	feegrantmodule "cosmossdk.io/x/feegrant/module"
+	"cosmossdk.io/x/upgrade"
 	"github.com/CosmWasm/wasmd/x/wasm"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
 	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/cosmos/cosmos-sdk/x/capability"
 	"github.com/cosmos/cosmos-sdk/x/consensus"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	"github.com/cosmos/cosmos-sdk/x/distribution"
-	"github.com/cosmos/cosmos-sdk/x/evidence"
-	feegrantmodule "github.com/cosmos/cosmos-sdk/x/feegrant/module"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/cosmos/cosmos-sdk/x/gov"
@@ -23,36 +23,19 @@ import (
 	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	"github.com/cosmos/cosmos-sdk/x/staking"
-	"github.com/cosmos/cosmos-sdk/x/upgrade"
-	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
-	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v7/packetforward"
-	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v7"
-	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
-	ibcfee "github.com/cosmos/ibc-go/v7/modules/apps/29-fee"
-	"github.com/cosmos/ibc-go/v7/modules/apps/transfer"
-	ibc "github.com/cosmos/ibc-go/v7/modules/core"
-	ibcclient "github.com/cosmos/ibc-go/v7/modules/core/02-client/client"
-	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
-	"github.com/persistenceOne/persistence-sdk/v3/x/epochs"
-	"github.com/persistenceOne/persistence-sdk/v3/x/halving"
-	"github.com/persistenceOne/persistence-sdk/v3/x/interchainquery"
-	"github.com/persistenceOne/persistence-sdk/v3/x/oracle"
-	"github.com/persistenceOne/pstake-native/v3/x/liquidstake"
-	"github.com/persistenceOne/pstake-native/v3/x/liquidstakeibc"
-	"github.com/persistenceOne/pstake-native/v3/x/lscosmos"
-	"github.com/persistenceOne/pstake-native/v3/x/ratesync"
-	buildermodule "github.com/skip-mev/pob/x/builder"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward"
+	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v10"
+	ica "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts"
+	"github.com/cosmos/ibc-go/v10/modules/apps/transfer"
+	ibc "github.com/cosmos/ibc-go/v10/modules/core"
+	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
+	"github.com/persistenceOne/persistence-sdk/v4/x/epochs"
+	"github.com/persistenceOne/persistence-sdk/v4/x/halving"
+	"github.com/persistenceOne/pstake-native/v4/x/liquidstake"
 )
 
 var DeprecatedAppModuleBasics = []module.AppModuleBasic{
-	buildermodule.AppModuleBasic{},
 	groupmodule.AppModuleBasic{},
-	lscosmos.AppModuleBasic{},
-	liquidstakeibc.AppModuleBasic{},
-	ratesync.AppModuleBasic{},
-	interchainquery.AppModuleBasic{},
-	ibcfee.AppModuleBasic{},
-	oracle.AppModuleBasic{},
 }
 
 // AppModuleBasics defines the module BasicManager is in charge of setting up basic,
@@ -62,17 +45,12 @@ var AppModuleBasics = append([]module.AppModuleBasic{
 	auth.AppModuleBasic{},
 	genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
 	bank.AppModuleBasic{},
-	capability.AppModuleBasic{},
 	staking.AppModuleBasic{},
 	mint.AppModuleBasic{},
 	distribution.AppModuleBasic{},
 	gov.NewAppModuleBasic(
 		[]govclient.ProposalHandler{
 			paramsclient.ProposalHandler,
-			upgradeclient.LegacyProposalHandler,
-			upgradeclient.LegacyCancelProposalHandler,
-			ibcclient.UpdateClientProposalHandler,
-			ibcclient.UpgradeProposalHandler,
 		},
 	),
 	params.AppModuleBasic{},

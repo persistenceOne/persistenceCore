@@ -5,13 +5,17 @@ import (
 	"io"
 	"os"
 
-	rosettaCmd "cosmossdk.io/tools/rosetta/cmd"
+	"github.com/cosmos/cosmos-sdk/client/snapshot"
+	"github.com/cosmos/cosmos-sdk/testutil/sims"
+	"github.com/persistenceOne/persistenceCore/v13/app/constants"
+
+	"cosmossdk.io/log"
+	confixcmd "cosmossdk.io/tools/confix/cmd"
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	dbm "github.com/cometbft/cometbft-db"
-	tmcfg "github.com/cometbft/cometbft/config"
-	tendermintclient "github.com/cometbft/cometbft/libs/cli"
-	"github.com/cometbft/cometbft/libs/log"
+	cmtcfg "github.com/cometbft/cometbft/config"
+	cmtcli "github.com/cometbft/cometbft/libs/cli"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/cosmos/cosmos-sdk/client/debug"
@@ -29,6 +33,7 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
+	rosettaCmd "github.com/cosmos/rosetta/cmd"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
@@ -42,6 +47,7 @@ const flagInvalidCheckPeriod = "invalid-check-period"
 var invalidCheckPeriod uint
 
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
+	setConfig()
 	encodingConfig := app.MakeEncodingConfig()
 	initClientCtx := client.Context{}.
 		WithCodec(encodingConfig.Codec).
@@ -54,12 +60,17 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		WithHomeDir(app.DefaultNodeHome).
 		WithViper("")
 
+	tempApp := app.NewApplication(log.NewNopLogger(), dbm.NewMemDB(), nil, true, sims.EmptyAppOptions{}, []wasm.Option{})
+
 	cobra.EnableCommandSorting = false
 
 	rootCmd := &cobra.Command{
 		Use:   "persistenceCore",
 		Short: "Persistence Hub Node Daemon (server)",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
+			cmd.SetOut(cmd.OutOrStdout())
+			cmd.SetErr(cmd.ErrOrStderr())
+
 			initClientCtx, err := client.ReadPersistentCommandFlags(initClientCtx, cmd.Flags())
 			if err != nil {
 				return err
@@ -74,15 +85,21 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 				return err
 			}
 
-			customTMConfig := initTendermintConfig()
+			customTMConfig := initCometbftConfig()
 			customConfigTemplate, customAppConfig := initAppConfig()
 
 			return server.InterceptConfigsPreRunHandler(cmd, customConfigTemplate, customAppConfig, customTMConfig)
 		},
 	}
+	// add keyring to autocli opts
+	autoCliOpts := tempApp.AutoCliOpts()
+	initClientCtx, _ = config.ReadFromClientConfig(initClientCtx)
+	autoCliOpts.ClientCtx = initClientCtx
 
-	initRootCmd(rootCmd, encodingConfig)
-
+	initRootCmd(rootCmd, encodingConfig, tempApp)
+	if err := autoCliOpts.EnhanceRootCommand(rootCmd); err != nil {
+		panic(err)
+	}
 	return rootCmd, encodingConfig
 }
 
@@ -90,17 +107,17 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 func setConfig() {
 	cfg := sdk.GetConfig()
 
-	cfg.SetBech32PrefixForAccount(app.Bech32PrefixAccAddr, app.Bech32PrefixAccPub)
-	cfg.SetBech32PrefixForValidator(app.Bech32PrefixValAddr, app.Bech32PrefixValPub)
-	cfg.SetBech32PrefixForConsensusNode(app.Bech32PrefixConsAddr, app.Bech32PrefixConsPub)
-	cfg.SetCoinType(app.CoinType)
-	cfg.SetPurpose(app.Purpose)
+	cfg.SetBech32PrefixForAccount(constants.Bech32PrefixAccAddr, constants.Bech32PrefixAccPub)
+	cfg.SetBech32PrefixForValidator(constants.Bech32PrefixValAddr, constants.Bech32PrefixValPub)
+	cfg.SetBech32PrefixForConsensusNode(constants.Bech32PrefixConsAddr, constants.Bech32PrefixConsPub)
+	cfg.SetCoinType(constants.CoinType)
+	cfg.SetPurpose(constants.Purpose)
 
 	cfg.Seal()
 }
 
-func initTendermintConfig() *tmcfg.Config {
-	cfg := tmcfg.DefaultConfig()
+func initCometbftConfig() *cmtcfg.Config {
+	cfg := cmtcfg.DefaultConfig()
 
 	// these values put a higher strain on node memory
 	// cfg.P2P.MaxNumInboundPeers = 100
@@ -117,16 +134,16 @@ func initAppConfig() (string, interface{}) {
 	}
 }
 
-func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
-	setConfig()
+func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig, tempApp *app.Application) {
 
 	rootCmd.AddCommand(
 		genutilcli.InitCmd(app.ModuleBasics, app.DefaultNodeHome),
-		tendermintclient.NewCompletionCmd(rootCmd, true),
+		cmtcli.NewCompletionCmd(rootCmd, true),
 		debug.Cmd(),
 		version.NewVersionCommand(),
-		config.Cmd(),
-		pruning.PruningCmd(newApp),
+		confixcmd.ConfigCommand(),
+		snapshot.Cmd(newApp),
+		pruning.Cmd(newApp, app.DefaultNodeHome),
 		NewTestnetCmd(app.ModuleBasics, banktypes.GenesisBalancesIterator{}),
 	)
 
@@ -141,11 +158,10 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 
 	// add keybase, auxiliary RPC, query, and tx child commands
 	rootCmd.AddCommand(
-		rpc.StatusCommand(),
 		genesisCommand(encodingConfig),
 		queryCommand(),
-		txCommand(),
-		keys.Commands(app.DefaultNodeHome),
+		txCommand(tempApp),
+		keys.Commands(),
 	)
 
 	// add rosetta
@@ -158,9 +174,9 @@ func addModuleInitFlags(startCmd *cobra.Command) {
 }
 
 func genesisCommand(encodingConfig params.EncodingConfig, cmds ...*cobra.Command) *cobra.Command {
-	cmd := genutilcli.GenesisCoreCommand(encodingConfig.TxConfig, app.ModuleBasics, app.DefaultNodeHome)
-	for _, sub_cmd := range cmds {
-		cmd.AddCommand(sub_cmd)
+	cmd := genutilcli.Commands(encodingConfig.TxConfig, app.ModuleBasics, app.DefaultNodeHome)
+	for _, subCmd := range cmds {
+		cmd.AddCommand(subCmd)
 	}
 	return cmd
 }
@@ -176,9 +192,8 @@ func queryCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		authcmd.GetAccountCmd(),
 		rpc.ValidatorCommand(),
-		rpc.BlockCommand(),
+		server.QueryBlockCmd(),
 		authcmd.QueryTxsByEventsCmd(),
 		authcmd.QueryTxCmd(),
 	)
@@ -189,7 +204,7 @@ func queryCommand() *cobra.Command {
 	return cmd
 }
 
-func txCommand() *cobra.Command {
+func txCommand(tempApp *app.Application) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                        "tx",
 		Short:                      "Transactions subcommands",
@@ -208,10 +223,11 @@ func txCommand() *cobra.Command {
 		authcmd.GetBroadcastCommand(),
 		authcmd.GetEncodeCommand(),
 		authcmd.GetDecodeCommand(),
+		authcmd.GetSimulateCmd(),
 		flags.LineBreak,
 	)
 
-	app.ModuleBasics.AddTxCommands(cmd)
+	tempApp.ModuleBasicManager.AddTxCommands(cmd)
 	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
 
 	return cmd

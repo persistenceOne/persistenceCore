@@ -12,11 +12,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v3/x/liquidstake/types"
-	"github.com/strangelove-ventures/interchaintest/v7"
-	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v7/ibc"
-	"github.com/strangelove-ventures/interchaintest/v7/testutil"
+	"github.com/cosmos/interchaintest/v10"
+	"github.com/cosmos/interchaintest/v10/chain/cosmos"
+	"github.com/cosmos/interchaintest/v10/ibc"
+	"github.com/cosmos/interchaintest/v10/testutil"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v4/x/liquidstake/types"
 	"github.com/stretchr/testify/require"
 
 	"github.com/persistenceOne/persistenceCore/v13/interchaintest/helpers"
@@ -116,7 +116,7 @@ func TestPauseLiquidStakeStkXPRT(t *testing.T) {
 		broadcaster,
 		firstUser,
 		&govv1.MsgSubmitProposal{
-			InitialDeposit: []sdk.Coin{sdk.NewCoin(chain.Config().Denom, sdk.NewInt(500_000_000))},
+			InitialDeposit: []sdk.Coin{sdk.NewCoin(chain.Config().Denom, math.NewInt(500_000_000))},
 			Proposer:       firstUser.FormattedAddress(),
 			Title:          "LiquidStake Params Update",
 			Summary:        "Sets params for liquidstake",
@@ -128,7 +128,7 @@ func TestPauseLiquidStakeStkXPRT(t *testing.T) {
 	upgradeTx, err := helpers.QueryProposalTx(context.Background(), chain.Nodes()[0], txResp.TxHash)
 	require.NoError(t, err, "error checking proposal tx")
 
-	proposalID, err := strconv.ParseInt(upgradeTx.ProposalID, 10, 64)
+	proposalID, err := strconv.ParseUint(upgradeTx.ProposalID, 10, 64)
 	require.NoError(t, err, "error parsing proposal id")
 
 	err = chain.VoteOnProposalAllValidators(ctx, proposalID, cosmos.ProposalVoteYes)
@@ -170,7 +170,7 @@ func TestPauseLiquidStakeStkXPRT(t *testing.T) {
 
 	// Liquid stake XPRT from the first user (5 XPRT)
 
-	firstUserLiquidStakeAmount := sdk.NewInt(5_000_000)
+	firstUserLiquidStakeAmount := math.NewInt(5_000_000)
 	firstUserLiquidStakeCoins := sdk.NewCoin(testDenom, firstUserLiquidStakeAmount)
 	_, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
 		"liquidstake", "liquid-stake", firstUserLiquidStakeCoins.String(),

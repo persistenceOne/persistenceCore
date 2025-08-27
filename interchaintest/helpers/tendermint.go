@@ -6,7 +6,7 @@ import (
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 )
 
-// From github.com/strangelove-ventures/interchaintest/v7/chain/internal/tendermint
+// From github.com/cosmos/interchaintest/v10/chain/internal/tendermint
 // Cannot import directly because it's internal.
 
 // tmAttributeValue returns an event attribute value given the eventType and attribute key tuple.

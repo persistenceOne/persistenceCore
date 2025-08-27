@@ -8,12 +8,11 @@ import (
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	testutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
-	ibclocalhost "github.com/cosmos/ibc-go/v7/modules/light-clients/09-localhost"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v3/x/liquidstake/types"
-	interchaintest "github.com/strangelove-ventures/interchaintest/v7"
-	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v7/ibc"
-	"github.com/strangelove-ventures/interchaintest/v7/testreporter"
+	interchaintest "github.com/cosmos/interchaintest/v10"
+	"github.com/cosmos/interchaintest/v10/chain/cosmos"
+	"github.com/cosmos/interchaintest/v10/ibc"
+	"github.com/cosmos/interchaintest/v10/testreporter"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v4/x/liquidstake/types"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 
@@ -28,7 +27,7 @@ var (
 	PersistenceCoreImage = ibc.DockerImage{
 		Repository: "persistence",
 		Version:    "local",
-		UidGid:     "1025:1025",
+		UIDGID:     "1025:1025",
 	}
 
 	defaultGenesisOverridesKV = []cosmos.GenesisKV{
@@ -42,14 +41,6 @@ var (
 		},
 		{
 			Key:   "app_state.gov.params.min_deposit.0.denom",
-			Value: helpers.PersistenceBondDenom,
-		},
-		{
-			Key:   "app_state.builder.params.reserve_fee.denom",
-			Value: helpers.PersistenceBondDenom,
-		},
-		{
-			Key:   "app_state.builder.params.min_bid_increment.denom",
 			Value: helpers.PersistenceBondDenom,
 		},
 	}
@@ -76,7 +67,7 @@ var (
 	fastVotingGenesisOverridesKV = []cosmos.GenesisKV{
 		{
 			Key:   "app_state.gov.params.voting_period",
-			Value: "5s",
+			Value: "10s",
 		},
 		{
 			Key:   "app_state.gov.params.max_deposit_period",
@@ -95,13 +86,12 @@ var (
 	genesisWalletAmount = math.NewInt(10_000_000)
 )
 
-// persistenceEncoding registers the persistenceCore specific module codecs so that the associated types and msgs
+// PersistenceEncoding registers the persistenceCore specific module codecs so that the associated types and msgs
 // will be supported when writing to the blocksdb sqlite database.
-func persistenceEncoding() *testutil.TestEncodingConfig {
+func PersistenceEncoding() *testutil.TestEncodingConfig {
 	cfg := cosmos.DefaultEncoding()
 
 	// register custom types
-	ibclocalhost.RegisterInterfaces(cfg.InterfaceRegistry)
 	wasmtypes.RegisterInterfaces(cfg.InterfaceRegistry)
 	liquidstaketypes.RegisterInterfaces(cfg.InterfaceRegistry)
 
@@ -129,7 +119,7 @@ func persistenceChainConfig(
 		TrustingPeriod:      "112h",
 		NoHostMount:         false,
 		ConfigFileOverrides: nil,
-		EncodingConfig:      persistenceEncoding(),
+		EncodingConfig:      PersistenceEncoding(),
 		ModifyGenesis:       cosmos.ModifyGenesis(genesisOverrides),
 
 		Images: []ibc.DockerImage{

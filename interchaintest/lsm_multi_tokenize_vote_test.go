@@ -8,8 +8,8 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/strangelove-ventures/interchaintest/v7"
-	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
+	"github.com/cosmos/interchaintest/v10"
+	"github.com/cosmos/interchaintest/v10/chain/cosmos"
 	"github.com/stretchr/testify/require"
 
 	"github.com/persistenceOne/persistenceCore/v13/interchaintest/helpers"
@@ -53,7 +53,7 @@ func TestMultiTokenizeVote(t *testing.T) {
 	require.Len(t, validators, validatorsCount, "validator returned must match count of validators created")
 
 	// Bond first user
-	firstUserBondAmount := sdk.NewInt(100000)
+	firstUserBondAmount := math.NewInt(100000)
 	firstUserBondCoins := sdk.NewCoin(testDenom, firstUserBondAmount)
 	_, err := chainNode.ExecTx(ctx, firstUser.KeyName(),
 		"staking", "delegate", validators[0].OperatorAddress, firstUserBondCoins.String(),
@@ -62,7 +62,7 @@ func TestMultiTokenizeVote(t *testing.T) {
 	require.NoError(t, err)
 
 	// Bond second user
-	secondUserBondAmount := sdk.NewInt(1)
+	secondUserBondAmount := math.NewInt(1)
 	secondUserBondCoins := sdk.NewCoin(testDenom, secondUserBondAmount)
 	_, err = chainNode.ExecTx(ctx, secondUser.KeyName(),
 		"staking", "delegate", validators[0].OperatorAddress, secondUserBondCoins.String(),
@@ -97,7 +97,7 @@ func TestMultiTokenizeVote(t *testing.T) {
 	proposalTx, err := helpers.QueryProposalTx(ctx, chainNode, proposalTxHash)
 	require.NoError(t, err, "error reading text proposal result")
 
-	proposalID, err := strconv.ParseInt(proposalTx.ProposalID, 10, 64)
+	proposalID, err := strconv.ParseUint(proposalTx.ProposalID, 10, 64)
 	require.NoError(t, err, "error parsing proposal id")
 
 	_, err = cosmos.PollForProposalStatus(ctx, chain, height, height+10, proposalID, govv1beta1.StatusVotingPeriod)

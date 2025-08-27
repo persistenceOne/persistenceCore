@@ -7,16 +7,6 @@
   },
   "apis": [
     {
-      "url": "./tmp-swagger-gen/pstake/liquidstakeibc/v1beta1/query.swagger.json",
-      "operationIds": {
-        "rename": {
-          "Params": "LiquidstakeIBCParams",
-          "Deposits": "LiquidstakeIBCDeposits",
-          "Redelegations": "LiquidstakeIBCRedelegations"
-        }
-      }
-    },
-    {
       "url": "./tmp-swagger-gen/pstake/liquidstake/v1beta1/query.swagger.json",
       "operationIds": {
         "rename": {
@@ -25,19 +15,10 @@
       }
     },
     {
-      "url": "./tmp-swagger-gen/pstake/ratesync/v1beta1/query.swagger.json",
-      "operationIds": {
-        "rename": {
-          "Params": "RateSyncParams",
-          "HostChain": "RateSyncHostChain"
-        }
-      }
-    },
-    {
       "url": "./tmp-swagger-gen/persistence/epochs/v1beta1/query.swagger.json",
       "operationIds": {
         "rename": {
-          "Params": "EpochsParams",
+          "Params": "EpochsParams"
         }
       }
     },
@@ -45,15 +26,7 @@
       "url": "./tmp-swagger-gen/persistence/halving/v1beta1/query.swagger.json",
       "operationIds": {
         "rename": {
-          "Params": "HalvingParams",
-        }
-      }
-    },
-    {
-      "url": "./tmp-swagger-gen/persistence/interchainquery/v1beta1/query.swagger.json",
-      "operationIds": {
-        "rename": {
-          "Params": "ICQParams",
+          "Params": "HalvingParams"
         }
       }
     },
@@ -196,25 +169,6 @@
       }
     },
     {
-      "url": "./tmp-swagger-gen/cosmos/nft/v1beta1/query.swagger.json",
-      "operationIds": {
-        "rename": {
-          "Params": "NftParams",
-          "Balance": "NftBalance"
-        }
-      }
-    },
-    {
-      "url": "./tmp-swagger-gen/cosmos/group/v1/query.swagger.json",
-      "operationIds": {
-        "rename": {
-          "Params": "GroupParams",
-          "Proposal": "GroupProposal",
-          "TallyResult": "GroupTallyResult"
-        }
-      }
-    },
-    {
       "url": "./tmp-swagger-gen/cosmos/consensus/v1/query.swagger.json",
       "operationIds": {
         "rename": {
@@ -247,14 +201,6 @@
       }
     },
     {
-      "url": "./tmp-swagger-gen/ibc/applications/fee/v1/query.swagger.json",
-      "operationIds": {
-        "rename": {
-          "Params": "FeeParams"
-        }
-      }
-    },
-    {
       "url": "./tmp-swagger-gen/ibc/core/client/v1/query.swagger.json",
       "operationIds": {
         "rename": {
@@ -275,22 +221,6 @@
       "operationIds": {
         "rename": {
           "Params": "ChannelParams"
-        }
-      }
-    },
-    {
-      "url": "./tmp-swagger-gen/packetforward/v1/query.swagger.json",
-      "operationIds": {
-        "rename": {
-          "Params": "PFMParams"
-        }
-      }
-    },
-    {
-      "url": "./tmp-swagger-gen/pob/builder/v1/query.swagger.json",
-      "operationIds": {
-        "rename": {
-          "Params": "POBParams"
         }
       }
     }

@@ -275,7 +275,7 @@ ictest-ibchooks: rm-testcache
 	cd interchaintest && go test -race -v -run TestPersistenceIBCHooks .
 
 ictest-pfm: rm-testcache
-	cd interchaintest && go test -race -v -run TestPacketForwardMiddlewareRouter .
+	cd interchaintest && go test -race -v -run TestPacketForwardMiddleware .
 
 # Executes a chain upgrade test via interchaintest
 ictest-upgrade: rm-testcache

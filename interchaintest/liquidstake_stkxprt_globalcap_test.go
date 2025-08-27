@@ -9,10 +9,10 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v3/x/liquidstake/types"
-	"github.com/strangelove-ventures/interchaintest/v7"
-	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v7/testutil"
+	"github.com/cosmos/interchaintest/v10"
+	"github.com/cosmos/interchaintest/v10/chain/cosmos"
+	"github.com/cosmos/interchaintest/v10/testutil"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v4/x/liquidstake/types"
 	"github.com/stretchr/testify/require"
 	"strconv"
 	"testing"
@@ -127,7 +127,7 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 		broadcaster,
 		firstUser,
 		&govv1.MsgSubmitProposal{
-			InitialDeposit: []sdk.Coin{sdk.NewCoin(chain.Config().Denom, sdk.NewInt(500_000_000))},
+			InitialDeposit: []sdk.Coin{sdk.NewCoin(chain.Config().Denom, math.NewInt(500_000_000))},
 			Proposer:       firstUser.FormattedAddress(),
 			Title:          "LiquidStake Params Update",
 			Summary:        "Sets params for liquidstake",
@@ -139,8 +139,13 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	upgradeTx, err := helpers.QueryProposalTx(context.Background(), chain.Nodes()[0], txResp.TxHash)
 	require.NoError(t, err, "error checking proposal tx")
 
-	proposalID, err := strconv.ParseInt(upgradeTx.ProposalID, 10, 64)
+	proposalID, err := strconv.ParseUint(upgradeTx.ProposalID, 10, 64)
 	require.NoError(t, err, "error parsing proposal id")
+
+	proposal, err := chain.GovQueryProposalV1(ctx, proposalID)
+	require.NoError(t, err, "error getting proposal")
+	t.Log(proposal)
+	require.Equal(t, govv1.StatusVotingPeriod, proposal.Status)
 
 	err = chain.VoteOnProposalAllValidators(ctx, proposalID, cosmos.ProposalVoteYes)
 	require.NoError(t, err, "failed to submit votes")
@@ -174,7 +179,7 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 
 	// Liquid stake XPRT from the first user (10% of 20M, so 5M XPRT hits the cap)
 
-	firstUserLiquidStakeAmount := sdk.NewInt(5_000_000_000_000)
+	firstUserLiquidStakeAmount := math.NewInt(5_000_000_000_000)
 	firstUserLiquidStakeCoins := sdk.NewCoin(testDenom, firstUserLiquidStakeAmount)
 	_, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
 		"liquidstake", "liquid-stake", firstUserLiquidStakeCoins.String(),
@@ -184,7 +189,7 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	require.ErrorContains(t, err, "delegation or tokenization exceeds the global cap")
 
 	// Retry with 2M XPRT (10%)
-	firstUserLiquidStakeAmount = sdk.NewInt(2_000_000_000_000)
+	firstUserLiquidStakeAmount = math.NewInt(2_000_000_000_000)
 	firstUserLiquidStakeCoins = sdk.NewCoin(testDenom, firstUserLiquidStakeAmount)
 	txHash, err := chainNode.ExecTx(ctx, firstUser.KeyName(),
 		"liquidstake", "liquid-stake", firstUserLiquidStakeCoins.String(),
@@ -214,7 +219,7 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 
 	// try to stake 300k XPRT more
 
-	firstUserLiquidStakeAmount = sdk.NewInt(300_000_000_000)
+	firstUserLiquidStakeAmount = math.NewInt(300_000_000_000)
 	firstUserLiquidStakeCoins = sdk.NewCoin(testDenom, firstUserLiquidStakeAmount)
 	_, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
 		"liquidstake", "liquid-stake", firstUserLiquidStakeCoins.String(),
@@ -224,7 +229,7 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	require.ErrorContains(t, err, "delegation or tokenization exceeds the global cap")
 
 	// make some room for 300k XPRT more
-	firstUserLiquidUnstakeAmount := sdk.NewInt(300_000_000_000)
+	firstUserLiquidUnstakeAmount := math.NewInt(300_000_000_000)
 	firstUserLiquidUnstakeCoins := sdk.NewCoin("stk/uxprt", firstUserLiquidUnstakeAmount)
 	txHash, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
 		"liquidstake", "liquid-unstake", firstUserLiquidUnstakeCoins.String(),
@@ -276,7 +281,7 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 
 	// Delegate from the first user to get a delegation that could be used
 
-	firstUserDelegationAmount := sdk.NewInt(1_000_000_000_000)
+	firstUserDelegationAmount := math.NewInt(1_000_000_000_000)
 	firstUserDelegationCoins := sdk.NewCoin(testDenom, firstUserDelegationAmount)
 
 	txHash, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
@@ -289,7 +294,7 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	require.NoError(t, err)
 
 	delegation := helpers.QueryDelegation(t, ctx, chainNode, firstUser.FormattedAddress(), validators[0].OperatorAddress)
-	require.Equal(t, sdk.NewDecFromInt(firstUserDelegationCoins.Amount), delegation.Shares)
+	require.Equal(t, math.LegacyNewDecFromInt(firstUserDelegationCoins.Amount), delegation.Shares)
 	require.False(t, delegation.ValidatorBond)
 
 	// Get list of validators
@@ -307,7 +312,7 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 
 	// try to stake-to-lp 1M bonded XPRT into LP
 
-	firstUserLiquidStakeAmount = sdk.NewInt(1_000_000_000_000)
+	firstUserLiquidStakeAmount = math.NewInt(1_000_000_000_000)
 	firstUserLiquidStakeCoins = sdk.NewCoin(testDenom, firstUserLiquidStakeAmount)
 	_, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
 		"liquidstake", "stake-to-lp", validators[0].OperatorAddress, firstUserLiquidStakeCoins.String(),
@@ -317,7 +322,7 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	require.ErrorContains(t, err, "delegation or tokenization exceeds the global cap")
 
 	// make some room for 1M stk/uxprt by liquid-unstake (the non-liquid delegation stays)
-	firstUserLiquidUnstakeAmount = sdk.NewInt(1_000_000_000_000)
+	firstUserLiquidUnstakeAmount = math.NewInt(1_000_000_000_000)
 	firstUserLiquidUnstakeCoins = sdk.NewCoin("stk/uxprt", firstUserLiquidUnstakeAmount)
 	txHash, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
 		"liquidstake", "liquid-unstake", firstUserLiquidUnstakeCoins.String(),

@@ -3,7 +3,7 @@
  SPDX-License-Identifier: Apache-2.0
 */
 
-package app
+package constants
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
