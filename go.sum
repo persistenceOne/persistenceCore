@@ -893,6 +893,8 @@ github.com/cosmos/iavl v1.2.4 h1:IHUrG8dkyueKEY72y92jajrizbkZKPZbMmG14QzsEkw=
 github.com/cosmos/iavl v1.2.4/go.mod h1:GiM43q0pB+uG53mLxLDzimxM9l/5N9UuSY3/D0huuVw=
 github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10 v10.1.0 h1:epKcbFAeWRRw1i1jZnYzLIEm9sgUPaL1RftuRjjUKGw=
 github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10 v10.1.0/go.mod h1:S4ZQwf5/LhpOi8JXSAese/6QQDk87nTdicJPlZ5q9UQ=
+github.com/cosmos/ibc-apps/modules/ibc-hooks/v10 v10.0.0-20250826214904-d53749a559f6 h1:6VEajStAEBx5F/XMsBFGDbQADSb7t/VJhDIAyrJGaAU=
+github.com/cosmos/ibc-apps/modules/ibc-hooks/v10 v10.0.0-20250826214904-d53749a559f6/go.mod h1:YQmJRjlqccu5hFwnPeY4xcOQoJ2SEuMQGD1u32jREc0=
 github.com/cosmos/ibc-go/v10 v10.1.1 h1:Mtl0Ydr9dVdOrPqmxCAG49RmX2/VDYeKYdwv3G2y0g8=
 github.com/cosmos/ibc-go/v10 v10.1.1/go.mod h1:0pJCkgEYRMygqkvUcwy6Kuf5wPfIsObRoxFU2DJEil4=
 github.com/cosmos/ics23/go v0.11.0 h1:jk5skjT0TqX5e5QJbEnwXIS2yI2vnmLOgpQPeM5RtnU=
@@ -1645,8 +1647,6 @@ github.com/prometheus/procfs v0.6.0/go.mod h1:cz+aTbrPOrUb4q7XlbU9ygM+/jj0fzG6c1
 github.com/prometheus/procfs v0.15.1 h1:YagwOFzUgYfKKHX6Dr+sHT7km/hxC76UB0learggepc=
 github.com/prometheus/procfs v0.15.1/go.mod h1:fB45yRUv8NstnjriLhBQLuOUt+WW4BsoGhij/e3PBqk=
 github.com/prometheus/tsdb v0.7.1/go.mod h1:qhTCs0VvXwvX/y3TZrWD7rabWM+ijKTux40TwIPHuXU=
-github.com/puneet2019/ibc-apps/modules/ibc-hooks/v10 v10.0.0-20250825055833-45e47fb06d04 h1:It4zTYVwTA/qz0+z2OaNYROBv5pGgsIzS9bRLjbCOL4=
-github.com/puneet2019/ibc-apps/modules/ibc-hooks/v10 v10.0.0-20250825055833-45e47fb06d04/go.mod h1:YQmJRjlqccu5hFwnPeY4xcOQoJ2SEuMQGD1u32jREc0=
 github.com/rakyll/statik v0.1.7 h1:OF3QCZUuyPxuGEP7B4ypUa7sB/iHtqOTDYZXGM8KOdQ=
 github.com/rakyll/statik v0.1.7/go.mod h1:AlZONWzMtEnMs7W4e/1LURLiI49pIMmp6V9Unghqrcc=
 github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a/go.mod h1:bCqnVzQkZxMG4s8nGwiZ5l3QUCyqpo9Y+/ZMZ9VjZe4=

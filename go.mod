@@ -23,7 +23,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.50.14
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10 v10.1.0
-	github.com/cosmos/ibc-apps/modules/ibc-hooks/v10 v10.0.0
+	github.com/cosmos/ibc-apps/modules/ibc-hooks/v10 v10.0.0-20250826214904-d53749a559f6
 	github.com/cosmos/ibc-go/v10 v10.1.1
 	github.com/cosmos/rosetta v0.50.12
 	github.com/persistenceOne/persistence-sdk/v4 v4.0.0-rc1
@@ -248,6 +248,3 @@ replace (
 
 // replace with persistence's LSM fork
 replace github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk v0.50.14-lsm
-
-// replace github.com/cosmos/ibc-apps/modules/ibc-hooks/v10 => ../ibc-apps/modules/ibc-hooks
-replace github.com/cosmos/ibc-apps/modules/ibc-hooks/v10 => github.com/puneet2019/ibc-apps/modules/ibc-hooks/v10 v10.0.0-20250825055833-45e47fb06d04
