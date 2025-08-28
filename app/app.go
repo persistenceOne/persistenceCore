@@ -6,17 +6,17 @@
 package app
 
 import (
-	"cosmossdk.io/client/v2/autocli"
-	"cosmossdk.io/core/appmodule"
 	"encoding/json"
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/codec/address"
 	"io"
-	stdlog "log"
-	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
+
+	"cosmossdk.io/client/v2/autocli"
+	clienthelpers "cosmossdk.io/client/v2/helpers"
+	"cosmossdk.io/core/appmodule"
+	"github.com/cosmos/cosmos-sdk/codec/address"
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
@@ -75,12 +75,11 @@ var (
 )
 
 func init() {
-	userHomeDir, err := os.UserHomeDir()
+	var err error
+	DefaultNodeHome, err = clienthelpers.GetNodeHomeDirectory(".persistenceCore")
 	if err != nil {
-		stdlog.Println("Failed to get home dir %2", err)
+		panic(err)
 	}
-
-	DefaultNodeHome = filepath.Join(userHomeDir, ".persistenceCore")
 }
 
 type Application struct {
