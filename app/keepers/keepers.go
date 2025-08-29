@@ -200,7 +200,7 @@ func NewAppKeeper(
 		appKeepers.BankKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		address.NewBech32Codec(constants.Bech32PrefixValAddr),
-		address.NewBech32Codec(constants.Bech32PrefixConsPub),
+		address.NewBech32Codec(constants.Bech32PrefixConsAddr),
 	)
 
 	mintKeeper := mintkeeper.NewKeeper(
