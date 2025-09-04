@@ -5,8 +5,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/snapshot"
-	"github.com/cosmos/cosmos-sdk/testutil/sims"
 	"github.com/persistenceOne/persistenceCore/v13/app/constants"
 
 	"cosmossdk.io/log"
@@ -16,7 +16,6 @@ import (
 	cmtcfg "github.com/cometbft/cometbft/config"
 	cmtcli "github.com/cometbft/cometbft/libs/cli"
 	dbm "github.com/cosmos/cosmos-db"
-	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -26,6 +25,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
@@ -60,7 +60,19 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		WithHomeDir(app.DefaultNodeHome).
 		WithViper("")
 
-	tempApp := app.NewApplication(log.NewNopLogger(), dbm.NewMemDB(), nil, true, sims.EmptyAppOptions{}, []wasm.Option{})
+	tempDir := tempDir()
+	tempApp := app.NewApplication(log.NewNopLogger(), dbm.NewMemDB(), nil, true, simtestutil.NewAppOptionsWithFlagHome(tempDir), []wasm.Option{})
+	defer func() {
+		if err := tempApp.Close(); err != nil {
+			panic(err)
+		}
+		if tempDir != app.DefaultNodeHome {
+			err := os.RemoveAll(tempDir)
+			if err != nil {
+				panic(err)
+			}
+		}
+	}()
 
 	cobra.EnableCommandSorting = false
 
@@ -294,4 +306,14 @@ func appExport(
 	}
 
 	return persistenceApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
+}
+
+// tempDir create a temporary directory to initialize the command line client
+func tempDir() string {
+	dir, err := os.MkdirTemp("", "persistenceCore")
+	if err != nil {
+		panic("failed to create temp dir: " + err.Error())
+	}
+
+	return dir
 }
