@@ -16,7 +16,7 @@ import (
 	lscosmostypes "github.com/persistenceOne/pstake-native/v4/x/lscosmos/types"
 	ratesynctypes "github.com/persistenceOne/pstake-native/v4/x/ratesync/types"
 
-	"github.com/persistenceOne/persistenceCore/v13/app/params"
+	"github.com/persistenceOne/persistenceCore/v14/app/params"
 )
 
 // MakeEncodingConfig creates an EncodingConfig for testing

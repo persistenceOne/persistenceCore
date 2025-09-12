@@ -57,15 +57,15 @@ import (
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/spf13/cast"
 
-	"github.com/persistenceOne/persistenceCore/v13/app/constants"
-	"github.com/persistenceOne/persistenceCore/v13/app/keepers"
-	"github.com/persistenceOne/persistenceCore/v13/app/upgrades"
-	v1300 "github.com/persistenceOne/persistenceCore/v13/app/upgrades/v13.0.0"
+	"github.com/persistenceOne/persistenceCore/v14/app/constants"
+	"github.com/persistenceOne/persistenceCore/v14/app/keepers"
+	"github.com/persistenceOne/persistenceCore/v14/app/upgrades"
+	v1400rc0 "github.com/persistenceOne/persistenceCore/v14/app/upgrades/testnet/v14.0.0-rc0"
 )
 
 var (
 	DefaultNodeHome string
-	Upgrades        = []upgrades.Upgrade{v1300.Upgrade}
+	Upgrades        = []upgrades.Upgrade{v1400rc0.Upgrade}
 	ModuleBasics    = module.NewBasicManager(keepers.AppModuleBasics...)
 )
 

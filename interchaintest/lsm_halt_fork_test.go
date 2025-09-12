@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 
-	"github.com/persistenceOne/persistenceCore/v13/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v14/interchaintest/helpers"
 )
 
 func TestPersistenceLSMHaltFork(t *testing.T) {

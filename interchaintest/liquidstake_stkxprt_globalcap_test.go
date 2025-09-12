@@ -17,7 +17,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/persistenceOne/persistenceCore/v13/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v14/interchaintest/helpers"
 )
 
 // TestLiquidStakeGlobalCapStkXPRT runs the flow of liquid XPRT staking that reaches the global cap for liquid staking.

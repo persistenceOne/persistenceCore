@@ -1,13 +1,13 @@
-package v13_0_0_rc0
+package v14_0_0_rc0
 
 import (
 	store "cosmossdk.io/store/types"
-	"github.com/persistenceOne/persistenceCore/v13/app/upgrades"
+	"github.com/persistenceOne/persistenceCore/v14/app/upgrades"
 )
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName = "v13.0.0-rc0"
+	UpgradeName = "v14.0.0-rc0"
 )
 
 const capabilityStoreKey = "capability"

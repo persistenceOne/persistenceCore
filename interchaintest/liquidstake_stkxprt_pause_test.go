@@ -19,7 +19,7 @@ import (
 	liquidstaketypes "github.com/persistenceOne/pstake-native/v4/x/liquidstake/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/persistenceOne/persistenceCore/v13/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v14/interchaintest/helpers"
 )
 
 // TestPauseLiquidStakeStkXPRT runs the flow of liquid XPRT staking while pausing the module.

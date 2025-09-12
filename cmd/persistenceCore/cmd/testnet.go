@@ -10,7 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/codec/address"
-	"github.com/persistenceOne/persistenceCore/v13/app/constants"
+	"github.com/persistenceOne/persistenceCore/v14/app/constants"
 	"net"
 	"os"
 	"path/filepath"
@@ -40,7 +40,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
-	"github.com/persistenceOne/persistenceCore/v13/app"
+	"github.com/persistenceOne/persistenceCore/v14/app"
 )
 
 var (
