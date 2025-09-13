@@ -293,4 +293,4 @@ replace (
 )
 
 // use persistence's forks with LSM implemented
-replace github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk v0.50.14-lsm
+replace github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk v0.50.14-lsm-disabled
