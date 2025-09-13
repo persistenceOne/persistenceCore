@@ -9,11 +9,12 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/codec/address"
-	"github.com/persistenceOne/persistenceCore/v14/app/constants"
 	"net"
 	"os"
 	"path/filepath"
+
+	"github.com/cosmos/cosmos-sdk/codec/address"
+	"github.com/persistenceOne/persistenceCore/v14/app/constants"
 
 	"cosmossdk.io/math"
 	tmconfig "github.com/cometbft/cometbft/config"
@@ -311,6 +312,7 @@ func initTestnetFiles(
 			sdk.NewCoin(sdk.DefaultBondDenom, valTokens),
 			stakingtypes.NewDescription(nodeDirName, "", "", "", ""),
 			stakingtypes.NewCommissionRates(math.LegacyOneDec(), math.LegacyOneDec(), math.LegacyOneDec()),
+			math.OneInt(),
 		)
 		if err != nil {
 			return err
