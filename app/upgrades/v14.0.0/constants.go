@@ -10,12 +10,11 @@ const (
 	UpgradeName = "v14.0.0"
 )
 
-const capabilityStoreKey = "capability"
-
 var Upgrade = upgrades.Upgrade{
 	UpgradeName:          UpgradeName,
 	CreateUpgradeHandler: CreateUpgradeHandler,
 	StoreUpgrades: store.StoreUpgrades{
-		Deleted: []string{capabilityStoreKey},
+		Added:   []string{},
+		Deleted: []string{},
 	},
 }
