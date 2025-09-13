@@ -46,6 +46,8 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	liquidkeeper "github.com/cosmos/gaia/v24/x/liquid/keeper"
+	liquidtypes "github.com/cosmos/gaia/v24/x/liquid/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward"
 	packetforwardkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/keeper"
 	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/types"
@@ -67,12 +69,12 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
-	epochskeeper "github.com/persistenceOne/persistence-sdk/v4/x/epochs/keeper"
-	epochstypes "github.com/persistenceOne/persistence-sdk/v4/x/epochs/types"
-	"github.com/persistenceOne/persistence-sdk/v4/x/halving"
-	halvingtypes "github.com/persistenceOne/persistence-sdk/v4/x/halving/types"
-	liquidstakekeeper "github.com/persistenceOne/pstake-native/v4/x/liquidstake/keeper"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v4/x/liquidstake/types"
+	epochskeeper "github.com/persistenceOne/persistence-sdk/v5/x/epochs/keeper"
+	epochstypes "github.com/persistenceOne/persistence-sdk/v5/x/epochs/types"
+	"github.com/persistenceOne/persistence-sdk/v5/x/halving"
+	halvingtypes "github.com/persistenceOne/persistence-sdk/v5/x/halving/types"
+	liquidstakekeeper "github.com/persistenceOne/pstake-native/v5/x/liquidstake/keeper"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v5/x/liquidstake/types"
 	"github.com/spf13/cast"
 
 	"github.com/persistenceOne/persistenceCore/v14/app/constants"
@@ -104,6 +106,7 @@ type AppKeepers struct {
 	WasmKeeper            *wasmkeeper.Keeper
 	EpochsKeeper          *epochskeeper.Keeper
 	ICAControllerKeeper   *icacontrollerkeeper.Keeper
+	LiquidKeeper          *liquidkeeper.Keeper
 	LiquidStakeKeeper     *liquidstakekeeper.Keeper
 	ConsensusParamsKeeper *consensusparamskeeper.Keeper
 	PacketForwardKeeper   *packetforwardkeeper.Keeper
@@ -270,8 +273,21 @@ func NewAppKeeper(
 	)
 	appKeepers.HalvingKeeper = &halvingKeeper
 
+	appKeepers.LiquidKeeper = liquidkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(appKeepers.keys[liquidtypes.StoreKey]),
+		appKeepers.AccountKeeper,
+		appKeepers.BankKeeper,
+		appKeepers.StakingKeeper,
+		appKeepers.DistributionKeeper,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+
 	appKeepers.StakingKeeper.SetHooks(
-		stakingtypes.NewMultiStakingHooks(appKeepers.DistributionKeeper.Hooks(), appKeepers.SlashingKeeper.Hooks()),
+		stakingtypes.NewMultiStakingHooks(
+			appKeepers.DistributionKeeper.Hooks(),
+			appKeepers.SlashingKeeper.Hooks(),
+			appKeepers.LiquidKeeper.Hooks()),
 	)
 
 	appKeepers.EpochsKeeper = epochskeeper.NewKeeper(appKeepers.keys[epochstypes.StoreKey])
@@ -356,6 +372,7 @@ func NewAppKeeper(
 		*appKeepers.MintKeeper,
 		appKeepers.DistributionKeeper,
 		appKeepers.SlashingKeeper,
+		*appKeepers.LiquidKeeper,
 		bApp.MsgServiceRouter(),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)

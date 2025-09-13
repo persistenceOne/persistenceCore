@@ -8,13 +8,14 @@ package app
 import (
 	"github.com/cosmos/cosmos-sdk/std"
 	sdkdistr "github.com/cosmos/cosmos-sdk/x/distribution"
+	grouptypes "github.com/cosmos/cosmos-sdk/x/group"
 	sdkslashing "github.com/cosmos/cosmos-sdk/x/slashing"
 	sdkstaking "github.com/cosmos/cosmos-sdk/x/staking"
-	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v4/x/interchainquery/types"
-	oracletypes "github.com/persistenceOne/persistence-sdk/v4/x/oracle/types"
-	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v4/x/liquidstakeibc/types"
-	lscosmostypes "github.com/persistenceOne/pstake-native/v4/x/lscosmos/types"
-	ratesynctypes "github.com/persistenceOne/pstake-native/v4/x/ratesync/types"
+	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v5/x/interchainquery/types"
+	oracletypes "github.com/persistenceOne/persistence-sdk/v5/x/oracle/types"
+	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v5/x/liquidstakeibc/types"
+	lscosmostypes "github.com/persistenceOne/pstake-native/v5/x/lscosmos/types"
+	ratesynctypes "github.com/persistenceOne/pstake-native/v5/x/ratesync/types"
 
 	"github.com/persistenceOne/persistenceCore/v14/app/params"
 )
@@ -48,6 +49,10 @@ func MakeEncodingConfig() params.EncodingConfig {
 	// oracle, but was never used
 	oracletypes.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 	oracletypes.RegisterLegacyAminoCodec(encodingConfig.Amino)
+
+	// group module,
+	grouptypes.RegisterInterfaces(encodingConfig.InterfaceRegistry)
+	grouptypes.RegisterLegacyAminoCodec(encodingConfig.Amino)
 	//ibcfee, but was never used ...
 	return encodingConfig
 }

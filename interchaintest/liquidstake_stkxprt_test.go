@@ -14,7 +14,7 @@ import (
 	"github.com/cosmos/interchaintest/v10/ibc"
 	"github.com/cosmos/interchaintest/v10/testutil"
 	"github.com/persistenceOne/persistenceCore/v14/interchaintest/helpers"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v4/x/liquidstake/types"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v5/x/liquidstake/types"
 	"github.com/stretchr/testify/require"
 	"strconv"
 	"testing"

@@ -36,6 +36,8 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/cosmos/gaia/v24/x/liquid"
+	liquidtypes "github.com/cosmos/gaia/v24/x/liquid/types"
 	packetforward "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward"
 	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/types"
 	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v10"
@@ -46,12 +48,12 @@ import (
 	ibc "github.com/cosmos/ibc-go/v10/modules/core"
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
-	"github.com/persistenceOne/persistence-sdk/v4/x/epochs"
-	epochstypes "github.com/persistenceOne/persistence-sdk/v4/x/epochs/types"
-	"github.com/persistenceOne/persistence-sdk/v4/x/halving"
+	"github.com/persistenceOne/persistence-sdk/v5/x/epochs"
+	epochstypes "github.com/persistenceOne/persistence-sdk/v5/x/epochs/types"
+	"github.com/persistenceOne/persistence-sdk/v5/x/halving"
 	appparams "github.com/persistenceOne/persistenceCore/v14/app/params"
-	"github.com/persistenceOne/pstake-native/v4/x/liquidstake"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v4/x/liquidstake/types"
+	"github.com/persistenceOne/pstake-native/v5/x/liquidstake"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v5/x/liquidstake/types"
 )
 
 var ModuleAccountPermissions = map[string][]string{
@@ -104,6 +106,7 @@ func appModules(
 		ica.NewAppModule(app.ICAControllerKeeper, app.ICAHostKeeper),
 		wasm.NewAppModule(appCodec, app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasm.ModuleName)),
 		epochs.NewAppModule(*app.EpochsKeeper),
+		liquid.NewAppModule(appCodec, app.LiquidKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		liquidstake.NewAppModule(*app.LiquidStakeKeeper),
 		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)), // always be last to make sure that it checks for all invariants and not only part of them
 		ibctm.NewAppModule(app.TMLightClientModule),
@@ -148,6 +151,7 @@ func orderBeginBlockers() []string {
 		ibchookstypes.ModuleName,
 		packetforwardtypes.ModuleName,
 		wasmtypes.ModuleName,
+		liquidtypes.ModuleName,
 		liquidstaketypes.ModuleName,
 	}
 }
@@ -178,6 +182,7 @@ func orderEndBlockers() []string {
 		packetforwardtypes.ModuleName,
 		wasmtypes.ModuleName,
 		epochstypes.ModuleName,
+		liquidtypes.ModuleName,
 		liquidstaketypes.ModuleName,
 	}
 }
@@ -213,6 +218,7 @@ func orderInitGenesis() []string {
 		packetforwardtypes.ModuleName,
 		wasmtypes.ModuleName,
 		epochstypes.ModuleName,
+		liquidtypes.ModuleName,
 		liquidstaketypes.ModuleName,
 	}
 }
