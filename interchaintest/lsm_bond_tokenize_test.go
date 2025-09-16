@@ -100,7 +100,7 @@ func TestBondTokenize(t *testing.T) {
 	//require.Equal(t, math.LegacyNewDecFromInt(secondUserDelegationCoins.Amount), delegation.Shares)
 	//require.True(t, delegation.ValidatorBond)
 
-	validator := helpers.QueryValidator(t, ctx, chainNode, validators[0].OperatorAddress)
+	//validator := helpers.QueryValidator(t, ctx, chainNode, validators[0].OperatorAddress)
 	// TODO revert, figure out why cli output is weird, stores are storing it right.
 	//require.Equal(t,
 	//	secondUserDelegationAmount.Int64(),
@@ -122,13 +122,13 @@ func TestBondTokenize(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, tokenizeCoins.Amount, sharesBalance, "shares balance must match tokenized amount")
 
-	// Try to tokenize more shares from first user, it will not work because of small bond
+	// Try to tokenize more shares from first user, it will not work because of small bond // TODO bond has been removed
 	txHash, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
 		"liquid", "tokenize-share", validators[0].OperatorAddress, tokenizeCoins.String(), firstUser.FormattedAddress(),
 		"--gas=500000",
 	)
-	require.Error(t, err)
-	require.ErrorContains(t, err, "insufficient validator bond shares")
+	//require.Error(t, err)
+	//require.ErrorContains(t, err, "insufficient validator bond shares")
 
 	// Delegate from second user more
 	txHash, err = chainNode.ExecTx(ctx, secondUser.KeyName(),
@@ -159,8 +159,8 @@ func TestBondTokenize(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, tokenizeCoins.Amount, sharesBalance, "shares balance must match tokenized amount")
 
-	validator = helpers.QueryValidator(t, ctx, chainNode, validators[0].OperatorAddress)
+	liquidValidator := helpers.QueryLiquidValidator(t, ctx, chainNode, validators[0].OperatorAddress)
 	doubleTokenizedAmount := math.LegacyNewDecFromInt(tokenizeCoins.Amount.MulRaw(2))
 	// TODO revert, figure out why cli output is weird, stores are storing it right.
-	require.Equal(t, doubleTokenizedAmount, validator.LiquidShares.Quo(math.LegacyMustNewDecFromStr("1000000000000000000")), "validator's liquid shares amount must match tokenized amount x2")
+	require.Equal(t, doubleTokenizedAmount, liquidValidator.LiquidShares.Quo(math.LegacyMustNewDecFromStr("1000000000000000000")), "validator's liquid shares amount must match tokenized amount x2")
 }
