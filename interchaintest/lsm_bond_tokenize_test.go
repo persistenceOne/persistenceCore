@@ -83,7 +83,7 @@ func TestBondTokenize(t *testing.T) {
 	// Try to tokenize shares from the first user, it won't work because there is no minimal bond
 	tokenizeCoins := sdk.NewCoin(testDenom, math.NewInt(250_000_000))
 	txHash, err := chainNode.ExecTx(ctx, firstUser.KeyName(),
-		"staking", "tokenize-share", validators[0].OperatorAddress, tokenizeCoins.String(), firstUser.FormattedAddress(),
+		"liquid", "tokenize-share", validators[0].OperatorAddress, tokenizeCoins.String(), firstUser.FormattedAddress(),
 		"--gas=500000",
 	)
 	require.Error(t, err)
@@ -91,9 +91,9 @@ func TestBondTokenize(t *testing.T) {
 
 	// Mark second user bond as validator bond
 	_, err = chainNode.ExecTx(ctx, secondUser.KeyName(),
-		"staking", "validator-bond", validators[0].OperatorAddress,
+		"liquid", "validator-bond", validators[0].OperatorAddress,
 		"--gas=500000",
-	)
+	) //TODO remove all validator-bond refs
 	require.NoError(t, err)
 
 	delegation = helpers.QueryDelegation(t, ctx, chainNode, secondUser.FormattedAddress(), validators[0].OperatorAddress)
@@ -110,7 +110,7 @@ func TestBondTokenize(t *testing.T) {
 
 	// Try to tokenize shares from first user again, it should work now
 	txHash, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
-		"staking", "tokenize-share", validators[0].OperatorAddress, tokenizeCoins.String(), firstUser.FormattedAddress(),
+		"liquid", "tokenize-share", validators[0].OperatorAddress, tokenizeCoins.String(), firstUser.FormattedAddress(),
 		"--gas=500000",
 	)
 	require.NoError(t, err)
@@ -124,7 +124,7 @@ func TestBondTokenize(t *testing.T) {
 
 	// Try to tokenize more shares from first user, it will not work because of small bond
 	txHash, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
-		"staking", "tokenize-share", validators[0].OperatorAddress, tokenizeCoins.String(), firstUser.FormattedAddress(),
+		"liquid", "tokenize-share", validators[0].OperatorAddress, tokenizeCoins.String(), firstUser.FormattedAddress(),
 		"--gas=500000",
 	)
 	require.Error(t, err)
@@ -147,7 +147,7 @@ func TestBondTokenize(t *testing.T) {
 
 	// Try to tokenize more shares from first user, it must work now
 	txHash, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
-		"staking", "tokenize-share", validators[0].OperatorAddress, tokenizeCoins.String(), firstUser.FormattedAddress(),
+		"liquid", "tokenize-share", validators[0].OperatorAddress, tokenizeCoins.String(), firstUser.FormattedAddress(),
 		"--gas=500000",
 	)
 	require.NoError(t, err)
