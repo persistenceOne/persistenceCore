@@ -56,11 +56,14 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	ic, chain := CreateChain(t, ctx, validatorsCount, 0, overridesKV...)
 	chainNode := chain.Nodes()[0]
 	testDenom := chain.Config().Denom
-
 	require.NotNil(t, ic)
 	require.NotNil(t, chain)
 
 	t.Cleanup(func() {
+		//TODO tidy this, debugging
+		state, err := chain.ExportState(ctx, 0)
+		require.NoError(t, err)
+		t.Logf("modified genesis state: %v", state)
 		_ = ic.Close()
 	})
 
