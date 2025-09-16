@@ -44,7 +44,7 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	overridesKV := append([]cosmos.GenesisKV{}, fastVotingGenesisOverridesKV...)
 	overridesKV = append(overridesKV, cosmos.GenesisKV{
 		Key:   "app_state.liquid.params.global_liquid_staking_cap",
-		Value: "0.100000000000000000",
+		Value: "0.100000000",
 	}, cosmos.GenesisKV{
 		Key:   "app_state.liquidstake.params.module_paused",
 		Value: false,

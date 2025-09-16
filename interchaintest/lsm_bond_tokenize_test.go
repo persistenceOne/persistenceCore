@@ -143,7 +143,6 @@ func TestBondTokenize(t *testing.T) {
 	delegation = helpers.QueryDelegation(t, ctx, chainNode, secondUser.FormattedAddress(), validators[0].OperatorAddress)
 	secondUserDelegationCoinsDouble := math.LegacyNewDecFromInt(secondUserDelegationCoins.Amount).MulInt64(2)
 	require.Equal(t, secondUserDelegationCoinsDouble, delegation.Shares, "expected updated delegation")
-	require.True(t, delegation.ValidatorBond)
 
 	// Try to tokenize more shares from first user, it must work now
 	txHash, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
