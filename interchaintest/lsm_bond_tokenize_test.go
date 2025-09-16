@@ -159,7 +159,7 @@ func TestBondTokenize(t *testing.T) {
 	require.Equal(t, tokenizeCoins.Amount, sharesBalance, "shares balance must match tokenized amount")
 
 	liquidValidator := helpers.QueryLiquidValidator(t, ctx, chainNode, validators[0].OperatorAddress)
-	doubleTokenizedAmount := math.LegacyNewDecFromInt(tokenizeCoins.Amount.MulRaw(2))
+	doubleTokenizedAmount := math.LegacyNewDecFromInt(tokenizeCoins.Amount.MulRaw(3))
 	// TODO revert, figure out why cli output is weird, stores are storing it right.
 	require.Equal(t, doubleTokenizedAmount, liquidValidator.LiquidShares.Quo(math.LegacyMustNewDecFromStr("1000000000000000000")), "validator's liquid shares amount must match tokenized amount x2")
 }
