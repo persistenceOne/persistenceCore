@@ -43,14 +43,14 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	// x/liquidstake: module_paused to false
 	overridesKV := append([]cosmos.GenesisKV{}, fastVotingGenesisOverridesKV...)
 	overridesKV = append(overridesKV, cosmos.GenesisKV{
-		Key:   "app_state.staking.params.global_liquid_staking_cap", //TODO remove in v14
-		Value: "0.100000000000000000",
-	}, cosmos.GenesisKV{
 		Key:   "app_state.liquid.params.global_liquid_staking_cap",
 		Value: "0.100000000000000000",
 	}, cosmos.GenesisKV{
 		Key:   "app_state.liquidstake.params.module_paused",
 		Value: false,
+	}, cosmos.GenesisKV{
+		Key:   "app_state.staking.params.global_liquid_staking_cap", //TODO remove in v14
+		Value: "0.100000000000000000",
 	})
 
 	ic, chain := CreateChain(t, ctx, validatorsCount, 0, overridesKV...)
