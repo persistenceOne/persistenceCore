@@ -2,9 +2,11 @@ package interchaintest
 
 import (
 	"context"
-	"cosmossdk.io/math"
 	"fmt"
 	"testing"
+
+	"cosmossdk.io/math"
+	liquidtypes "github.com/cosmos/gaia/v24/x/liquid/types"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	testutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
@@ -94,6 +96,7 @@ func PersistenceEncoding() *testutil.TestEncodingConfig {
 	// register custom types
 	wasmtypes.RegisterInterfaces(cfg.InterfaceRegistry)
 	liquidstaketypes.RegisterInterfaces(cfg.InterfaceRegistry)
+	liquidtypes.RegisterInterfaces(cfg.InterfaceRegistry)
 
 	return &cfg
 }
