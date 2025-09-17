@@ -48,9 +48,6 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	}, cosmos.GenesisKV{
 		Key:   "app_state.liquidstake.params.module_paused",
 		Value: false,
-	}, cosmos.GenesisKV{
-		Key:   "app_state.staking.params.global_liquid_staking_cap", //TODO remove in v14
-		Value: "0.100000000000000000",
 	})
 
 	ic, chain := CreateChain(t, ctx, validatorsCount, 0, overridesKV...)
