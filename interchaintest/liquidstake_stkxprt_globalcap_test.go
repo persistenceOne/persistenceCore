@@ -60,10 +60,6 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	require.NotNil(t, chain)
 
 	t.Cleanup(func() {
-		//TODO tidy this, debugging
-		state, err := chain.ExportState(ctx, 0)
-		require.NoError(t, err)
-		t.Logf("modified genesis state: %v", state)
 		_ = ic.Close()
 	})
 
