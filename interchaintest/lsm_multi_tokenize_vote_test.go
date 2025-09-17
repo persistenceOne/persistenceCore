@@ -117,7 +117,7 @@ func TestMultiTokenizeVote(t *testing.T) {
 	// Redeem all shares - second user
 	redeemCoints := sdk.NewCoin(validators[0].OperatorAddress+"/1", secondUserBondAmount)
 	_, err = chainNode.ExecTx(ctx, secondUser.KeyName(),
-		"staking", "redeem-tokens", redeemCoints.String(),
+		"liquid", "redeem-tokens", redeemCoints.String(),
 		"--gas=500000",
 	)
 	require.NoError(t, err)
@@ -168,7 +168,7 @@ func TestMultiTokenizeVote(t *testing.T) {
 	// Redeem all shares - first user
 	redeemCoints = sdk.NewCoin(validators[0].OperatorAddress+"/2", firstUserBondAmount)
 	_, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
-		"staking", "redeem-tokens", redeemCoints.String(),
+		"liquid", "redeem-tokens", redeemCoints.String(),
 		"--gas=500000",
 	)
 	require.NoError(t, err)
@@ -185,7 +185,7 @@ func TestMultiTokenizeVote(t *testing.T) {
 	// Redeem all shares - second user
 	redeemCoints = sdk.NewCoin(validators[0].OperatorAddress+"/3", secondUserBondAmount)
 	_, err = chainNode.ExecTx(ctx, secondUser.KeyName(),
-		"staking", "redeem-tokens", redeemCoints.String(),
+		"liquid", "redeem-tokens", redeemCoints.String(),
 		"--gas=500000",
 	)
 	require.NoError(t, err)
