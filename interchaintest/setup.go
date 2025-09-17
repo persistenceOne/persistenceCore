@@ -6,11 +6,10 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	liquidtypes "github.com/cosmos/gaia/v24/x/liquid/types"
-
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	testutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
-	interchaintest "github.com/cosmos/interchaintest/v10"
+	"github.com/cosmos/cosmos-sdk/types/module/testutil"
+	liquidtypes "github.com/cosmos/gaia/v24/x/liquid/types"
+	"github.com/cosmos/interchaintest/v10"
 	"github.com/cosmos/interchaintest/v10/chain/cosmos"
 	"github.com/cosmos/interchaintest/v10/ibc"
 	"github.com/cosmos/interchaintest/v10/testreporter"
