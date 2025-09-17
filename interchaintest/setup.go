@@ -198,10 +198,6 @@ func CreateChain(
 	chains, err := cf.Chains(t.Name())
 	require.NoError(t, err)
 
-	state, err := chains[0].(*cosmos.CosmosChain).ExportState(ctx, 0)
-	require.NoError(t, err)
-	t.Logf("modified genesis state: %v", state)
-
 	ic := interchaintest.NewInterchain().AddChain(chains[0])
 	client, network := interchaintest.DockerSetup(t)
 
