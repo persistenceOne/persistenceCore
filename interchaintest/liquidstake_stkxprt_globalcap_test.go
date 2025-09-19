@@ -2,8 +2,11 @@ package interchaintest
 
 import (
 	"context"
-	"cosmossdk.io/math"
 	"encoding/json"
+	"strconv"
+	"testing"
+
+	"cosmossdk.io/math"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -12,10 +15,8 @@ import (
 	"github.com/cosmos/interchaintest/v10"
 	"github.com/cosmos/interchaintest/v10/chain/cosmos"
 	"github.com/cosmos/interchaintest/v10/testutil"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v4/x/liquidstake/types"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v5/x/liquidstake/types"
 	"github.com/stretchr/testify/require"
-	"strconv"
-	"testing"
 
 	"github.com/persistenceOne/persistenceCore/v14/interchaintest/helpers"
 )
@@ -42,17 +43,19 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	// x/liquidstake: module_paused to false
 	overridesKV := append([]cosmos.GenesisKV{}, fastVotingGenesisOverridesKV...)
 	overridesKV = append(overridesKV, cosmos.GenesisKV{
-		Key:   "app_state.staking.params.global_liquid_staking_cap",
-		Value: "0.100000000000000000",
+		Key:   "app_state.liquid.params.global_liquid_staking_cap",
+		Value: "0.100000000",
 	}, cosmos.GenesisKV{
 		Key:   "app_state.liquidstake.params.module_paused",
 		Value: false,
+	}, cosmos.GenesisKV{
+		Key:   "app_state.staking.params.global_liquid_staking_cap", //TODO remove in v14
+		Value: "0.100000000000000000",
 	})
 
 	ic, chain := CreateChain(t, ctx, validatorsCount, 0, overridesKV...)
 	chainNode := chain.Nodes()[0]
 	testDenom := chain.Config().Denom
-
 	require.NotNil(t, ic)
 	require.NotNil(t, chain)
 
@@ -176,6 +179,10 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	stakingParams, _, err := chainNode.ExecQuery(ctx, "staking", "params")
 	require.NoError(t, err)
 	t.Logf("Staking Params effective: %s", string(stakingParams))
+
+	lsmParams, _, err := chainNode.ExecQuery(ctx, "liquid", "params")
+	require.NoError(t, err)
+	t.Logf("liquid lsm Params effective: %s", string(lsmParams))
 
 	// Liquid stake XPRT from the first user (10% of 20M, so 5M XPRT hits the cap)
 

@@ -2,6 +2,7 @@ package v14_0_0_rc0
 
 import (
 	store "cosmossdk.io/store/types"
+	liquidtypes "github.com/cosmos/gaia/v24/x/liquid/types"
 	"github.com/persistenceOne/persistenceCore/v14/app/upgrades"
 )
 
@@ -14,7 +15,7 @@ var Upgrade = upgrades.Upgrade{
 	UpgradeName:          UpgradeName,
 	CreateUpgradeHandler: CreateUpgradeHandler,
 	StoreUpgrades: store.StoreUpgrades{
-		Added:   []string{},
+		Added:   []string{liquidtypes.ModuleName},
 		Deleted: []string{},
 	},
 }

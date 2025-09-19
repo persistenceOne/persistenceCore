@@ -2,9 +2,10 @@ package interchaintest
 
 import (
 	"context"
-	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	"strconv"
 	"testing"
+
+	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -64,7 +65,7 @@ func TestTokenizeSendVote(t *testing.T) {
 
 	// Tokenize all shares - first user
 	_, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
-		"staking", "tokenize-share", validators[0].OperatorAddress, firstUserBondCoins.String(), firstUser.FormattedAddress(),
+		"liquid", "tokenize-share", validators[0].OperatorAddress, firstUserBondCoins.String(), firstUser.FormattedAddress(),
 		"--gas=500000",
 	)
 	require.NoError(t, err)
@@ -123,7 +124,7 @@ func TestTokenizeSendVote(t *testing.T) {
 	// Redeem all shares - second user
 	redeemCoints := sdk.NewCoin(validators[0].OperatorAddress+"/1", sharesBalance)
 	_, err = chainNode.ExecTx(ctx, secondUser.KeyName(),
-		"staking", "redeem-tokens", redeemCoints.String(),
+		"liquid", "redeem-tokens", redeemCoints.String(),
 		"--gas=500000",
 	)
 	require.NoError(t, err)
@@ -139,7 +140,7 @@ func TestTokenizeSendVote(t *testing.T) {
 
 	// Tokenize all shares - second user
 	_, err = chainNode.ExecTx(ctx, secondUser.KeyName(),
-		"staking", "tokenize-share", validators[0].OperatorAddress, secondUserBondCoins.String(), secondUser.FormattedAddress(),
+		"liquid", "tokenize-share", validators[0].OperatorAddress, secondUserBondCoins.String(), secondUser.FormattedAddress(),
 		"--gas=500000",
 	)
 	require.NoError(t, err)
@@ -165,7 +166,7 @@ func TestTokenizeSendVote(t *testing.T) {
 	firstUserSharesLeftAmount := firstUserBondAmount.Sub(sharesToSend.Amount)
 	redeemCoints = sdk.NewCoin(validators[0].OperatorAddress+"/1", firstUserSharesLeftAmount)
 	_, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
-		"staking", "redeem-tokens", redeemCoints.String(),
+		"liquid", "redeem-tokens", redeemCoints.String(),
 		"--gas=500000",
 	)
 	require.NoError(t, err)
@@ -182,7 +183,7 @@ func TestTokenizeSendVote(t *testing.T) {
 	// Redeem all shares - second user
 	redeemCoints = sdk.NewCoin(validators[0].OperatorAddress+"/2", secondUserBondCoins.Amount)
 	_, err = chainNode.ExecTx(ctx, secondUser.KeyName(),
-		"staking", "redeem-tokens", redeemCoints.String(),
+		"liquid", "redeem-tokens", redeemCoints.String(),
 		"--gas=500000",
 	)
 	require.NoError(t, err)
