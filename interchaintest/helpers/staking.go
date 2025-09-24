@@ -128,7 +128,7 @@ func QueryTotalLiquidStaked(
 	ctx context.Context,
 	chainNode *cosmos.ChainNode,
 ) math.Int {
-	stdout, _, err := chainNode.ExecQuery(ctx, "staking", "total-liquid-staked")
+	stdout, _, err := chainNode.ExecQuery(ctx, "liquid", "total-liquid-staked")
 	require.NoError(t, err)
 
 	debugOutput(t, string(stdout))
