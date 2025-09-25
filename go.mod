@@ -250,4 +250,4 @@ replace (
 // replace with persistence's LSM fork
 replace github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk v0.50.14-lsm-disabled
 
-replace github.com/cosmos/gaia/v24 => github.com/persistenceOne/gaia/v24 v24.0.1-0.20250924192945-91abd8405f25
+replace github.com/cosmos/gaia/v24 => github.com/persistenceOne/gaia/v24 v24.0.1-0.20250925115034-42ea50903778

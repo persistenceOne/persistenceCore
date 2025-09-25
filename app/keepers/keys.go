@@ -61,7 +61,7 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 	)
 
 	// Define transient store keys
-	appKeepers.tkeys = storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
+	appKeepers.tkeys = storetypes.NewTransientStoreKeys(paramstypes.TStoreKey, liquidtypes.TStoreKey)
 
 	// MemKeys are for information that is stored only in RAM.
 }
