@@ -276,7 +276,6 @@ func NewAppKeeper(
 	appKeepers.LiquidKeeper = liquidkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(appKeepers.keys[liquidtypes.StoreKey]),
-		runtime.NewTransientStoreService(appKeepers.tkeys[liquidtypes.TStoreKey]),
 		appKeepers.AccountKeeper,
 		appKeepers.BankKeeper,
 		appKeepers.StakingKeeper,
