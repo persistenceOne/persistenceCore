@@ -323,14 +323,16 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 
 	// try to stake-to-lp 1M bonded XPRT into LP
 
-	firstUserLiquidStakeAmount = math.NewInt(1_000_000_000_000)
-	firstUserLiquidStakeCoins = sdk.NewCoin(testDenom, firstUserLiquidStakeAmount)
-	_, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
-		"liquidstake", "stake-to-lp", validators[0].OperatorAddress, firstUserLiquidStakeCoins.String(),
-		"--gas=auto",
-	)
-	// uh-oh!
-	require.ErrorContains(t, err, "delegation or tokenization exceeds the global cap")
+	// gaia x/liquid does not enforce caps on 32length addresses.
+	//firstUserLiquidStakeAmount = math.NewInt(1_000_000_000_000)
+	//firstUserLiquidStakeCoins = sdk.NewCoin(testDenom, firstUserLiquidStakeAmount)
+	//_, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
+	//	"liquidstake", "stake-to-lp", validators[0].OperatorAddress, firstUserLiquidStakeCoins.String(),
+	//	"--gas=auto",
+	//)
+	//// uh-oh!
+	// gaia x/liquid does not enforce caps on 32length addresses.
+	//require.ErrorContains(t, err, "delegation or tokenization exceeds the global cap")
 
 	// make some room for 1M stk/uxprt by liquid-unstake (the non-liquid delegation stays)
 	firstUserLiquidUnstakeAmount = math.NewInt(1_000_000_000_000)
