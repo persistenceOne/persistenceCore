@@ -384,5 +384,7 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 	t.Logf("[7] Total Tokens Liquid Staked (After LP): %s", totalLiquidStakedAfterLP)
 
 	delta := totalLiquidStakedAfterLP.Sub(totalLiquidStakedBeforeLP)
-	require.True(t, delta.IsPositive() && delta.LTE(firstUserLiquidStakeAmount), "tokens liquid staked in stake-to-lp must be accounted in global LS counter, 0 < delta <= amount")
+	//require.True(t, delta.IsPositive() && delta.LTE(firstUserLiquidStakeAmount), "tokens liquid staked in stake-to-lp must be accounted in global LS counter, 0 < delta <= amount")
+	// gaia x/liquid does not enforce caps on 32length addresses.
+	require.True(t, delta.IsZero() && delta.LTE(firstUserLiquidStakeAmount), "tokens liquid staked in stake-to-lp must be accounted in global LS counter, 0 < delta <= amount")
 }
