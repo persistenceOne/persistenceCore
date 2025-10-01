@@ -44,6 +44,25 @@ func QueryValidator(
 	return validator.Validator
 }
 
+// QueryLiquidValidator gets info about particular validator
+func QueryLiquidValidator(
+	t *testing.T,
+	ctx context.Context,
+	chainNode *cosmos.ChainNode,
+	valoperAddr string,
+) LiquidValidator {
+	stdout, _, err := chainNode.ExecQuery(ctx, "liquid", "liquid-validator", valoperAddr)
+	require.NoError(t, err)
+
+	debugOutput(t, string(stdout))
+
+	var validator LiquidValidatorResponse
+	err = json.Unmarshal(stdout, &validator)
+	require.NoError(t, err)
+
+	return validator.LiquidValidator
+}
+
 // QueryDelegation gets info about particular delegation
 func QueryDelegation(
 	t *testing.T,
@@ -109,7 +128,7 @@ func QueryTotalLiquidStaked(
 	ctx context.Context,
 	chainNode *cosmos.ChainNode,
 ) math.Int {
-	stdout, _, err := chainNode.ExecQuery(ctx, "staking", "total-liquid-staked")
+	stdout, _, err := chainNode.ExecQuery(ctx, "liquid", "total-liquid-staked")
 	require.NoError(t, err)
 
 	debugOutput(t, string(stdout))
@@ -161,6 +180,15 @@ type Validator struct {
 	UnbondingTime       time.Time      `json:"unbonding_time"`
 	ValidatorBondShares math.LegacyDec `json:"validator_bond_shares"`
 	LiquidShares        math.LegacyDec `json:"liquid_shares"`
+}
+
+type LiquidValidatorResponse struct {
+	LiquidValidator LiquidValidator `json:"liquid_validator"`
+}
+
+type LiquidValidator struct {
+	OperatorAddress string         `json:"operator_address"`
+	LiquidShares    math.LegacyDec `json:"liquid_shares"`
 }
 
 type UnbondingDelegationWrapper struct {

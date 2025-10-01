@@ -80,37 +80,11 @@ func TestBondTokenize(t *testing.T) {
 	require.Equal(t, math.LegacyNewDecFromInt(secondUserDelegationCoins.Amount), delegation.Shares, "compare second user delegated amounts to delegation.shares")
 	require.False(t, delegation.ValidatorBond)
 
-	// Try to tokenize shares from the first user, it won't work because there is no minimal bond
 	tokenizeCoins := sdk.NewCoin(testDenom, math.NewInt(250_000_000))
+
+	// tokenize shares from first user
 	txHash, err := chainNode.ExecTx(ctx, firstUser.KeyName(),
-		"staking", "tokenize-share", validators[0].OperatorAddress, tokenizeCoins.String(), firstUser.FormattedAddress(),
-		"--gas=500000",
-	)
-	require.Error(t, err)
-	require.ErrorContains(t, err, "insufficient validator bond shares")
-
-	// Mark second user bond as validator bond
-	_, err = chainNode.ExecTx(ctx, secondUser.KeyName(),
-		"staking", "validator-bond", validators[0].OperatorAddress,
-		"--gas=500000",
-	)
-	require.NoError(t, err)
-
-	delegation = helpers.QueryDelegation(t, ctx, chainNode, secondUser.FormattedAddress(), validators[0].OperatorAddress)
-	require.Equal(t, math.LegacyNewDecFromInt(secondUserDelegationCoins.Amount), delegation.Shares)
-	require.True(t, delegation.ValidatorBond)
-
-	validator := helpers.QueryValidator(t, ctx, chainNode, validators[0].OperatorAddress)
-	// TODO revert, figure out why cli output is weird, stores are storing it right.
-	require.Equal(t,
-		secondUserDelegationAmount.Int64(),
-		validator.ValidatorBondShares.Quo(math.LegacyMustNewDecFromStr("1000000000000000000")).TruncateInt64(),
-		"validator bond shares must match bonded amount",
-	)
-
-	// Try to tokenize shares from first user again, it should work now
-	txHash, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
-		"staking", "tokenize-share", validators[0].OperatorAddress, tokenizeCoins.String(), firstUser.FormattedAddress(),
+		"liquid", "tokenize-share", validators[0].OperatorAddress, tokenizeCoins.String(), firstUser.FormattedAddress(),
 		"--gas=500000",
 	)
 	require.NoError(t, err)
@@ -122,13 +96,13 @@ func TestBondTokenize(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, tokenizeCoins.Amount, sharesBalance, "shares balance must match tokenized amount")
 
-	// Try to tokenize more shares from first user, it will not work because of small bond
+	// tokenize more shares from first user,
 	txHash, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
-		"staking", "tokenize-share", validators[0].OperatorAddress, tokenizeCoins.String(), firstUser.FormattedAddress(),
+		"liquid", "tokenize-share", validators[0].OperatorAddress, tokenizeCoins.String(), firstUser.FormattedAddress(),
 		"--gas=500000",
 	)
-	require.Error(t, err)
-	require.ErrorContains(t, err, "insufficient validator bond shares")
+	//require.Error(t, err)
+	//require.ErrorContains(t, err, "insufficient validator bond shares")
 
 	// Delegate from second user more
 	txHash, err = chainNode.ExecTx(ctx, secondUser.KeyName(),
@@ -143,11 +117,10 @@ func TestBondTokenize(t *testing.T) {
 	delegation = helpers.QueryDelegation(t, ctx, chainNode, secondUser.FormattedAddress(), validators[0].OperatorAddress)
 	secondUserDelegationCoinsDouble := math.LegacyNewDecFromInt(secondUserDelegationCoins.Amount).MulInt64(2)
 	require.Equal(t, secondUserDelegationCoinsDouble, delegation.Shares, "expected updated delegation")
-	require.True(t, delegation.ValidatorBond)
 
 	// Try to tokenize more shares from first user, it must work now
 	txHash, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
-		"staking", "tokenize-share", validators[0].OperatorAddress, tokenizeCoins.String(), firstUser.FormattedAddress(),
+		"liquid", "tokenize-share", validators[0].OperatorAddress, tokenizeCoins.String(), firstUser.FormattedAddress(),
 		"--gas=500000",
 	)
 	require.NoError(t, err)
@@ -159,8 +132,8 @@ func TestBondTokenize(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, tokenizeCoins.Amount, sharesBalance, "shares balance must match tokenized amount")
 
-	validator = helpers.QueryValidator(t, ctx, chainNode, validators[0].OperatorAddress)
-	doubleTokenizedAmount := math.LegacyNewDecFromInt(tokenizeCoins.Amount.MulRaw(2))
+	liquidValidator := helpers.QueryLiquidValidator(t, ctx, chainNode, validators[0].OperatorAddress)
+	doubleTokenizedAmount := math.LegacyNewDecFromInt(tokenizeCoins.Amount.MulRaw(3))
 	// TODO revert, figure out why cli output is weird, stores are storing it right.
-	require.Equal(t, doubleTokenizedAmount, validator.LiquidShares.Quo(math.LegacyMustNewDecFromStr("1000000000000000000")), "validator's liquid shares amount must match tokenized amount x2")
+	require.Equal(t, doubleTokenizedAmount, liquidValidator.LiquidShares.Quo(math.LegacyMustNewDecFromStr("1000000000000000000")), "validator's liquid shares amount must match tokenized amount x2")
 }
