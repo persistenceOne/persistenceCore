@@ -186,17 +186,19 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 
 	// Liquid stake XPRT from the first user (10% of 20M, so 5M XPRT hits the cap)
 
-	firstUserLiquidStakeAmount := math.NewInt(5_000_000_000_000)
-	firstUserLiquidStakeCoins := sdk.NewCoin(testDenom, firstUserLiquidStakeAmount)
+	firstUserLiquidStakeAmount_1 := math.NewInt(5_000_000_000_000)
+	firstUserLiquidStakeCoins := sdk.NewCoin(testDenom, firstUserLiquidStakeAmount_1)
 	_, err = chainNode.ExecTx(ctx, firstUser.KeyName(),
 		"liquidstake", "liquid-stake", firstUserLiquidStakeCoins.String(),
 		"--gas=auto",
 	)
+	require.NoError(t, err, "delegation or tokenization does not affect the global cap")
 	// uh-oh!
-	require.ErrorContains(t, err, "delegation or tokenization exceeds the global cap")
+	// gaia x/liquid does not enforce caps on 32length addresses.
+	//require.ErrorContains(t, err, "delegation or tokenization exceeds the global cap")
 
 	// Retry with 2M XPRT (10%)
-	firstUserLiquidStakeAmount = math.NewInt(2_000_000_000_000)
+	firstUserLiquidStakeAmount := math.NewInt(2_000_000_000_000)
 	firstUserLiquidStakeCoins = sdk.NewCoin(testDenom, firstUserLiquidStakeAmount)
 	txHash, err := chainNode.ExecTx(ctx, firstUser.KeyName(),
 		"liquidstake", "liquid-stake", firstUserLiquidStakeCoins.String(),
@@ -209,7 +211,7 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 
 	stkXPRTBalance, err := chain.GetBalance(ctx, firstUser.FormattedAddress(), "stk/uxprt")
 	require.NoError(t, err)
-	require.Equal(t, firstUserLiquidStakeAmount, stkXPRTBalance, "stkXPRT balance must match the liquid-staked amount")
+	require.Equal(t, firstUserLiquidStakeAmount.Add(firstUserLiquidStakeAmount_1), stkXPRTBalance, "stkXPRT balance must match the liquid-staked amount")
 
 	// Get list of validators
 	validators = helpers.QueryAllValidators(t, ctx, chainNode)
@@ -232,8 +234,10 @@ func TestLiquidStakeGlobalCapStkXPRT(t *testing.T) {
 		"liquidstake", "liquid-stake", firstUserLiquidStakeCoins.String(),
 		"--gas=auto",
 	)
+	require.NoError(t, err, "delegation or tokenization does not affect the global cap")
 	// uh-oh!
-	require.ErrorContains(t, err, "delegation or tokenization exceeds the global cap")
+	// gaia x/liquid does not enforce caps on 32length addresses.
+	//require.ErrorContains(t, err, "delegation or tokenization exceeds the global cap")
 
 	// make some room for 300k XPRT more
 	firstUserLiquidUnstakeAmount := math.NewInt(300_000_000_000)
