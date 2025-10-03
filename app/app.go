@@ -60,12 +60,12 @@ import (
 	"github.com/persistenceOne/persistenceCore/v14/app/constants"
 	"github.com/persistenceOne/persistenceCore/v14/app/keepers"
 	"github.com/persistenceOne/persistenceCore/v14/app/upgrades"
-	v1400rc0 "github.com/persistenceOne/persistenceCore/v14/app/upgrades/testnet/v14.0.0-rc0"
+	v1400 "github.com/persistenceOne/persistenceCore/v14/app/upgrades/v14.0.0"
 )
 
 var (
 	DefaultNodeHome string
-	Upgrades        = []upgrades.Upgrade{v1400rc0.Upgrade}
+	Upgrades        = []upgrades.Upgrade{v1400.Upgrade}
 	ModuleBasics    = module.NewBasicManager(keepers.AppModuleBasics...)
 )
 
