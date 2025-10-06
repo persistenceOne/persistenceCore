@@ -7,11 +7,10 @@ package app
 
 import (
 	"github.com/cosmos/cosmos-sdk/std"
-	sdkdistr "github.com/cosmos/cosmos-sdk/x/distribution"
 	grouptypes "github.com/cosmos/cosmos-sdk/x/group"
-	sdkslashing "github.com/cosmos/cosmos-sdk/x/slashing"
-	sdkstaking "github.com/cosmos/cosmos-sdk/x/staking"
 	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v5/x/interchainquery/types"
+	"github.com/persistenceOne/persistence-sdk/v5/x/lsm/distribution"
+	"github.com/persistenceOne/persistence-sdk/v5/x/lsm/staking"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v5/x/oracle/types"
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v5/x/liquidstakeibc/types"
 	lscosmostypes "github.com/persistenceOne/pstake-native/v5/x/lscosmos/types"
@@ -28,11 +27,6 @@ func MakeEncodingConfig() params.EncodingConfig {
 	std.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 	ModuleBasics.RegisterLegacyAminoCodec(encodingConfig.Amino)
 	ModuleBasics.RegisterInterfaces(encodingConfig.InterfaceRegistry)
-
-	//for icacontroller callback applications
-	sdkstaking.AppModuleBasic{}.RegisterInterfaces(encodingConfig.InterfaceRegistry)
-	sdkslashing.AppModuleBasic{}.RegisterInterfaces(encodingConfig.InterfaceRegistry)
-	sdkdistr.AppModuleBasic{}.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 
 	//deprecated modules types
 	lscosmostypes.RegisterInterfaces(encodingConfig.InterfaceRegistry)
@@ -54,5 +48,13 @@ func MakeEncodingConfig() params.EncodingConfig {
 	grouptypes.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 	grouptypes.RegisterLegacyAminoCodec(encodingConfig.Amino)
 	//ibcfee, but was never used ...
+
+	// cosmos-sdk-lsm staking msgs
+	staking.RegisterLegacyAminoCodec(encodingConfig.Amino)
+	staking.RegisterInterfaces(encodingConfig.InterfaceRegistry)
+
+	// cosmos-sdk-lsm distribution msgs
+	distribution.RegisterLegacyAminoCodec(encodingConfig.Amino)
+	distribution.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 	return encodingConfig
 }
