@@ -61,7 +61,6 @@ func TestBondTokenize(t *testing.T) {
 
 	delegation := helpers.QueryDelegation(t, ctx, chainNode, firstUser.FormattedAddress(), validators[0].OperatorAddress)
 	require.Equal(t, math.LegacyNewDecFromInt(firstUserDelegationCoins.Amount), delegation.Shares, "compare first user delegated amounts to delegation.shares")
-	require.False(t, delegation.ValidatorBond)
 
 	// Delegate from second user
 	secondUserDelegationAmount := math.NewInt(1_000_000)
@@ -74,7 +73,6 @@ func TestBondTokenize(t *testing.T) {
 
 	delegation = helpers.QueryDelegation(t, ctx, chainNode, secondUser.FormattedAddress(), validators[0].OperatorAddress)
 	require.Equal(t, math.LegacyNewDecFromInt(secondUserDelegationCoins.Amount), delegation.Shares, "compare second user delegated amounts to delegation.shares")
-	require.False(t, delegation.ValidatorBond)
 
 	tokenizeCoins := sdk.NewCoin(testDenom, math.NewInt(250_000_000))
 
@@ -97,8 +95,6 @@ func TestBondTokenize(t *testing.T) {
 		"liquid", "tokenize-share", validators[0].OperatorAddress, tokenizeCoins.String(), firstUser.FormattedAddress(),
 		"--gas=500000",
 	)
-	//require.Error(t, err)
-	//require.ErrorContains(t, err, "insufficient validator bond shares")
 
 	// Delegate from second user more
 	txHash, err = chainNode.ExecTx(ctx, secondUser.KeyName(),
