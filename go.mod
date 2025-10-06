@@ -27,8 +27,8 @@ require (
 	github.com/cosmos/ibc-apps/modules/ibc-hooks/v10 v10.0.0-20250919123430-5596e0a03585
 	github.com/cosmos/ibc-go/v10 v10.1.1
 	github.com/cosmos/rosetta v0.50.12
-	github.com/persistenceOne/persistence-sdk/v5 v5.0.0-rc1
-	github.com/persistenceOne/pstake-native/v5 v5.0.0-rc1
+	github.com/persistenceOne/persistence-sdk/v5 v5.0.0
+	github.com/persistenceOne/pstake-native/v5 v5.0.0
 	github.com/prometheus/client_golang v1.23.0
 	github.com/spf13/cast v1.9.2
 	github.com/spf13/cobra v1.9.1
