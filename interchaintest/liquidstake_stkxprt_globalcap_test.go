@@ -18,7 +18,7 @@ import (
 	liquidstaketypes "github.com/persistenceOne/pstake-native/v5/x/liquidstake/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/persistenceOne/persistenceCore/v14/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v15/interchaintest/helpers"
 )
 
 // TestLiquidStakeGlobalCapStkXPRT runs the flow of liquid XPRT staking that reaches the global cap for liquid staking.

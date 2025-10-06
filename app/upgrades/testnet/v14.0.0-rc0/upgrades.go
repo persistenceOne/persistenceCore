@@ -12,8 +12,8 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	liquidkeeper "github.com/cosmos/gaia/v24/x/liquid/keeper"
 	liquidtypes "github.com/cosmos/gaia/v24/x/liquid/types"
-	"github.com/persistenceOne/persistenceCore/v14/app/keepers"
-	"github.com/persistenceOne/persistenceCore/v14/app/upgrades"
+	"github.com/persistenceOne/persistenceCore/v15/app/keepers"
+	"github.com/persistenceOne/persistenceCore/v15/app/upgrades"
 )
 
 func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.UpgradeHandler {

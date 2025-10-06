@@ -57,10 +57,10 @@ import (
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/spf13/cast"
 
-	"github.com/persistenceOne/persistenceCore/v14/app/constants"
-	"github.com/persistenceOne/persistenceCore/v14/app/keepers"
-	"github.com/persistenceOne/persistenceCore/v14/app/upgrades"
-	v1400 "github.com/persistenceOne/persistenceCore/v14/app/upgrades/v14.0.0"
+	"github.com/persistenceOne/persistenceCore/v15/app/constants"
+	"github.com/persistenceOne/persistenceCore/v15/app/keepers"
+	"github.com/persistenceOne/persistenceCore/v15/app/upgrades"
+	v1400 "github.com/persistenceOne/persistenceCore/v15/app/upgrades/v14.0.0"
 )
 
 var (
