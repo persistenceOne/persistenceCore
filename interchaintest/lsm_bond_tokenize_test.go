@@ -8,7 +8,6 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/interchaintest/v10"
-	"github.com/cosmos/interchaintest/v10/chain/cosmos"
 	"github.com/stretchr/testify/require"
 
 	"github.com/persistenceOne/persistenceCore/v15/interchaintest/helpers"
@@ -29,10 +28,7 @@ func TestBondTokenize(t *testing.T) {
 
 	// create a single chain instance with 4 validators
 	validatorsCount := 4
-	ic, chain := CreateChain(t, ctx, validatorsCount, 0, cosmos.GenesisKV{
-		Key:   "app_state.staking.params.validator_bond_factor",
-		Value: "250",
-	})
+	ic, chain := CreateChain(t, ctx, validatorsCount, 0)
 	chainNode := chain.Nodes()[0]
 	testDenom := chain.Config().Denom
 
