@@ -14,7 +14,7 @@ import (
 	"path/filepath"
 
 	"github.com/cosmos/cosmos-sdk/codec/address"
-	"github.com/persistenceOne/persistenceCore/v14/app/constants"
+	"github.com/persistenceOne/persistenceCore/v15/app/constants"
 
 	"cosmossdk.io/math"
 	tmconfig "github.com/cometbft/cometbft/config"
@@ -41,7 +41,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
-	"github.com/persistenceOne/persistenceCore/v14/app"
+	"github.com/persistenceOne/persistenceCore/v15/app"
 )
 
 var (

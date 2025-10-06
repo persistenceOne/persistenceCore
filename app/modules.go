@@ -51,7 +51,7 @@ import (
 	"github.com/persistenceOne/persistence-sdk/v5/x/epochs"
 	epochstypes "github.com/persistenceOne/persistence-sdk/v5/x/epochs/types"
 	"github.com/persistenceOne/persistence-sdk/v5/x/halving"
-	appparams "github.com/persistenceOne/persistenceCore/v14/app/params"
+	appparams "github.com/persistenceOne/persistenceCore/v15/app/params"
 	"github.com/persistenceOne/pstake-native/v5/x/liquidstake"
 	liquidstaketypes "github.com/persistenceOne/pstake-native/v5/x/liquidstake/types"
 )
