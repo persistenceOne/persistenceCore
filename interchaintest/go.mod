@@ -15,7 +15,7 @@ require (
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/cosmos/ibc-go/v10 v10.1.1
 	github.com/cosmos/interchaintest/v10 v10.0.0-alpha.1
-	github.com/persistenceOne/pstake-native/v5 v5.0.0-rc0
+	github.com/persistenceOne/pstake-native/v5 v5.1.0-rc0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.27.0
@@ -292,6 +292,3 @@ replace (
 	// Downgraded to avoid bugs in following commits which caused simulations to fail.
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 )
-
-// use persistence's forks with LSM implemented
-replace github.com/cosmos/cosmos-sdk => github.com/persistenceOne/cosmos-sdk v0.50.14-lsm-disabled

@@ -202,12 +202,10 @@ type UnbondingDelegation struct {
 }
 
 type UnbondingDelegationEntry struct {
-	CreationHeight          string         `json:"creation_height"`
-	CompletionTime          time.Time      `json:"completion_time"`
-	InitialBalance          math.Int       `json:"initial_balance"`
-	Balance                 math.Int       `json:"balance"`
-	UnbondingID             string         `json:"unbonding_id"`
-	UnbondingOnHoldRefCount string         `json:"unbonding_on_hold_ref_count"`
-	ValidatorBondFactor     math.LegacyDec `json:"validator_bond_factor"`
-	GlobalLiquidStakingCap  math.LegacyDec `json:"global_liquid_staking_cap"`
+	CreationHeight          string    `json:"creation_height"`
+	CompletionTime          time.Time `json:"completion_time"`
+	InitialBalance          math.Int  `json:"initial_balance"`
+	Balance                 math.Int  `json:"balance"`
+	UnbondingID             string    `json:"unbonding_id"`
+	UnbondingOnHoldRefCount string    `json:"unbonding_on_hold_ref_count"`
 }
