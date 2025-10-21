@@ -1581,8 +1581,8 @@ github.com/persistenceOne/gaia/v24 v24.0.0-liquid-fix h1:qt0MgkxO49euqUT8TQ7DzTu
 github.com/persistenceOne/gaia/v24 v24.0.0-liquid-fix/go.mod h1:stj6uUeygZVsqcQWDQxKwSOqHI0rPSJMtJLsKDfU1FU=
 github.com/persistenceOne/persistence-sdk/v5 v5.1.0 h1:+tQgRqv97KwRs7uB9dEtayrkHkZBhpgaqyQ0jH9mxn4=
 github.com/persistenceOne/persistence-sdk/v5 v5.1.0/go.mod h1:IArxJsIOG4nJwEIyQf66q8keTTJBSMTGjtbscSKnbbY=
-github.com/persistenceOne/pstake-native/v5 v5.1.0 h1:ErdBx290k/nxnoXrXfp9enAAJdHBZdqNAuvpXWbdMXU=
-github.com/persistenceOne/pstake-native/v5 v5.1.0/go.mod h1:GwIXPlqhf/JLC40FTxtYBsxgSfvPtfbHT0N4PHma8aE=
+github.com/persistenceOne/pstake-native/v5 v5.1.1 h1:VPI/PaFgpkjcaWQ9EbNbSp4tLQw5mQlXIGdILgArSiU=
+github.com/persistenceOne/pstake-native/v5 v5.1.1/go.mod h1:hh0BVyXsvhk7xrhxnBaE1DjRWmRGzg7g9XHq8phZKXg=
 github.com/peterh/liner v1.0.1-0.20180619022028-8c1271fcf47f/go.mod h1:xIteQHvHuaLYG9IFj6mSxM0fCKrs34IrEQUhOYuGPHc=
 github.com/peterh/liner v1.1.1-0.20190123174540-a2c9a5303de7/go.mod h1:CRroGNssyjTd/qIG2FyxByd2S8JEAZXBl4qUrZf8GS0=
 github.com/petermattis/goid v0.0.0-20240813172612-4fcff4a6cae7 h1:Dx7Ovyv/SFnMFw3fD4oEoeorXc6saIiQ23LrGLth0Gw=
