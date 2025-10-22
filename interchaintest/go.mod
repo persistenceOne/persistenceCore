@@ -15,7 +15,7 @@ require (
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/cosmos/ibc-go/v10 v10.1.1
 	github.com/cosmos/interchaintest/v10 v10.0.0-alpha.1
-	github.com/persistenceOne/pstake-native/v5 v5.1.0
+	github.com/persistenceOne/pstake-native/v5 v5.1.1
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/zap v1.27.0
