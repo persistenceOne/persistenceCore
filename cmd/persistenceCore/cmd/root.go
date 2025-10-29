@@ -7,7 +7,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/snapshot"
-	"github.com/persistenceOne/persistenceCore/v15/app/constants"
+	"github.com/persistenceOne/persistenceCore/v16/app/constants"
 
 	"cosmossdk.io/log"
 	confixcmd "cosmossdk.io/tools/confix/cmd"
@@ -38,8 +38,8 @@ import (
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 
-	"github.com/persistenceOne/persistenceCore/v15/app"
-	"github.com/persistenceOne/persistenceCore/v15/app/params"
+	"github.com/persistenceOne/persistenceCore/v16/app"
+	"github.com/persistenceOne/persistenceCore/v16/app/params"
 )
 
 const flagInvalidCheckPeriod = "invalid-check-period"

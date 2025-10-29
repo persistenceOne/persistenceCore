@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/persistenceOne/persistenceCore/v15/app/keepers"
+	"github.com/persistenceOne/persistenceCore/v16/app/keepers"
 )
 
 type UpgradeHandlerArgs struct {

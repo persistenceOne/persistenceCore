@@ -6,7 +6,7 @@ import (
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/persistenceOne/persistenceCore/v15/app/upgrades"
+	"github.com/persistenceOne/persistenceCore/v16/app/upgrades"
 )
 
 func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.UpgradeHandler {

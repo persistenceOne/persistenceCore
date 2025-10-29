@@ -17,7 +17,7 @@ import (
 	liquidstaketypes "github.com/persistenceOne/pstake-native/v5/x/liquidstake/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/persistenceOne/persistenceCore/v15/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v16/interchaintest/helpers"
 )
 
 // TestLiquidStakeUnstakeStkXPRT runs the flow of stkXPRT unstaking.

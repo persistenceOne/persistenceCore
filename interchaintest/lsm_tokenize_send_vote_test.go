@@ -14,7 +14,7 @@ import (
 	"github.com/cosmos/interchaintest/v10/ibc"
 	"github.com/stretchr/testify/require"
 
-	"github.com/persistenceOne/persistenceCore/v15/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v16/interchaintest/helpers"
 )
 
 // TestTokenizeSendVote checks that once shares are tokenized, the tokens can be
