@@ -77,8 +77,8 @@ import (
 	liquidstaketypes "github.com/persistenceOne/pstake-native/v5/x/liquidstake/types"
 	"github.com/spf13/cast"
 
-	"github.com/persistenceOne/persistenceCore/v15/app/constants"
-	"github.com/persistenceOne/persistenceCore/v15/wasmbindings"
+	"github.com/persistenceOne/persistenceCore/v16/app/constants"
+	"github.com/persistenceOne/persistenceCore/v16/wasmbindings"
 )
 
 type AppKeepers struct {

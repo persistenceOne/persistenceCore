@@ -2,7 +2,7 @@ package v15_0_0_rc0
 
 import (
 	store "cosmossdk.io/store/types"
-	"github.com/persistenceOne/persistenceCore/v15/app/upgrades"
+	"github.com/persistenceOne/persistenceCore/v16/app/upgrades"
 )
 
 const (
