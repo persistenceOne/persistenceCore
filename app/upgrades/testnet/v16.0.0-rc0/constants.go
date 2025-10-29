@@ -1,4 +1,4 @@
-package v15_0_0
+package v16_0_0_rc0
 
 import (
 	store "cosmossdk.io/store/types"
@@ -7,14 +7,14 @@ import (
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName = "v15.0.0"
+	UpgradeName = "v16.0.0-rc0"
 )
 
 var Upgrade = upgrades.Upgrade{
 	UpgradeName:          UpgradeName,
 	CreateUpgradeHandler: CreateUpgradeHandler,
 	StoreUpgrades: store.StoreUpgrades{
-		Added:   []string{},
+		Added:   []string{}, //TODO protocol pool,
 		Deleted: []string{},
 	},
 }
