@@ -1,4 +1,4 @@
-package v15_0_0_rc0
+package v16_0_0_rc0
 
 import (
 	"context"
@@ -13,6 +13,7 @@ func CreateUpgradeHandler(args upgrades.UpgradeHandlerArgs) upgradetypes.Upgrade
 	return func(ctx context.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
 		sdkCtx := sdk.UnwrapSDKContext(ctx)
 		sdkCtx.Logger().Info("Running upgrade handler")
+
 		sdkCtx.Logger().Info("running module migrations...")
 		vm, err := args.ModuleManager.RunMigrations(sdkCtx, args.Configurator, vm)
 		if err != nil {
