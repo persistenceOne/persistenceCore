@@ -8,8 +8,8 @@ mkdir -p ./tmp_deps
 mkdir -p ./tmp-swagger-gen
 
 #copy some deps to use their proto files to generate swagger
-deps="github.com/persistenceOne/pstake-native/v5 \
-github.com/persistenceOne/persistence-sdk/v5 \
+deps="github.com/persistenceOne/pstake-native/v6 \
+github.com/persistenceOne/persistence-sdk/v6 \
 github.com/cosmos/cosmos-sdk \
 github.com/cosmos/ibc-go/v10 \
 github.com/CosmWasm/wasmd \

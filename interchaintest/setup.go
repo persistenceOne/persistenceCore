@@ -13,7 +13,7 @@ import (
 	"github.com/cosmos/interchaintest/v10/chain/cosmos"
 	"github.com/cosmos/interchaintest/v10/ibc"
 	"github.com/cosmos/interchaintest/v10/testreporter"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v5/x/liquidstake/types"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v6/x/liquidstake/types"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 

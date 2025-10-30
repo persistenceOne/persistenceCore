@@ -12,6 +12,7 @@ import (
 	consensusparamstypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	epochstypes "github.com/cosmos/cosmos-sdk/x/epochs/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -24,9 +25,8 @@ import (
 	icahosttypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/host/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
-	epochstypes "github.com/persistenceOne/persistence-sdk/v5/x/epochs/types"
-	"github.com/persistenceOne/persistence-sdk/v5/x/halving"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v5/x/liquidstake/types"
+	"github.com/persistenceOne/persistence-sdk/v6/x/halving"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v6/x/liquidstake/types"
 )
 
 func (appKeepers *AppKeepers) GenerateKeys() {

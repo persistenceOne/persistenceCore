@@ -24,6 +24,8 @@ import (
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	"github.com/cosmos/cosmos-sdk/x/distribution"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	"github.com/cosmos/cosmos-sdk/x/epochs"
+	epochstypes "github.com/cosmos/cosmos-sdk/x/epochs/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/cosmos/cosmos-sdk/x/gov"
@@ -48,12 +50,10 @@ import (
 	ibc "github.com/cosmos/ibc-go/v10/modules/core"
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
-	"github.com/persistenceOne/persistence-sdk/v5/x/epochs"
-	epochstypes "github.com/persistenceOne/persistence-sdk/v5/x/epochs/types"
-	"github.com/persistenceOne/persistence-sdk/v5/x/halving"
+	"github.com/persistenceOne/persistence-sdk/v6/x/halving"
 	appparams "github.com/persistenceOne/persistenceCore/v16/app/params"
-	"github.com/persistenceOne/pstake-native/v5/x/liquidstake"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v5/x/liquidstake/types"
+	"github.com/persistenceOne/pstake-native/v6/x/liquidstake"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v6/x/liquidstake/types"
 )
 
 var ModuleAccountPermissions = map[string][]string{
@@ -122,6 +122,13 @@ func overrideSimulationModules(
 
 	return map[string]module.AppModuleSimulation{
 		authtypes.ModuleName: auth.NewAppModule(appCodec, *app.AccountKeeper, authsimulation.RandomGenesisAccounts, app.GetSubspace(authtypes.ModuleName)),
+	}
+}
+
+func orderPreBlockers() []string {
+	return []string{
+		upgradetypes.ModuleName,
+		authtypes.ModuleName,
 	}
 }
 
