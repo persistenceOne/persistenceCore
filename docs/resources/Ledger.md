@@ -1,5 +1,7 @@
 # Ledger Nano Support
 
+## Persistence Ledger App development is Discontinued 
+
 Using a hardware wallet to store your private keys comes in handy and improves the security of your crypto assets.
 The **Ledger** device acts as an enclave of the seed phrase (mnemonic) and private keys and thereby the process of
 signing transaction takes place within it. Your private information is secure and will not leak from the Ledger device.
