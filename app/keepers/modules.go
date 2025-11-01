@@ -13,6 +13,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/consensus"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	"github.com/cosmos/cosmos-sdk/x/distribution"
+	"github.com/cosmos/cosmos-sdk/x/epochs"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/cosmos/cosmos-sdk/x/gov"
@@ -22,16 +23,15 @@ import (
 	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	"github.com/cosmos/cosmos-sdk/x/staking"
-	"github.com/cosmos/gaia/v24/x/liquid"
+	"github.com/cosmos/gaia/v25/x/liquid"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward"
 	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v10"
 	ica "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts"
 	"github.com/cosmos/ibc-go/v10/modules/apps/transfer"
 	ibc "github.com/cosmos/ibc-go/v10/modules/core"
 	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
-	"github.com/persistenceOne/persistence-sdk/v5/x/epochs"
-	"github.com/persistenceOne/persistence-sdk/v5/x/halving"
-	"github.com/persistenceOne/pstake-native/v5/x/liquidstake"
+	"github.com/persistenceOne/persistence-sdk/v6/x/halving"
+	"github.com/persistenceOne/pstake-native/v6/x/liquidstake"
 )
 
 // AppModuleBasics defines the module BasicManager is in charge of setting up basic,
@@ -63,7 +63,7 @@ var AppModuleBasics = append([]module.AppModuleBasic{
 	wasm.AppModuleBasic{},
 	halving.AppModuleBasic{},
 	ica.AppModuleBasic{},
-	epochs.AppModuleBasic{},
+	epochs.AppModule{},
 	liquid.AppModuleBasic{},
 	liquidstake.AppModuleBasic{},
 	consensus.AppModuleBasic{},

@@ -8,13 +8,13 @@ package app
 import (
 	"github.com/cosmos/cosmos-sdk/std"
 	grouptypes "github.com/cosmos/cosmos-sdk/x/group"
-	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v5/x/interchainquery/types"
-	"github.com/persistenceOne/persistence-sdk/v5/x/lsm/distribution"
-	"github.com/persistenceOne/persistence-sdk/v5/x/lsm/staking"
-	oracletypes "github.com/persistenceOne/persistence-sdk/v5/x/oracle/types"
-	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v5/x/liquidstakeibc/types"
-	lscosmostypes "github.com/persistenceOne/pstake-native/v5/x/lscosmos/types"
-	ratesynctypes "github.com/persistenceOne/pstake-native/v5/x/ratesync/types"
+	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v6/x/interchainquery/types"
+	"github.com/persistenceOne/persistence-sdk/v6/x/lsm/distribution"
+	"github.com/persistenceOne/persistence-sdk/v6/x/lsm/staking"
+	oracletypes "github.com/persistenceOne/persistence-sdk/v6/x/oracle/types"
+	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v6/x/liquidstakeibc/types"
+	lscosmostypes "github.com/persistenceOne/pstake-native/v6/x/lscosmos/types"
+	ratesynctypes "github.com/persistenceOne/pstake-native/v6/x/ratesync/types"
 
 	"github.com/persistenceOne/persistenceCore/v16/app/params"
 )
