@@ -18,7 +18,7 @@ import (
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	liquidtypes "github.com/cosmos/gaia/v24/x/liquid/types"
+	liquidtypes "github.com/cosmos/gaia/v25/x/liquid/types"
 	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/types"
 	ibchookstypes "github.com/cosmos/ibc-apps/modules/ibc-hooks/v10/types"
 	icacontrollertypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/types"

@@ -23,7 +23,7 @@ import (
 	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	"github.com/cosmos/cosmos-sdk/x/staking"
-	"github.com/cosmos/gaia/v24/x/liquid"
+	"github.com/cosmos/gaia/v25/x/liquid"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward"
 	ibchooks "github.com/cosmos/ibc-apps/modules/ibc-hooks/v10"
 	ica "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts"
