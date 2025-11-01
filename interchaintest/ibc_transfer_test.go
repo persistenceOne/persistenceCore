@@ -61,13 +61,14 @@ func TestPersistenceGaiaIBCTransfer(t *testing.T) {
 
 	persistenceChain, gaiaChain := chains[0].(*cosmos.CosmosChain), chains[1].(*cosmos.CosmosChain)
 
-	relayerType, relayerName := ibc.CosmosRly, "relay"
+	//relayerType, relayerName := ibc.CosmosRly, "relay"
+	relayerType, relayerName := ibc.Hermes, "relay"
 
 	// Get a relayer instance
 	rf := interchaintest.NewBuiltinRelayerFactory(
 		relayerType,
 		zaptest.NewLogger(t),
-		interchaintestrelayer.CustomDockerImage(IBCRelayerImage, IBCRelayerVersion, "100:1000"),
+		interchaintestrelayer.CustomDockerImage(HermesRelayerImage, HermesRelayerVersion, "100:1000"),
 		interchaintestrelayer.StartupFlags("--processor", "events", "--block-history", "100"),
 	)
 
@@ -89,7 +90,7 @@ func TestPersistenceGaiaIBCTransfer(t *testing.T) {
 		AddChain(gaiaChain, ibc.WalletAmount{
 			Address: relayerWalletGaia.FormattedAddress(),
 			Denom:   gaiaChain.Config().Denom,
-			Amount:  genesisWalletAmount,
+			Amount:  cosmosGenesisWalletAmount,
 		}).
 		AddRelayer(r, relayerName).
 		AddLink(interchaintest.InterchainLink{
