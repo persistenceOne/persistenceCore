@@ -2,6 +2,7 @@ package interchaintest
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -41,10 +42,10 @@ func TestPersistenceGaiaIBCTransfer(t *testing.T) {
 			Version:       "main",
 			NumValidators: &numVals,
 			NumFullNodes:  &numFullNodes,
-			//ChainConfig: ibc.ChainConfig{
-			//	GasPrices:     fmt.Sprintf("%v%v", 0.05, "uatom"),
-			//	GasAdjustment: 1.5,
-			//},
+			ChainConfig: ibc.ChainConfig{
+				GasPrices:     fmt.Sprintf("%v%v", 0.0005, "uatom"),
+				GasAdjustment: 1.5,
+			},
 		},
 	})
 
