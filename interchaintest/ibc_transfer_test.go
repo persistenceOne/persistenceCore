@@ -2,7 +2,6 @@ package interchaintest
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -42,10 +41,10 @@ func TestPersistenceGaiaIBCTransfer(t *testing.T) {
 			Version:       "main",
 			NumValidators: &numVals,
 			NumFullNodes:  &numFullNodes,
-			ChainConfig: ibc.ChainConfig{
-				GasPrices:     fmt.Sprintf("%v%v", 0.05, "uatom"),
-				GasAdjustment: 1.5,
-			},
+			//ChainConfig: ibc.ChainConfig{
+			//	GasPrices:     fmt.Sprintf("%v%v", 0.05, "uatom"),
+			//	GasAdjustment: 1.5,
+			//},
 		},
 	})
 
@@ -73,9 +72,24 @@ func TestPersistenceGaiaIBCTransfer(t *testing.T) {
 
 	r := rf.Build(t, client, network)
 
+	ctx := context.Background()
+
+	relayerWalletPersistence, err := persistenceChain.BuildRelayerWallet(ctx, "relayer-"+persistenceChain.Config().ChainID)
+	require.NoError(t, err)
+	relayerWalletGaia, err := gaiaChain.BuildRelayerWallet(ctx, "relayer-"+gaiaChain.Config().ChainID)
+	require.NoError(t, err)
+
 	ic := interchaintest.NewInterchain().
-		AddChain(persistenceChain).
-		AddChain(gaiaChain).
+		AddChain(persistenceChain, ibc.WalletAmount{
+			Address: relayerWalletPersistence.FormattedAddress(),
+			Denom:   persistenceChain.Config().Denom,
+			Amount:  genesisWalletAmount,
+		}).
+		AddChain(gaiaChain, ibc.WalletAmount{
+			Address: relayerWalletGaia.FormattedAddress(),
+			Denom:   gaiaChain.Config().Denom,
+			Amount:  genesisWalletAmount,
+		}).
 		AddRelayer(r, relayerName).
 		AddLink(interchaintest.InterchainLink{
 			Chain1:  persistenceChain,
@@ -83,8 +97,6 @@ func TestPersistenceGaiaIBCTransfer(t *testing.T) {
 			Relayer: r,
 			Path:    path,
 		})
-
-	ctx := context.Background()
 
 	rep := testreporter.NewNopReporter()
 	eRep := rep.RelayerExecReporter(t)
