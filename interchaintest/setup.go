@@ -26,7 +26,7 @@ var (
 	IBCRelayerVersion  = "main"
 
 	HermesRelayerImage   = "ghcr.io/informalsystems/hermes"
-	HermesRelayerVersion = "main"
+	HermesRelayerVersion = "1.13.1"
 
 	PersistenceCoreImage = ibc.DockerImage{
 		Repository: "persistence",
