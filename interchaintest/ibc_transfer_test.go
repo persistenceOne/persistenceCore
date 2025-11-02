@@ -43,7 +43,7 @@ func TestPersistenceGaiaIBCTransfer(t *testing.T) {
 			NumValidators: &numVals,
 			NumFullNodes:  &numFullNodes,
 			ChainConfig: ibc.ChainConfig{
-				GasPrices:     fmt.Sprintf("%v%v", 0.0005, "uatom"),
+				GasPrices:     fmt.Sprintf("%v%v", 1, "uatom"),
 				GasAdjustment: 1.5,
 			},
 		},
