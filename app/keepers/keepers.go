@@ -32,6 +32,8 @@ import (
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	distributionkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	epochskeeper "github.com/cosmos/cosmos-sdk/x/epochs/keeper"
+	epochstypes "github.com/cosmos/cosmos-sdk/x/epochs/types"
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
@@ -46,8 +48,8 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	liquidkeeper "github.com/cosmos/gaia/v24/x/liquid/keeper"
-	liquidtypes "github.com/cosmos/gaia/v24/x/liquid/types"
+	liquidkeeper "github.com/cosmos/gaia/v25/x/liquid/keeper"
+	liquidtypes "github.com/cosmos/gaia/v25/x/liquid/types"
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward"
 	packetforwardkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/keeper"
 	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/types"
@@ -69,12 +71,10 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
-	epochskeeper "github.com/persistenceOne/persistence-sdk/v5/x/epochs/keeper"
-	epochstypes "github.com/persistenceOne/persistence-sdk/v5/x/epochs/types"
-	"github.com/persistenceOne/persistence-sdk/v5/x/halving"
-	halvingtypes "github.com/persistenceOne/persistence-sdk/v5/x/halving/types"
-	liquidstakekeeper "github.com/persistenceOne/pstake-native/v5/x/liquidstake/keeper"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v5/x/liquidstake/types"
+	"github.com/persistenceOne/persistence-sdk/v6/x/halving"
+	halvingtypes "github.com/persistenceOne/persistence-sdk/v6/x/halving/types"
+	liquidstakekeeper "github.com/persistenceOne/pstake-native/v6/x/liquidstake/keeper"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v6/x/liquidstake/types"
 	"github.com/spf13/cast"
 
 	"github.com/persistenceOne/persistenceCore/v16/app/constants"
@@ -290,7 +290,8 @@ func NewAppKeeper(
 			appKeepers.LiquidKeeper.Hooks()),
 	)
 
-	appKeepers.EpochsKeeper = epochskeeper.NewKeeper(appKeepers.keys[epochstypes.StoreKey])
+	sdkEpochsKeeper := epochskeeper.NewKeeper(runtime.NewKVStoreService(appKeepers.keys[epochstypes.StoreKey]), appCodec)
+	appKeepers.EpochsKeeper = &sdkEpochsKeeper
 
 	appKeepers.IBCKeeper = ibckeeper.NewKeeper(
 		appCodec,

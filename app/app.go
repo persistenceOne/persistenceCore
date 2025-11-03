@@ -173,9 +173,7 @@ func NewApplication(
 
 	app.moduleManager = module.NewManager(appModules(app, encodingConfiguration, skipGenesisInvariants)...)
 
-	app.moduleManager.SetOrderPreBlockers(
-		upgradetypes.ModuleName,
-	)
+	app.moduleManager.SetOrderPreBlockers(orderPreBlockers()...)
 	app.moduleManager.SetOrderBeginBlockers(orderBeginBlockers()...)
 	app.moduleManager.SetOrderEndBlockers(orderEndBlockers()...)
 	app.moduleManager.SetOrderInitGenesis(orderInitGenesis()...)

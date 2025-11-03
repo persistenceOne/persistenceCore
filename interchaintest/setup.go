@@ -8,12 +8,12 @@ import (
 	"cosmossdk.io/math"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/types/module/testutil"
-	liquidtypes "github.com/cosmos/gaia/v24/x/liquid/types"
+	liquidtypes "github.com/cosmos/gaia/v25/x/liquid/types"
 	"github.com/cosmos/interchaintest/v10"
 	"github.com/cosmos/interchaintest/v10/chain/cosmos"
 	"github.com/cosmos/interchaintest/v10/ibc"
 	"github.com/cosmos/interchaintest/v10/testreporter"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v5/x/liquidstake/types"
+	liquidstaketypes "github.com/persistenceOne/pstake-native/v6/x/liquidstake/types"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 
@@ -24,6 +24,9 @@ var (
 	PersistenceE2ERepo = "persistenceone/persistencecore"
 	IBCRelayerImage    = "ghcr.io/cosmos/relayer"
 	IBCRelayerVersion  = "main"
+
+	HermesRelayerImage   = "ghcr.io/informalsystems/hermes"
+	HermesRelayerVersion = "1.13.1"
 
 	PersistenceCoreImage = ibc.DockerImage{
 		Repository: "persistence",
@@ -84,7 +87,8 @@ var (
 		},
 	}
 
-	genesisWalletAmount = math.NewInt(10_000_000)
+	genesisWalletAmount       = math.NewInt(10_000_000)
+	cosmosGenesisWalletAmount = math.NewInt(1_000_000_000_000)
 )
 
 // PersistenceEncoding registers the persistenceCore specific module codecs so that the associated types and msgs
