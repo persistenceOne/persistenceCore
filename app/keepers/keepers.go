@@ -168,6 +168,7 @@ func NewAppKeeper(
 		address.NewBech32Codec(constants.Bech32PrefixAccAddr),
 		constants.Bech32PrefixAccAddr,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		authkeeper.WithUnorderedTransactions(true), // true -> enable unordered transactions
 	)
 	appKeepers.AccountKeeper = &accountKeeper
 
