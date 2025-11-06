@@ -44,7 +44,10 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 	if sigGasConsumer == nil {
 		sigGasConsumer = ante.DefaultSigVerificationGasConsumer
 	}
-
+	options.SigVerifyOptions = []ante.SigVerificationDecoratorOption{
+		ante.WithUnorderedTxGasCost(ante.DefaultUnorderedTxGasCost),
+		ante.WithMaxUnorderedTxTimeoutDuration(ante.DefaultMaxTimeoutDuration),
+	}
 	anteDecorators := []sdk.AnteDecorator{
 		ante.NewSetUpContextDecorator(),
 		wasmkeeper.NewLimitSimulationGasDecorator(options.NodeConfig.SimulationGasLimit), // after setup context to enforce limits early
@@ -60,7 +63,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
 		ante.NewSigGasConsumeDecorator(options.AccountKeeper, sigGasConsumer),
-		ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
+		ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler, options.SigVerifyOptions...),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		ibccoreante.NewRedundantRelayDecorator(options.IBCKeeper),
 	}
