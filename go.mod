@@ -6,7 +6,7 @@ toolchain go1.24.6
 
 require (
 	cosmossdk.io/api v0.9.2
-	cosmossdk.io/client/v2 v2.0.0-beta.9
+	cosmossdk.io/client/v2 v2.0.0-beta.11
 	cosmossdk.io/core v0.11.3
 	cosmossdk.io/errors v1.0.2
 	cosmossdk.io/log v1.6.1
@@ -17,18 +17,18 @@ require (
 	cosmossdk.io/x/feegrant v0.2.0
 	cosmossdk.io/x/tx v0.14.0
 	cosmossdk.io/x/upgrade v0.2.0
-	github.com/CosmWasm/wasmd v0.60.1
+	github.com/CosmWasm/wasmd v0.60.2
 	github.com/cometbft/cometbft v0.38.19
 	github.com/cosmos/cosmos-db v1.1.3
 	github.com/cosmos/cosmos-sdk v0.53.4
-	github.com/cosmos/gaia/v25 v25.1.1
-	github.com/cosmos/gogoproto v1.7.0
+	github.com/cosmos/gaia/v25 v25.2.0
+	github.com/cosmos/gogoproto v1.7.2
 	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10 v10.1.0
 	github.com/cosmos/ibc-apps/modules/ibc-hooks/v10 v10.0.0-20250919123430-5596e0a03585
 	github.com/cosmos/ibc-go/v10 v10.4.0
 	github.com/cosmos/rosetta v0.50.12
-	github.com/persistenceOne/persistence-sdk/v6 v6.0.0-rc0
-	github.com/persistenceOne/pstake-native/v6 v6.0.0-rc1
+	github.com/persistenceOne/persistence-sdk/v6 v6.0.0-rc1
+	github.com/persistenceOne/pstake-native/v6 v6.0.0-rc2
 	github.com/prometheus/client_golang v1.23.0
 	github.com/spf13/cast v1.9.2
 	github.com/spf13/cobra v1.10.1
