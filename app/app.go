@@ -17,6 +17,11 @@ import (
 	clienthelpers "cosmossdk.io/client/v2/helpers"
 	"cosmossdk.io/core/appmodule"
 	"github.com/cosmos/cosmos-sdk/codec/address"
+	"github.com/cosmos/cosmos-sdk/x/genutil"
+	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	"github.com/cosmos/cosmos-sdk/x/gov"
+	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
@@ -66,7 +71,6 @@ import (
 var (
 	DefaultNodeHome string
 	Upgrades        = []upgrades.Upgrade{v1600rc0.Upgrade}
-	ModuleBasics    = module.NewBasicManager(keepers.AppModuleBasics...)
 )
 
 var (
@@ -153,6 +157,7 @@ func NewApplication(
 		wasmOpts,
 		logger,
 	)
+
 	enabledSignModes := append(tx.DefaultSignModes, sigtypes.SignMode_SIGN_MODE_TEXTUAL)
 	txConfigOpts := tx.ConfigOptions{
 		EnabledSignModes:           enabledSignModes,
@@ -171,7 +176,17 @@ func NewApplication(
 	// we prefer to be more strict in what arguments the modules expect.
 	skipGenesisInvariants := cast.ToBool(applicationOptions.Get(crisis.FlagSkipGenesisInvariants))
 
-	app.moduleManager = module.NewManager(appModules(app, encodingConfiguration, skipGenesisInvariants)...)
+	app.moduleManager = module.NewManager(appModules(app, app.appCodec, app.txConfig, skipGenesisInvariants)...)
+
+	app.ModuleBasicManager = module.NewBasicManagerFromManager(app.moduleManager,
+		map[string]module.AppModuleBasic{
+			genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
+			govtypes.ModuleName: gov.NewAppModuleBasic(
+				[]govclient.ProposalHandler{},
+			),
+		})
+	// register interfaces, amino codecs
+	AppendModuleCodecs(app.legacyAmino, app.interfaceRegistry, app.ModuleBasicManager)
 
 	app.moduleManager.SetOrderPreBlockers(orderPreBlockers()...)
 	app.moduleManager.SetOrderBeginBlockers(orderBeginBlockers()...)
@@ -189,7 +204,7 @@ func NewApplication(
 
 	app.simulationManager = module.NewSimulationManagerFromAppModules(
 		app.moduleManager.Modules,
-		overrideSimulationModules(app, encodingConfiguration, skipGenesisInvariants),
+		overrideSimulationModules(app, app.appCodec, skipGenesisInvariants),
 	)
 	app.simulationManager.RegisterStoreDecoders()
 
@@ -211,7 +226,6 @@ func NewApplication(
 
 	app.registerGRPCServices()
 
-	app.ModuleBasicManager = module.NewBasicManagerFromManager(app.moduleManager, map[string]module.AppModuleBasic{})
 	// must be before Loading version
 	// requires the snapshot store to be created and registered as a BaseAppOption
 	// see cmd/wasmd/root.go: 206 - 214 approx
@@ -399,7 +413,7 @@ func (app *Application) RegisterAPIRoutes(apiServer *api.Server, apiConfig confi
 	// Register node gRPC service for grpc-gateway.
 	nodeservice.RegisterGRPCGatewayRoutes(clientCtx, apiServer.GRPCGatewayRouter)
 	// Register grpc-gateway routes for all modules.
-	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiServer.GRPCGatewayRouter)
+	app.ModuleBasicManager.RegisterGRPCGatewayRoutes(clientCtx, apiServer.GRPCGatewayRouter)
 
 	// register swagger API from root so that other applications can override easily
 	if err := server.RegisterSwaggerAPI(apiServer.ClientCtx, apiServer.Router, apiConfig.Swagger); err != nil {
@@ -495,7 +509,7 @@ func (app *Application) LoadHeight(height int64) error {
 
 // DefaultGenesis returns a default genesis from the registered AppModuleBasic's.
 func (app *Application) DefaultGenesis() map[string]json.RawMessage {
-	return ModuleBasics.DefaultGenesis(app.appCodec)
+	return app.ModuleBasicManager.DefaultGenesis(app.appCodec)
 }
 
 func SendCoinBlockedAddrs() map[string]bool {
