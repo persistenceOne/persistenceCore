@@ -16,7 +16,7 @@ import (
 
 func main() {
 
-	rootCmd, _ := cmd.NewRootCmd()
+	rootCmd := cmd.NewRootCmd()
 
 	if err := servercmd.Execute(rootCmd, "", app.DefaultNodeHome); err != nil {
 		os.Exit(1)

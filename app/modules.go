@@ -9,6 +9,8 @@ import (
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authsimulation "github.com/cosmos/cosmos-sdk/x/auth/simulation"
@@ -51,7 +53,6 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
 	"github.com/persistenceOne/persistence-sdk/v6/x/halving"
-	appparams "github.com/persistenceOne/persistenceCore/v16/app/params"
 	"github.com/persistenceOne/pstake-native/v6/x/liquidstake"
 	liquidstaketypes "github.com/persistenceOne/pstake-native/v6/x/liquidstake/types"
 )
@@ -75,15 +76,14 @@ var receiveAllowedMAcc = map[string]bool{
 
 func appModules(
 	app *Application,
-	encodingConfig appparams.EncodingConfig,
+	appCodec codec.Codec,
+	txCfg client.TxConfig,
 	skipGenesisInvariants bool,
 ) []module.AppModule {
-	appCodec := encodingConfig.Codec
 
 	return []module.AppModule{
 		genutil.NewAppModule(
-			app.AccountKeeper, app.StakingKeeper, app,
-			encodingConfig.TxConfig,
+			app.AccountKeeper, app.StakingKeeper, app, txCfg,
 		),
 		auth.NewAppModule(appCodec, *app.AccountKeeper, authsimulation.RandomGenesisAccounts, app.GetSubspace(authtypes.ModuleName)),
 		vesting.NewAppModule(*app.AccountKeeper, app.BankKeeper),
@@ -115,11 +115,9 @@ func appModules(
 
 func overrideSimulationModules(
 	app *Application,
-	encodingConfig appparams.EncodingConfig,
+	appCodec codec.Codec,
 	_ bool,
 ) map[string]module.AppModuleSimulation {
-	appCodec := encodingConfig.Codec
-
 	return map[string]module.AppModuleSimulation{
 		authtypes.ModuleName: auth.NewAppModule(appCodec, *app.AccountKeeper, authsimulation.RandomGenesisAccounts, app.GetSubspace(authtypes.ModuleName)),
 	}

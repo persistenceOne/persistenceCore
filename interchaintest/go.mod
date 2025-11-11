@@ -7,15 +7,15 @@ toolchain go1.24.6
 require (
 	cosmossdk.io/math v1.5.3
 	cosmossdk.io/x/upgrade v0.2.0
-	github.com/CosmWasm/wasmd v0.60.1
+	github.com/CosmWasm/wasmd v0.60.2
 	github.com/avast/retry-go/v4 v4.6.1
 	github.com/cometbft/cometbft v0.38.19
 	github.com/cosmos/cosmos-sdk v0.53.4
-	github.com/cosmos/gaia/v25 v25.1.1
+	github.com/cosmos/gaia/v25 v25.2.0
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/cosmos/ibc-go/v10 v10.4.0
 	github.com/cosmos/interchaintest/v10 v10.0.1
-	github.com/persistenceOne/pstake-native/v6 v6.0.0-rc1
+	github.com/persistenceOne/pstake-native/v6 v6.0.0-rc3
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/zap v1.27.0
@@ -83,7 +83,7 @@ require (
 	github.com/cosmos/cosmos-proto v1.0.0-beta.5 // indirect
 	github.com/cosmos/evm v0.4.2 // indirect
 	github.com/cosmos/gogogateway v1.2.0 // indirect
-	github.com/cosmos/gogoproto v1.7.0 // indirect
+	github.com/cosmos/gogoproto v1.7.2 // indirect
 	github.com/cosmos/iavl v1.2.6 // indirect
 	github.com/cosmos/ics23/go v0.11.0 // indirect
 	github.com/cosmos/interchain-security/v7 v7.0.1 // indirect
@@ -254,7 +254,7 @@ require (
 	google.golang.org/api v0.223.0 // indirect
 	google.golang.org/genproto v0.0.0-20241118233622-e639e219e697 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250707201910-8d1bb00bc6a7 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250707201910-8d1bb00bc6a7 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250804133106-a7a43d27e69b // indirect
 	google.golang.org/grpc v1.75.1 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

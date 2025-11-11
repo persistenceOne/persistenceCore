@@ -6,6 +6,8 @@ import (
 	"os"
 
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/grpc/cmtservice"
+	nodeservice "github.com/cosmos/cosmos-sdk/client/grpc/node"
 	"github.com/cosmos/cosmos-sdk/client/snapshot"
 	"github.com/persistenceOne/persistenceCore/v16/app/constants"
 
@@ -31,7 +33,6 @@ import (
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	rosettaCmd "github.com/cosmos/rosetta/cmd"
 	"github.com/prometheus/client_golang/prometheus"
@@ -42,23 +43,8 @@ import (
 	"github.com/persistenceOne/persistenceCore/v16/app/params"
 )
 
-const flagInvalidCheckPeriod = "invalid-check-period"
-
-var invalidCheckPeriod uint
-
-func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
+func NewRootCmd() *cobra.Command {
 	setConfig()
-	encodingConfig := app.MakeEncodingConfig()
-	initClientCtx := client.Context{}.
-		WithCodec(encodingConfig.Codec).
-		WithInterfaceRegistry(encodingConfig.InterfaceRegistry).
-		WithTxConfig(encodingConfig.TxConfig).
-		WithLegacyAmino(encodingConfig.Amino).
-		WithInput(os.Stdin).
-		WithAccountRetriever(authtypes.AccountRetriever{}).
-		WithBroadcastMode(flags.BroadcastSync).
-		WithHomeDir(app.DefaultNodeHome).
-		WithViper("")
 
 	tempDir := tempDir()
 	tempApp := app.NewApplication(log.NewNopLogger(), dbm.NewMemDB(), nil, true, simtestutil.NewAppOptionsWithFlagHome(tempDir), []wasm.Option{})
@@ -73,6 +59,17 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			}
 		}
 	}()
+
+	initClientCtx := client.Context{}.
+		WithCodec(tempApp.AppCodec()).
+		WithInterfaceRegistry(tempApp.InterfaceRegistry()).
+		WithTxConfig(tempApp.TxConfig()).
+		WithLegacyAmino(tempApp.LegacyAmino()).
+		WithInput(os.Stdin).
+		WithAccountRetriever(authtypes.AccountRetriever{}).
+		WithBroadcastMode(flags.BroadcastSync).
+		WithHomeDir(app.DefaultNodeHome).
+		WithViper("")
 
 	cobra.EnableCommandSorting = false
 
@@ -103,16 +100,22 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			return server.InterceptConfigsPreRunHandler(cmd, customConfigTemplate, customAppConfig, customTMConfig)
 		},
 	}
+	initRootCmd(rootCmd, tempApp)
+
 	// add keyring to autocli opts
 	autoCliOpts := tempApp.AutoCliOpts()
 	initClientCtx, _ = config.ReadFromClientConfig(initClientCtx)
 	autoCliOpts.ClientCtx = initClientCtx
 
-	initRootCmd(rootCmd, encodingConfig, tempApp)
+	nodeCmds := nodeservice.NewNodeCommands()
+	autoCliOpts.ModuleOptions[nodeCmds.Name()] = nodeCmds.AutoCLIOptions()
+	cmtCmds := cmtservice.NewCometBFTCommands()
+	autoCliOpts.ModuleOptions[cmtCmds.Name()] = cmtCmds.AutoCLIOptions()
+
 	if err := autoCliOpts.EnhanceRootCommand(rootCmd); err != nil {
 		panic(err)
 	}
-	return rootCmd, encodingConfig
+	return rootCmd
 }
 
 // setConfig params at the package state
@@ -146,47 +149,40 @@ func initAppConfig() (string, interface{}) {
 	}
 }
 
-func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig, tempApp *app.Application) {
+func initRootCmd(rootCmd *cobra.Command, tempApp *app.Application) {
 
 	rootCmd.AddCommand(
-		genutilcli.InitCmd(app.ModuleBasics, app.DefaultNodeHome),
+		genutilcli.InitCmd(tempApp.ModuleBasicManager, app.DefaultNodeHome),
 		cmtcli.NewCompletionCmd(rootCmd, true),
 		debug.Cmd(),
 		version.NewVersionCommand(),
 		confixcmd.ConfigCommand(),
 		snapshot.Cmd(newApp),
 		pruning.Cmd(newApp, app.DefaultNodeHome),
-		NewTestnetCmd(app.ModuleBasics, banktypes.GenesisBalancesIterator{}),
-	)
-
-	rootCmd.PersistentFlags().UintVar(
-		&invalidCheckPeriod,
-		flagInvalidCheckPeriod,
-		0,
-		"Assert registered invariants every N blocks",
+		NewTestnetCmd(tempApp.ModuleBasicManager, banktypes.GenesisBalancesIterator{}),
 	)
 
 	server.AddCommands(rootCmd, app.DefaultNodeHome, newApp, appExport, addModuleInitFlags)
 
 	// add keybase, auxiliary RPC, query, and tx child commands
 	rootCmd.AddCommand(
-		genesisCommand(encodingConfig),
+		server.StatusCommand(),
+		genesisCommand(tempApp.TxConfig(), tempApp),
 		queryCommand(),
-		txCommand(tempApp),
+		txCommand(),
 		keys.Commands(),
 	)
 
 	// add rosetta
-	rootCmd.AddCommand(rosettaCmd.RosettaCommand(encodingConfig.InterfaceRegistry, encodingConfig.Codec))
+	rootCmd.AddCommand(rosettaCmd.RosettaCommand(tempApp.InterfaceRegistry(), tempApp.AppCodec()))
 }
 
 func addModuleInitFlags(startCmd *cobra.Command) {
-	crisis.AddModuleInitFlags(startCmd)
 	wasm.AddModuleInitFlags(startCmd)
 }
 
-func genesisCommand(encodingConfig params.EncodingConfig, cmds ...*cobra.Command) *cobra.Command {
-	cmd := genutilcli.Commands(encodingConfig.TxConfig, app.ModuleBasics, app.DefaultNodeHome)
+func genesisCommand(txConfig client.TxConfig, tempApp *app.Application, cmds ...*cobra.Command) *cobra.Command {
+	cmd := genutilcli.Commands(txConfig, tempApp.ModuleBasicManager, app.DefaultNodeHome)
 	for _, subCmd := range cmds {
 		cmd.AddCommand(subCmd)
 	}
@@ -205,18 +201,18 @@ func queryCommand() *cobra.Command {
 
 	cmd.AddCommand(
 		rpc.ValidatorCommand(),
+		server.QueryBlocksCmd(),
 		server.QueryBlockCmd(),
+		server.QueryBlockResultsCmd(),
 		authcmd.QueryTxsByEventsCmd(),
 		authcmd.QueryTxCmd(),
 	)
-
-	app.ModuleBasics.AddQueryCommands(cmd)
 	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
 
 	return cmd
 }
 
-func txCommand(tempApp *app.Application) *cobra.Command {
+func txCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                        "tx",
 		Short:                      "Transactions subcommands",
@@ -239,7 +235,6 @@ func txCommand(tempApp *app.Application) *cobra.Command {
 		flags.LineBreak,
 	)
 
-	tempApp.ModuleBasicManager.AddTxCommands(cmd)
 	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
 
 	return cmd
