@@ -15,6 +15,7 @@ import (
 type HandlerOptions struct {
 	ante.HandlerOptions
 	IBCKeeper             *ibckeeper.Keeper
+	WasmKeeper            *wasmkeeper.Keeper
 	NodeConfig            *wasmtypes.NodeConfig
 	TXCounterStoreService corestoretypes.KVStoreService
 
@@ -44,14 +45,12 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 	if sigGasConsumer == nil {
 		sigGasConsumer = ante.DefaultSigVerificationGasConsumer
 	}
-	options.SigVerifyOptions = []ante.SigVerificationDecoratorOption{
-		ante.WithUnorderedTxGasCost(ante.DefaultUnorderedTxGasCost),
-		ante.WithMaxUnorderedTxTimeoutDuration(ante.DefaultMaxTimeoutDuration),
-	}
 	anteDecorators := []sdk.AnteDecorator{
 		ante.NewSetUpContextDecorator(),
 		wasmkeeper.NewLimitSimulationGasDecorator(options.NodeConfig.SimulationGasLimit), // after setup context to enforce limits early
 		wasmkeeper.NewCountTXDecorator(options.TXCounterStoreService),
+		wasmkeeper.NewGasRegisterDecorator(options.WasmKeeper.GetGasRegister()),
+		wasmkeeper.NewTxContractsDecorator(),
 		ante.NewExtensionOptionsDecorator(options.ExtensionOptionChecker),
 		ante.NewValidateBasicDecorator(),
 		ante.NewTxTimeoutHeightDecorator(),
