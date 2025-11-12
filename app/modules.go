@@ -78,7 +78,6 @@ func appModules(
 	app *Application,
 	appCodec codec.Codec,
 	txCfg client.TxConfig,
-	skipGenesisInvariants bool,
 ) []module.AppModule {
 
 	return []module.AppModule{
@@ -108,7 +107,7 @@ func appModules(
 		epochs.NewAppModule(*app.EpochsKeeper),
 		liquid.NewAppModule(appCodec, app.LiquidKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		liquidstake.NewAppModule(*app.LiquidStakeKeeper),
-		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)), // always be last to make sure that it checks for all invariants and not only part of them
+		crisis.NewAppModule(app.CrisisKeeper, false, app.GetSubspace(crisistypes.ModuleName)), // skipGenesisInvariants: false, always be last to make sure that it checks for all invariants and not only part of them
 		ibctm.NewAppModule(app.TMLightClientModule),
 	}
 }
@@ -116,7 +115,6 @@ func appModules(
 func overrideSimulationModules(
 	app *Application,
 	appCodec codec.Codec,
-	_ bool,
 ) map[string]module.AppModuleSimulation {
 	return map[string]module.AppModuleSimulation{
 		authtypes.ModuleName: auth.NewAppModule(appCodec, *app.AccountKeeper, authsimulation.RandomGenesisAccounts, app.GetSubspace(authtypes.ModuleName)),

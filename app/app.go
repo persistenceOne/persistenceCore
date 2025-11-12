@@ -58,7 +58,6 @@ import (
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	txmodule "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/spf13/cast"
 
@@ -172,11 +171,7 @@ func NewApplication(
 	}
 	app.txConfig = txConfig
 
-	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
-	// we prefer to be more strict in what arguments the modules expect.
-	skipGenesisInvariants := cast.ToBool(applicationOptions.Get(crisis.FlagSkipGenesisInvariants))
-
-	app.moduleManager = module.NewManager(appModules(app, app.appCodec, app.txConfig, skipGenesisInvariants)...)
+	app.moduleManager = module.NewManager(appModules(app, app.appCodec, app.txConfig)...)
 
 	app.ModuleBasicManager = module.NewBasicManagerFromManager(app.moduleManager,
 		map[string]module.AppModuleBasic{
@@ -204,7 +199,7 @@ func NewApplication(
 
 	app.simulationManager = module.NewSimulationManagerFromAppModules(
 		app.moduleManager.Modules,
-		overrideSimulationModules(app, app.appCodec, skipGenesisInvariants),
+		overrideSimulationModules(app, app.appCodec),
 	)
 	app.simulationManager.RegisterStoreDecoders()
 
@@ -260,10 +255,15 @@ func (app *Application) setupAnteHandler(nodeConfig wasmtypes.NodeConfig) {
 			AccountKeeper:   app.AccountKeeper,
 			BankKeeper:      app.BankKeeper,
 			FeegrantKeeper:  app.FeegrantKeeper,
-			SignModeHandler: app.txConfig.SignModeHandler(),
+			SignModeHandler: app.TxConfig().SignModeHandler(),
 			SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
+			SigVerifyOptions: []ante.SigVerificationDecoratorOption{
+				ante.WithUnorderedTxGasCost(ante.DefaultUnorderedTxGasCost),
+				ante.WithMaxUnorderedTxTimeoutDuration(ante.DefaultMaxTimeoutDuration),
+			},
 		},
 		IBCKeeper:             app.IBCKeeper,
+		WasmKeeper:            app.WasmKeeper,
 		NodeConfig:            &nodeConfig,
 		TXCounterStoreService: runtime.NewKVStoreService(app.GetKVStoreKey()[wasmtypes.StoreKey]),
 
