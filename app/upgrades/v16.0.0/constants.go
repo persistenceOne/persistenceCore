@@ -2,6 +2,8 @@ package v16_0_0
 
 import (
 	store "cosmossdk.io/store/types"
+	protocolpooltypes "github.com/cosmos/cosmos-sdk/x/protocolpool/types"
+
 	"github.com/persistenceOne/persistenceCore/v16/app/upgrades"
 )
 
@@ -14,7 +16,7 @@ var Upgrade = upgrades.Upgrade{
 	UpgradeName:          UpgradeName,
 	CreateUpgradeHandler: CreateUpgradeHandler,
 	StoreUpgrades: store.StoreUpgrades{
-		Added:   []string{}, //TODO add protocolpool
-		Deleted: []string{},
+		Added:   []string{protocolpooltypes.StoreKey},
+		Deleted: []string{}, //TODO crisis?
 	},
 }

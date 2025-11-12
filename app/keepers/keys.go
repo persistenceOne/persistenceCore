@@ -5,7 +5,7 @@ import (
 	evidencetypes "cosmossdk.io/x/evidence/types"
 	"cosmossdk.io/x/feegrant"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
-	"github.com/CosmWasm/wasmd/x/wasm"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -16,6 +16,7 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	protocolpooltypes "github.com/cosmos/cosmos-sdk/x/protocolpool/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	liquidtypes "github.com/cosmos/gaia/v25/x/liquid/types"
@@ -57,7 +58,8 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 		slashingtypes.StoreKey,
 		stakingtypes.StoreKey,
 		upgradetypes.StoreKey,
-		wasm.StoreKey,
+		wasmtypes.StoreKey,
+		protocolpooltypes.StoreKey,
 	)
 
 	// Define transient store keys

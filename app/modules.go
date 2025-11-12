@@ -36,6 +36,8 @@ import (
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	"github.com/cosmos/cosmos-sdk/x/protocolpool"
+	protocolpooltypes "github.com/cosmos/cosmos-sdk/x/protocolpool/types"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
@@ -58,16 +60,18 @@ import (
 )
 
 var ModuleAccountPermissions = map[string][]string{
-	authtypes.FeeCollectorName:     nil,
-	distributiontypes.ModuleName:   nil,
-	icatypes.ModuleName:            nil,
-	minttypes.ModuleName:           {authtypes.Minter},
-	stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
-	stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
-	govtypes.ModuleName:            {authtypes.Burner},
-	ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
-	wasm.ModuleName:                {authtypes.Burner},
-	liquidstaketypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
+	authtypes.FeeCollectorName:                  nil,
+	distributiontypes.ModuleName:                nil,
+	icatypes.ModuleName:                         nil,
+	minttypes.ModuleName:                        {authtypes.Minter},
+	stakingtypes.BondedPoolName:                 {authtypes.Burner, authtypes.Staking},
+	stakingtypes.NotBondedPoolName:              {authtypes.Burner, authtypes.Staking},
+	govtypes.ModuleName:                         {authtypes.Burner},
+	ibctransfertypes.ModuleName:                 {authtypes.Minter, authtypes.Burner},
+	wasmtypes.ModuleName:                        {authtypes.Burner},
+	liquidstaketypes.ModuleName:                 {authtypes.Minter, authtypes.Burner},
+	protocolpooltypes.ModuleName:                nil,
+	protocolpooltypes.ProtocolPoolEscrowAccount: nil,
 }
 
 var receiveAllowedMAcc = map[string]bool{
@@ -109,6 +113,7 @@ func appModules(
 		liquidstake.NewAppModule(*app.LiquidStakeKeeper),
 		crisis.NewAppModule(app.CrisisKeeper, false, app.GetSubspace(crisistypes.ModuleName)), // skipGenesisInvariants: false, always be last to make sure that it checks for all invariants and not only part of them
 		ibctm.NewAppModule(app.TMLightClientModule),
+		protocolpool.NewAppModule(*app.ProtocolPoolKeeper, app.AccountKeeper, app.BankKeeper),
 	}
 }
 
@@ -141,6 +146,7 @@ func orderBeginBlockers() []string {
 		authtypes.ModuleName,
 		banktypes.ModuleName,
 		distributiontypes.ModuleName,
+		protocolpooltypes.ModuleName,
 		slashingtypes.ModuleName,
 		minttypes.ModuleName,
 		genutiltypes.ModuleName,
@@ -187,6 +193,7 @@ func orderEndBlockers() []string {
 		epochstypes.ModuleName,
 		liquidtypes.ModuleName,
 		liquidstaketypes.ModuleName,
+		protocolpooltypes.ModuleName,
 	}
 }
 
@@ -223,5 +230,37 @@ func orderInitGenesis() []string {
 		epochstypes.ModuleName,
 		liquidtypes.ModuleName,
 		liquidstaketypes.ModuleName,
+		protocolpooltypes.ModuleName,
+	}
+}
+
+func orderExportGenesis() []string {
+	return []string{
+		consensusparamtypes.ModuleName,
+		authtypes.ModuleName,
+		protocolpooltypes.ModuleName, // Must be exported before bank
+		banktypes.ModuleName,
+		distributiontypes.ModuleName,
+		stakingtypes.ModuleName,
+		slashingtypes.ModuleName,
+		govtypes.ModuleName,
+		minttypes.ModuleName,
+		crisistypes.ModuleName,
+		genutiltypes.ModuleName,
+		evidencetypes.ModuleName,
+		authz.ModuleName,
+		feegrant.ModuleName,
+		ibctransfertypes.ModuleName,
+		ibcexported.ModuleName,
+		icatypes.ModuleName,
+		upgradetypes.ModuleName,
+		vestingtypes.ModuleName,
+		halving.ModuleName,
+		ibchookstypes.ModuleName,
+		packetforwardtypes.ModuleName,
+		epochstypes.ModuleName,
+		liquidtypes.ModuleName,
+		liquidstaketypes.ModuleName,
+		wasmtypes.ModuleName,
 	}
 }
