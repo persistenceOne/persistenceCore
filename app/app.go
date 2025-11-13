@@ -187,10 +187,9 @@ func NewApplication(
 	app.moduleManager.SetOrderBeginBlockers(orderBeginBlockers()...)
 	app.moduleManager.SetOrderEndBlockers(orderEndBlockers()...)
 	app.moduleManager.SetOrderInitGenesis(orderInitGenesis()...)
-	app.moduleManager.SetOrderExportGenesis(orderInitGenesis()...)
+	app.moduleManager.SetOrderExportGenesis(orderExportGenesis()...)
 	//app.moduleManager.SetOrderMigrations()
 
-	app.moduleManager.RegisterInvariants(app.CrisisKeeper)
 	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
 	err = app.moduleManager.RegisterServices(app.configurator)
 	if err != nil {

@@ -44,6 +44,8 @@ import (
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	paramsproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
+	protocolpoolkeeper "github.com/cosmos/cosmos-sdk/x/protocolpool/keeper"
+	protocolpooltypes "github.com/cosmos/cosmos-sdk/x/protocolpool/types"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
@@ -93,6 +95,7 @@ type AppKeepers struct {
 	MintKeeper            *mintkeeper.Keeper
 	DistributionKeeper    *distributionkeeper.Keeper
 	GovKeeper             *govkeeper.Keeper
+	ProtocolPoolKeeper    *protocolpoolkeeper.Keeper
 	UpgradeKeeper         *upgradekeeper.Keeper
 	CrisisKeeper          *crisiskeeper.Keeper
 	ParamsKeeper          *paramskeeper.Keeper
@@ -218,6 +221,15 @@ func NewAppKeeper(
 	)
 	appKeepers.MintKeeper = &mintKeeper
 
+	protocolPoolKeeper := protocolpoolkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(appKeepers.keys[protocolpooltypes.StoreKey]),
+		appKeepers.AccountKeeper,
+		appKeepers.BankKeeper,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+	appKeepers.ProtocolPoolKeeper = &protocolPoolKeeper
+
 	distributionKeeper := distributionkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(appKeepers.keys[distributiontypes.StoreKey]),
@@ -226,6 +238,7 @@ func NewAppKeeper(
 		appKeepers.StakingKeeper,
 		authtypes.FeeCollectorName,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		distributionkeeper.WithExternalCommunityPool(appKeepers.ProtocolPoolKeeper),
 	)
 	appKeepers.DistributionKeeper = &distributionKeeper
 
