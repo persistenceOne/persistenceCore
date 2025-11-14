@@ -64,6 +64,7 @@ import (
 	icahost "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/host"
 	icahostkeeper "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/host/keeper"
 	icahosttypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/host/types"
+	ibccallbacks "github.com/cosmos/ibc-go/v10/modules/apps/callbacks"
 	ibctransfer "github.com/cosmos/ibc-go/v10/modules/apps/transfer"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v10/modules/apps/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
@@ -115,12 +116,9 @@ type AppKeepers struct {
 	PacketForwardKeeper   *packetforwardkeeper.Keeper
 
 	// Modules
-	TransferModule      ibctransfer.AppModule
 	TMLightClientModule ibctm.LightClientModule
 	// IBC hooks
-	IBCHooksKeeper   *ibchookskeeper.Keeper
-	ICS20WasmHooks   *ibchooks.WasmHooks
-	HooksICS4Wrapper *ibchooks.ICS4Middleware
+	IBCHooksKeeper *ibchookskeeper.Keeper
 }
 
 func NewAppKeeper(
@@ -315,24 +313,13 @@ func NewAppKeeper(
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
-	// Configure the hooks keeper
-	hooksKeeper := ibchookskeeper.NewKeeper(appKeepers.keys[ibchookstypes.StoreKey])
-	appKeepers.IBCHooksKeeper = &hooksKeeper
-	wasmHooks := ibchooks.NewWasmHooks(&hooksKeeper, appKeepers.WasmKeeper, constants.Bech32PrefixAccAddr)
-	appKeepers.ICS20WasmHooks = &wasmHooks
-	hooksICS4Wrapper := ibchooks.NewICS4Middleware(
-		appKeepers.IBCKeeper.ChannelKeeper,
-		appKeepers.ICS20WasmHooks,
-	)
-	appKeepers.HooksICS4Wrapper = &hooksICS4Wrapper
-
 	appKeepers.PacketForwardKeeper = packetforwardkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(appKeepers.keys[packetforwardtypes.StoreKey]),
 		appKeepers.TransferKeeper, // Will be zero-value here. Reference is set later on with SetTransferKeeper.
 		appKeepers.IBCKeeper.ChannelKeeper,
 		appKeepers.BankKeeper,
-		appKeepers.HooksICS4Wrapper,
+		appKeepers.IBCKeeper.ChannelKeeper, // ICS4Wrapper
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
@@ -340,9 +327,9 @@ func NewAppKeeper(
 		appCodec,
 		runtime.NewKVStoreService(appKeepers.keys[ibctransfertypes.StoreKey]),
 		appKeepers.GetSubspace(ibctransfertypes.ModuleName),
-		// The ICS4Wrapper is replaced by the PacketForwardKeeper
+		// The ICS4Wrapper is replaced by the callback stack later in the code
 		// so that sending can be overridden by the middleware
-		appKeepers.PacketForwardKeeper,
+		appKeepers.IBCKeeper.ChannelKeeper, // ICS4Wrapper, replaced by the stack
 		appKeepers.IBCKeeper.ChannelKeeper,
 		bApp.MsgServiceRouter(),
 		appKeepers.AccountKeeper,
@@ -350,7 +337,6 @@ func NewAppKeeper(
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 	appKeepers.TransferKeeper = &transferKeeper
-	appKeepers.TransferModule = ibctransfer.NewAppModule(*appKeepers.TransferKeeper)
 	appKeepers.PacketForwardKeeper.SetTransferKeeper(*appKeepers.TransferKeeper)
 
 	icaHostKeeper := icahostkeeper.NewKeeper(
@@ -399,8 +385,6 @@ func NewAppKeeper(
 		),
 	)
 
-	transferIBCModule := ibctransfer.NewIBCModule(*appKeepers.TransferKeeper)
-
 	evidenceKeeper := evidencekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(appKeepers.keys[evidencetypes.StoreKey]),
@@ -442,27 +426,36 @@ func NewAppKeeper(
 	)
 	appKeepers.WasmKeeper = &wasmKeeper
 	// Set ics20 wasm hooks the initialised wasmkeeper
-	appKeepers.ICS20WasmHooks.ContractKeeper = appKeepers.WasmKeeper
+	// Configure the hooks keeper
+	hooksKeeper := ibchookskeeper.NewKeeper(appKeepers.keys[ibchookstypes.StoreKey])
+	appKeepers.IBCHooksKeeper = &hooksKeeper
+	wasmIBCHooks := ibchooks.NewWasmHooks(&hooksKeeper, appKeepers.WasmKeeper, constants.Bech32PrefixAccAddr)
+	hooksICS4Wrapper := ibchooks.NewICS4Middleware(
+		appKeepers.IBCKeeper.ChannelKeeper,
+		&wasmIBCHooks,
+	)
 
-	var icaHostStack ibctypes.IBCModule
-	icaHostStack = icahost.NewIBCModule(*appKeepers.ICAHostKeeper)
-
+	wasmStack := wasm.NewIBCHandler(appKeepers.WasmKeeper, appKeepers.IBCKeeper.ChannelKeeper, appKeepers.IBCKeeper.ChannelKeeper)
 	//SendPacket --> Transfer -> PFM -> ibcHooks -> IBC-Core (ICS4Wrappers)
 	//RecvPacket --> IBC-Core -> ibcHooks -> PFM ->  Transfer (AddRoute)
-	var transferStack ibctypes.IBCModule = transferIBCModule
+	maxCallbackGas := uint64(10_000_000) // const
+
+	var transferStack ibctypes.IBCModule = ibctransfer.NewIBCModule(*appKeepers.TransferKeeper)
+	transferStack = ibccallbacks.NewIBCMiddleware(transferStack, &hooksICS4Wrapper, wasmStack, maxCallbackGas)
+	hookStack := ibchooks.NewIBCMiddleware(transferStack, &hooksICS4Wrapper)
+	appKeepers.TransferKeeper.WithICS4Wrapper(hookStack) // does not matter to use transfer stack, as pfm send is no-op
+
 	transferStack = packetforward.NewIBCMiddleware(
-		transferStack,
+		hookStack,
 		appKeepers.PacketForwardKeeper,
 		0, // no retries on timeout
 		packetforwardkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
 	)
-	transferStack = ibchooks.NewIBCMiddleware(transferStack, appKeepers.HooksICS4Wrapper)
 
 	// Information will flow: ibc-port -> icaController.
 	icaControllerStack := icacontroller.NewIBCMiddleware(*appKeepers.ICAControllerKeeper)
 
-	var wasmStack ibctypes.IBCModule
-	wasmStack = wasm.NewIBCHandler(appKeepers.WasmKeeper, appKeepers.IBCKeeper.ChannelKeeper, appKeepers.IBCKeeper.ChannelKeeper)
+	icaHostStack := icahost.NewIBCModule(*appKeepers.ICAHostKeeper)
 
 	ibcRouter := ibctypes.NewRouter().
 		AddRoute(ibctransfertypes.ModuleName, transferStack).
