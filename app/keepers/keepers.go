@@ -436,21 +436,22 @@ func NewAppKeeper(
 	)
 
 	wasmStack := wasm.NewIBCHandler(appKeepers.WasmKeeper, appKeepers.IBCKeeper.ChannelKeeper, appKeepers.IBCKeeper.ChannelKeeper)
-	//SendPacket --> Transfer -> PFM -> ibcHooks -> IBC-Core (ICS4Wrappers)
-	//RecvPacket --> IBC-Core -> ibcHooks -> PFM ->  Transfer (AddRoute)
+	//SendPacket --> Transfer -> callbacks -> ibchooks -> IBC-Core (ICS4Wrappers)
+	//RecvPacket --> IBC-Core -> PFM -> ibcHooks -> callback ->  Transfer (AddRoute)
 	maxCallbackGas := uint64(10_000_000) // const
 
 	var transferStack ibctypes.IBCModule = ibctransfer.NewIBCModule(*appKeepers.TransferKeeper)
-	transferStack = ibccallbacks.NewIBCMiddleware(transferStack, &hooksICS4Wrapper, wasmStack, maxCallbackGas)
-	hookStack := ibchooks.NewIBCMiddleware(transferStack, &hooksICS4Wrapper)
-	appKeepers.TransferKeeper.WithICS4Wrapper(hookStack) // does not matter to use transfer stack, as pfm send is no-op
+	cbStack := ibccallbacks.NewIBCMiddleware(transferStack, &hooksICS4Wrapper, wasmStack, maxCallbackGas)
+	transferStack = ibchooks.NewIBCMiddleware(cbStack, &hooksICS4Wrapper)
 
 	transferStack = packetforward.NewIBCMiddleware(
-		hookStack,
+		transferStack,
 		appKeepers.PacketForwardKeeper,
 		0, // no retries on timeout
 		packetforwardkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
 	)
+
+	appKeepers.TransferKeeper.WithICS4Wrapper(cbStack) // does not matter to use transfer stack, as pfm send is no-op
 
 	// Information will flow: ibc-port -> icaController.
 	icaControllerStack := icacontroller.NewIBCMiddleware(*appKeepers.ICAControllerKeeper)
