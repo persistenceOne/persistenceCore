@@ -17,6 +17,6 @@ var Upgrade = upgrades.Upgrade{
 	CreateUpgradeHandler: CreateUpgradeHandler,
 	StoreUpgrades: store.StoreUpgrades{
 		Added:   []string{protocolpooltypes.StoreKey},
-		Deleted: []string{}, // TODO crisis??
+		Deleted: []string{},
 	},
 }

@@ -50,6 +50,7 @@ import (
 	ibchookstypes "github.com/cosmos/ibc-apps/modules/ibc-hooks/v10/types"
 	ica "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts"
 	icatypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/types"
+	ibctransfer "github.com/cosmos/ibc-go/v10/modules/apps/transfer"
 	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v10/modules/core"
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
@@ -104,7 +105,7 @@ func appModules(
 		packetforward.NewAppModule(app.PacketForwardKeeper, app.GetSubspace(packetforwardtypes.ModuleName)),
 		params.NewAppModule(*app.ParamsKeeper),
 		halving.NewAppModule(appCodec, *app.HalvingKeeper),
-		app.TransferModule,
+		ibctransfer.NewAppModule(*app.TransferKeeper),
 		ibchooks.NewAppModule(*app.AccountKeeper),
 		ica.NewAppModule(app.ICAControllerKeeper, app.ICAHostKeeper),
 		wasm.NewAppModule(appCodec, app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasm.ModuleName)),
