@@ -26,7 +26,6 @@ import (
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/cosmos/cosmos-sdk/version"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
@@ -46,7 +45,7 @@ import (
 )
 
 func NewRootCmd() *cobra.Command {
-	setConfig()
+	constants.SetConfig()
 
 	tempDir := tempDir()
 	tempApp := app.NewApplication(log.NewNopLogger(), dbm.NewMemDB(), nil, true, simtestutil.NewAppOptionsWithFlagHome(tempDir), []wasm.Option{})
@@ -134,19 +133,6 @@ func NewRootCmd() *cobra.Command {
 		panic(err)
 	}
 	return rootCmd
-}
-
-// setConfig params at the package state
-func setConfig() {
-	cfg := sdk.GetConfig()
-
-	cfg.SetBech32PrefixForAccount(constants.Bech32PrefixAccAddr, constants.Bech32PrefixAccPub)
-	cfg.SetBech32PrefixForValidator(constants.Bech32PrefixValAddr, constants.Bech32PrefixValPub)
-	cfg.SetBech32PrefixForConsensusNode(constants.Bech32PrefixConsAddr, constants.Bech32PrefixConsPub)
-	cfg.SetCoinType(constants.CoinType)
-	cfg.SetPurpose(constants.Purpose)
-
-	cfg.Seal()
 }
 
 func initCometbftConfig() *cmtcfg.Config {

@@ -42,3 +42,16 @@ var (
 		"ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9", // ATOM
 	}
 )
+
+// SetConfig address/coin params at the global state
+func SetConfig() {
+	cfg := sdk.GetConfig()
+
+	cfg.SetBech32PrefixForAccount(Bech32PrefixAccAddr, Bech32PrefixAccPub)
+	cfg.SetBech32PrefixForValidator(Bech32PrefixValAddr, Bech32PrefixValPub)
+	cfg.SetBech32PrefixForConsensusNode(Bech32PrefixConsAddr, Bech32PrefixConsPub)
+	cfg.SetCoinType(CoinType)
+	cfg.SetPurpose(Purpose)
+
+	cfg.Seal()
+}
