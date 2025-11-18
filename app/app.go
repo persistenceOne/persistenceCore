@@ -64,12 +64,12 @@ import (
 	"github.com/persistenceOne/persistenceCore/v16/app/constants"
 	"github.com/persistenceOne/persistenceCore/v16/app/keepers"
 	"github.com/persistenceOne/persistenceCore/v16/app/upgrades"
-	v1600rc0 "github.com/persistenceOne/persistenceCore/v16/app/upgrades/testnet/v16.0.0-rc0"
+	v1600 "github.com/persistenceOne/persistenceCore/v16/app/upgrades/v16.0.0"
 )
 
 var (
 	DefaultNodeHome string
-	Upgrades        = []upgrades.Upgrade{v1600rc0.Upgrade}
+	Upgrades        = []upgrades.Upgrade{v1600.Upgrade}
 )
 
 var (
