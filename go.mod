@@ -28,7 +28,7 @@ require (
 	github.com/cosmos/ibc-go/v10 v10.4.0
 	github.com/cosmos/rosetta v0.50.12
 	github.com/persistenceOne/persistence-sdk/v6 v6.1.0
-	github.com/persistenceOne/pstake-native/v6 v6.0.0-rc3
+	github.com/persistenceOne/pstake-native/v6 v6.0.0
 	github.com/prometheus/client_golang v1.23.0
 	github.com/spf13/cast v1.9.2
 	github.com/spf13/cobra v1.10.1
