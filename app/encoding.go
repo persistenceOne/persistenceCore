@@ -15,6 +15,7 @@ import (
 	"github.com/persistenceOne/persistence-sdk/v6/x/lsm/distribution"
 	"github.com/persistenceOne/persistence-sdk/v6/x/lsm/staking"
 	oracletypes "github.com/persistenceOne/persistence-sdk/v6/x/oracle/types"
+	pobtypes "github.com/persistenceOne/persistence-sdk/v6/x/pob/types"
 	liquidstakeibctypes "github.com/persistenceOne/pstake-native/v6/x/liquidstakeibc/types"
 	lscosmostypes "github.com/persistenceOne/pstake-native/v6/x/lscosmos/types"
 	ratesynctypes "github.com/persistenceOne/pstake-native/v6/x/ratesync/types"
@@ -68,6 +69,9 @@ func AppendModuleInterfaces(interfaceRegistry codectypes.InterfaceRegistry, mbm 
 
 	// cosmos-sdk-lsm distribution msgs
 	distribution.RegisterInterfaces(interfaceRegistry)
+
+	// skip-pob - testnet
+	pobtypes.RegisterInterfaces(interfaceRegistry)
 }
 
 func AppendModuleLegacyCodecs(amino *codec.LegacyAmino, mbm module.BasicManager) {
@@ -98,4 +102,6 @@ func AppendModuleLegacyCodecs(amino *codec.LegacyAmino, mbm module.BasicManager)
 	// cosmos-sdk-lsm distribution msgs
 	distribution.RegisterLegacyAminoCodec(amino)
 
+	// skip-pob - testnet
+	pobtypes.RegisterLegacyAminoCodec(amino)
 }
