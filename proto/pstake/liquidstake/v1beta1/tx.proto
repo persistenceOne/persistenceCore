@@ -1,0 +1,156 @@
+syntax = "proto3";
+package pstake.liquidstake.v1beta1;
+
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos/msg/v1/msg.proto";
+import "google/protobuf/timestamp.proto";
+import "pstake/liquidstake/v1beta1/liquidstake.proto";
+import "amino/amino.proto";
+
+option go_package = "github.com/persistenceOne/persistenceCore/v16/x/liquidstake/types";
+
+// Msg defines the liquid staking Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+  // LiquidStake defines a method for performing a delegation of coins
+  // from a delegator to whitelisted validators.
+  rpc LiquidStake(MsgLiquidStake) returns (MsgLiquidStakeResponse);
+
+  // LiquidUnstake defines a method for performing an undelegation of liquid
+  // staking from a delegate.
+  rpc LiquidUnstake(MsgLiquidUnstake) returns (MsgLiquidUnstakeResponse);
+
+  // StakeToLP defines a method for LSM-transfer of staked XPRT
+  // into stkXPRT with locking into an LP.
+  rpc StakeToLP(MsgStakeToLP) returns (MsgStakeToLPResponse);
+
+  // UpdateParams defines a method to update the module params.
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+
+  // UpdateWhitelistedValidators defines a method to update the whitelisted
+  // validators list.
+  rpc UpdateWhitelistedValidators(MsgUpdateWhitelistedValidators)
+      returns (MsgUpdateWhitelistedValidatorsResponse);
+
+  // SetModulePaused  defines a method to update the module's pause status,
+  // setting value of the safety flag in params.
+  rpc SetModulePaused(MsgSetModulePaused) returns (MsgSetModulePausedResponse);
+}
+
+// MsgLiquidStake defines a SDK message for performing a liquid stake of coins
+// from a delegator to whitelisted validators.
+message MsgLiquidStake {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "delegator_address";
+  option (amino.name) = "liquidstake/MsgLiquidStake";
+
+  string delegator_address = 1
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  cosmos.base.v1beta1.Coin amount = 2 [(gogoproto.nullable) = false];
+}
+
+// MsgLiquidStakeResponse defines the MsgLiquidStake response type.
+message MsgLiquidStakeResponse {}
+
+// MsgStakeToLP defines a SDK message for performing an LSM-transfer of staked
+// XPRT into stkXPRT with locking into an LP.
+message MsgStakeToLP {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (amino.name) = "liquidstake/MsgStakeToLP";
+  option (cosmos.msg.v1.signer) = "delegator_address";
+
+  string delegator_address = 1
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  string validator_address = 2
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  cosmos.base.v1beta1.Coin staked_amount = 3 [(gogoproto.nullable) = false];
+  cosmos.base.v1beta1.Coin liquid_amount = 4 [(gogoproto.nullable) = false];
+}
+
+// MsgStakeToLPResponse defines the MsgStakeToLP response type.
+message MsgStakeToLPResponse {}
+
+// MsgLiquidUnstake defines a SDK message for performing an undelegation of
+// liquid staking from a delegate.
+message MsgLiquidUnstake {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (amino.name) = "liquidstake/MsgLiquidUnstake";
+  option (cosmos.msg.v1.signer) = "delegator_address";
+
+  string delegator_address = 1
+  [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  cosmos.base.v1beta1.Coin amount = 2 [(gogoproto.nullable) = false];
+}
+
+// MsgLiquidUnstakeResponse defines the MsgLiquidUnstake response type.
+message MsgLiquidUnstakeResponse {
+  google.protobuf.Timestamp completion_time = 1
+  [(gogoproto.nullable) = false, (gogoproto.stdtime) = true];
+}
+
+message MsgUpdateParams {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (amino.name) = "liquidstake/MsgUpdateParams";
+  option (cosmos.msg.v1.signer) = "authority";
+
+  // authority is the address that controls the module (defaults to x/gov unless
+  // overwritten).
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // params defines the parameters to update.
+  //
+  // NOTE: denom and whitelisted validators are not updated.
+  //
+  Params params = 2 [(gogoproto.nullable) = false];
+}
+
+// MsgUpdateParamsResponse defines the response structure for executing a
+message MsgUpdateParamsResponse {}
+
+message MsgUpdateWhitelistedValidators {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (amino.name) = "liquidstake/MsgUpdateWhitelistedValidators";
+  option (cosmos.msg.v1.signer) = "authority";
+
+  // Authority is the address that is allowed to update whitelisted validators,
+  // defined as admin address in params (WhitelistAdminAddress).
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // WhitelistedValidators specifies the validators elected to become Active
+  // Liquid Validators.
+  repeated WhitelistedValidator whitelisted_validators = 2
+  [(gogoproto.nullable) = false];
+}
+
+// MsgUpdateWhitelistedValidatorsResponse defines the response structure for
+// executing a
+message MsgUpdateWhitelistedValidatorsResponse {}
+
+message MsgSetModulePaused {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+  option (amino.name) = "liquidstake/MsgSetModulePaused";
+  option (cosmos.msg.v1.signer) = "authority";
+
+  // Authority is the address that is allowed to update module's paused state,
+  // defined as admin address in params (WhitelistAdminAddress).
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // IsPaused represents the target state of the paused flag.
+  bool is_paused = 2;
+}
+
+// MsgSetModulePausedResponse defines the response structure for
+// executing a
+message MsgSetModulePausedResponse {}

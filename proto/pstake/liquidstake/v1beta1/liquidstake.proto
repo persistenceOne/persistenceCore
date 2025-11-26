@@ -1,0 +1,214 @@
+syntax = "proto3";
+
+package pstake.liquidstake.v1beta1;
+
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "github.com/persistenceOne/persistenceCore/v16/x/liquidstake/types";
+
+// Params defines the set of params for the liquidstake module.
+message Params {
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = false;
+
+  // LiquidBondDenom specifies the denomination of the token receiving after
+  // liquid stake, The value is calculated through NetAmount.
+  string liquid_bond_denom = 1;
+
+  // WhitelistedValidators specifies the validators elected to become Active
+  // Liquid Validators.
+  repeated WhitelistedValidator whitelisted_validators = 2
+      [ (gogoproto.nullable) = false ];
+
+  // UnstakeFeeRate specifies the fee rate when liquid unstake is requested,
+  // unbonded by subtracting it from unbondingAmount
+  string unstake_fee_rate = 3 [
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+
+  // LsmDisabled allows to block any msgs that convert staked tokens into
+  // stkXPRT through LSM.
+  bool lsm_disabled = 4;
+
+  // MinLiquidStakingAmount specifies the minimum number of coins to be staked
+  // to the active liquid validators on liquid staking to minimize decimal loss
+  // and consider gas efficiency.
+  string min_liquid_stake_amount = 5 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+
+  // CwLockedPoolAddress defines the bech32-encoded address of
+  // a CW smart-contract representing a time locked LP (e.g. Superfluid LP).
+  string cw_locked_pool_address = 6
+      [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+
+  // FeeAccountAddress defines the bech32-encoded address of
+  // a an account responsible for accumulating protocol fees.
+  string fee_account_address = 7
+      [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+
+  // AutocompoundFeeRate specifies the fee rate for auto redelegating the stake
+  // rewards. The fee is taken in favour of the fee account (see
+  // FeeAccountAddress).
+  string autocompound_fee_rate = 8 [
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+
+  // WhitelistAdminAddress the bech32-encoded address of an admin authority
+  // that is allowed to update whitelisted validators or pause liquidstaking
+  // module entirely. The key is controlled by an offchain process that is
+  // selecting validators based on a criteria. Pausing of the module can be
+  // required during important migrations or failures.
+  string whitelist_admin_address = 9
+      [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+
+  // ModulePaused is a safety toggle that allows to stop main module functions
+  // such as stake/unstake/stake-to-lp and the BeginBlocker logic.
+  bool module_paused = 10;
+}
+
+// ValidatorStatus enumerates the status of a liquid validator.
+enum ValidatorStatus {
+  option (gogoproto.goproto_enum_prefix) = false;
+
+  // VALIDATOR_STATUS_UNSPECIFIED defines the unspecified invalid status.
+  VALIDATOR_STATUS_UNSPECIFIED = 0
+      [ (gogoproto.enumvalue_customname) = "ValidatorStatusUnspecified" ];
+  // VALIDATOR_STATUS_ACTIVE defines the active, valid status
+  VALIDATOR_STATUS_ACTIVE = 1
+      [ (gogoproto.enumvalue_customname) = "ValidatorStatusActive" ];
+  // VALIDATOR_STATUS_INACTIVE defines the inactive, invalid status
+  VALIDATOR_STATUS_INACTIVE = 2
+      [ (gogoproto.enumvalue_customname) = "ValidatorStatusInactive" ];
+}
+
+// WhitelistedValidator consists of the validator operator address and the
+// target weight, which is a value for calculating the real weight to be derived
+// according to the active status.
+message WhitelistedValidator {
+  option (gogoproto.goproto_getters) = false;
+
+  // validator_address defines the bech32-encoded address that whitelisted
+  // validator
+  string validator_address = 1
+      [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+
+  // target_weight specifies the target weight for liquid staking, unstaking
+  // amount, which is a value for calculating the real weight to be derived
+  // according to the active status
+  string target_weight = 2 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// LiquidValidator defines a Validator that can be the target of LiquidStaking
+// and LiquidUnstaking, Active, Weight, etc. fields are derived as functions to
+// deal with by maintaining consistency with the state of the staking module.
+message LiquidValidator {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  // operator_address defines the address of the validator's operator; bech
+  // encoded in JSON.
+  string operator_address = 1
+      [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+}
+
+// LiquidValidatorState is type LiquidValidator with state added to return to
+// query results.
+message LiquidValidatorState {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  // operator_address defines the address of the validator's operator; bech
+  // encoded in JSON.
+  string operator_address = 1
+      [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+
+  // weight specifies the weight for liquid staking, unstaking amount
+  string weight = 2 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+
+  // status is the liquid validator status
+  ValidatorStatus status = 3;
+
+  // del_shares define the delegation shares of the validator
+  string del_shares = 4 [
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+
+  // liquid_tokens define the token amount worth of delegation shares of the
+  // validator (slashing applied amount)
+  string liquid_tokens = 5 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// NetAmountState is type for net amount raw data and mint rate, This is a value
+// that depends on the several module state every time, so it is used only for
+// calculation and query and is not stored in kv.
+message NetAmountState {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = true;
+
+  // mint_rate is stkXPRTTotalSupply / NetAmount
+  string mint_rate = 1 [
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+
+  // btoken_total_supply returns the total supply of stk/uxprt (stkXPRT denom)
+  string stkxprt_total_supply = 2 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+
+  // net_amount is proxy account's native token balance + total liquid tokens +
+  // total remaining rewards + total unbonding balance
+  string net_amount = 3 [
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+
+  // total_del_shares define the delegation shares of all liquid validators
+  string total_del_shares = 4 [
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+
+  // total_liquid_tokens define the token amount worth of delegation shares of
+  // all liquid validator (slashing applied amount)
+  string total_liquid_tokens = 5 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+
+  // total_remaining_rewards define the sum of remaining rewards of proxy
+  // account by all liquid validators
+  string total_remaining_rewards = 6 [
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+
+  // total_unbonding_balance define the unbonding balance of proxy account by
+  // all liquid validator (slashing applied amount)
+  string total_unbonding_balance = 7 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+
+  // proxy_acc_balance define the balance of proxy account for the native token
+  string proxy_acc_balance = 8 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}
