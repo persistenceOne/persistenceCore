@@ -254,7 +254,13 @@ endif
 ###############################################################################
 ###                                   testing                               ###
 ###############################################################################
-test: ictest-all
+test: test-unit ictest-all
+
+TEST_TARGET ?= ./...
+TEST_ARGS ?= -timeout 12m -v
+
+test-unit:
+	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock norace' $(TEST_TARGET) $(TEST_ARGS)
 
 # TODO: add runsim and benchmarking
 
