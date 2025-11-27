@@ -35,9 +35,9 @@ jobs:
 
       - name: Unit Tests
         run: |
-          make test
+          make test-unit
         env:
-          TEST_TARGET: "./x/..."
+          TEST_TARGET: "./..."
           TEST_ARGS: "-timeout 10m -coverprofile=./coverage.out -covermode=atomic -v"
 
       - name: Filter out DONTCOVER
