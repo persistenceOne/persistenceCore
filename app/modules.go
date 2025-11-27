@@ -55,9 +55,9 @@ import (
 	ibc "github.com/cosmos/ibc-go/v10/modules/core"
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
-	"github.com/persistenceOne/persistence-sdk/v6/x/halving"
-	"github.com/persistenceOne/pstake-native/v6/x/liquidstake"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v6/x/liquidstake/types"
+	"github.com/persistenceOne/persistenceCore/v16/x/halving"
+	"github.com/persistenceOne/persistenceCore/v16/x/liquidstake"
+	liquidstaketypes "github.com/persistenceOne/persistenceCore/v16/x/liquidstake/types"
 )
 
 var ModuleAccountPermissions = map[string][]string{
@@ -138,6 +138,9 @@ func orderBeginBlockers() []string {
 	return []string{
 		upgradetypes.ModuleName,
 		epochstypes.ModuleName,
+		minttypes.ModuleName,
+		distributiontypes.ModuleName,
+		protocolpooltypes.ModuleName,
 		crisistypes.ModuleName,
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
@@ -146,10 +149,7 @@ func orderBeginBlockers() []string {
 		icatypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
-		distributiontypes.ModuleName,
-		protocolpooltypes.ModuleName,
 		slashingtypes.ModuleName,
-		minttypes.ModuleName,
 		genutiltypes.ModuleName,
 		evidencetypes.ModuleName,
 		authz.ModuleName,

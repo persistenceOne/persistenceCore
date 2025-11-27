@@ -13,11 +13,11 @@ import (
 	"github.com/cosmos/interchaintest/v10/chain/cosmos"
 	"github.com/cosmos/interchaintest/v10/ibc"
 	"github.com/cosmos/interchaintest/v10/testreporter"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v6/x/liquidstake/types"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 
 	"github.com/persistenceOne/persistenceCore/v16/interchaintest/helpers"
+	liquidstaketypes "github.com/persistenceOne/persistenceCore/v16/x/liquidstake/types"
 )
 
 var (

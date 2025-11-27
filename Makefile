@@ -102,8 +102,6 @@ endif
 # Docker variables
 DOCKER := $(shell which docker)
 
-include sims.mk
-
 ###############################################################################
 ###                                  Build                                  ###
 ###############################################################################
@@ -313,9 +311,28 @@ rm-testcache:
 ###                                Protobuf                                 ###
 ###############################################################################
 
-protoVer=0.14.0
+protoVer=0.16.0
 protoImageName=ghcr.io/cosmos/proto-builder:$(protoVer)
 protoImage=$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(protoImageName)
+
+proto-all: proto-format proto-lint proto-gen
+
+proto-gen:
+	@echo "Generating Protobuf files"
+	@$(protoImage) sh ./proto/scripts/protocgen.sh
+
+proto-format:
+	@$(protoImage) find ./ -name "*.proto" -exec clang-format -i {} \;
+
+proto-lint:
+	@$(protoImage) buf lint --error-format=json
+
+proto-check-breaking:
+	@$(protoImage) buf breaking --against $(HTTPS_GIT)#branch=main
+
+proto-update-deps:
+	@echo "Updating Protobuf dependencies"
+	$(DOCKER) run --rm -v $(CURDIR)/proto:/workspace --workdir /workspace $(protoImageName) buf mod update
 
 proto-swagger-gen:
 	@echo "Generating Protobuf Swagger"
@@ -329,4 +346,4 @@ proto-clean:
 	rm -rf tmp-swagger-gen/
 	rm -rf tmp_deps/
 
-.PHONY: proto-swagger-gen proto-clean
+.PHONY: proto-swagger-gen proto-clean  proto-all proto-gen proto-format proto-lint proto-check-breaking proto-update-deps

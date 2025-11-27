@@ -48,7 +48,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		rep                                    = testreporter.NewNopReporter()
 		eRep                                   = rep.RelayerExecReporter(t)
 		chainIdA, chainIdB, chainIdC, chainIdD = "chain-1", "chain-2", "chain-3", "chain-4"
-		waitBlocks                             = 3
+		waitBlocks                             = 5
 	)
 
 	vals := 1
