@@ -74,10 +74,10 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
-	"github.com/persistenceOne/persistence-sdk/v6/x/halving"
-	halvingtypes "github.com/persistenceOne/persistence-sdk/v6/x/halving/types"
-	liquidstakekeeper "github.com/persistenceOne/pstake-native/v6/x/liquidstake/keeper"
-	liquidstaketypes "github.com/persistenceOne/pstake-native/v6/x/liquidstake/types"
+	"github.com/persistenceOne/persistenceCore/v16/x/halving"
+	halvingtypes "github.com/persistenceOne/persistenceCore/v16/x/halving/types"
+	liquidstakekeeper "github.com/persistenceOne/persistenceCore/v16/x/liquidstake/keeper"
+	liquidstaketypes "github.com/persistenceOne/persistenceCore/v16/x/liquidstake/types"
 	"github.com/spf13/cast"
 
 	"github.com/persistenceOne/persistenceCore/v16/app/constants"
@@ -366,7 +366,7 @@ func NewAppKeeper(
 
 	liquidStakeKeeper := liquidstakekeeper.NewKeeper(
 		appCodec,
-		appKeepers.keys[liquidstaketypes.StoreKey],
+		runtime.NewKVStoreService(appKeepers.keys[liquidstaketypes.StoreKey]),
 		appKeepers.AccountKeeper,
 		appKeepers.BankKeeper,
 		appKeepers.StakingKeeper,

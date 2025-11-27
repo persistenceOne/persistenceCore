@@ -43,8 +43,18 @@ var (
 	}
 )
 
+func init() {
+	SetUnsealedConfig()
+}
+
 // SetConfig address/coin params at the global state
 func SetConfig() {
+	cfg := sdk.GetConfig()
+	SetUnsealedConfig()
+	cfg.Seal()
+}
+
+func SetUnsealedConfig() {
 	cfg := sdk.GetConfig()
 
 	cfg.SetBech32PrefixForAccount(Bech32PrefixAccAddr, Bech32PrefixAccPub)
@@ -52,6 +62,4 @@ func SetConfig() {
 	cfg.SetBech32PrefixForConsensusNode(Bech32PrefixConsAddr, Bech32PrefixConsPub)
 	cfg.SetCoinType(CoinType)
 	cfg.SetPurpose(Purpose)
-
-	cfg.Seal()
 }
