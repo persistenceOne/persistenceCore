@@ -1,0 +1,69 @@
+name: Unit-Test
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+  push:
+    branches:
+      - main
+
+  release:
+    types:
+      - created
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-test-coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.25"
+
+      - uses: actions/checkout@v5
+
+      - name: Unit Tests
+        run: |
+          make test
+        env:
+          TEST_TARGET: "./x/..."
+          TEST_ARGS: "-timeout 10m -coverprofile=./coverage.out -covermode=atomic -v"
+
+      - name: Filter out DONTCOVER
+        run: |
+          excludelist="$(find ./ -type f -name '*.go' | xargs grep -l 'DONTCOVER')"
+          excludelist+=" $(find ./ -type f -name '*.pb.go')"
+          excludelist+=" $(find ./ -type f -name '*.pb.gw.go')"
+          for filename in ${excludelist}; do
+            filename=$(echo $filename | sed 's/^.\///g')
+            echo "Excluding ${filename} from coverage report..."
+            sed -i "/$(echo $filename | sed 's/\//\\\//g')/d" ./coverage.out
+          done
+
+      - name: Convert coverage to lcov
+        uses: jandelgado/gcov2lcov-action@v1
+
+      - name: LCOV Minimum test coverage checker
+        uses: terencetcf/github-actions-lcov-minimum-coverage-checker@v1
+        with:
+          coverage-file: coverage.lcov
+          minimum-coverage: 30
+
+      - name: Code Coverage Report
+        if: github.event_name == 'pull_request'
+        uses: vebr/jest-lcov-reporter@v0.2.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          lcov-file: coverage.lcov
+          update-comment: true
