@@ -6,9 +6,12 @@ import (
 	"testing"
 
 	"cosmossdk.io/log"
+	"github.com/CosmWasm/wasmd/x/wasm"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/server"
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -27,8 +30,9 @@ func TestTestnetCmd(t *testing.T) {
 	logger := log.NewNopLogger()
 	cfg, err := genutiltest.CreateDefaultCometConfig(home)
 	require.NoError(t, err)
+	tempApp := app.NewApplication(log.NewNopLogger(), dbm.NewMemDB(), nil, true, simtestutil.NewAppOptionsWithFlagHome(t.TempDir()), []wasm.Option{})
 
-	err = genutiltest.ExecInitCmd(app.ModuleBasics, home, encodingConfig.Codec)
+	err = genutiltest.ExecInitCmd(tempApp.ModuleBasicManager, home, encodingConfig.Codec)
 	require.NoError(t, err)
 
 	serverCtx := server.NewContext(viper.New(), cfg, logger)
@@ -40,7 +44,7 @@ func TestTestnetCmd(t *testing.T) {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, server.ServerContextKey, serverCtx)
 	ctx = context.WithValue(ctx, client.ClientContextKey, &clientCtx)
-	cmd := testnetInitFilesCmd(app.ModuleBasics, banktypes.GenesisBalancesIterator{})
+	cmd := testnetInitFilesCmd(tempApp.ModuleBasicManager, banktypes.GenesisBalancesIterator{})
 	cmd.SetArgs([]string{fmt.Sprintf("--%s=test", flags.FlagKeyringBackend), fmt.Sprintf("--output-dir=%s", home)})
 	err = cmd.ExecuteContext(ctx)
 	require.NoError(t, err)
