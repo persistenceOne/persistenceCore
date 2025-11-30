@@ -377,7 +377,8 @@ func (s *TypesTestSuite) TestLiquidStake() {
 	s.Require().Equal(proxyAccDel2.Shares, math.LegacyNewDec(16666))
 	s.Require().Equal(stakingAmt.ToLegacyDec(), proxyAccDel1.Shares.Add(proxyAccDel2.Shares).Add(proxyAccDel3.Shares))
 
-	liquidBondDenom := s.keeper.LiquidBondDenom(s.ctx)
+	liquidBondDenom, err := s.keeper.LiquidBondDenom(s.ctx)
+	s.Require().NoError(err)
 	balanceBeforeUBD := s.app.BankKeeper.GetBalance(s.ctx, s.delAddrs[0], sdk.DefaultBondDenom)
 	s.Require().Equal(balanceBeforeUBD.Amount, math.NewInt(999950000))
 	ubdStkXPRT := sdk.NewCoin(liquidBondDenom, math.NewInt(10000))

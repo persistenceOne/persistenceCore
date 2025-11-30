@@ -105,7 +105,8 @@ func (s *KeeperTestSuite) TestLiquidStake() {
 	s.Require().Equal(stakingAmt.ToLegacyDec(),
 		proxyAccDel1.Shares.Add(proxyAccDel2.Shares).Add(proxyAccDel3.Shares))
 
-	liquidBondDenom := s.keeper.LiquidBondDenom(s.ctx)
+	liquidBondDenom, err := s.keeper.LiquidBondDenom(s.ctx)
+	s.Require().NoError(err)
 	balanceBeforeUBD := s.app.BankKeeper.GetBalance(
 		s.ctx, s.delAddrs[0], sdk.DefaultBondDenom,
 	)
@@ -469,7 +470,8 @@ func (s *KeeperTestSuite) TestShareInflation() {
 	s.Require().Equal(mintAmount, math.NewInt(1_000))
 
 	// 5. attacker unstakes the shares immediately
-	liquidBondDenom := s.keeper.LiquidBondDenom(s.ctx)
+	liquidBondDenom, err := s.keeper.LiquidBondDenom(s.ctx)
+	s.Require().NoError(err)
 	_, unbondingAmt, _, _, err := s.keeper.LiquidUnstake(s.ctx, types.LiquidStakeProxyAcc, attacker, sdk.NewCoin(liquidBondDenom, math.NewInt(1)))
 	// s.Require().NoError(err)
 	s.Require().ErrorContains(err, "liquid unstaking amount is too small")

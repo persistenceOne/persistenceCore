@@ -19,12 +19,12 @@ import (
 	"github.com/persistenceOne/persistenceCore/v16/x/liquidstake/types"
 )
 
-func (k Keeper) LiquidBondDenom(ctx sdk.Context) string {
+func (k Keeper) LiquidBondDenom(ctx sdk.Context) (string, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		panic(err) // TODO handle error
+		return "", err
 	}
-	return params.LiquidBondDenom
+	return params.LiquidBondDenom, nil
 }
 
 // GetNetAmountState calculates the sum of bondedDenom balance, total delegation tokens(slash applied LiquidTokens), total remaining reward of types.LiquidStakeProxyAcc
@@ -39,8 +39,12 @@ func (k Keeper) GetNetAmountState(ctx sdk.Context) (types.NetAmountState, error)
 	if err != nil {
 		return types.NetAmountState{}, err
 	}
+	liquidBondDenom, err := k.LiquidBondDenom(ctx)
+	if err != nil {
+		return types.NetAmountState{}, err
+	}
 	nas := types.NetAmountState{
-		StkxprtTotalSupply:    k.bankKeeper.GetSupply(ctx, k.LiquidBondDenom(ctx)).Amount,
+		StkxprtTotalSupply:    k.bankKeeper.GetSupply(ctx, liquidBondDenom).Amount,
 		TotalDelShares:        totalDelShares,
 		TotalLiquidTokens:     totalLiquidTokens,
 		TotalRemainingRewards: totalRemainingRewards,
@@ -132,7 +136,10 @@ func (k Keeper) LiquidStake(
 	}
 
 	// mint stkxprt, MintAmount = TotalSupply * StakeAmount/NetAmount
-	liquidBondDenom := k.LiquidBondDenom(ctx)
+	liquidBondDenom, err := k.LiquidBondDenom(ctx)
+	if err != nil {
+		return math.ZeroInt(), err
+	}
 	stkXPRTMintAmount = stakingCoin.Amount
 
 	if nas.StkxprtTotalSupply.IsPositive() {
@@ -702,7 +709,10 @@ func (k Keeper) LSMDelegate(
 	}
 
 	// mint stkxprt, MintAmount = TotalSupply * StakeAmount/NetAmount
-	liquidBondDenom := k.LiquidBondDenom(ctx)
+	liquidBondDenom, err := k.LiquidBondDenom(ctx)
+	if err != nil {
+		return math.ZeroInt(), err
+	}
 	stkXPRTMintAmount = lsmRedeemResp.Amount.Amount
 
 	if nas.StkxprtTotalSupply.IsPositive() {
@@ -788,7 +798,10 @@ func (k Keeper) LiquidUnstake(
 	}
 
 	// check bond denomination
-	liquidBondDenom := k.LiquidBondDenom(ctx)
+	liquidBondDenom, err := k.LiquidBondDenom(ctx)
+	if err != nil {
+		return time.Time{}, math.ZeroInt(), []stakingtypes.UnbondingDelegation{}, math.ZeroInt(), err
+	}
 	if unstakingStkXPRT.Denom != liquidBondDenom {
 		return time.Time{}, math.ZeroInt(), []stakingtypes.UnbondingDelegation{}, math.ZeroInt(), errorsmod.Wrapf(
 			types.ErrInvalidLiquidBondDenom, "invalid coin denomination: got %s, expected %s", unstakingStkXPRT.Denom, liquidBondDenom,
