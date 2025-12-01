@@ -45,7 +45,10 @@ func (k msgServer) LiquidStake(goCtx context.Context, msg *types.MsgLiquidStake)
 		cValue = stkXPRTMintAmount.ToLegacyDec().Quo(msg.Amount.Amount.ToLegacyDec())
 	}
 
-	liquidBondDenom := k.LiquidBondDenom(ctx)
+	liquidBondDenom, err := k.LiquidBondDenom(ctx)
+	if err != nil {
+		return nil, err
+	}
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
@@ -76,7 +79,10 @@ func (k msgServer) StakeToLP(goCtx context.Context, msg *types.MsgStakeToLP) (*t
 		return nil, err
 	}
 
-	liquidBondDenom := k.LiquidBondDenom(ctx)
+	liquidBondDenom, err := k.LiquidBondDenom(ctx)
+	if err != nil {
+		return nil, err
+	}
 	stkXPRTMinted := sdk.Coin{
 		Denom:  liquidBondDenom,
 		Amount: stkXPRTMintAmount,

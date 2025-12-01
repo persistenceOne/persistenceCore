@@ -335,7 +335,8 @@ func (s *TypesTestSuite) TestLiquidStake() {
 	s.keeper.SetParams(s.ctx, params)
 	s.keeper.UpdateLiquidValidatorSet(s.ctx, true)
 
-	res := s.keeper.GetAllLiquidValidatorStates(s.ctx)
+	res, err := s.keeper.GetAllLiquidValidatorStates(s.ctx)
+	s.Require().NoError(err)
 	s.Require().Equal(params.WhitelistedValidators[0].ValidatorAddress, res[0].OperatorAddress)
 	s.Require().Equal(params.WhitelistedValidators[0].TargetWeight, res[0].Weight)
 	s.Require().Equal(types.ValidatorStatusActive, res[0].Status)
@@ -377,7 +378,8 @@ func (s *TypesTestSuite) TestLiquidStake() {
 	s.Require().Equal(proxyAccDel2.Shares, math.LegacyNewDec(16666))
 	s.Require().Equal(stakingAmt.ToLegacyDec(), proxyAccDel1.Shares.Add(proxyAccDel2.Shares).Add(proxyAccDel3.Shares))
 
-	liquidBondDenom := s.keeper.LiquidBondDenom(s.ctx)
+	liquidBondDenom, err := s.keeper.LiquidBondDenom(s.ctx)
+	s.Require().NoError(err)
 	balanceBeforeUBD := s.app.BankKeeper.GetBalance(s.ctx, s.delAddrs[0], sdk.DefaultBondDenom)
 	s.Require().Equal(balanceBeforeUBD.Amount, math.NewInt(999950000))
 	ubdStkXPRT := sdk.NewCoin(liquidBondDenom, math.NewInt(10000))
@@ -432,7 +434,8 @@ func (s *TypesTestSuite) TestLiquidStake() {
 	s.Require().Equal(math.LegacyNewDec(13333), proxyAccDel2.Shares)
 	s.Require().Equal(math.LegacyNewDec(13333), proxyAccDel3.Shares)
 
-	res = s.keeper.GetAllLiquidValidatorStates(s.ctx)
+	res, err = s.keeper.GetAllLiquidValidatorStates(s.ctx)
+	s.Require().NoError(err)
 	s.Require().Equal(params.WhitelistedValidators[0].ValidatorAddress, res[0].OperatorAddress)
 	s.Require().Equal(params.WhitelistedValidators[0].TargetWeight, res[0].Weight)
 	s.Require().Equal(types.ValidatorStatusActive, res[0].Status)
@@ -452,7 +455,8 @@ func (s *TypesTestSuite) TestLiquidStake() {
 	s.Require().Len(vs.Map(), 3)
 
 	whitelistedValsMap := types.GetWhitelistedValsMap(params.WhitelistedValidators)
-	avs := s.keeper.GetActiveLiquidValidators(s.ctx, whitelistedValsMap)
+	avs, err := s.keeper.GetActiveLiquidValidators(s.ctx, whitelistedValsMap)
+	s.Require().NoError(err)
 	alt, _ := avs.TotalActiveLiquidTokens(s.ctx, s.app.StakingKeeper, true)
 	s.Require().EqualValues(alt, math.NewInt(40001))
 }

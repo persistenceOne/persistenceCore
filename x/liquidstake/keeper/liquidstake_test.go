@@ -41,7 +41,8 @@ func (s *KeeperTestSuite) TestLiquidStake() {
 	s.keeper.SetParams(s.ctx, params)
 	s.keeper.UpdateLiquidValidatorSet(s.ctx, true)
 
-	res := s.keeper.GetAllLiquidValidatorStates(s.ctx)
+	res, err := s.keeper.GetAllLiquidValidatorStates(s.ctx)
+	s.Require().NoError(err)
 	s.Require().Equal(params.WhitelistedValidators[0].ValidatorAddress,
 		res[0].OperatorAddress)
 	s.Require().Equal(params.WhitelistedValidators[0].TargetWeight,
@@ -105,7 +106,8 @@ func (s *KeeperTestSuite) TestLiquidStake() {
 	s.Require().Equal(stakingAmt.ToLegacyDec(),
 		proxyAccDel1.Shares.Add(proxyAccDel2.Shares).Add(proxyAccDel3.Shares))
 
-	liquidBondDenom := s.keeper.LiquidBondDenom(s.ctx)
+	liquidBondDenom, err := s.keeper.LiquidBondDenom(s.ctx)
+	s.Require().NoError(err)
 	balanceBeforeUBD := s.app.BankKeeper.GetBalance(
 		s.ctx, s.delAddrs[0], sdk.DefaultBondDenom,
 	)
@@ -189,7 +191,8 @@ func (s *KeeperTestSuite) TestLiquidStake() {
 	s.Require().Equal(math.LegacyNewDec(13333), proxyAccDel2.Shares)
 	s.Require().Equal(math.LegacyNewDec(13333), proxyAccDel3.Shares)
 
-	res = s.keeper.GetAllLiquidValidatorStates(s.ctx)
+	res, err = s.keeper.GetAllLiquidValidatorStates(s.ctx)
+	s.Require().NoError(err)
 	s.Require().Equal(params.WhitelistedValidators[0].ValidatorAddress,
 		res[0].OperatorAddress)
 	s.Require().Equal(params.WhitelistedValidators[0].TargetWeight,
@@ -235,9 +238,10 @@ func (s *KeeperTestSuite) TestLiquidStake() {
 	)
 
 	// still active liquid validator after unbond all
-	alv := s.keeper.GetActiveLiquidValidators(
+	alv, err := s.keeper.GetActiveLiquidValidators(
 		s.ctx, params.WhitelistedValsMap(),
 	)
+	s.Require().NoError(err)
 	s.Require().True(len(alv) != 0)
 
 	// no btoken supply and netAmount after unbond all
@@ -469,7 +473,8 @@ func (s *KeeperTestSuite) TestShareInflation() {
 	s.Require().Equal(mintAmount, math.NewInt(1_000))
 
 	// 5. attacker unstakes the shares immediately
-	liquidBondDenom := s.keeper.LiquidBondDenom(s.ctx)
+	liquidBondDenom, err := s.keeper.LiquidBondDenom(s.ctx)
+	s.Require().NoError(err)
 	_, unbondingAmt, _, _, err := s.keeper.LiquidUnstake(s.ctx, types.LiquidStakeProxyAcc, attacker, sdk.NewCoin(liquidBondDenom, math.NewInt(1)))
 	// s.Require().NoError(err)
 	s.Require().ErrorContains(err, "liquid unstaking amount is too small")

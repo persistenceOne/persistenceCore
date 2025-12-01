@@ -19,12 +19,12 @@ import (
 	"github.com/persistenceOne/persistenceCore/v16/x/liquidstake/types"
 )
 
-func (k Keeper) LiquidBondDenom(ctx sdk.Context) string {
+func (k Keeper) LiquidBondDenom(ctx sdk.Context) (string, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		panic(err) // TODO handle error
+		return "", err
 	}
-	return params.LiquidBondDenom
+	return params.LiquidBondDenom, nil
 }
 
 // GetNetAmountState calculates the sum of bondedDenom balance, total delegation tokens(slash applied LiquidTokens), total remaining reward of types.LiquidStakeProxyAcc
@@ -39,8 +39,12 @@ func (k Keeper) GetNetAmountState(ctx sdk.Context) (types.NetAmountState, error)
 	if err != nil {
 		return types.NetAmountState{}, err
 	}
+	liquidBondDenom, err := k.LiquidBondDenom(ctx)
+	if err != nil {
+		return types.NetAmountState{}, err
+	}
 	nas := types.NetAmountState{
-		StkxprtTotalSupply:    k.bankKeeper.GetSupply(ctx, k.LiquidBondDenom(ctx)).Amount,
+		StkxprtTotalSupply:    k.bankKeeper.GetSupply(ctx, liquidBondDenom).Amount,
 		TotalDelShares:        totalDelShares,
 		TotalLiquidTokens:     totalLiquidTokens,
 		TotalRemainingRewards: totalRemainingRewards,
@@ -94,7 +98,10 @@ func (k Keeper) LiquidStake(
 	}
 
 	whitelistedValsMap := types.GetWhitelistedValsMap(params.WhitelistedValidators)
-	activeVals := k.GetActiveLiquidValidators(ctx, whitelistedValsMap)
+	activeVals, err := k.GetActiveLiquidValidators(ctx, whitelistedValsMap)
+	if err != nil {
+		return math.ZeroInt(), err
+	}
 
 	if activeVals.Len() == 0 {
 		return math.ZeroInt(), types.ErrActiveLiquidValidatorsNotExists
@@ -132,7 +139,10 @@ func (k Keeper) LiquidStake(
 	}
 
 	// mint stkxprt, MintAmount = TotalSupply * StakeAmount/NetAmount
-	liquidBondDenom := k.LiquidBondDenom(ctx)
+	liquidBondDenom, err := k.LiquidBondDenom(ctx)
+	if err != nil {
+		return math.ZeroInt(), err
+	}
 	stkXPRTMintAmount = stakingCoin.Amount
 
 	if nas.StkxprtTotalSupply.IsPositive() {
@@ -568,7 +578,10 @@ func (k Keeper) LSMDelegate(
 	}
 
 	whitelistedValsMap := types.GetWhitelistedValsMap(params.WhitelistedValidators)
-	activeVals := k.GetActiveLiquidValidators(ctx, whitelistedValsMap)
+	activeVals, err := k.GetActiveLiquidValidators(ctx, whitelistedValsMap)
+	if err != nil {
+		return math.ZeroInt(), err
+	}
 
 	if activeVals.Len() == 0 {
 		return math.ZeroInt(), types.ErrActiveLiquidValidatorsNotExists
@@ -702,7 +715,10 @@ func (k Keeper) LSMDelegate(
 	}
 
 	// mint stkxprt, MintAmount = TotalSupply * StakeAmount/NetAmount
-	liquidBondDenom := k.LiquidBondDenom(ctx)
+	liquidBondDenom, err := k.LiquidBondDenom(ctx)
+	if err != nil {
+		return math.ZeroInt(), err
+	}
 	stkXPRTMintAmount = lsmRedeemResp.Amount.Amount
 
 	if nas.StkxprtTotalSupply.IsPositive() {
@@ -788,7 +804,10 @@ func (k Keeper) LiquidUnstake(
 	}
 
 	// check bond denomination
-	liquidBondDenom := k.LiquidBondDenom(ctx)
+	liquidBondDenom, err := k.LiquidBondDenom(ctx)
+	if err != nil {
+		return time.Time{}, math.ZeroInt(), []stakingtypes.UnbondingDelegation{}, math.ZeroInt(), err
+	}
 	if unstakingStkXPRT.Denom != liquidBondDenom {
 		return time.Time{}, math.ZeroInt(), []stakingtypes.UnbondingDelegation{}, math.ZeroInt(), errorsmod.Wrapf(
 			types.ErrInvalidLiquidBondDenom, "invalid coin denomination: got %s, expected %s", unstakingStkXPRT.Denom, liquidBondDenom,
@@ -1150,12 +1169,12 @@ func (k Keeper) GetAllLiquidValidators(ctx sdk.Context) (vals types.LiquidValida
 }
 
 // GetActiveLiquidValidators get the set of active liquid validators.
-func (k Keeper) GetActiveLiquidValidators(ctx sdk.Context, whitelistedValsMap types.WhitelistedValsMap) (vals types.ActiveLiquidValidators) {
+func (k Keeper) GetActiveLiquidValidators(ctx sdk.Context, whitelistedValsMap types.WhitelistedValsMap) (vals types.ActiveLiquidValidators, err error) {
 	store := k.storeService.OpenKVStore(ctx)
 
 	iterator, err := store.Iterator(types.LiquidValidatorsKey, storetypes.PrefixEndBytes(types.LiquidValidatorsKey))
 	if err != nil {
-		panic(err) //TODO handle
+		return vals, err
 	}
 	defer iterator.Close() //nolint:errcheck
 
@@ -1165,14 +1184,14 @@ func (k Keeper) GetActiveLiquidValidators(ctx sdk.Context, whitelistedValsMap ty
 			vals = append(vals, val)
 		}
 	}
-	return vals
+	return vals, nil
 }
 
-func (k Keeper) GetAllLiquidValidatorStates(ctx sdk.Context) (liquidValidatorStates []types.LiquidValidatorState) {
+func (k Keeper) GetAllLiquidValidatorStates(ctx sdk.Context) (liquidValidatorStates []types.LiquidValidatorState, err error) {
 	lvs := k.GetAllLiquidValidators(ctx)
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		panic(err) //todo handle
+		return nil, err
 	}
 
 	whitelistedValsMap := params.WhitelistedValsMap()
@@ -1187,7 +1206,7 @@ func (k Keeper) GetAllLiquidValidatorStates(ctx sdk.Context) (liquidValidatorSta
 		}
 		liquidValidatorStates = append(liquidValidatorStates, lvState)
 	}
-	return
+	return liquidValidatorStates, nil
 }
 
 func (k Keeper) GetLiquidValidatorState(ctx sdk.Context, addr sdk.ValAddress) (liquidValidatorState types.LiquidValidatorState, found bool) {

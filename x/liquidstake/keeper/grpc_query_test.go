@@ -37,7 +37,8 @@ func (s *KeeperTestSuite) TestGRPCQueries() {
 	s.keeper.UpdateLiquidValidatorSet(s.ctx, true)
 
 	// Test LiquidValidators grpc query
-	res := s.keeper.GetAllLiquidValidatorStates(s.ctx)
+	res, err := s.keeper.GetAllLiquidValidatorStates(s.ctx)
+	s.Require().NoError(err)
 	resp, err := s.querier.LiquidValidators(sdk.WrapSDKContext(s.ctx), &types.QueryLiquidValidatorsRequest{})
 	s.Require().NoError(err)
 	s.Require().Equal(resp.LiquidValidators, res)

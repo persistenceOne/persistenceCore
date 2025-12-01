@@ -37,7 +37,11 @@ func (k Querier) LiquidValidators(c context.Context, req *types.QueryLiquidValid
 
 	ctx := sdk.UnwrapSDKContext(c)
 
-	return &types.QueryLiquidValidatorsResponse{LiquidValidators: k.GetAllLiquidValidatorStates(ctx)}, nil
+	states, err := k.GetAllLiquidValidatorStates(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &types.QueryLiquidValidatorsResponse{LiquidValidators: states}, nil
 }
 
 // States queries states of liquid stake module.
