@@ -41,7 +41,8 @@ func (s *KeeperTestSuite) TestLiquidStake() {
 	s.keeper.SetParams(s.ctx, params)
 	s.keeper.UpdateLiquidValidatorSet(s.ctx, true)
 
-	res := s.keeper.GetAllLiquidValidatorStates(s.ctx)
+	res, err := s.keeper.GetAllLiquidValidatorStates(s.ctx)
+	s.Require().NoError(err)
 	s.Require().Equal(params.WhitelistedValidators[0].ValidatorAddress,
 		res[0].OperatorAddress)
 	s.Require().Equal(params.WhitelistedValidators[0].TargetWeight,
@@ -190,7 +191,8 @@ func (s *KeeperTestSuite) TestLiquidStake() {
 	s.Require().Equal(math.LegacyNewDec(13333), proxyAccDel2.Shares)
 	s.Require().Equal(math.LegacyNewDec(13333), proxyAccDel3.Shares)
 
-	res = s.keeper.GetAllLiquidValidatorStates(s.ctx)
+	res, err = s.keeper.GetAllLiquidValidatorStates(s.ctx)
+	s.Require().NoError(err)
 	s.Require().Equal(params.WhitelistedValidators[0].ValidatorAddress,
 		res[0].OperatorAddress)
 	s.Require().Equal(params.WhitelistedValidators[0].TargetWeight,

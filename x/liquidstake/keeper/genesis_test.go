@@ -33,7 +33,8 @@ func (s *KeeperTestSuite) TestImportExportGenesis() {
 	lvs := k.GetAllLiquidValidators(ctx)
 	s.Require().Len(lvs, 2)
 
-	lvStates := k.GetAllLiquidValidatorStates(ctx)
+	lvStates, err := k.GetAllLiquidValidatorStates(ctx)
+	s.Require().NoError(err)
 	genState := k.ExportGenesis(ctx)
 
 	bz := s.app.AppCodec().MustMarshalJSON(genState)
@@ -49,7 +50,8 @@ func (s *KeeperTestSuite) TestImportExportGenesis() {
 	lvs = k.GetAllLiquidValidators(ctx)
 	s.Require().Len(lvs, 2)
 
-	lvStates3 := k.GetAllLiquidValidatorStates(ctx)
+	lvStates3, err := k.GetAllLiquidValidatorStates(ctx)
+	s.Require().NoError(err)
 	s.Require().EqualValues(lvStates, lvStates3)
 }
 

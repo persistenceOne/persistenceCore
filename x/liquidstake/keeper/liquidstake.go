@@ -1187,11 +1187,11 @@ func (k Keeper) GetActiveLiquidValidators(ctx sdk.Context, whitelistedValsMap ty
 	return vals, nil
 }
 
-func (k Keeper) GetAllLiquidValidatorStates(ctx sdk.Context) (liquidValidatorStates []types.LiquidValidatorState) {
+func (k Keeper) GetAllLiquidValidatorStates(ctx sdk.Context) (liquidValidatorStates []types.LiquidValidatorState, err error) {
 	lvs := k.GetAllLiquidValidators(ctx)
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		panic(err) //todo handle
+		return nil, err
 	}
 
 	whitelistedValsMap := params.WhitelistedValsMap()
@@ -1206,7 +1206,7 @@ func (k Keeper) GetAllLiquidValidatorStates(ctx sdk.Context) (liquidValidatorSta
 		}
 		liquidValidatorStates = append(liquidValidatorStates, lvState)
 	}
-	return
+	return liquidValidatorStates, nil
 }
 
 func (k Keeper) GetLiquidValidatorState(ctx sdk.Context, addr sdk.ValAddress) (liquidValidatorState types.LiquidValidatorState, found bool) {
