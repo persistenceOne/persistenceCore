@@ -211,7 +211,7 @@ func (k Keeper) AutocompoundStakingRewards(ctx sdk.Context, whitelistedValsMap t
 	// skip when no active liquid validator
 	activeVals, err := k.GetActiveLiquidValidators(ctx, whitelistedValsMap)
 	if err != nil {
-		panic(err) // TODO handle error properly
+		return
 	}
 	if len(activeVals) == 0 {
 		return
