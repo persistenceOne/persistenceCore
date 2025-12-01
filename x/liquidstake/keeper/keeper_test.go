@@ -166,7 +166,10 @@ func (s *KeeperTestSuite) liquidUnstaking(
 	}
 
 	if ubdComplete {
-		alv := s.keeper.GetActiveLiquidValidators(ctx, params.WhitelistedValsMap())
+		alv, err := s.keeper.GetActiveLiquidValidators(ctx, params.WhitelistedValsMap())
+		if err != nil {
+			return err
+		}
 		ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 200).
 			WithBlockTime(ubdTime.Add(1))
 
@@ -202,7 +205,10 @@ func (s *KeeperTestSuite) liquidUnstakingWithResult(
 	ctx, writeCache := s.ctx.CacheContext()
 	params, err := s.keeper.GetParams(ctx)
 	s.Require().NoError(err)
-	alv := s.keeper.GetActiveLiquidValidators(ctx, params.WhitelistedValsMap())
+	alv, err := s.keeper.GetActiveLiquidValidators(ctx, params.WhitelistedValsMap())
+	if err != nil {
+		return time.Time{}, math.ZeroInt(), []stakingtypes.UnbondingDelegation{}, math.ZeroInt(), err
+	}
 
 	balanceBefore := s.app.BankKeeper.GetBalance(
 		ctx, liquidStaker, sdk.DefaultBondDenom,

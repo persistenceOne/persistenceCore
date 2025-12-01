@@ -236,9 +236,10 @@ func (s *KeeperTestSuite) TestLiquidStake() {
 	)
 
 	// still active liquid validator after unbond all
-	alv := s.keeper.GetActiveLiquidValidators(
+	alv, err := s.keeper.GetActiveLiquidValidators(
 		s.ctx, params.WhitelistedValsMap(),
 	)
+	s.Require().NoError(err)
 	s.Require().True(len(alv) != 0)
 
 	// no btoken supply and netAmount after unbond all

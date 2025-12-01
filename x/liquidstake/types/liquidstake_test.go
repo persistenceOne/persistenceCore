@@ -453,7 +453,8 @@ func (s *TypesTestSuite) TestLiquidStake() {
 	s.Require().Len(vs.Map(), 3)
 
 	whitelistedValsMap := types.GetWhitelistedValsMap(params.WhitelistedValidators)
-	avs := s.keeper.GetActiveLiquidValidators(s.ctx, whitelistedValsMap)
+	avs, err := s.keeper.GetActiveLiquidValidators(s.ctx, whitelistedValsMap)
+	s.Require().NoError(err)
 	alt, _ := avs.TotalActiveLiquidTokens(s.ctx, s.app.StakingKeeper, true)
 	s.Require().EqualValues(alt, math.NewInt(40001))
 }

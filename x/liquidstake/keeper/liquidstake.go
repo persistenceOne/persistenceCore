@@ -98,7 +98,10 @@ func (k Keeper) LiquidStake(
 	}
 
 	whitelistedValsMap := types.GetWhitelistedValsMap(params.WhitelistedValidators)
-	activeVals := k.GetActiveLiquidValidators(ctx, whitelistedValsMap)
+	activeVals, err := k.GetActiveLiquidValidators(ctx, whitelistedValsMap)
+	if err != nil {
+		return math.ZeroInt(), err
+	}
 
 	if activeVals.Len() == 0 {
 		return math.ZeroInt(), types.ErrActiveLiquidValidatorsNotExists
@@ -575,7 +578,10 @@ func (k Keeper) LSMDelegate(
 	}
 
 	whitelistedValsMap := types.GetWhitelistedValsMap(params.WhitelistedValidators)
-	activeVals := k.GetActiveLiquidValidators(ctx, whitelistedValsMap)
+	activeVals, err := k.GetActiveLiquidValidators(ctx, whitelistedValsMap)
+	if err != nil {
+		return math.ZeroInt(), err
+	}
 
 	if activeVals.Len() == 0 {
 		return math.ZeroInt(), types.ErrActiveLiquidValidatorsNotExists
@@ -1163,12 +1169,12 @@ func (k Keeper) GetAllLiquidValidators(ctx sdk.Context) (vals types.LiquidValida
 }
 
 // GetActiveLiquidValidators get the set of active liquid validators.
-func (k Keeper) GetActiveLiquidValidators(ctx sdk.Context, whitelistedValsMap types.WhitelistedValsMap) (vals types.ActiveLiquidValidators) {
+func (k Keeper) GetActiveLiquidValidators(ctx sdk.Context, whitelistedValsMap types.WhitelistedValsMap) (vals types.ActiveLiquidValidators, err error) {
 	store := k.storeService.OpenKVStore(ctx)
 
 	iterator, err := store.Iterator(types.LiquidValidatorsKey, storetypes.PrefixEndBytes(types.LiquidValidatorsKey))
 	if err != nil {
-		panic(err) //TODO handle
+		return vals, err
 	}
 	defer iterator.Close() //nolint:errcheck
 
@@ -1178,7 +1184,7 @@ func (k Keeper) GetActiveLiquidValidators(ctx sdk.Context, whitelistedValsMap ty
 			vals = append(vals, val)
 		}
 	}
-	return vals
+	return vals, nil
 }
 
 func (k Keeper) GetAllLiquidValidatorStates(ctx sdk.Context) (liquidValidatorStates []types.LiquidValidatorState) {
