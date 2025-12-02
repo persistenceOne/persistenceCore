@@ -66,7 +66,7 @@ jobs:
 
       - name: Code Coverage Report
         if: github.event_name == 'pull_request'
-        uses: vebr/jest-lcov-reporter@v0.2.0
+        uses: vebr/jest-lcov-reporter@v0.2.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           lcov-file: coverage.lcov
