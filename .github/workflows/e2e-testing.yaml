@@ -57,7 +57,7 @@ jobs:
 
         # Use github actions artifacts for temporary storage of the docker image tarball
       - name: Publish Tarball as Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: persistence-docker-image
           path: ${{ env.TAR_PATH }}
