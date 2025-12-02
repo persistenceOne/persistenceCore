@@ -63,7 +63,7 @@ jobs:
           path: ${{ env.TAR_PATH }}
 
       - name: Setup Go with cache
-        uses: magnetikonline/action-golang-cache@v4
+        uses: magnetikonline/action-golang-cache@v5
         with:
           go-version: 1.23
         id: go
@@ -111,7 +111,7 @@ jobs:
           echo "Found image ID: $IMAGE_ID — tagging as persistence:local"
           docker tag "$IMAGE_ID" persistence:local
       - name: Setup Go with cache
-        uses: magnetikonline/action-golang-cache@v4
+        uses: magnetikonline/action-golang-cache@v5
         with:
           go-version: 1.23
         id: go
