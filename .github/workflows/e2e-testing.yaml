@@ -34,7 +34,7 @@ jobs:
     steps:
       - name: Get branch name
         id: branch-name
-        uses: tj-actions/branch-names@v9.0.0
+        uses: tj-actions/branch-names@v9.0.2
 
       - name: Build Docker image
         uses: strangelove-ventures/heighliner-build-action@v1.0.3
@@ -57,7 +57,7 @@ jobs:
 
         # Use github actions artifacts for temporary storage of the docker image tarball
       - name: Publish Tarball as Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: persistence-docker-image
           path: ${{ env.TAR_PATH }}
