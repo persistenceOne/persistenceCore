@@ -34,7 +34,7 @@ jobs:
     steps:
       - name: Get branch name
         id: branch-name
-        uses: tj-actions/branch-names@v9.0.0
+        uses: tj-actions/branch-names@v9.0.2
 
       - name: Build Docker image
         uses: strangelove-ventures/heighliner-build-action@v1.0.3
@@ -57,19 +57,19 @@ jobs:
 
         # Use github actions artifacts for temporary storage of the docker image tarball
       - name: Publish Tarball as Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: persistence-docker-image
           path: ${{ env.TAR_PATH }}
 
       - name: Setup Go with cache
-        uses: magnetikonline/action-golang-cache@v4
+        uses: magnetikonline/action-golang-cache@v5
         with:
           go-version: 1.23
         id: go
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download dependencies for interchaintest
         run: |
@@ -111,13 +111,13 @@ jobs:
           echo "Found image ID: $IMAGE_ID — tagging as persistence:local"
           docker tag "$IMAGE_ID" persistence:local
       - name: Setup Go with cache
-        uses: magnetikonline/action-golang-cache@v4
+        uses: magnetikonline/action-golang-cache@v5
         with:
           go-version: 1.23
         id: go
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: run test
         run: make ${{ matrix.test }}
