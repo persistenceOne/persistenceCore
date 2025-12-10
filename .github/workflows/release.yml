@@ -48,7 +48,7 @@ jobs:
 
       - name: Get branch name
         id: branch-name
-        uses: tj-actions/branch-names@v9.0.0
+        uses: tj-actions/branch-names@v9.0.2
         
       - name: Build and push Docker image
         uses: strangelove-ventures/heighliner-build-action@v1.0.3
