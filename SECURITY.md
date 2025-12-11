@@ -10,7 +10,7 @@ Thank you for improving the security of Persistence. We appreciate your efforts 
 
 For a bug that is non-sensitive and/or operational in nature rather than a critical vulnerability, please add it as a GitHub issue.
 
-If it is not taken up in a couple of days, feel free to tag `@kruspy`, `@puneet2019` or `@betterclever`.
+If it is not taken up in a couple of days, feel free to tag the maintainers.
 
 ### Critical bug or security issue
 
@@ -35,13 +35,7 @@ policy.
 
 If you have found an issue with the Cosmos SDK or Tendermint modules not found in this repo you can report them through links found here. https://tendermint.com/security/
 
-Alternately you can also notify us of a security issue through, [Discord](https://discord.gg/qXRmTTGcYD) or Telegram, and alert the core engineers:
-
-|         | Telegram       | Discord                         |
-| ------  | -------------  | ------------------------------  |
-| Puneet  | `@mkoijn6`     | `puneet_m`                      |
-| Marc    | `@m4rcpt`      | `kruspy`                        |
-| Pranjal | `@betterclever`| `betterclever`                  |
+Alternately you can also notify us of a security issue through, [Discord](https://discord.gg/qXRmTTGcYD) or Telegram
 
 ### Coordinated Vulnerability Disclosure Policy
 
