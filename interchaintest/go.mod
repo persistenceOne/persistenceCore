@@ -1,4 +1,4 @@
-module github.com/persistenceOne/persistenceCore/v16/interchaintest
+module github.com/persistenceOne/persistenceCore/v17/interchaintest
 
 go 1.23.11
 
@@ -15,7 +15,7 @@ require (
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/cosmos/ibc-go/v10 v10.4.0
 	github.com/cosmos/interchaintest/v10 v10.0.1
-	github.com/persistenceOne/persistenceCore/v16 v16.0.0
+	github.com/persistenceOne/persistenceCore/v17 v17.0.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/zap v1.27.0
@@ -282,7 +282,7 @@ replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/misko9/go-substrate-rpc-client/v4 => github.com/faddat/go-substrate-rpc-client/v4 v4.0.1-0.20240402155230-48db8c110afe
 
-	github.com/persistenceOne/persistenceCore/v16 => ../
+	github.com/persistenceOne/persistenceCore/v17 => ../
 	// Downgraded to avoid bugs in following commits which caused simulations to fail.
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 )

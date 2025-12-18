@@ -12,7 +12,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/persistenceOne/persistenceCore/v16/x/halving/types"
+	"github.com/persistenceOne/persistenceCore/v17/x/halving/types"
 )
 
 type msgServer struct {

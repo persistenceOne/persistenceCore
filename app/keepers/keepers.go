@@ -74,14 +74,14 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
-	"github.com/persistenceOne/persistenceCore/v16/x/halving"
-	halvingtypes "github.com/persistenceOne/persistenceCore/v16/x/halving/types"
-	liquidstakekeeper "github.com/persistenceOne/persistenceCore/v16/x/liquidstake/keeper"
-	liquidstaketypes "github.com/persistenceOne/persistenceCore/v16/x/liquidstake/types"
+	"github.com/persistenceOne/persistenceCore/v17/x/halving"
+	halvingtypes "github.com/persistenceOne/persistenceCore/v17/x/halving/types"
+	liquidstakekeeper "github.com/persistenceOne/persistenceCore/v17/x/liquidstake/keeper"
+	liquidstaketypes "github.com/persistenceOne/persistenceCore/v17/x/liquidstake/types"
 	"github.com/spf13/cast"
 
-	"github.com/persistenceOne/persistenceCore/v16/app/constants"
-	"github.com/persistenceOne/persistenceCore/v16/wasmbindings"
+	"github.com/persistenceOne/persistenceCore/v17/app/constants"
+	"github.com/persistenceOne/persistenceCore/v17/wasmbindings"
 )
 
 type AppKeepers struct {

@@ -16,9 +16,9 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
-	"github.com/persistenceOne/persistenceCore/v16/x/liquidstake/client/cli"
-	"github.com/persistenceOne/persistenceCore/v16/x/liquidstake/keeper"
-	"github.com/persistenceOne/persistenceCore/v16/x/liquidstake/types"
+	"github.com/persistenceOne/persistenceCore/v17/x/liquidstake/client/cli"
+	"github.com/persistenceOne/persistenceCore/v17/x/liquidstake/keeper"
+	"github.com/persistenceOne/persistenceCore/v17/x/liquidstake/types"
 )
 
 var (
