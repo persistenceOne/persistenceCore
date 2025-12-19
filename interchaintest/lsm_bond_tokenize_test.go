@@ -10,7 +10,7 @@ import (
 	"github.com/cosmos/interchaintest/v10"
 	"github.com/stretchr/testify/require"
 
-	"github.com/persistenceOne/persistenceCore/v16/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v17/interchaintest/helpers"
 )
 
 // TestBondTokenize executes scenario of bonding and tokenizing.

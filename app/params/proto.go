@@ -12,7 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	"github.com/cosmos/gogoproto/proto"
-	"github.com/persistenceOne/persistenceCore/v16/app/constants"
+	"github.com/persistenceOne/persistenceCore/v17/app/constants"
 )
 
 // MakeEncodingConfig creates an EncodingConfiguration for an amino based test configuration.

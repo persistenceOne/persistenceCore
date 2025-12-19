@@ -9,7 +9,7 @@ import "google/protobuf/timestamp.proto";
 import "pstake/liquidstake/v1beta1/liquidstake.proto";
 import "amino/amino.proto";
 
-option go_package = "github.com/persistenceOne/persistenceCore/v16/x/liquidstake/types";
+option go_package = "github.com/persistenceOne/persistenceCore/v17/x/liquidstake/types";
 
 // Msg defines the liquid staking Msg service.
 service Msg {

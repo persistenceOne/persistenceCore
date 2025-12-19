@@ -3,7 +3,7 @@ package liquidstake
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 
-	liquidstakev1beta1 "github.com/persistenceOne/persistenceCore/v16/x/liquidstake/types"
+	liquidstakev1beta1 "github.com/persistenceOne/persistenceCore/v17/x/liquidstake/types"
 )
 
 // AutoCLIOptions returns the AutoCLI configuration for the liquidstake module.

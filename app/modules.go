@@ -55,9 +55,9 @@ import (
 	ibc "github.com/cosmos/ibc-go/v10/modules/core"
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
-	"github.com/persistenceOne/persistenceCore/v16/x/halving"
-	"github.com/persistenceOne/persistenceCore/v16/x/liquidstake"
-	liquidstaketypes "github.com/persistenceOne/persistenceCore/v16/x/liquidstake/types"
+	"github.com/persistenceOne/persistenceCore/v17/x/halving"
+	"github.com/persistenceOne/persistenceCore/v17/x/liquidstake"
+	liquidstaketypes "github.com/persistenceOne/persistenceCore/v17/x/liquidstake/types"
 )
 
 var ModuleAccountPermissions = map[string][]string{
