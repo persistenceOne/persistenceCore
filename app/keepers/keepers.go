@@ -74,14 +74,14 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
-	"github.com/persistenceOne/persistenceCore/v16/x/halving"
-	halvingtypes "github.com/persistenceOne/persistenceCore/v16/x/halving/types"
-	liquidstakekeeper "github.com/persistenceOne/persistenceCore/v16/x/liquidstake/keeper"
-	liquidstaketypes "github.com/persistenceOne/persistenceCore/v16/x/liquidstake/types"
+	"github.com/persistenceOne/persistenceCore/v17/x/halving"
+	halvingtypes "github.com/persistenceOne/persistenceCore/v17/x/halving/types"
+	liquidstakekeeper "github.com/persistenceOne/persistenceCore/v17/x/liquidstake/keeper"
+	liquidstaketypes "github.com/persistenceOne/persistenceCore/v17/x/liquidstake/types"
 	"github.com/spf13/cast"
 
-	"github.com/persistenceOne/persistenceCore/v16/app/constants"
-	"github.com/persistenceOne/persistenceCore/v16/wasmbindings"
+	"github.com/persistenceOne/persistenceCore/v17/app/constants"
+	"github.com/persistenceOne/persistenceCore/v17/wasmbindings"
 )
 
 type AppKeepers struct {
@@ -519,7 +519,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(authtypes.ModuleName).WithKeyTable(authtypes.ParamKeyTable())
 	paramsKeeper.Subspace(banktypes.ModuleName).WithKeyTable(banktypes.ParamKeyTable())
 	paramsKeeper.Subspace(stakingtypes.ModuleName).WithKeyTable(stakingtypes.ParamKeyTable())
-	paramsKeeper.Subspace(minttypes.ModuleName).WithKeyTable(minttypes.ParamKeyTable())
+	paramsKeeper.Subspace(minttypes.ModuleName)
 	paramsKeeper.Subspace(distributiontypes.ModuleName).WithKeyTable(distributiontypes.ParamKeyTable())
 	paramsKeeper.Subspace(slashingtypes.ModuleName).WithKeyTable(slashingtypes.ParamKeyTable())
 	paramsKeeper.Subspace(crisistypes.ModuleName).WithKeyTable(crisistypes.ParamKeyTable())

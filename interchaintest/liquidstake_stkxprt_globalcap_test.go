@@ -15,10 +15,10 @@ import (
 	"github.com/cosmos/interchaintest/v10"
 	"github.com/cosmos/interchaintest/v10/chain/cosmos"
 	"github.com/cosmos/interchaintest/v10/testutil"
-	liquidstaketypes "github.com/persistenceOne/persistenceCore/v16/x/liquidstake/types"
+	liquidstaketypes "github.com/persistenceOne/persistenceCore/v17/x/liquidstake/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/persistenceOne/persistenceCore/v16/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v17/interchaintest/helpers"
 )
 
 // TestLiquidStakeGlobalCapStkXPRT runs the flow of liquid XPRT staking that reaches the global cap for liquid staking.

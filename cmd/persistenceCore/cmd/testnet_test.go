@@ -21,7 +21,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 
-	"github.com/persistenceOne/persistenceCore/v16/app"
+	"github.com/persistenceOne/persistenceCore/v17/app"
 )
 
 func TestTestnetCmd(t *testing.T) {

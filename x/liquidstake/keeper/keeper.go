@@ -11,7 +11,7 @@ import (
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	liquidkeeper "github.com/cosmos/gaia/v25/x/liquid/keeper"
 
-	"github.com/persistenceOne/persistenceCore/v16/x/liquidstake/types"
+	"github.com/persistenceOne/persistenceCore/v17/x/liquidstake/types"
 )
 
 // Keeper of the liquidstake store
