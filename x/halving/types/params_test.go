@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"testing"
 
-	paramsTypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -31,16 +30,6 @@ func TestValidate(t *testing.T) {
 func TestParams_String(t *testing.T) {
 	s := NewParams(100).String()
 	require.Equal(t, "blockHeight: 100\n", s)
-}
-
-func TestParams_ParamSetPairs(t *testing.T) {
-	params := NewParams(100)
-	got := params.ParamSetPairs()
-	require.Equal(t, 1, len(got))
-
-	expectedParamSetPair := paramsTypes.NewParamSetPair(KeyBlockHeight, &params.BlockHeight, validateBlockHeight)
-	require.Equal(t, got[0].Key, expectedParamSetPair.Key)
-	require.Equal(t, got[0].Value, expectedParamSetPair.Value)
 }
 
 func TestParams_validateBlockHeight(t *testing.T) {
