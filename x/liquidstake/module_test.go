@@ -7,13 +7,13 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/persistenceOne/persistenceCore/v16/app/constants"
+	"github.com/persistenceOne/persistenceCore/v17/app/constants"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/persistenceOne/persistenceCore/v16/app"
-	"github.com/persistenceOne/persistenceCore/v16/x/liquidstake"
-	"github.com/persistenceOne/persistenceCore/v16/x/liquidstake/types"
+	"github.com/persistenceOne/persistenceCore/v17/app"
+	"github.com/persistenceOne/persistenceCore/v17/x/liquidstake"
+	"github.com/persistenceOne/persistenceCore/v17/x/liquidstake/types"
 )
 
 type ModuleTestSuite struct {

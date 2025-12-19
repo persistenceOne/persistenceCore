@@ -39,9 +39,9 @@ import (
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 
-	"github.com/persistenceOne/persistenceCore/v16/app"
-	"github.com/persistenceOne/persistenceCore/v16/app/constants"
-	"github.com/persistenceOne/persistenceCore/v16/app/params"
+	"github.com/persistenceOne/persistenceCore/v17/app"
+	"github.com/persistenceOne/persistenceCore/v17/app/constants"
+	"github.com/persistenceOne/persistenceCore/v17/app/params"
 )
 
 func NewRootCmd() *cobra.Command {

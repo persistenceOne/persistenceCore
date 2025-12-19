@@ -7,8 +7,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/persistenceOne/persistenceCore/v16/x/liquidstake/keeper"
-	"github.com/persistenceOne/persistenceCore/v16/x/liquidstake/types"
+	"github.com/persistenceOne/persistenceCore/v17/x/liquidstake/keeper"
+	"github.com/persistenceOne/persistenceCore/v17/x/liquidstake/types"
 )
 
 func BeginBlock(ctx context.Context, k keeper.Keeper) error {
