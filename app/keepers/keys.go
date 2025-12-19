@@ -26,8 +26,8 @@ import (
 	icahosttypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/host/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
-	"github.com/persistenceOne/persistenceCore/v16/x/halving"
-	liquidstaketypes "github.com/persistenceOne/persistenceCore/v16/x/liquidstake/types"
+	"github.com/persistenceOne/persistenceCore/v17/x/halving"
+	liquidstaketypes "github.com/persistenceOne/persistenceCore/v17/x/liquidstake/types"
 )
 
 func (appKeepers *AppKeepers) GenerateKeys() {

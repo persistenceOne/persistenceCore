@@ -1,22 +1,20 @@
-package v16_0_0
+package v17_0_0
 
 import (
 	store "cosmossdk.io/store/types"
-	protocolpooltypes "github.com/cosmos/cosmos-sdk/x/protocolpool/types"
-
-	"github.com/persistenceOne/persistenceCore/v16/app/upgrades"
+	"github.com/persistenceOne/persistenceCore/v17/app/upgrades"
 )
 
 const (
 	// UpgradeName defines the on-chain upgrade name.
-	UpgradeName = "v16.0.0"
+	UpgradeName = "v17.0.0"
 )
 
 var Upgrade = upgrades.Upgrade{
 	UpgradeName:          UpgradeName,
 	CreateUpgradeHandler: CreateUpgradeHandler,
 	StoreUpgrades: store.StoreUpgrades{
-		Added:   []string{protocolpooltypes.StoreKey},
+		Added:   []string{},
 		Deleted: []string{},
 	},
 }

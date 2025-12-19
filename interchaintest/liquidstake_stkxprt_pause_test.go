@@ -16,10 +16,10 @@ import (
 	"github.com/cosmos/interchaintest/v10/chain/cosmos"
 	"github.com/cosmos/interchaintest/v10/ibc"
 	"github.com/cosmos/interchaintest/v10/testutil"
-	liquidstaketypes "github.com/persistenceOne/persistenceCore/v16/x/liquidstake/types"
+	liquidstaketypes "github.com/persistenceOne/persistenceCore/v17/x/liquidstake/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/persistenceOne/persistenceCore/v16/interchaintest/helpers"
+	"github.com/persistenceOne/persistenceCore/v17/interchaintest/helpers"
 )
 
 // TestPauseLiquidStakeStkXPRT runs the flow of liquid XPRT staking while pausing the module.
