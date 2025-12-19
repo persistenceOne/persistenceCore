@@ -18,7 +18,7 @@ import (
 	mintTypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	paramsTypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
-	"github.com/persistenceOne/persistenceCore/v16/x/halving/types"
+	"github.com/persistenceOne/persistenceCore/v17/x/halving/types"
 )
 
 type Keeper struct {

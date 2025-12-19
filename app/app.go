@@ -61,15 +61,15 @@ import (
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/spf13/cast"
 
-	"github.com/persistenceOne/persistenceCore/v16/app/constants"
-	"github.com/persistenceOne/persistenceCore/v16/app/keepers"
-	"github.com/persistenceOne/persistenceCore/v16/app/upgrades"
-	v1600 "github.com/persistenceOne/persistenceCore/v16/app/upgrades/v16.0.0"
+	"github.com/persistenceOne/persistenceCore/v17/app/constants"
+	"github.com/persistenceOne/persistenceCore/v17/app/keepers"
+	"github.com/persistenceOne/persistenceCore/v17/app/upgrades"
+	v1700rc0 "github.com/persistenceOne/persistenceCore/v17/app/upgrades/testnet/v17.0.0-rc0"
 )
 
 var (
 	DefaultNodeHome string
-	Upgrades        = []upgrades.Upgrade{v1600.Upgrade}
+	Upgrades        = []upgrades.Upgrade{v1700rc0.Upgrade}
 )
 
 var (

@@ -24,7 +24,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module/testutil"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/persistenceOne/persistenceCore/v16/app/constants"
+	"github.com/persistenceOne/persistenceCore/v17/app/constants"
 	"github.com/stretchr/testify/require"
 )
 

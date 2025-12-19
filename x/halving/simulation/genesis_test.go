@@ -17,7 +17,7 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/stretchr/testify/require"
 
-	"github.com/persistenceOne/persistenceCore/v16/x/halving/types"
+	"github.com/persistenceOne/persistenceCore/v17/x/halving/types"
 )
 
 func TestRandomizedGenState(t *testing.T) {

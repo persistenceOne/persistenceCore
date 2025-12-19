@@ -20,7 +20,7 @@ import (
 	pobtypes "github.com/persistenceOne/persistence-sdk/v7/x/pob/types"
 	ratesynctypes "github.com/persistenceOne/persistence-sdk/v7/x/ratesync/types"
 
-	"github.com/persistenceOne/persistenceCore/v16/app/params"
+	"github.com/persistenceOne/persistenceCore/v17/app/params"
 )
 
 // MakeEncodingConfig creates an EncodingConfig for testing

@@ -5,7 +5,7 @@ package pstake.liquidstake.v1beta1;
 import "gogoproto/gogo.proto";
 import "cosmos_proto/cosmos.proto";
 
-option go_package = "github.com/persistenceOne/persistenceCore/v16/x/liquidstake/types";
+option go_package = "github.com/persistenceOne/persistenceCore/v17/x/liquidstake/types";
 
 // Params defines the set of params for the liquidstake module.
 message Params {
