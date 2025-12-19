@@ -11,6 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/std"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	grouptypes "github.com/cosmos/cosmos-sdk/x/group"
+	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v7/x/interchainquery/types"
 	liquidstakeibctypes "github.com/persistenceOne/persistence-sdk/v7/x/liquidstakeibc/types"
 	lscosmostypes "github.com/persistenceOne/persistence-sdk/v7/x/lscosmos/types"
@@ -72,6 +73,9 @@ func AppendModuleInterfaces(interfaceRegistry codectypes.InterfaceRegistry, mbm 
 
 	// skip-pob - testnet
 	pobtypes.RegisterInterfaces(interfaceRegistry)
+
+	// params types proposals
+	paramstypes.RegisterInterfaces(interfaceRegistry)
 }
 
 func AppendModuleLegacyCodecs(amino *codec.LegacyAmino, mbm module.BasicManager) {
@@ -104,4 +108,8 @@ func AppendModuleLegacyCodecs(amino *codec.LegacyAmino, mbm module.BasicManager)
 
 	// skip-pob - testnet
 	pobtypes.RegisterLegacyAminoCodec(amino)
+
+	// params types proposals
+	paramstypes.RegisterLegacyAminoCodec(amino)
+
 }
