@@ -4,10 +4,10 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	"github.com/persistenceOne/persistenceCore/v16/app/constants"
+	"github.com/persistenceOne/persistenceCore/v17/app/constants"
 	"github.com/stretchr/testify/require"
 
-	"github.com/persistenceOne/persistenceCore/v16/x/liquidstake/types"
+	"github.com/persistenceOne/persistenceCore/v17/x/liquidstake/types"
 )
 
 func TestParams(t *testing.T) {

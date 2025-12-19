@@ -4,12 +4,12 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/persistenceOne/persistenceCore/v16/app"
-	"github.com/persistenceOne/persistenceCore/v16/app/constants"
+	"github.com/persistenceOne/persistenceCore/v17/app"
+	"github.com/persistenceOne/persistenceCore/v17/app/constants"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/persistenceOne/persistenceCore/v16/x/liquidstake/keeper"
-	"github.com/persistenceOne/persistenceCore/v16/x/liquidstake/types"
+	"github.com/persistenceOne/persistenceCore/v17/x/liquidstake/keeper"
+	"github.com/persistenceOne/persistenceCore/v17/x/liquidstake/types"
 )
 
 type HooksTestSuite struct {
