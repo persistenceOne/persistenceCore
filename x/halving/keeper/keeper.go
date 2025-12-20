@@ -16,14 +16,11 @@ import (
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	mintTypes "github.com/cosmos/cosmos-sdk/x/mint/types"
-	paramsTypes "github.com/cosmos/cosmos-sdk/x/params/types"
-
 	"github.com/persistenceOne/persistenceCore/v17/x/halving/types"
 )
 
 type Keeper struct {
 	storeKey   storetypes.KVStoreService
-	paramSpace paramsTypes.Subspace
 	mintKeeper mintkeeper.Keeper
 
 	Schema      collections.Schema
@@ -32,7 +29,7 @@ type Keeper struct {
 }
 
 func NewKeeper(cdc codec.BinaryCodec,
-	storeService storetypes.KVStoreService, paramSpace paramsTypes.Subspace,
+	storeService storetypes.KVStoreService,
 	mintKeeper mintkeeper.Keeper, ak authkeeper.AccountKeeper,
 	authority string,
 ) Keeper {
@@ -44,7 +41,6 @@ func NewKeeper(cdc codec.BinaryCodec,
 
 	k := Keeper{
 		storeKey:    storeService,
-		paramSpace:  paramSpace.WithKeyTable(types.ParamKeyTable()),
 		ParamsStore: collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 		mintKeeper:  mintKeeper,
 		authority:   authority,

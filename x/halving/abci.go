@@ -14,10 +14,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 
+	"github.com/persistenceOne/persistenceCore/v17/x/halving/keeper"
 	"github.com/persistenceOne/persistenceCore/v17/x/halving/types"
 )
 
-func EndBlocker(ctx sdk.Context, k Keeper) {
+func EndBlocker(ctx sdk.Context, k keeper.Keeper) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		panic(err)
@@ -28,8 +29,8 @@ func EndBlocker(ctx sdk.Context, k Keeper) {
 		if err != nil {
 			panic(err)
 		}
-		newMaxInflation := mintParams.InflationMax.QuoTruncate(sdkmath.LegacyNewDecFromInt(Factor))
-		newMinInflation := mintParams.InflationMin.QuoTruncate(sdkmath.LegacyNewDecFromInt(Factor))
+		newMaxInflation := mintParams.InflationMax.QuoTruncate(sdkmath.LegacyNewDecFromInt(types.Factor))
+		newMinInflation := mintParams.InflationMin.QuoTruncate(sdkmath.LegacyNewDecFromInt(types.Factor))
 
 		if newMaxInflation.Sub(newMinInflation).LT(sdkmath.LegacyZeroDec()) {
 			panic(fmt.Sprintf("max inflation (%s) must be greater than or equal to min inflation (%s)", newMaxInflation.String(), newMinInflation.String()))

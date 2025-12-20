@@ -58,7 +58,6 @@ import (
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	txmodule "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/spf13/cast"
 
 	"github.com/persistenceOne/persistenceCore/v17/app/constants"
@@ -388,11 +387,6 @@ func (app *Application) ModuleAccountAddrs() map[string]bool {
 	}
 
 	return modAccAddrs
-}
-
-func (app *Application) GetSubspace(moduleName string) paramstypes.Subspace {
-	subspace, _ := app.ParamsKeeper.GetSubspace(moduleName)
-	return subspace
 }
 
 func (app *Application) ModuleManager() *module.Manager {
