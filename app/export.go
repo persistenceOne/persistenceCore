@@ -1,10 +1,10 @@
 package app
 
 import (
-	storetypes "cosmossdk.io/store/types"
 	"fmt"
 	stdlog "log"
 
+	storetypes "cosmossdk.io/store/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
