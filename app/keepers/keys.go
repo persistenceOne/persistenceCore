@@ -15,7 +15,6 @@ import (
 	epochstypes "github.com/cosmos/cosmos-sdk/x/epochs/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
-	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	protocolpooltypes "github.com/cosmos/cosmos-sdk/x/protocolpool/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -26,7 +25,7 @@ import (
 	icahosttypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/host/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
-	"github.com/persistenceOne/persistenceCore/v17/x/halving"
+	halvingtypes "github.com/persistenceOne/persistenceCore/v17/x/halving/types"
 	liquidstaketypes "github.com/persistenceOne/persistenceCore/v17/x/liquidstake/types"
 )
 
@@ -44,7 +43,7 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 		evidencetypes.StoreKey,
 		feegrant.StoreKey,
 		govtypes.StoreKey,
-		halving.StoreKey,
+		halvingtypes.StoreKey,
 		ibcexported.StoreKey,
 		ibchookstypes.StoreKey,
 		ibctransfertypes.StoreKey,
@@ -53,7 +52,6 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 		liquidtypes.StoreKey,
 		liquidstaketypes.StoreKey,
 		minttypes.StoreKey,
-		paramstypes.StoreKey,
 		packetforwardtypes.StoreKey,
 		slashingtypes.StoreKey,
 		stakingtypes.StoreKey,
@@ -63,7 +61,7 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 	)
 
 	// Define transient store keys
-	appKeepers.tkeys = storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
+	appKeepers.tkeys = storetypes.NewTransientStoreKeys()
 
 	// MemKeys are for information that is stored only in RAM.
 }

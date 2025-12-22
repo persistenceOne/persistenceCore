@@ -2,6 +2,8 @@ package v17_0_0
 
 import (
 	store "cosmossdk.io/store/types"
+	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+
 	"github.com/persistenceOne/persistenceCore/v17/app/upgrades"
 )
 
@@ -15,6 +17,6 @@ var Upgrade = upgrades.Upgrade{
 	CreateUpgradeHandler: CreateUpgradeHandler,
 	StoreUpgrades: store.StoreUpgrades{
 		Added:   []string{},
-		Deleted: []string{},
+		Deleted: []string{paramstypes.StoreKey},
 	},
 }
