@@ -2,8 +2,11 @@ package interchaintest
 
 import (
 	"context"
-	"cosmossdk.io/math"
 	"encoding/json"
+	"strconv"
+	"testing"
+
+	"cosmossdk.io/math"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -16,8 +19,6 @@ import (
 	"github.com/persistenceOne/persistenceCore/v17/interchaintest/helpers"
 	liquidstaketypes "github.com/persistenceOne/persistenceCore/v17/x/liquidstake/types"
 	"github.com/stretchr/testify/require"
-	"strconv"
-	"testing"
 )
 
 // TestLiquidStakeStkXPRT runs the flow of liquid XPRT staking using

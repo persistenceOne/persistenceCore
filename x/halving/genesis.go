@@ -7,10 +7,13 @@ package halving
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/persistenceOne/persistenceCore/v17/x/halving/keeper"
+	"github.com/persistenceOne/persistenceCore/v17/x/halving/types"
 )
 
 // InitGenesis new halving genesis
-func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) {
+func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState) {
 	err := keeper.SetParams(ctx, data.Params)
 	if err != nil {
 		panic(err)
@@ -18,10 +21,10 @@ func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) {
 }
 
 // ExportGenesis returns a GenesisState for a given context and keeper.
-func ExportGenesis(ctx sdk.Context, keeper Keeper) *GenesisState {
+func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
 	params, err := keeper.GetParams(ctx)
 	if err != nil {
 		panic(err)
 	}
-	return NewGenesisState(params)
+	return types.NewGenesisState(params)
 }

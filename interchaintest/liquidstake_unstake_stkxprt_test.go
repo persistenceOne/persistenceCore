@@ -2,7 +2,6 @@ package interchaintest
 
 import (
 	"context"
-	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	"strconv"
 	"testing"
 
@@ -11,13 +10,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
+	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	"github.com/cosmos/interchaintest/v10"
 	"github.com/cosmos/interchaintest/v10/chain/cosmos"
 	"github.com/cosmos/interchaintest/v10/testutil"
+	"github.com/persistenceOne/persistenceCore/v17/interchaintest/helpers"
 	liquidstaketypes "github.com/persistenceOne/persistenceCore/v17/x/liquidstake/types"
 	"github.com/stretchr/testify/require"
-
-	"github.com/persistenceOne/persistenceCore/v17/interchaintest/helpers"
 )
 
 // TestLiquidStakeUnstakeStkXPRT runs the flow of stkXPRT unstaking.
