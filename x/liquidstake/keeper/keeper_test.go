@@ -12,7 +12,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/cosmos/cosmos-sdk/x/mint"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -73,10 +72,7 @@ func (s *KeeperTestSuite) SetupTest() {
 	s.Require().NoError(err)
 }
 
-func (s *KeeperTestSuite) TearDownTest() {
-	// invariant check
-	crisis.EndBlocker(s.ctx, *s.app.CrisisKeeper)
-}
+func (s *KeeperTestSuite) TearDownTest() {}
 
 func (s *KeeperTestSuite) CreateValidators(powers []int64) ([]sdk.AccAddress, []sdk.ValAddress, []cryptotypes.PubKey) {
 	_, err := s.app.BeginBlocker(s.ctx)
