@@ -36,14 +36,9 @@ import (
 	epochstypes "github.com/cosmos/cosmos-sdk/x/epochs/types"
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
-	"github.com/cosmos/cosmos-sdk/x/params"
-	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
-	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	paramsproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 	protocolpoolkeeper "github.com/cosmos/cosmos-sdk/x/protocolpool/keeper"
 	protocolpooltypes "github.com/cosmos/cosmos-sdk/x/protocolpool/types"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
@@ -68,13 +63,11 @@ import (
 	ibctransfer "github.com/cosmos/ibc-go/v10/modules/apps/transfer"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v10/modules/apps/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
-	ibcconnectiontypes "github.com/cosmos/ibc-go/v10/modules/core/03-connection/types"
 	ibctypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
-	"github.com/persistenceOne/persistenceCore/v17/x/halving"
+	halvingkeeper "github.com/persistenceOne/persistenceCore/v17/x/halving/keeper"
 	halvingtypes "github.com/persistenceOne/persistenceCore/v17/x/halving/types"
 	liquidstakekeeper "github.com/persistenceOne/persistenceCore/v17/x/liquidstake/keeper"
 	liquidstaketypes "github.com/persistenceOne/persistenceCore/v17/x/liquidstake/types"
@@ -99,14 +92,13 @@ type AppKeepers struct {
 	ProtocolPoolKeeper    *protocolpoolkeeper.Keeper
 	UpgradeKeeper         *upgradekeeper.Keeper
 	CrisisKeeper          *crisiskeeper.Keeper
-	ParamsKeeper          *paramskeeper.Keeper
 	IBCKeeper             *ibckeeper.Keeper
 	ICAHostKeeper         *icahostkeeper.Keeper
 	EvidenceKeeper        *evidencekeeper.Keeper
 	TransferKeeper        *ibctransferkeeper.Keeper
 	FeegrantKeeper        *feegrantkeeper.Keeper
 	AuthzKeeper           *authzkeeper.Keeper
-	HalvingKeeper         *halving.Keeper
+	HalvingKeeper         *halvingkeeper.Keeper
 	WasmKeeper            *wasmkeeper.Keeper
 	EpochsKeeper          *epochskeeper.Keeper
 	ICAControllerKeeper   *icacontrollerkeeper.Keeper
@@ -142,14 +134,6 @@ func NewAppKeeper(
 	if err := bApp.RegisterStreamingServices(appOpts, appKeepers.keys); err != nil {
 		panic(err)
 	}
-
-	paramsKeeper := initParamsKeeper(
-		appCodec,
-		legacyAmino,
-		appKeepers.keys[paramstypes.StoreKey],
-		appKeepers.tkeys[paramstypes.TStoreKey],
-	)
-	appKeepers.ParamsKeeper = &paramsKeeper
 
 	consensusKeeper := consensusparamskeeper.NewKeeper(
 		appCodec,
@@ -275,10 +259,9 @@ func NewAppKeeper(
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
-	halvingKeeper := halving.NewKeeper(
+	halvingKeeper := halvingkeeper.NewKeeper(
 		appCodec,
-		runtime.NewKVStoreService(appKeepers.keys[halving.StoreKey]),
-		appKeepers.GetSubspace(halving.DefaultParamspace),
+		runtime.NewKVStoreService(appKeepers.keys[halvingtypes.StoreKey]),
 		*appKeepers.MintKeeper,
 		*appKeepers.AccountKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
@@ -308,7 +291,7 @@ func NewAppKeeper(
 	appKeepers.IBCKeeper = ibckeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(appKeepers.keys[ibcexported.StoreKey]),
-		appKeepers.GetSubspace(ibcexported.ModuleName),
+		nil,
 		appKeepers.UpgradeKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
@@ -326,7 +309,7 @@ func NewAppKeeper(
 	transferKeeper := ibctransferkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(appKeepers.keys[ibctransfertypes.StoreKey]),
-		appKeepers.GetSubspace(ibctransfertypes.ModuleName),
+		nil,
 		// The ICS4Wrapper is replaced by the callback stack later in the code
 		// so that sending can be overridden by the middleware
 		appKeepers.IBCKeeper.ChannelKeeper, // ICS4Wrapper, replaced by the stack
@@ -342,7 +325,7 @@ func NewAppKeeper(
 	icaHostKeeper := icahostkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(appKeepers.keys[icahosttypes.StoreKey]),
-		appKeepers.GetSubspace(icahosttypes.SubModuleName),
+		nil,
 		appKeepers.IBCKeeper.ChannelKeeper, // use as ics4Wrapper in middleware stack
 		appKeepers.IBCKeeper.ChannelKeeper,
 		appKeepers.AccountKeeper,
@@ -356,7 +339,7 @@ func NewAppKeeper(
 	icaControllerKeeper := icacontrollerkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(appKeepers.keys[icacontrollertypes.StoreKey]),
-		appKeepers.GetSubspace(icacontrollertypes.SubModuleName),
+		nil,
 		appKeepers.IBCKeeper.ChannelKeeper, // use ics29 fee as ics4Wrapper in middleware stack
 		appKeepers.IBCKeeper.ChannelKeeper,
 		bApp.MsgServiceRouter(),
@@ -474,8 +457,7 @@ func NewAppKeeper(
 
 	govRouter := govv1beta1.NewRouter()
 	govRouter.
-		AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
-		AddRoute(paramsproposal.RouterKey, params.NewParamChangeProposalHandler(*appKeepers.ParamsKeeper)) // this is kept for the modules that are yet to migrate from legacy x/params.
+		AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler)
 
 	govConfig := govtypes.DefaultConfig()
 	govConfig.MaxMetadataLen = 5000
@@ -502,35 +484,4 @@ func NewAppKeeper(
 	)
 
 	return appKeepers
-}
-
-// GetSubspace returns a param subspace for a given module name.
-func (appKeepers *AppKeepers) GetSubspace(moduleName string) paramstypes.Subspace {
-	subspace, _ := appKeepers.ParamsKeeper.GetSubspace(moduleName)
-	return subspace
-}
-
-// initParamsKeeper init params keeper and its subspaces.
-func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino, key, tkey storetypes.StoreKey) paramskeeper.Keeper {
-	paramsKeeper := paramskeeper.NewKeeper(appCodec, legacyAmino, key, tkey)
-
-	keyTable := ibcclienttypes.ParamKeyTable()
-	keyTable.RegisterParamSet(&ibcconnectiontypes.Params{})
-	paramsKeeper.Subspace(authtypes.ModuleName).WithKeyTable(authtypes.ParamKeyTable())
-	paramsKeeper.Subspace(banktypes.ModuleName).WithKeyTable(banktypes.ParamKeyTable())
-	paramsKeeper.Subspace(stakingtypes.ModuleName).WithKeyTable(stakingtypes.ParamKeyTable())
-	paramsKeeper.Subspace(minttypes.ModuleName)
-	paramsKeeper.Subspace(distributiontypes.ModuleName).WithKeyTable(distributiontypes.ParamKeyTable())
-	paramsKeeper.Subspace(slashingtypes.ModuleName).WithKeyTable(slashingtypes.ParamKeyTable())
-	paramsKeeper.Subspace(crisistypes.ModuleName).WithKeyTable(crisistypes.ParamKeyTable())
-	paramsKeeper.Subspace(halvingtypes.DefaultParamspace) // keeper handles keytable for this one
-	paramsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govv1.ParamKeyTable())
-	paramsKeeper.Subspace(ibctransfertypes.ModuleName).WithKeyTable(ibctransfertypes.ParamKeyTable())
-	paramsKeeper.Subspace(ibcexported.ModuleName).WithKeyTable(keyTable)
-	paramsKeeper.Subspace(icahosttypes.SubModuleName).WithKeyTable(icahosttypes.ParamKeyTable())
-	paramsKeeper.Subspace(wasmtypes.ModuleName)
-	paramsKeeper.Subspace(icacontrollertypes.SubModuleName).WithKeyTable(icacontrollertypes.ParamKeyTable())
-	paramsKeeper.Subspace(packetforwardtypes.ModuleName)
-
-	return paramsKeeper
 }

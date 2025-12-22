@@ -9,7 +9,6 @@ import (
 	"fmt"
 
 	sdkmath "cosmossdk.io/math"
-	paramsTypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"gopkg.in/yaml.v2"
 )
 
@@ -18,11 +17,6 @@ var (
 	KeyBlockHeight = []byte("BlockHeight")
 	Factor         = sdkmath.NewInt(2)
 )
-
-// ParamTable for halving module.
-func ParamKeyTable() paramsTypes.KeyTable {
-	return paramsTypes.NewKeyTable().RegisterParamSet(&Params{})
-}
 
 func NewParams(blockHeight uint64) Params {
 	return Params{
@@ -51,13 +45,6 @@ func (p Params) String() string {
 	out, _ := yaml.Marshal(p)
 
 	return string(out)
-}
-
-// Implements params.ParamSet
-func (p *Params) ParamSetPairs() paramsTypes.ParamSetPairs {
-	return paramsTypes.ParamSetPairs{
-		paramsTypes.NewParamSetPair(KeyBlockHeight, &p.BlockHeight, validateBlockHeight),
-	}
 }
 
 func validateBlockHeight(i interface{}) error {
