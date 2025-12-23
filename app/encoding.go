@@ -10,6 +10,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/std"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	grouptypes "github.com/cosmos/cosmos-sdk/x/group"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 	interchainquerytypes "github.com/persistenceOne/persistence-sdk/v7/x/interchainquery/types"
@@ -76,6 +77,9 @@ func AppendModuleInterfaces(interfaceRegistry codectypes.InterfaceRegistry, mbm 
 
 	// params types proposals
 	paramstypes.RegisterInterfaces(interfaceRegistry)
+
+	//crisis types
+	crisistypes.RegisterInterfaces(interfaceRegistry)
 }
 
 func AppendModuleLegacyCodecs(amino *codec.LegacyAmino, mbm module.BasicManager) {
@@ -112,4 +116,6 @@ func AppendModuleLegacyCodecs(amino *codec.LegacyAmino, mbm module.BasicManager)
 	// params types proposals
 	paramstypes.RegisterLegacyAminoCodec(amino)
 
+	//crisis types
+	crisistypes.RegisterLegacyAminoCodec(amino)
 }
