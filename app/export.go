@@ -44,8 +44,6 @@ func (app *Application) ExportAppStateAndValidators(forZeroHeight bool, jailWhit
 }
 
 func (app *Application) prepForZeroHeightGenesis(context sdk.Context, jailWhiteList []string) {
-	/* Just to be safe, assert the invariants on current state. */
-	app.CrisisKeeper.AssertInvariants(context)
 
 	/* Handle fee distribution state. */
 
