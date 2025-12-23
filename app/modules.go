@@ -22,8 +22,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
-	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	"github.com/cosmos/cosmos-sdk/x/distribution"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/cosmos/cosmos-sdk/x/epochs"
@@ -110,7 +108,6 @@ func appModules(
 		epochs.NewAppModule(*app.EpochsKeeper),
 		liquid.NewAppModule(appCodec, app.LiquidKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		liquidstake.NewAppModule(*app.LiquidStakeKeeper),
-		crisis.NewAppModule(app.CrisisKeeper, false, nil), // skipGenesisInvariants: false, always be last to make sure that it checks for all invariants and not only part of them
 		ibctm.NewAppModule(app.TMLightClientModule),
 		protocolpool.NewAppModule(*app.ProtocolPoolKeeper, app.AccountKeeper, app.BankKeeper),
 	}
@@ -139,7 +136,6 @@ func orderBeginBlockers() []string {
 		minttypes.ModuleName,
 		distributiontypes.ModuleName,
 		protocolpooltypes.ModuleName,
-		crisistypes.ModuleName,
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
 		ibctransfertypes.ModuleName,
@@ -165,7 +161,6 @@ func orderBeginBlockers() []string {
 
 func orderEndBlockers() []string {
 	return []string{
-		crisistypes.ModuleName,
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
 		ibctransfertypes.ModuleName,
@@ -209,7 +204,6 @@ func orderInitGenesis() []string {
 		slashingtypes.ModuleName,
 		govtypes.ModuleName,
 		minttypes.ModuleName,
-		crisistypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
@@ -241,7 +235,6 @@ func orderExportGenesis() []string {
 		slashingtypes.ModuleName,
 		govtypes.ModuleName,
 		minttypes.ModuleName,
-		crisistypes.ModuleName,
 		genutiltypes.ModuleName,
 		evidencetypes.ModuleName,
 		authz.ModuleName,
