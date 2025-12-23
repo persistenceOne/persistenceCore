@@ -10,7 +10,6 @@ import (
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	consensusparamstypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
-	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	epochstypes "github.com/cosmos/cosmos-sdk/x/epochs/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
@@ -37,7 +36,6 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 		authzkeeper.StoreKey,
 		banktypes.StoreKey,
 		consensusparamstypes.StoreKey,
-		crisistypes.StoreKey,
 		distributiontypes.StoreKey,
 		epochstypes.StoreKey,
 		evidencetypes.StoreKey,
