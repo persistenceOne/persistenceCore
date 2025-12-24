@@ -3,15 +3,12 @@ package interchaintest
 import (
 	"context"
 	"fmt"
-	"strings"
 	"testing"
-	"time"
 
 	"cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/interchaintest/v10"
-	"github.com/cosmos/interchaintest/v10/chain/cosmos"
 	"github.com/cosmos/interchaintest/v10/ibc"
 	"github.com/cosmos/interchaintest/v10/testutil"
 	"github.com/stretchr/testify/require"
@@ -58,28 +55,6 @@ func TestTxAuthSignModesAndOrdering(t *testing.T) {
 
 	amount := sdk.NewCoin(denom, math.NewInt(100_000))
 
-	// retry wrapper to reduce flakiness due to transient RPC hiccups in CI
-	execTxWithRetry := func(ctx context.Context, node *cosmos.ChainNode, key string, cmd ...string) (string, error) {
-		var lastErr error
-		for i := 0; i < i; i++ {
-			t.Logf("Exec attempt %d: %v", i+1, append([]string{"persistenceCore", "tx"}, cmd...))
-			txHash, err := node.ExecTx(ctx, key, cmd...)
-			if err == nil {
-				return txHash, nil
-			}
-			lastErr = err
-			emsg := err.Error()
-			// retry on typical transient errors observed in CI
-			if strings.Contains(emsg, "connection refused") || strings.Contains(emsg, "post failed") || strings.Contains(emsg, "EOF") || strings.Contains(emsg, "i/o timeout") || strings.Contains(emsg, "transport is closing") {
-				time.Sleep(time.Duration(i+1) * 500 * time.Millisecond)
-				continue
-			}
-			// non-transient
-			return "", err
-		}
-		return "", lastErr
-	}
-
 	doSend := func(sender ibc.Wallet, signMode string, unordered bool) {
 		cmd := []string{
 			"bank", "send",
@@ -93,8 +68,9 @@ func TestTxAuthSignModesAndOrdering(t *testing.T) {
 			cmd = append(cmd, "--unordered", "--timeout-duration=10s")
 		}
 
-		txHash, err := execTxWithRetry(ctx, chainNode, sender.KeyName(), cmd...)
+		txHash, err := chainNode.ExecTx(ctx, sender.KeyName(), cmd...)
 		require.NoError(t, err)
+		require.NotEmpty(t, txHash)
 		_, err = helpers.QueryTx(ctx, chainNode, txHash)
 		require.NoError(t, err)
 	}
