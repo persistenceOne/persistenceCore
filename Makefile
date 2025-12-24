@@ -307,6 +307,10 @@ ictest-liquidstake: rm-testcache
 ictest-liquidstake-all: rm-testcache
 	cd interchaintest && go test -race -v -run "(TestLiquidStakeStkXPRT|TestLiquidStakeUnstakeStkXPRT|TestPauseLiquidStakeStkXPRT)" .
 
+# Executes different tx types
+ictest-txs-auth: rm-testcache
+	cd interchaintest && go test -race -v -run "(TestTxAuthSignModesAndOrdering)" .
+
 rm-testcache:
 	go clean -testcache
 
