@@ -24,17 +24,22 @@ func TestTxAuthSignModesAndOrdering(t *testing.T) {
 	if testing.Short() {
 		t.Skip()
 	}
+	t.Parallel()
 
-	ctx := context.Background()
-	t.Cleanup(func() {})
+	ctx, cancelFn := context.WithCancel(context.Background())
+	t.Cleanup(func() {
+		cancelFn()
+	})
 
 	// Single chain with 1 validator is sufficient
 	validators := 1
 	ic, chain := CreateChain(t, ctx, validators, 0)
 	require.NotNil(t, ic)
 	require.NotNil(t, chain)
-	defer func() { _ = ic.Close() }()
 
+	t.Cleanup(func() {
+		_ = ic.Close()
+	})
 	// ensure chain has produced at least one block before first tx
 	require.NoError(t, testutil.WaitForBlocks(ctx, 1, chain))
 
