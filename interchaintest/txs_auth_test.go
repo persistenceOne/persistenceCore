@@ -66,7 +66,7 @@ func TestTxAuthSignModesAndOrdering(t *testing.T) {
 			sender.FormattedAddress(),
 			toUser.FormattedAddress(),
 			amount.String(),
-			"--gas=auto",
+			"--gas", "auto",
 			"--sign-mode", signMode,
 		}
 		if unordered {
@@ -85,13 +85,13 @@ func TestTxAuthSignModesAndOrdering(t *testing.T) {
 
 	// Ordered (default) deliveries
 	doSend(senders[0], "direct", false)
-	doSend(senders[1], "amino-json", false)
 	doSend(senders[2], "textual", false)
+	doSend(senders[1], "amino-json", false)
 
 	// Unordered deliveries (with timeout)
 	doSend(senders[3], "direct", true)
-	doSend(senders[4], "amino-json", true)
 	doSend(senders[5], "textual", true)
+	doSend(senders[4], "amino-json", true)
 
 	afterTo, err := chain.GetBalance(ctx, toUser.FormattedAddress(), denom)
 	require.NoError(t, err)
