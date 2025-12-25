@@ -66,11 +66,11 @@ func TestTxAuthSignModesAndOrdering(t *testing.T) {
 			sender.FormattedAddress(),
 			toUser.FormattedAddress(),
 			amount.String(),
-			"--gas", "auto",
-			"--sign-mode", signMode,
+			"--gas=auto",
+			fmt.Sprintf("--sign-mode=%s", signMode),
 		}
 		if unordered {
-			cmd = append(cmd, "--unordered", "--timeout-duration=10s")
+			cmd = append(cmd, "--unordered", "--timeout-duration=20s")
 		}
 
 		txHash, err := chainNode.ExecTx(ctx, sender.KeyName(), cmd...)
