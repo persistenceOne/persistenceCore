@@ -43,7 +43,7 @@ jobs:
 #          registry: # empty registry, image only shared for e2e testing
           tag: local # emulate local environment for consistency in interchaintest cases
           tar-export-path: ${{ env.TAR_PATH }} # export a tarball that can be uploaded as an artifact for the e2e jobs
-          platform: linux/arm64,linux/amd64 # test runner architecture only
+          platform: linux/arm64 # test runner architecture only
           git-ref: ${{ steps.branch-name.outputs.current_branch }}
 
           # Heighliner chains.yaml config
