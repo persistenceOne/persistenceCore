@@ -83,15 +83,14 @@ func TestTxAuthSignModesAndOrdering(t *testing.T) {
 	beforeTo, err := chain.GetBalance(ctx, toUser.FormattedAddress(), denom)
 	require.NoError(t, err)
 
-	// Ordered (default) deliveries
 	doSend(senders[0], "direct", false)
-	doSend(senders[1], "textual", false)
-	doSend(senders[2], "amino-json", false)
+	doSend(senders[1], "direct", true)
 
-	// Unordered deliveries (with timeout)
-	doSend(senders[3], "direct", true)
-	doSend(senders[4], "textual", true)
-	doSend(senders[5], "amino-json", true)
+	doSend(senders[2], "amino-json", false)
+	doSend(senders[3], "amino-json", true)
+
+	doSend(senders[4], "textual", false)
+	doSend(senders[5], "textual", true)
 
 	afterTo, err := chain.GetBalance(ctx, toUser.FormattedAddress(), denom)
 	require.NoError(t, err)
