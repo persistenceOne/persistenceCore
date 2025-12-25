@@ -68,6 +68,7 @@ func TestTxAuthSignModesAndOrdering(t *testing.T) {
 			amount.String(),
 			"--gas=auto",
 			fmt.Sprintf("--sign-mode=%s", signMode),
+			fmt.Sprintf("--node=http://%s:26657", chainNode.HostName()),
 		}
 		if unordered {
 			cmd = append(cmd, "--unordered", "--timeout-duration=20s")
