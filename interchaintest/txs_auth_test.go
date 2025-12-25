@@ -95,4 +95,6 @@ func TestTxAuthSignModesAndOrdering(t *testing.T) {
 	afterTo, err := chain.GetBalance(ctx, toUser.FormattedAddress(), denom)
 	require.NoError(t, err)
 	require.Equal(t, beforeTo.Add(amount.Amount.MulRaw(6)), afterTo, "recipient should receive 6 transfers")
+
+	require.NoError(t, testutil.WaitForBlocks(ctx, 2, chain))
 }
