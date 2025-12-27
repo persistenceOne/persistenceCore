@@ -82,6 +82,7 @@ jobs:
       matrix:
         # names of `make` commands to run tests
         test:
+          - "ictest-txs-auth"
           - "ictest-upgrade"
           - "ictest-ibc"
           - "ictest-ibchooks"
