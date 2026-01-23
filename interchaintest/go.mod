@@ -9,7 +9,7 @@ require (
 	cosmossdk.io/x/upgrade v0.2.0
 	github.com/CosmWasm/wasmd v0.60.2
 	github.com/avast/retry-go/v4 v4.6.1
-	github.com/cometbft/cometbft v0.38.20
+	github.com/cometbft/cometbft v0.38.21
 	github.com/cosmos/cosmos-sdk v0.53.5
 	github.com/cosmos/gaia/v25 v25.2.0
 	github.com/cosmos/go-bip39 v1.0.0
