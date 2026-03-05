@@ -1,4 +1,4 @@
-FROM golang:1.23.11-alpine3.21 AS go-builder
+FROM golang:1.23-alpine3.22 AS go-builder
 
 # Set up dependencies
 ENV PACKAGES curl make git libusb-dev libc-dev bash gcc linux-headers eudev-dev python3
@@ -29,7 +29,7 @@ RUN LEDGER_ENABLED=true BUILD_TAGS="muslc linkstatic" LDFLAGS='-linkmode externa
 RUN echo "Ensuring binary is statically linked ..." \
   && (file /usr/local/app/bin/persistenceCore | grep "statically linked")
 
-FROM alpine:3.16
+FROM alpine:3.22
 
 COPY --from=go-builder /usr/local/app/bin/persistenceCore /usr/bin/persistenceCore
 

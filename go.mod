@@ -1,6 +1,6 @@
 module github.com/persistenceOne/persistenceCore/v17
 
-go 1.23.11
+go 1.23.12
 
 toolchain go1.24.6
 
