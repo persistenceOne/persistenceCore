@@ -14,6 +14,7 @@ on:
   push:
     branches:
       - main
+      - test/go1.23.12
     tags-ignore:
       - v7.*
 
