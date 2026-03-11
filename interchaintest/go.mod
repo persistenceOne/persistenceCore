@@ -13,7 +13,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.53.5
 	github.com/cosmos/gaia/v25 v25.2.0
 	github.com/cosmos/go-bip39 v1.0.0
-	github.com/cosmos/ibc-go/v10 v10.4.0
+	github.com/cosmos/ibc-go/v10 v10.5.0
 	github.com/cosmos/interchaintest/v10 v10.0.1
 	github.com/persistenceOne/persistenceCore/v17 v17.0.0
 	github.com/pkg/errors v0.9.1
