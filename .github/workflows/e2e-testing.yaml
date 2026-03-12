@@ -65,7 +65,7 @@ jobs:
       - name: Setup Go with cache
         uses: magnetikonline/action-golang-cache@v5
         with:
-          go-version: 1.23
+          go-version: 1.24
         id: go
 
       - name: Checkout repository
@@ -113,7 +113,7 @@ jobs:
       - name: Setup Go with cache
         uses: magnetikonline/action-golang-cache@v5
         with:
-          go-version: 1.23
+          go-version: 1.24
         id: go
 
       - name: Checkout repository
