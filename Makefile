@@ -246,7 +246,7 @@ local-image:
 ifeq (,$(shell which heighliner))
 	echo 'heighliner' binary not found. Consider running `make get-heighliner`
 else
-	heighliner build -c persistence --go-version 1.23 --local -f ./chains.yaml
+	heighliner build -c persistence --go-version 1.24 --local -f ./chains.yaml
 endif
 
 .PHONY: get-heighliner local-image
