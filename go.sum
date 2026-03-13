@@ -886,8 +886,8 @@ github.com/cosmos/cosmos-db v1.1.3 h1:7QNT77+vkefostcKkhrzDK9uoIEryzFrU9eoMeaQOP
 github.com/cosmos/cosmos-db v1.1.3/go.mod h1:kN+wGsnwUJZYn8Sy5Q2O0vCYA99MJllkKASbs6Unb9U=
 github.com/cosmos/cosmos-proto v1.0.0-beta.5 h1:eNcayDLpip+zVLRLYafhzLvQlSmyab+RC5W7ZfmxJLA=
 github.com/cosmos/cosmos-proto v1.0.0-beta.5/go.mod h1:hQGLpiIUloJBMdQMMWb/4wRApmI9hjHH05nefC0Ojec=
-github.com/cosmos/cosmos-sdk v0.53.5 h1:JPue+SFn2gyDzTV9TYb8mGpuIH3kGt7WbGadulkpTcU=
-github.com/cosmos/cosmos-sdk v0.53.5/go.mod h1:AQJx0jpon70WAD4oOs/y+SlST4u7VIwEPR6F8S7JMdo=
+github.com/cosmos/cosmos-sdk v0.53.6 h1:aJeInld7rbsHtH1qLHu2aZJF9t40mGlqp3ylBLDT0HI=
+github.com/cosmos/cosmos-sdk v0.53.6/go.mod h1:N6YuprhAabInbT3YGumGDKONbvPX5dNro7RjHvkQoKE=
 github.com/cosmos/gaia/v25 v25.3.0 h1:3GgUeDN5Mf0RtBCxW6h4gnggiyMwYpWkOO3S9V4KnDk=
 github.com/cosmos/gaia/v25 v25.3.0/go.mod h1:WzIY3XF/0WVnre9Q+5+UkdtA27rIkRwLni5BIvL2hh8=
 github.com/cosmos/go-bip39 v1.0.0 h1:pcomnQdrdH22njcAatO0yWojsUnCO3y2tNoV1cb6hHY=
@@ -909,8 +909,8 @@ github.com/cosmos/ics23/go v0.11.0 h1:jk5skjT0TqX5e5QJbEnwXIS2yI2vnmLOgpQPeM5Rtn
 github.com/cosmos/ics23/go v0.11.0/go.mod h1:A8OjxPE67hHST4Icw94hOxxFEJMBG031xIGF/JHNIY0=
 github.com/cosmos/keyring v1.2.0 h1:8C1lBP9xhImmIabyXW4c3vFjjLiBdGCmfLUfeZlV1Yo=
 github.com/cosmos/keyring v1.2.0/go.mod h1:fc+wB5KTk9wQ9sDx0kFXB3A0MaeGHM9AwRStKOQ5vOA=
-github.com/cosmos/ledger-cosmos-go v0.16.0 h1:YKlWPG9NnGZIEUb2bEfZ6zhON1CHlNTg0QKRRGcNEd0=
-github.com/cosmos/ledger-cosmos-go v0.16.0/go.mod h1:WrM2xEa8koYoH2DgeIuZXNarF7FGuZl3mrIOnp3Dp0o=
+github.com/cosmos/ledger-cosmos-go v1.0.0 h1:jNKW89nPf0vR0EkjHG8Zz16h6p3zqwYEOxlHArwgYtw=
+github.com/cosmos/ledger-cosmos-go v1.0.0/go.mod h1:mGaw2wDOf+Z6SfRJsMGxU9DIrBa4du0MAiPlpPhLAOE=
 github.com/cosmos/rosetta v0.50.12 h1:Dy8B5Hc6/aH1xxuUDYAVRvI2Dx5cilPsjCwG3INp6bE=
 github.com/cosmos/rosetta v0.50.12/go.mod h1:w80RJd4oW5r6t89rajdZGJbI0mucZ1CSZdi+YeSTKow=
 github.com/cosmos/rosetta-sdk-go v0.10.0 h1:E5RhTruuoA7KTIXUcMicL76cffyeoyvNybzUGSKFTcM=
