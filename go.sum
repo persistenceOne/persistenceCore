@@ -665,10 +665,10 @@ github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 h1:L/gRVlceqvL25
 github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161/go.mod h1:xomTg63KZ2rFqZQzSB4Vz2SUXa1BpHTVz9L5PTmPC4E=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/CosmWasm/priv_wasmd_sec v0.60.9-rc.2 h1:I/6CZX1Mz9IkM4EHJn/KPoRwYXjCMzA7BGUbenOqQKs=
-github.com/CosmWasm/priv_wasmd_sec v0.60.9-rc.2/go.mod h1:N2vhSPP6uDCKIsHwulKiOmws70rfmHZKkvLXfrzKRKk=
-github.com/CosmWasm/priv_wasmvm_sec/v2 v2.3.5-rc.2 h1:WqjoflxV9v2rZY4Ol/Cb08ld5zPYE5U8LVwqqy6opmc=
-github.com/CosmWasm/priv_wasmvm_sec/v2 v2.3.5-rc.2/go.mod h1:RzLlMwFRLaTwPM0DdHFA0m/APT5muKjU6t3ZxCrpXJ0=
+github.com/CosmWasm/priv_wasmd_sec v0.60.9-rc.3 h1:jf5MfrNei1grFY9eldK7IQ3WbidJVD4hNWElhVuBXBE=
+github.com/CosmWasm/priv_wasmd_sec v0.60.9-rc.3/go.mod h1:JAL385ATVhNYXy+12a1hH2XnyrJwnF79cE0ShUKj2Nk=
+github.com/CosmWasm/priv_wasmvm_sec/v2 v2.3.5-rc.3 h1:J512lxTeSEkMUpT7+3/Pc2Hje/3UwVWVZvDbFukLhpw=
+github.com/CosmWasm/priv_wasmvm_sec/v2 v2.3.5-rc.3/go.mod h1:RzLlMwFRLaTwPM0DdHFA0m/APT5muKjU6t3ZxCrpXJ0=
 github.com/DATA-DOG/go-sqlmock v1.3.3/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q5eFN3EC/SaM=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/DataDog/datadog-go v4.8.3+incompatible h1:fNGaYSuObuQb5nzeTQqowRAd9bpDIRRV4/gUtIBjh8Q=
