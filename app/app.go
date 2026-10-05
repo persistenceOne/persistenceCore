@@ -65,11 +65,12 @@ import (
 	"github.com/persistenceOne/persistenceCore/v16/app/keepers"
 	"github.com/persistenceOne/persistenceCore/v16/app/upgrades"
 	v1600 "github.com/persistenceOne/persistenceCore/v16/app/upgrades/v16.0.0"
+	v1610 "github.com/persistenceOne/persistenceCore/v16/app/upgrades/v16.1.0"
 )
 
 var (
 	DefaultNodeHome string
-	Upgrades        = []upgrades.Upgrade{v1600.Upgrade}
+	Upgrades        = []upgrades.Upgrade{v1600.Upgrade, v1610.Upgrade}
 )
 
 var (
