@@ -32,8 +32,8 @@ const (
 func TestPersistenceUpgradeBasic(t *testing.T) {
 	var (
 		chainName            = "persistence"
-		initialVersion       = "v15.0.0"
-		upgradeName          = "v16.0.0"
+		initialVersion       = "v16.0.1"
+		upgradeName          = "v16.1.0"
 		upgradeRepo          = PersistenceCoreImage.Repository
 		upgradeBranchVersion = PersistenceCoreImage.Version
 	)
@@ -183,8 +183,8 @@ func CosmosChainUpgradeTest(
 	height, err = chain.Height(ctx)
 	require.NoError(t, err, "error fetching height after chain should have halted")
 
-	// make sure that chain is halted
-	require.Equal(t, haltHeight, height, "height is not equal to halt height")
+	// x/upgrade stops in PreBlock before the upgrade block is committed.
+	require.Equal(t, haltHeight-1, height, "last committed height is not upgrade height minus one")
 
 	// bring down nodes to prepare for upgrade
 	t.Log("stopping node(s)")

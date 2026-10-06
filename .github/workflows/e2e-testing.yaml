@@ -14,6 +14,7 @@ on:
   push:
     branches:
       - main
+      - codex/v16.1.0-e2e
     tags-ignore:
       - v7.*
 
@@ -31,19 +32,35 @@ concurrency:
 jobs:
   build-docker:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
-      - name: Get branch name
-        id: branch-name
-        uses: tj-actions/branch-names@v9.0.0
+      - name: Checkout test workflow
+        uses: actions/checkout@v4
+
+      - name: Use relocated upstream runtime image
+        run: |
+          mkdir -p dockerfile/cosmos
+          curl --fail --location --retry 3 https://raw.githubusercontent.com/amygdala-labs/heighliner/98a256e2d23bf5a34a2ea3971156aaee5a0a3a19/dockerfile/cosmos/Dockerfile -o dockerfile/cosmos/Dockerfile
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('dockerfile/cosmos/Dockerfile')
+          source = p.read_text()
+          old = 'ghcr.io/strangelove-ventures/infra-toolkit:v0.1.12'
+          new = 'ghcr.io/amygdala-labs/infra-toolkit@sha256:ccdefb2074ddd060dd4db06ccc126e32a6a5a10bd04adadb6d9f46c571964c97'
+          assert source.count(old) == 1
+          p.write_text(source.replace(old, new))
+          PY
 
       - name: Build Docker image
         uses: strangelove-ventures/heighliner-build-action@v1.0.3
         with:
+          heighliner-tag: v1.7.6
+          skip: true
           registry: # empty registry, image only shared for e2e testing
           tag: local # emulate local environment for consistency in interchaintest cases
           tar-export-path: ${{ env.TAR_PATH }} # export a tarball that can be uploaded as an artifact for the e2e jobs
           platform: linux/amd64 # test runner architecture only
-          git-ref: ${{ steps.branch-name.outputs.current_branch }}
+          git-ref: ${{ github.ref_name == 'codex/v16.1.0-e2e' && 'v16.1.0' || github.head_ref || github.ref_name }}
 
           # Heighliner chains.yaml config
           chain: persistence
@@ -62,22 +79,10 @@ jobs:
           name: persistence-docker-image
           path: ${{ env.TAR_PATH }}
 
-      - name: Setup Go with cache
-        uses: magnetikonline/action-golang-cache@v4
-        with:
-          go-version: 1.23
-        id: go
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download dependencies for interchaintest
-        run: |
-          cd interchaintest && go mod download
-
   e2e-tests:
     needs: build-docker
     runs-on: ubuntu-latest
+    timeout-minutes: 35
     strategy:
       matrix:
         # names of `make` commands to run tests
@@ -91,6 +96,9 @@ jobs:
       fail-fast: false
 
     steps:
+      - name: Checkout test harness
+        uses: actions/checkout@v4
+
       # Load the docker image tarball from github actions artifacts and run tests (one runner per test due to matrix)
       - name: Download Tarball Artifact
         uses: actions/download-artifact@v4
@@ -111,13 +119,21 @@ jobs:
           echo "Found image ID: $IMAGE_ID — tagging as persistence:local"
           docker tag "$IMAGE_ID" persistence:local
       - name: Setup Go with cache
-        uses: magnetikonline/action-golang-cache@v4
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.23
-        id: go
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
+          go-version: '1.24.6'
+          cache-dependency-path: interchaintest/go.sum
 
       - name: run test
-        run: make ${{ matrix.test }}
+        env:
+          GOFLAGS: -p=2
+        run: |
+          set -o pipefail
+          make ${{ matrix.test }} 2>&1 | tee e2e-results.log
+
+      - name: Save test output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.test }}-output
+          path: e2e-results.log
