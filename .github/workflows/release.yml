@@ -3,6 +3,9 @@ name: Release
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the main branch
 on:
+  push:
+    branches: [codex/v16.1.0-docker-publication]
+    paths: [.github/workflows/release.yml]
   release:
     types:
       - published
@@ -10,6 +13,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   release:
+    if: github.event_name == 'release'
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -37,6 +41,23 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
+      - name: Check out build workflow
+        uses: actions/checkout@v4
+
+      - name: Use relocated upstream runtime image
+        run: |
+          mkdir -p dockerfile/cosmos
+          curl --fail --location --retry 3 https://raw.githubusercontent.com/amygdala-labs/heighliner/98a256e2d23bf5a34a2ea3971156aaee5a0a3a19/dockerfile/cosmos/Dockerfile -o dockerfile/cosmos/Dockerfile
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('dockerfile/cosmos/Dockerfile')
+          source = p.read_text()
+          old = 'ghcr.io/strangelove-ventures/infra-toolkit:v0.1.12'
+          new = 'ghcr.io/amygdala-labs/infra-toolkit@sha256:ccdefb2074ddd060dd4db06ccc126e32a6a5a10bd04adadb6d9f46c571964c97'
+          assert source.count(old) == 1
+          p.write_text(source.replace(old, new))
+          PY
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
@@ -51,9 +72,9 @@ jobs:
         with:
           heighliner-tag: v1.7.6
           platform: linux/arm64,linux/amd64
-          git-ref: ${{ github.event.release.tag_name }}
+          git-ref: ${{ github.event.release.tag_name || 'v16.1.0' }}
           registry: docker.io/persistenceone
-          tag: ${{ github.event.release.tag_name }}
+          tag: ${{ github.event.release.tag_name || 'v16.1.0' }}
           chain: persistencecore
           dockerfile: cosmos
           build-target: make install
@@ -62,3 +83,14 @@ jobs:
           build-env: |
             - LEDGER_ENABLED=false
             - BUILD_TAGS=muslc
+
+      - name: Verify published image runtime
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || 'v16.1.0' }}
+        run: |
+          for arch in amd64 arm64; do
+            image="docker.io/persistenceone/persistencecore:${RELEASE_TAG}"
+            docker pull --platform "linux/${arch}" "$image"
+            docker run --rm --network none --platform "linux/${arch}" "$image" persistenceCore version | grep -Fx "$RELEASE_TAG"
+            docker run --rm --network none --platform "linux/${arch}" "$image" persistenceCore query wasm libwasmvm-version | grep -Fx '2.3.5'
+          done
