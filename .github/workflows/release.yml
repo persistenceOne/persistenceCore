@@ -29,7 +29,7 @@ jobs:
       - name: attach binaries
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.tag.outputs.release_tag }}
+          tag_name: ${{ github.event.release.tag_name }}
           files: release/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -46,17 +46,14 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Get branch name
-        id: branch-name
-        uses: tj-actions/branch-names@v9.0.0
-        
       - name: Build and push Docker image
         uses: strangelove-ventures/heighliner-build-action@v1.0.3
         with:
+          heighliner-tag: v1.7.6
           platform: linux/arm64,linux/amd64
-          git-ref: ${{ steps.branch-name.outputs.current_branch }}
+          git-ref: ${{ github.event.release.tag_name }}
           registry: docker.io/persistenceone
-          tag: ${{ github.ref_name }}
+          tag: ${{ github.event.release.tag_name }}
           chain: persistencecore
           dockerfile: cosmos
           build-target: make install
