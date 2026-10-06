@@ -183,8 +183,14 @@ func CosmosChainUpgradeTest(
 	height, err = chain.Height(ctx)
 	require.NoError(t, err, "error fetching height after chain should have halted")
 
-	// x/upgrade stops in PreBlock before the upgrade block is committed.
-	require.Equal(t, haltHeight-1, height, "last committed height is not upgrade height minus one")
+	// CometBFT stores block H before FinalizeBlock calls the upgrade PreBlocker.
+	// Status reports H, while the application has only committed through H-1.
+	require.Equal(t, haltHeight, height, "consensus block height is not the upgrade height")
+	for _, node := range chain.Nodes() {
+		info, err := node.Client.ABCIInfo(ctx)
+		require.NoError(t, err, "error querying application height at upgrade halt")
+		require.Equal(t, haltHeight-1, info.Response.LastBlockHeight, "application committed beyond the pre-upgrade height")
+	}
 
 	// bring down nodes to prepare for upgrade
 	t.Log("stopping node(s)")

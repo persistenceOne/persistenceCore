@@ -1,0 +1,40 @@
+name: E2E v16.1.0 upgrade recheck
+on:
+  push:
+    branches: [codex/v16.1.0-e2e-upgrade]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reuse the tested v16.1.0 image
+        uses: actions/download-artifact@v4
+        with:
+          name: persistence-docker-image
+          run-id: 37402000834
+          github-token: ${{ github.token }}
+      - name: Load image and verify runtime
+        run: |
+          docker load -i heighliner.tar
+          docker run --rm --network none persistence:local persistenceCore version | grep -Fx v16.1.0
+          docker run --rm --network none persistence:local persistenceCore query wasm libwasmvm-version | grep -Fx 2.3.5
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.6'
+          cache-dependency-path: interchaintest/go.sum
+      - name: Test v16.0.1 to v16.1.0 upgrade
+        env:
+          GOFLAGS: -p=2
+        run: |
+          set -o pipefail
+          make ictest-upgrade 2>&1 | tee upgrade-results.log
+      - name: Save test output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: upgrade-recheck-output
+          path: upgrade-results.log
